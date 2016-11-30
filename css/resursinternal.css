@@ -1,0 +1,96 @@
+.resurswoo_phpversion_deprecated {
+    font-weight: bold;
+    font-size: 14px;
+    color: #990000;
+    margin: 5px;
+    padding: 5px 20px;
+    background: #ffEFEF;
+    border:1px solid #990000;
+}
+.resurswoo_upgrade_notice {
+    font-weight: bold;
+    font-size: 14px;
+    color: #990000;
+    margin: 5px;
+    padding: 5px 20px;
+    background: #ffEFEF;
+    border:1px solid #990000;
+    display: inline-block;
+    float: left;
+
+}
+
+.resursPaymentInfo {
+    margin-bottom:10px;
+}
+.resursPaymentInfo td.label {
+    font-weight: bold;
+    border-top:1px dotted grey;
+    vertical-align: top;
+    color: #FFFFFF !important;
+}
+.resursPaymentInfo td.value {
+    border-top:1px dotted grey;
+    vertical-align: top;
+    color: #FFFFFF !important;
+}
+.resurs_orderinfo_container {
+    background: #129fdc;
+    border-top: 1px solid deepskyblue;
+    color: #FFFFFF !important;
+}
+.resurs_orderinfo_text {
+    color: #FFFFFF !important;
+    font-weight: normal;
+}
+.resurs_orderinfo_text_label {
+    font-weight: bold;
+}
+.resurs_orderinfo_text_value {
+    font-weight: normal;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.resurs-read-more-box {
+    max-height: 160px;
+    position: relative;
+    overflow: hidden;
+}
+.resurs-read-more-box .resurs-read-more {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    /*top: 160px;*/
+    width: 100%;
+    text-align: center;
+    margin: 0; padding: 30px 0;
+
+    /* "transparent" only works here because == rgba(0,0,0,0) */
+    background-image: linear-gradient(to bottom, transparent, white);
+}
+.paymentInfoWrapLogo {
+    display: inline-block;
+    width: 145px;
+    float: right;
+    right: 30px;
+}
+.paymentInfoWrapStatus {
+    display: inline-block;
+    vertical-align: top;
+}
+/* Cloned from woocommerce h2-css */
+.paymentInfoHead {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.2;
+    padding: 0;
+    font-weight: bold;
+}
+.resursBankLegalLink {
+    color: #009900 !important;
+    font-weight: bold;
+}
+.resursBankLegalLink:hover {
+    font-weight: bold;
+}
