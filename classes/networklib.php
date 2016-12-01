@@ -7,6 +7,9 @@ namespace TorneLIB;
  * As this library may run as stand alone code, exceptions are thrown as regular \Exception instead of a TorneLIB_Exception.
  *
  * Class TorneLIB_Network
+ * @link https://docs.tornevall.net/x/KQCy Complete usage documentation (not automated)
+ * @link https://developer.tornevall.net/apigen/TorneLIB-5.0/class-TorneLIB.TorneLIB_Network.html This document (APIGen automation)
+ * @link https://developer.tornevall.net/download/TorneLIB-5.0/raw/tornevall_network.php Downloadable snapshot
  * @package TorneLIB
  */
 class TorneLIB_Network
@@ -210,7 +213,7 @@ if (function_exists('curl_init')) {
         private $TorneCurlVersion = "5.0.0";
 
         /** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-        private $TorneCurlRelease = "20161123";
+        private $TorneCurlRelease = "20161129";
 
         /**
          * Autodetecting of SSL capabilities section
@@ -1032,7 +1035,7 @@ if (function_exists('curl_init')) {
             if (preg_match("/\?wsdl$|\&wsdl$/i", $this->CurlURL)) {
                 $Soap = new Tornevall_SimpleSoap($this->CurlURL, $this->curlopt);
                 $Soap->setThrowableState($this->canThrow);
-                $Soap->setAuthentication($this->AuthData);
+                $Soap->setSoapAuthentication($this->AuthData);
                 return $Soap->getSoap();
             }
 
@@ -1241,7 +1244,7 @@ class Tornevall_SimpleSoap extends Tornevall_cURL {
             }
         }
     }
-    public function setAuthentication($AuthData = array()) {
+    public function setSoapAuthentication($AuthData = array()) {
         $this->AuthData = $AuthData;
         if (!empty($this->AuthData['Username']) && !empty($this->AuthData['Password']) && !isset($this->soapOptions['login']) && !isset($this->soapOptions['password'])) {
             $this->soapOptions['login'] = $this->AuthData['Username'];

@@ -31,7 +31,7 @@ class ResursBank
     /** @var string The version of this gateway */
     private $version = "1.0.0";
     /** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-    private $lastUpdate = "20161122";
+    private $lastUpdate = "20161130";
     private $preferredId = null;
     private $ocShopScript = null;
     private $formTemplateRuleArray = array();
@@ -58,7 +58,7 @@ class ResursBank
         'exceptions' => 1,
         'connection_timeout' => 60,
         'login' => 'exshop',
-        'password' => 'gO9UaWH38D',
+        'password' => '',
         'trace' => 1
     );
 
@@ -379,10 +379,14 @@ class ResursBank
      * Convert array to json
      * @param array $jsonData
      * @return array|mixed|string|void
+     * @throws ResursException
      */
     private function toJson($jsonData = array()) {
         if (is_array($jsonData) || is_object($jsonData)) {
             $jsonData = json_encode($jsonData);
+            if (json_last_error()) {
+                throw new ResursException(json_last_error_msg(), json_last_error());
+            }
         }
         return $jsonData;
     }
@@ -525,7 +529,8 @@ class ResursBank
         }
         if (isset($newDataContainer['type'])) {unset($newDataContainer['type']);}
         if (isset($newDataContainer['uniqueId'])) {unset($newDataContainer['uniqueId']);}
-        return $this->toJson($newDataContainer);
+        $returnJson = $this->toJson($newDataContainer);
+        return $returnJson;
     }
 
     public function getBookedJsonObject($method = ResursMethodTypes::METHOD_UNDEFINED) {
@@ -2572,13 +2577,17 @@ class ResursBank
             throw new ResursException("METHOD_CALLBACK for OmniCheckout is not yet implemented");
         }
         $omniReferenceUrl = $this->env_omni_current . $omniSubPath;
-        $bookDataJson = $this->toJsonByType($bookData, ResursMethodTypes::METHOD_OMNI);
-        $this->simpleWebEngine = $this->createJsonEngine($omniReferenceUrl, $bookDataJson);
-        $omniErrorResult = $this->omniError($this->simpleWebEngine);
-        // Compatibility fixed for PHP 5.3
-        if (!empty($omniErrorResult)) {
-            $omniErrNo = $this->omniErrNo($this->simpleWebEngine);
-            throw new ResursException($omniErrorResult, $omniErrNo);
+        try {
+            $bookDataJson = $this->toJsonByType($bookData, ResursMethodTypes::METHOD_OMNI);
+            $this->simpleWebEngine = $this->createJsonEngine($omniReferenceUrl, $bookDataJson);
+            $omniErrorResult = $this->omniError($this->simpleWebEngine);
+            // Compatibility fixed for PHP 5.3
+            if (!empty($omniErrorResult)) {
+                $omniErrNo = $this->omniErrNo($this->simpleWebEngine);
+                throw new ResursException($omniErrorResult, $omniErrNo);
+            }
+        } catch (Exception $jsonException) {
+            throw new ResursException($jsonException->getMessage(), $jsonException->getCode());
         }
         return $this->simpleWebEngine;
     }

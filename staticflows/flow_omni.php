@@ -452,7 +452,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $shipping = (float)$cart->shipping_total;
         $shipping_tax = (float)$cart->shipping_tax_total;
         $shipping_total = (float)($shipping + $shipping_tax);
-        $shipping_tax_pct = @round($shipping_tax / $shipping, 2) * 100;
+        /*
+         * Compatibility.
+         */
+        $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping, 2) * 100) ? @round($shipping_tax / $shipping, 2) * 100 : 0);
 
         if (false === empty($shipping)) {
         }    //
@@ -500,7 +503,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     'quantity' => 1,
                     'unitMeasure' => 'st',
                     'unitAmountWithoutVat' => $fee->amount,
-                    'vatPct' => $rate,
+                    'vatPct' => !is_nan($rate) ? $rate: 0,
                     'totalVatAmount' => $fee->tax,
                     'totalAmount' => $fee->amount + $fee->tax,
                 );

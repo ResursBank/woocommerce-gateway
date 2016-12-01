@@ -3,12 +3,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 1.2.7.7
+ * Version: 1.2.8
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "1.2.7.7");
+define('RB_WOO_VERSION', "1.2.8");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -798,7 +798,10 @@ function woocommerce_gateway_resurs_bank_init()
             $shipping = (float)$cart->shipping_total;
             $shipping_tax = (float)$cart->shipping_tax_total;
             $shipping_total = (float)($shipping + $shipping_tax);
-            $shipping_tax_pct = @round($shipping_tax / $shipping, 2) * 100;
+            /*
+             * Compatibility
+             */
+            $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping, 2) * 100) ? @round($shipping_tax / $shipping, 2) * 100 : 0);
 
             if (false === empty($shipping)) {
             }
@@ -846,7 +849,7 @@ function woocommerce_gateway_resurs_bank_init()
                         'quantity' => 1,
                         'unitMeasure' => 'st',
                         'unitAmountWithoutVat' => $fee->amount,
-                        'vatPct' => $rate,
+                        'vatPct' => !is_nan($rate) ? $rate: 0,
                         'totalVatAmount' => $fee->tax,
                         'totalAmount' => $fee->amount + $fee->tax,
                     );
@@ -1466,7 +1469,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $order->set_payment_method($omniClass);
                                 $order->set_address($wooBillingAddress, 'billing');
                                 $order->set_address($wooDeliveryAddress, 'shipping');
-                                $order->update_status('on-hold', __('The payment are waiting for confirmation from Resurs Bank', 'WC_Payment_Gateway'));
+                                //$order->update_status('on-hold', __('The payment are waiting for confirmation from Resurs Bank', 'WC_Payment_Gateway'));
                                 update_post_meta($orderId, 'paymentId', $requestedPaymentId);
                                 update_post_meta($orderId, 'omniPaymentMethod', $omniPaymentMethod);
                                 $hasInternalErrors = false;
