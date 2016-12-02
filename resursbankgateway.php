@@ -12,6 +12,7 @@ define('RB_WOO_VERSION', "1.2.8");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
+include('resursbank_settings.php');
 
 if (function_exists('add_action')) {
     add_action('plugins_loaded', 'woocommerce_gateway_resurs_bank_init');
@@ -592,8 +593,8 @@ function woocommerce_gateway_resurs_bank_init()
             if (defined('INCLUDE_RESURS_OMNI') && INCLUDE_RESURS_OMNI !== true && isset($this->form_fields['flowtype']) && isset($this->form_fields['flowtype']['options']) && is_array($this->form_fields['flowtype']['options']) && isset($this->form_fields['flowtype']['options']['resurs_bank_omnicheckout'])) {
                 unset($this->form_fields['flowtype']['options']['resurs_bank_omnicheckout']);
             }
-
         }
+
 
         /**
          * Check the callback event received and perform the appropriate action
