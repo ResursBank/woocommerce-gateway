@@ -169,9 +169,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     public function payment_fields()
     {
         if ($this->iFrameLocation == "inMethods") {
-            echo '<div id="omni-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
+            echo '<div id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
         } else {
-            echo '<div id="omni-checkout-loader" onchange="alert(\'s\')">' . $this->description . '</div>';
+            echo '<div id="resurs-checkout-loader" onchange="alert(\'s\')">' . $this->description . '</div>';
         }
     }
 

@@ -388,23 +388,91 @@ function methodChangers(currentSelectionObject) {
  * Things below wants to be loaded first and not wait for readiness
  */
 if (null !== omnivars) {
-    var OMNICHECKOUT_IFRAME_URL = omnivars.OMNICHECKOUT_IFRAME_URL;
-    //var OMNICHECKOUT = omnivars.OMNICHECKOUT;
+    var RESURSCHECKOUT_IFRAME_URL = omnivars.RESURSCHECKOUT_IFRAME_URL;
 }
-if (typeof ResursOmni !== "undefined") {
-    var ResursOmni = new ResursOmni();
-    //ResursOmni.setDebug(1);
-    ResursOmni.init();
-    ResursOmni.setPurchaseFailCallback(function() {
-        handleOmniError("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method");
+if (typeof ResursCheckout !== "undefined") {
+    var resursCheckout = ResursCheckout('#resurs-checkout-container');
+    resursCheckout.setDebug(1);
+    resursCheckout.init();
+    resursCheckout.setPurchaseFailCallback(function() {
+        handleResursCheckoutError("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method");
+    });
+    resursCheckout.setBookingCallback(function(omniJsObject) {
+        var omniRef = omnivars.OmniRef;
+        var currentResursCheckoutFrame = document.getElementsByTagName("iframe")[0];
+
+        var postData = {};
+        /*
+         * Merge the rest
+         */
+        $RB('[name*="checkout"] input').each(
+            function (i, e) {
+                if (typeof e.name !== "undefined") {
+                    if (e.type == "checkbox") {
+                        if (e.checked === true) {
+                            omniJsObject[e.name] = e.value;
+                        } else {
+                            omniJsObject[e.name] = 0;
+                        }
+                    } else if (e.type == "radio") {
+                        omniJsObject[e.name] = $RB('[name="'+e.name+'"]:checked').val();
+                    } else {
+                        omniJsObject[e.name] = e.value;
+                    }
+                }
+            }
+        );
+        if (typeof currentResursCheckoutFrame !== "undefined" && typeof currentResursCheckoutFrame.src !== "undefined") {
+            if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
+                var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
+                $RB.ajax(
+                    {
+                        url: preBookUrl,
+                        type: "POST",
+                        data: omniJsObject
+                    }
+                ).success(
+                    function (successData) {
+                        var errorString = "";
+                        var isSuccess = false;
+                        if (typeof successData.success !== "undefined") {
+                            if (successData.success === true) {
+                                isSuccess = true;
+                                resursCheckout.confirmOrder(true);
+                                return true;
+                            }
+                        }
+                        errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
+                        if (!isSuccess) {
+                            if (errorString === "" || errorString === null) {
+                                errorString = "Something went wrong when we tried to book your order. Please contact customer support for more information.";
+                            }
+                            handleResursCheckoutError(errorString);
+                        }
+                        resursCheckout.confirmOrder(false);
+                        return false;
+                    }
+                ).fail(
+                    function (x, y) {
+                        resursCheckout.confirmOrder(false);
+                        var errorString = "Something went wrong. Please contact customer support for more information.";
+                        if (typeof x.statusText !== "undefined") {
+                            errorString = x.statusText;
+                        }
+                        handleResursCheckoutError("BookByAJAXError: " + errorString);
+                        return false;
+                    }
+                );
+            }
+        }
     });
 }
 
-function handleOmniError(omniErrorMessage) {
+function handleResursCheckoutError(resursErrorMessage) {
     var checkoutForm = $RB('form.checkout');
     if (checkoutForm.length > 0) {
         $RB('.woocommerce-error, .woocommerce-message').remove();
-        checkoutForm.prepend('<div class="woocommerce-error">' + omniErrorMessage + '</div>');
+        checkoutForm.prepend('<div class="woocommerce-error">' + resursErrorMessage + '</div>');
         $RB('html, body').animate({
             scrollTop: ( $RB('form.checkout').offset().top - 100 )
         }, 1000);
@@ -412,83 +480,8 @@ function handleOmniError(omniErrorMessage) {
         /*
          * Fall back on an alert if something went wrong with the page
          */
-        alert(omniErrorMessage);
+        alert(resursErrorMessage);
     }
 }
 
 
-/**
- * Handle booking event from OmniCheckout frame
- * @param omniJsObject
- */
-function omniBookEvent(omniJsObject) {
-    //var omniRef = ($RB('#omniRef').length > 0 ? $RB('#omniRef').html() : "");
-    var omniRef = omnivars.OmniRef;
-    var currentOmniFrame = document.getElementsByTagName("iframe")[0];
-
-    var postData = {};
-    /*
-     * Merge the rest
-     */
-    $RB('[name*="checkout"] input').each(
-        function (i, e) {
-            // typeof omniJsObject[e.name] === "undefined"
-            if (typeof e.name !== "undefined") {
-                if (e.type == "checkbox") {
-                    if (e.checked === true) {
-                        omniJsObject[e.name] = e.value;
-                    } else {
-                        omniJsObject[e.name] = 0;
-                    }
-                } else if (e.type == "radio") {
-                    omniJsObject[e.name] = $RB('[name="'+e.name+'"]:checked').val();
-                } else {
-                    omniJsObject[e.name] = e.value;
-                }
-            }
-        }
-    );
-    if (typeof currentOmniFrame !== "undefined" && typeof currentOmniFrame.src !== "undefined") {
-        if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
-            var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
-            $RB.ajax(
-                {
-                    url: preBookUrl,
-                    type: "POST",
-                    data: omniJsObject
-                }
-            ).success(
-                function (successData) {
-                    var errorString = "";
-                    var isSuccess = false;
-                    if (typeof successData.success !== "undefined") {
-                        if (successData.success === true) {
-                            isSuccess = true;
-                            ResursOmni.confirmOrder(true);
-                            return true;
-                        }
-                    }
-                    errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
-                    if (!isSuccess) {
-                        if (errorString === "" || errorString === null) {
-                            errorString = "Something went wrong when we tried to book your order. Please contact customer support for more information.";
-                        }
-                        handleOmniError(errorString);
-                    }
-                    ResursOmni.confirmOrder(false);
-                    return false;
-                }
-            ).fail(
-                function (x, y) {
-                    ResursOmni.confirmOrder(false);
-                    var errorString = "Something went wrong. Please contact customer support for more information.";
-                    if (typeof x.statusText !== "undefined") {
-                        errorString = x.statusText;
-                    }
-                    handleOmniError("BookByAJAXError: " + errorString);
-                    return false;
-                }
-            );
-        }
-    }
-}

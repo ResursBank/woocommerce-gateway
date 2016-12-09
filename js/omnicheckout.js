@@ -1,139 +1,141 @@
-/*! OmniJS v0.04 - Generic iFrame-driver for Resurs Bank OmniCheckout, for catching events in the Omnicheckout iFrame */
+/*! ResursCheckoutJS v0.05 - Generic Reurs Bank iFrame-driver for Resurs Checkout, for catching events in the Resurs Checkout iFrame */
 
 /*
  * CHANGELOG
  *
- * 0.04
- *      - Event for purchase-failed added as callbacks
- *      - Event for booked payment updated
+ * The changelog has moved to https://test.resurs.com/docs/x/5ABV
  *
- * 0.03
- *		- Events that fails for IE/Firefox fixed
- *
- * 0.02
- *      - Renaming of events
- *      - Add paymentMethod into the customerData object so that customization of the real method follow the flow
- *
- * Dependencies:
+ * Dependencies to external libraries:
  *
  *      - None.
  *
  * Requirements:
  *
- *      - OMNICHECKOUT_IFRAME_URL needs to be set from your store, to define where events are sent from.
+ *      - RESURSCHECKOUT_IFRAME_URL needs to be set from your store, to define where events are sent from.
  *      - Make sure that shopUrl is sent and matches with the target iFrame URL, when creating the iFrame at API level.
  *      - A html element that holds the iframe
  *
- * Currently unsupported:
+ * What this script won't do:
  *
- *      - Live updates of the shop cart (pushing data into the frame that occurs when the cart is changed)
+ *      - Live updates of the shop cart (pushing data into the frame that occurs when the cart is changed). This a feature that should be completely backend based.
  *
- * The script is written so that you can put it on a webpage without having it primarily activated.
- * It utilizes the message handler in the Omni iFrame, so that you can push an order into the store in the background,
- * as the checkout is completed at Resurs Bank.
+ * The script is written so that you can put it on a webpage without having it primarily activated (to avoid colliding with other scripts).
+ * It utilizes the message handler in the Resurs Checkout iframe, so that you can push an order into the store in the background, as the checkout is completed at Resurs Bank.
  *
- * Events to catch from Omni:
+ * Events to catch from Resurs Checkout:
  *
  *      omnicheckout:loaded                 - Handled by this script when the iFrame has loaded and is ready
  *      omnicheckout:user-info-change       - Stored until checkout is finished
  *      omnicheckout:payment-method-change  - Stored until checkout is finished
  *      omnicheckout:booking-order          - Passed with necessary customer data to a callback, or dropped if no callback is set
  *
+ *      As Resurs Checkout will rename events in short, please take a look at the variable currentResursEventNamePrefix, if you need to make a quickfix.
+ *
  * Usage example:
  *
- *      // User configured callback: Handle the booking event in the shop (if this function not exists, OmniJS will automatically confirm the order)
- *      function omniBookingCallback(omniJsObject) {
- *          // Put your code to handle the customer order here (omniJsObject contains at most ssn, address and deliveryaddress)
+ *      // User configured callback: Handle the booking event in the shop (if this function not exists, ResursJS will automatically confirm the order)
+ *      function resursBookingCallback(resursJsObject) {
+ *          // Put your code to handle the customer order here (resursJsObject contains at most ssn, address and deliveryaddress)
  *      }
- *      var omniCheckout = ResursOmni();
- *      omniCheckout.init();
+ *      var resursCheckout = ResursCheckout();
+ *      resursCheckout.init();
  *
- * If you have a container not named omni-checkout-container, you may initialize OmniJS by doing this:
+ * If you have a container not named resurs-checkout-container, you may initialize ResursJS by doing this:
  *
- *      var omniCheckout = ResursOmni('#myOmniElement');
+ *      var resursCheckout = ResursCheckout('#myResursElement');
  *
  *  Developers only - Activate debugging:
  *
- *      omniCheckout.setDebug(true);
+ *      resursCheckout.setDebug(true);
  */
 
-if (typeof ResursOmni !== "function" && typeof ResursOmni === "undefined") {
-    function ResursOmni() {
-        var omniElement = "";
-        var omniFrame = "";
-        var omniJSVersion = "0.04";
-        var omnidata = {"paymentMethod":"", "customerData":{}};
-        var omniDebug = false;
-        var omniBookingCallback = null;
-        var omniPurchaseFail = null;
+if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined") {
+    var currentResursEventNamePrefix = "omnicheckout";
+    function ResursCheckout() {
+        var resursCheckoutElement = "";
+        var resursCheckoutFrame = "";
+        var resursCheckoutVersion = "0.05";
+        var resursCheckoutData = {"paymentMethod": "", "customerData": {}};
+        var resursCheckoutDebug = false;
+        var resursCheckoutBookingCallback = null;
+        var resursCheckoutPurchaseFail = null;
         /*
-         * If there is an argument, there is something else implemented as the omnicheckout container than the default.
+         * If there is an argument, there is something else implemented as the Resurs Checkout-container than the default.
          */
-        if (typeof arguments[0] !== "undefined") { omniElement = arguments[0]; } else { omniElement = "#omni-checkout-container"; }
-        var omnicheckoutDomain = "";
+        if (typeof arguments[0] !== "undefined") {
+            resursCheckoutElement = arguments[0];
+        } else {
+            resursCheckoutElement = "#resurs-checkout-container";
+        }
+        var resursCheckoutDomain = "";
         /*
-         * If OMNICHECKOUT_IFRAME_URL is set, the script will know where the communication will be. Without this, there may be problems.
+         * If RESURSCHECKOUT_IFRAME_URL (RESURSCHECKOUT_IFRAME_URL for compatibility) is set, the script will know where the communication will be. Without this, there may be problems.
          */
-        if (typeof OMNICHECKOUT_IFRAME_URL !== "undefined") { omnicheckoutDomain = OMNICHECKOUT_IFRAME_URL; }
-        var function_exists = function(functionName) {
+        if (typeof RESURSCHECKOUT_IFRAME_URL !== "undefined") {
+            resursCheckoutDomain = RESURSCHECKOUT_IFRAME_URL;
+        }
+        if (typeof RESURSCHECKOUT_IFRAME_URL !== "undefined") {
+            resursCheckoutDomain = RESURSCHECKOUT_IFRAME_URL;
+        }
+        var function_exists = function (functionName) {
             if (typeof functionName === "function") {
                 return true;
             }
         };
         var postMessage = function (data) {
-            var omniWindow;
+            var resursCheckoutWindow;
             /*
              * Find the current active iframe
              */
-            omniFrame = document.getElementsByTagName("iframe")[0];
-            omniWindow = omniFrame.contentWindow || omniFrame.contentDocument;
-            if (omniWindow && typeof omnicheckoutDomain === 'string' && omnicheckoutDomain !== '') {
-                omniWindow.postMessage(JSON.stringify(data), omnicheckoutDomain);
+            resursCheckoutFrame = document.getElementsByTagName("iframe")[0];
+            resursCheckoutWindow = resursCheckoutFrame.contentWindow || resursCheckoutFrame.contentDocument;
+            if (resursCheckoutWindow && typeof resursCheckoutDomain === 'string' && resursCheckoutDomain !== '') {
+                resursCheckoutWindow.postMessage(JSON.stringify(data), resursCheckoutDomain);
             }
         };
-        var ResursOmni = {
+        var ResursCheckout = {
             /**
              * Global events callback setup
              * @param eventCallbackSet
              */
-            setBookingCallback: function(eventCallbackSet) {
-                omniBookingCallback = eventCallbackSet;
+            setBookingCallback: function (eventCallbackSet) {
+                resursCheckoutBookingCallback = eventCallbackSet;
             },
-            setPurchaseFailCallback: function(eventCallbackSet) {
-                omniPurchaseFail = eventCallbackSet;
+            setPurchaseFailCallback: function (eventCallbackSet) {
+                resursCheckoutPurchaseFail = eventCallbackSet;
             },
             setDebug: function (activateDebug) {
                 if (activateDebug == 1) {
                     activateDebug = true;
                 }
-                omniDebug = activateDebug;
-                console.log("OmniJS verbosity level raised");
+                resursCheckoutDebug = activateDebug;
+                console.log("ResursCheckoutJS verbosity level raised");
             },
-            confirmOrder: function(successfulness) {
+            confirmOrder: function (successfulness) {
                 if (typeof successfulness !== "boolean") {
                     successfulness = false;
                 }
-                if (omniDebug) {
-                    console.log("OmniJS - Confirm order with boolean: " + successfulness);
+                if (resursCheckoutDebug) {
+                    console.log("ResursCheckoutJS - Confirm order with boolean: " + successfulness);
                 }
                 postMessage({
-                    eventType: 'omnicheckout:order-status',
+                    eventType: currentResursEventNamePrefix + ":order-status",
                     orderReady: successfulness
                 });
             },
-            postFrame: function(postMessageData) {
+            postFrame: function (postMessageData) {
                 if (typeof postMessageData === "object") {
-                    if (omniDebug) {
-                        console.log("OmniJS - Sending message to iframe: " + JSON.stringify(postMessageData));
+                    if (resursCheckoutDebug) {
+                        console.log("ResursCheckoutJS - Sending message to iframe: " + JSON.stringify(postMessageData));
                     }
                     postMessage(postMessageData);
                 }
             },
-            init: function() {
-                window.addEventListener('message', function(event) {
+            init: function () {
+                window.addEventListener('message', function (event) {
                     var origin = event.origin || event.originalEvent.origin;
-                    /* Validate origin and do nothing if omnicheckoutDomain is missing */
-                    if (origin !== omnicheckoutDomain || typeof event.data !== 'string') {
+                    /* Validate origin and do nothing if resursCheckoutDomain is missing */
+                    if (origin !== resursCheckoutDomain || typeof event.data !== 'string') {
                         return;
                     }
                     var eventDataReceive = event.data;
@@ -146,63 +148,64 @@ if (typeof ResursOmni !== "function" && typeof ResursOmni === "undefined") {
                     }
                     if (eventDataObject.hasOwnProperty('eventType') && typeof eventDataObject.eventType === 'string') {
                         switch (eventDataObject.eventType) {
-                            case 'omnicheckout:loaded':
+                            case currentResursEventNamePrefix + ":loaded":
                                 postMessage({
-                                    eventType: 'omnicheckout:set-purchase-button-interceptor',
+                                    eventType: currentResursEventNamePrefix + ":set-purchase-button-interceptor",
                                     checkOrderBeforeBooking: true
                                 });
                                 break;
                             default:
                                 /*
-                                 * If there is a callback registered, for handling omnicheckout from elsewhere, send it over.
+                                 * If there is a callback registered, for handling ResursCheckout from elsewhere, send it over.
                                  * In any other case, ignore all events except for the booking rule.
                                  */
-                                if (eventDataObject.eventType.indexOf("omnicheckout") > -1) {
-                                    if (eventDataObject.eventType == "omnicheckout:payment-method-change") {
-                                        if (omniDebug) { console.log("OmniJS - payment-method-change"); }
-                                        omnidata.paymentMethod = eventDataObject.method;
-                                    } else if (eventDataObject.eventType == "omnicheckout:user-info-change") {
-                                        if (omniDebug) {
-                                            console.log("OmniJS - user-info-change");
+                                if (eventDataObject.eventType.indexOf(currentResursEventNamePrefix) > -1) {
+                                    if (eventDataObject.eventType == currentResursEventNamePrefix + ":payment-method-change") {
+                                        if (resursCheckoutDebug) {
+                                            console.log("ResursCheckoutJS - payment-method-change");
                                         }
-                                        omnidata.customerData = {
+                                        resursCheckoutData.paymentMethod = eventDataObject.method;
+                                    } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":user-info-change") {
+                                        if (resursCheckoutDebug) {
+                                            console.log("ResursCheckoutJS - user-info-change");
+                                        }
+                                        resursCheckoutData.customerData = {
                                             "address": (typeof eventDataObject.address !== "undefined" ? eventDataObject.address : {}),
                                             "delivery": (typeof eventDataObject.delivery !== "undefined" ? eventDataObject.delivery : {}),
                                             "ssn": eventDataObject.ssn,
-                                            "paymentMethod": (typeof omnidata.paymentMethod !== "undefined" ? omnidata.paymentMethod : "")
+                                            "paymentMethod": (typeof resursCheckoutData.paymentMethod !== "undefined" ? resursCheckoutData.paymentMethod : "")
                                         };
-                                    } else if (eventDataObject.eventType == "omnicheckout:purchase-failed") {
-                                        if (typeof omniPurchaseFail === "function") {
-                                            omniPurchaseFail();
-                                        } else if (omniPurchaseFail === "string") {
-                                            if (typeof window[omniPurchaseFail] === "function") {
-                                                window[omniPurchaseFail]();
+                                    } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":purchase-failed") {
+                                        if (typeof resursCheckoutPurchaseFail === "function") {
+                                            resursCheckoutPurchaseFail();
+                                        } else if (resursCheckoutPurchaseFail === "string") {
+                                            if (typeof window[resursCheckoutPurchaseFail] === "function") {
+                                                window[resursCheckoutPurchaseFail]();
                                             }
                                         }
-                                    } else if (eventDataObject.eventType == "omnicheckout:puchase-button-clicked") {
+                                    } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":puchase-button-clicked") {
                                         /*
                                          * Passing order booking to a user defined callback if exists.
                                          */
-                                        if (typeof omniBookingCallback === "function") {
-                                            if (omniDebug) {
-                                                console.log("OmniJS - puchase-button-clicked event received, user defined callback is used.");
+                                        if (typeof resursCheckoutBookingCallback === "function") {
+                                            if (resursCheckoutDebug) {
+                                                console.log("ResursCheckoutJS - puchase-button-clicked event received, user defined callback is used.");
                                             }
-                                            omniBookingCallback(omnidata, eventDataObject);
-                                        } else if (typeof omniBookingCallback === "string") {
-                                            if (typeof window[omniBookingCallback] === "function") {
-                                                window[omniBookingCallback](omnidata, eventDataObject);
+                                            resursCheckoutBookingCallback(resursCheckoutData, eventDataObject);
+                                        } else if (typeof resursCheckoutBookingCallback === "string") {
+                                            if (typeof window[resursCheckoutBookingCallback] === "function") {
+                                                window[resursCheckoutBookingCallback](resursCheckoutData, eventDataObject);
                                             }
-                                        } else if (typeof omniBookEvent === "function") {
-                                            if (omniDebug) {console.log("puchase-button-clicked event received, default callback is used.");}
-                                            omniBookEvent(omnidata, eventDataObject);
                                         } else {
                                             /*
                                              * If no callbacks was found we'll consider that no callbacks are defined
                                              * in the shop. In that case, we'll just continue with the booking part.
                                              */
-                                            if (omniDebug) { console.log("OmniJS - puchase-button-clicked event received and not callbacks was found. Automatically confirming."); }
+                                            if (resursCheckoutDebug) {
+                                                console.log("ResursCheckoutJS - puchase-button-clicked event received and not callbacks was found. Automatically confirming.");
+                                            }
                                             postMessage({
-                                                eventType: 'omnicheckout:order-status',
+                                                eventType: currentResursEventNamePrefix + ":order-status",
                                                 orderReady: true
                                             });
                                         }
@@ -213,6 +216,6 @@ if (typeof ResursOmni !== "function" && typeof ResursOmni === "undefined") {
                 }, false);
             },
         };
-        return ResursOmni;
+        return ResursCheckout;
     }
 }

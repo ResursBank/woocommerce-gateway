@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: RB-Tornevall
+Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.6.1
