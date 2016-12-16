@@ -213,7 +213,7 @@ if (function_exists('curl_init')) {
         private $TorneCurlVersion = "5.0.0";
 
         /** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-        private $TorneCurlRelease = "20161129";
+        private $TorneCurlRelease = "20161213";
 
         /**
          * Autodetecting of SSL capabilities section
@@ -275,10 +275,12 @@ if (function_exists('curl_init')) {
         private $CurlIp = null;
         private $CurlIpType = null;
 
+        private $useLocalCookies = false;
         private $CookiePath = null;
         private $SaveCookies = false;
         private $CookieFile = null;
         private $CookiePathCreated = false;
+        private $UseCookieExceptions = false;
         public $AllowTempAsCookiePath = false;
 
         /** @var null Sets a HTTP_REFERER to the http call */
@@ -365,6 +367,28 @@ if (function_exists('curl_init')) {
         }
 
         /**
+         * Enable the use of local cookie storage
+         *
+         * Use this only if necessary and if you are planning to cookies locally while, for example, needs to set a logged in state more permanent during get/post/etc
+         *
+         * @param bool $enabled
+         */
+        public function setLocalCookies($enabled = false) {
+            $this->useLocalCookies = $enabled;
+        }
+
+        /**
+         * Allow the initCookie-function to throw exceptions if the local cookie store can not be created properly
+         *
+         * Exceptions are invoked, normally when the function for initializing cookies can not create the storage directory. This is something you should consider disabled in a production environment.
+         *
+         * @param bool $enabled
+         */
+        public function setCookieExceptions($enabled = false) {
+            $this->UseCookieExceptions = $enabled;
+        }
+
+        /**
          * Get this internal release version
          *
          * Requires the constant TORNELIB_ALLOW_VERSION_REQUESTS to return any information.
@@ -447,6 +471,10 @@ if (function_exists('curl_init')) {
          */
         private function initCookiePath()
         {
+            if (defined('TORNELIB_DISABLE_CURL_COOKIES') || !$this->useLocalCookies) {
+                return;
+            }
+
             /**
              * TORNEAPI_COOKIES has priority over TORNEAPI_PATH that is the default path
              */
@@ -476,7 +504,7 @@ if (function_exists('curl_init')) {
                     } else {
                         $this->CookiePath = realpath(__DIR__ . "/../cookies");
                     }
-                    if (empty($this->CookiePath) || !is_dir($this->CookiePath)) {
+                    if ($this->UseCookieExceptions && (empty($this->CookiePath) || !is_dir($this->CookiePath))) {
                         throw new \Exception(__FUNCTION__ . ": Could not set up a proper cookiepath [To override this, use AllowTempAsCookiePath (not recommended)]", 1002);
                     }
                 }

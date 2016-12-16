@@ -308,26 +308,6 @@ function woocommerce_gateway_resurs_bank_init()
         {
             global $wpdb, $woocommerce;
 
-            $rates = $wpdb->get_results($wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates
-				ORDER BY tax_rate_order
-				LIMIT %d
-				",
-                1000
-            ));
-
-            $rate_select = array();
-
-            foreach ($rates as $rate) {
-                $rate_name = $rate->tax_rate_class;
-                if ('' === $rate_name) {
-                    $rate_name = 'standard';
-                }
-                $rate_name = str_replace('-', ' ', $rate_name);
-                $rate_name = ucwords($rate_name);
-                $rate_select[$rate->tax_rate_class] = $rate_name;
-            }
-
             $this->form_fields = getResursWooFormFields();
 
             /*
@@ -1934,6 +1914,10 @@ EOT;
             $url = add_query_arg('page', $_REQUEST['page'], $url);
             $url = add_query_arg('tab', $_REQUEST['tab'], $url);
             $url = add_query_arg('section', $_REQUEST['section'], $url);
+
+            /*
+             * Redirect this page to the new tab settings
+             */
 
             if (isset($_REQUEST['woocommerce_resurs-bank_registerCallbacksButton'])) {
                 $salt = uniqid(mt_rand(), true);
