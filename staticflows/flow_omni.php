@@ -131,17 +131,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 'description' => __('If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe', 'WC_Payment_Gateway'),
                 'desc_tip' => false,
             ),
-            'iFrameResizeDelay' => array(
-                'title' => __('Delay iframe resizing', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'true' => 'true',
-                    'false' => 'false',
-                ),
-                'default' => 'false',
-                'description' => __('If you experience errors during resizing the iframe which maybe affects the site in some matter, Resurs Bank ECommerce Library (EComPHP) can try compensate the errors by delaying the resizer by a second', 'WC_Payment_Gateway'),
-                'desc_tip' => false,
-            ),
             'cleanOmniCustomerFields' => array(
                 'title' => __('Remove all default customer fields when loading Omni Checkout iframe', 'WC_Payment_Gateway'),
                 'type' => 'select',
@@ -212,33 +201,16 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $this->flow->Include = array();
         $bookDataOmni = self::createResursOmniOrder();
         $shopUrl = home_url('');
-        //$bookDataOmni['shopUrl'] = $shopUrl;
         $omniRef = WC()->session->get('omniRef');
-        $omniBook = $this->flow->bookPayment($omniRef, $bookDataOmni);
-        $flowFrame = "";
-        $flowFrame .= '<noscript><b>' . __('OmniCheckout will not work properly without Javascript functions enabled', 'WC_Payment_Gateway') . '</b></noscript>';
-        if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
-            $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL', 'WC_Payment_Gateway') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
-        }
-        if (!resursOption('iFrameResizeDelay')) {
-            $flowFrame .= $this->flow->getOmniFrame($omniBook);
-        } else {
-            $flowFrame .= $this->flow->getOmniFrame($omniBook, true);
-        }
-        if (resursOption('iFrameResizeDelay')) {
-            $delayFrameScript = $this->flow->getIframeResizerUrl();
-            $flowFrame .= '
-            <script>
-                window.onload = function() {
-                    setTimeout(function() {
-                        var ocElement = document.createElement("script");
-                        ocElement.type = "text/javascript";
-                        ocElement.src = "' . $delayFrameScript . '";
-                        jQuery("head").append(ocElement);
-                    }, 500)
-                }
-            </script>
-        ';
+        try {
+            $flowFrame = $this->flow->bookPayment($omniRef, $bookDataOmni);
+            $flowFrame .= '<noscript><b>' . __('OmniCheckout will not work properly without Javascript functions enabled', 'WC_Payment_Gateway') . '</b></noscript>';
+            if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
+                $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL', 'WC_Payment_Gateway') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
+            }
+        } catch (Exception $e) {
+            $errorUnable = __('We are unable to load Resurs Checkout for the moment. Please try again later.', 'WC_Payment_Gateway');
+            $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="omni-checkout-container">' . $errorUnable . "<!-- \n".$e->getMessage()." --></div>";
         }
         return $flowFrame;
     }
@@ -422,9 +394,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $rates = array_shift($_tax->get_rates($data->get_tax_class()));
             $vatPct = (double)$rates['rate'];
             $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
+            $setSku = $data->get_sku();
+            $bookArtId = $data->id;
+            if (resursOption("useSku") && !empty($setSku)) {
+                $bookArtId = $setSku;
+            }
             $spec_lines[] = array(
                 'id' => $data->id,
-                'artNo' => $data->id,
+                'artNo' => $bookArtId,
                 'description' => (empty($data->post->post_title) ? 'Beskrivning' : $data->post->post_title),
                 'quantity' => $item['quantity'],
                 'unitMeasure' => 'st',
