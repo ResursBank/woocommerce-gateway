@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
 "POT-Creation-Date: 2016-11-24 15:50+0100\n"
-"PO-Revision-Date: 2016-11-24 16:02+0100\n"
+"PO-Revision-Date: 2016-12-22 13:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -416,7 +416,7 @@ msgstr "Web services username (getAddress/Production)"
 
 #: resursbankgateway.php:564
 msgid "Prevent caching of included javascripts"
-msgstr "Förebygg cache-lagraing av inkluderade javascript"
+msgstr "Förebygg cache-lagring av inkluderade javascript"
 
 #: resursbankgateway.php:565
 msgid ""

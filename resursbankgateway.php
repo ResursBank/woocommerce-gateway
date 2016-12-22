@@ -506,9 +506,14 @@ function woocommerce_gateway_resurs_bank_init()
                 $rates = array_shift($_tax->get_rates($data->get_tax_class()));
                 $vatPct = (double)$rates['rate'];
                 $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
+                $setSku = $data->get_sku();
+                $bookArtId = $data->id;
+                if (resursOption("useSku") && !empty($setSku)) {
+                    $bookArtId = $setSku;
+                }
                 $spec_lines[] = array(
                     'id' => $data->id,
-                    'artNo' => $data->id,
+                    'artNo' => $bookArtId,
                     'description' => (empty($data->post->post_title) ? 'Beskrivning' : $data->post->post_title),
                     'quantity' => $item['quantity'],
                     'unitMeasure' => 'st',
@@ -537,7 +542,7 @@ function woocommerce_gateway_resurs_bank_init()
             $shipping_tax = (float)$cart->shipping_tax_total;
             $shipping_total = (float)($shipping + $shipping_tax);
             /*
-             * Compatibility
+             * Compatibility (Discovered in PHP7)
              */
             $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping, 2) * 100) ? @round($shipping_tax / $shipping, 2) * 100 : 0);
 
@@ -1207,6 +1212,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $order->set_payment_method($omniClass);
                                 $order->set_address($wooBillingAddress, 'billing');
                                 $order->set_address($wooDeliveryAddress, 'shipping');
+                                // This creates extra confirmation mails during the order process, which may cause probles on denied checked
                                 //$order->update_status('on-hold', __('The payment are waiting for confirmation from Resurs Bank', 'WC_Payment_Gateway'));
                                 update_post_meta($orderId, 'paymentId', $requestedPaymentId);
                                 update_post_meta($orderId, 'omniPaymentMethod', $omniPaymentMethod);
