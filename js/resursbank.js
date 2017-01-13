@@ -4,13 +4,7 @@
 
 var $RB = jQuery.noConflict();
 
-$RB(document).ready(function( $ ) {
-    /*
-    var currentOmniFrame = document.getElementsByTagName("iframe")[0];
-    var omniHostPosition = currentOmniFrame.src.substr(currentOmniFrame.src.indexOf("//")+2);
-    var omnicheckoutDomain = omniHostPosition.indexOf("/") > -1 ? "https://" + omniHostPosition.substr(0, omniHostPosition.indexOf("/")) : currentOmniFrame.src;
-    */
-
+$RB(document).ready(function ($) {
         if ($RB('#ssnCustomerType').length && $RB('#ssnCustomerType:checked').length > 0) {
             getMethodType($RB('#ssnCustomerType:checked').val());
         }
@@ -291,7 +285,7 @@ function getMethodType(customerType) {
             }
         }
         $RB('input[id^="payment_method_resurs_bank"]').each(
-            function(id, obj) {
+            function (id, obj) {
                 hasResursMethods = true;
                 if ($RB('#' + obj.id).is(':checked')) {
                     checkedPaymentMethod = obj.value;
@@ -314,20 +308,27 @@ function getMethodType(customerType) {
     }
 }
 
-function ResursRegexMatch(objectBound, regEx) {}
+function ResursRegexMatch(objectBound, regEx) {
+}
 
 function preSetResursMethods(customerType, returnedObjects) {
     var hideElm;
     var showElm;
 
     // Only invoke if there are multiple customer types
-    if (customerType.toLowerCase() == "natural") {var hideCustomerType = "legal";} else {var hideCustomerType = "natural";}
-    if (typeof customerType === "undefined") {return;}
+    if (customerType.toLowerCase() == "natural") {
+        var hideCustomerType = "legal";
+    } else {
+        var hideCustomerType = "natural";
+    }
+    if (typeof customerType === "undefined") {
+        return;
+    }
     customerType = customerType.toLowerCase();
 
     if ($RB('#ssnCustomerType:checked').length === 0 && ($RB('#billing_company').length > 0 && $RB('#billing_company').val() == "")) {
         /* The moment when we cannot predict the method of choice, we'll show both methods */
-        $RB('li[class*=payment_method_resurs]').each(function() {
+        $RB('li[class*=payment_method_resurs]').each(function () {
             showElm = document.getElementsByClassName(this.className);
             if (showElm.length > 0) {
                 for (var showElmCount = 0; showElmCount < showElm.length; showElmCount++) {
@@ -338,15 +339,14 @@ function preSetResursMethods(customerType, returnedObjects) {
             }
         });
     }
-    else
-    {
+    else {
         if (typeof returnedObjects['natural'] !== "undefined" && typeof returnedObjects['legal'] !== "undefined" && typeof returnedObjects[hideCustomerType] !== "undefined") {
             for (var cType = 0; cType < returnedObjects[hideCustomerType].length; cType++) {
                 hideElm = document.getElementsByClassName('payment_method_' + returnedObjects[hideCustomerType][cType]);
                 if (hideElm.length > 0) {
                     for (var hideElmCount = 0; hideElmCount < hideElm.length; hideElmCount++) {
                         if (hideElm[hideElmCount].tagName.toLowerCase() === "li") {
-                            for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length ; getChild ++) {
+                            for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length; getChild++) {
                                 if (typeof hideElm[hideElmCount].childNodes[getChild].type !== "undefined" && hideElm[hideElmCount].childNodes[getChild].type === "radio") {
                                     // Unselect this radio buttons if found, just to make sure no method are chosen in a moment like this
                                     hideElm[hideElmCount].childNodes[getChild].checked = false;
@@ -390,14 +390,19 @@ function methodChangers(currentSelectionObject) {
 if (null !== omnivars) {
     var RESURSCHECKOUT_IFRAME_URL = omnivars.RESURSCHECKOUT_IFRAME_URL;
 }
+
 if (typeof ResursCheckout !== "undefined") {
+    jQuery(document).ready(function ($) {
+        jQuery('div').remove('.woocommerce-billing-fields');
+        jQuery('div').remove('.woocommerce-shipping-fields');
+    });
     var resursCheckout = ResursCheckout('#resurs-checkout-container');
     resursCheckout.setDebug(1);
     resursCheckout.init();
-    resursCheckout.setPurchaseFailCallback(function() {
+    resursCheckout.setPurchaseFailCallback(function () {
         handleResursCheckoutError("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method");
     });
-    resursCheckout.setBookingCallback(function(omniJsObject) {
+    resursCheckout.setBookingCallback(function (omniJsObject) {
         var omniRef = omnivars.OmniRef;
         var currentResursCheckoutFrame = document.getElementsByTagName("iframe")[0];
 
@@ -415,7 +420,7 @@ if (typeof ResursCheckout !== "undefined") {
                             omniJsObject[e.name] = 0;
                         }
                     } else if (e.type == "radio") {
-                        omniJsObject[e.name] = $RB('[name="'+e.name+'"]:checked').val();
+                        omniJsObject[e.name] = $RB('[name="' + e.name + '"]:checked').val();
                     } else {
                         omniJsObject[e.name] = e.value;
                     }

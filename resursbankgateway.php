@@ -12,7 +12,7 @@ define('RB_WOO_VERSION', "1.2.8");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
-include('resursbank_settings.php');
+//include('resursbank_settings.php');
 include('functions.php');
 
 if (function_exists('add_action')) {
@@ -1219,12 +1219,6 @@ function woocommerce_gateway_resurs_bank_init()
                                 $hasInternalErrors = false;
                                 $internalErrorMessage = null;
                                 //WC()->session->set('omniRef', null);
-                                if (resursOption('reduceOrderStock')) {
-                                    /*
-                                     * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
-                                     */
-                                    $order->reduce_order_stock();
-                                }
                                 // Running through process_payment fixes the empty-cart. And that's a better way, since if
                                 // errors occurs on this level, we won't empty the cart on errors.
                                 //WC()->cart->empty_cart();
@@ -1342,6 +1336,12 @@ function woocommerce_gateway_resurs_bank_init()
                         wc_add_notice( __('The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.', 'WC_Payment_Gateway'), 'error' );
                         $getRedirectUrl = $woocommerce->cart->get_cart_url();
                     } else {
+                        if (resursOption('reduceOrderStock')) {
+                            /*
+                             * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
+                             */
+                            $order->reduce_order_stock();
+                        }
                         $order->update_status('processing', __('The payment are signed and booked', 'WC_Payment_Gateway'));
                         $getRedirectUrl = $this->get_return_url($order);
                         WC()->cart->empty_cart();
@@ -2439,6 +2439,7 @@ EOT;
             $_SESSION['resurs_bank_admin_notice']['message'] = __('The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or older. You should consider upgrading to 5.4 or higher.', 'WC_Payment_Gateway');
             $_SESSION['resurs_bank_admin_notice']['type'] = 'resurswoo_phpversion_deprecated';
         }
+
         if ('wc_resurs_bank' !== $_REQUEST['section']) {
             return;
         }
@@ -2504,6 +2505,14 @@ EOT;
             include $filename;
         }
     }
+    function rb_settings_pages($settings) {
+        $settings[] = include(plugin_dir_path(__FILE__) . "/resursbank_settings.php");
+        return $settings;
+    }
+
+    /* Load settings pages through this class */
+    add_filter('woocommerce_get_settings_pages', 'rb_settings_pages');
+
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway');
     add_filter('woocommerce_available_payment_gateways', 'woocommerce_resurs_bank_available_payment_gateways', 1);
     add_filter('woocommerce_before_checkout_billing_form', 'add_ssn_checkout_field');

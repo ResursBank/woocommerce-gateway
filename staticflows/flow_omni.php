@@ -203,7 +203,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $shopUrl = home_url('');
         $omniRef = WC()->session->get('omniRef');
         try {
-            $flowFrame = $this->flow->bookPayment($omniRef, $bookDataOmni);
+            $flowBook = $this->flow->bookPayment($omniRef, $bookDataOmni);
+            $flowFrame = is_string($flowBook) ? $flowBook : "";
             $flowFrame .= '<noscript><b>' . __('OmniCheckout will not work properly without Javascript functions enabled', 'WC_Payment_Gateway') . '</b></noscript>';
             if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
                 $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL', 'WC_Payment_Gateway') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
