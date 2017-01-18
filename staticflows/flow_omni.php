@@ -407,7 +407,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         return $array;
     }
 
-    /**
+/**
      * Get specLines for startPaymentSession
      *
      * @param  array $cart WooCommerce cart containing order items
@@ -422,9 +422,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $rates = array_shift($_tax->get_rates($data->get_tax_class()));
             $vatPct = (double)$rates['rate'];
             $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
+            $setSku = $data->get_sku();
+            $bookArtId = $data->id;
+            if (resursOption("useSku") && !empty($setSku)) {
+                $bookArtId = $setSku;
+            }
             $spec_lines[] = array(
                 'id' => $data->id,
-                'artNo' => $data->id,
+                'artNo' => $bookArtId,
                 'description' => (empty($data->post->post_title) ? 'Beskrivning' : $data->post->post_title),
                 'quantity' => $item['quantity'],
                 'unitMeasure' => 'st',

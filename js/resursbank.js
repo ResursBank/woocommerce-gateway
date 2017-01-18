@@ -392,6 +392,10 @@ if (null !== omnivars) {
     //var OMNICHECKOUT = omnivars.OMNICHECKOUT;
 }
 if (typeof ResursOmni !== "undefined") {
+    jQuery(document).ready(function ($) {
+        jQuery('div').remove('.woocommerce-billing-fields');
+        jQuery('div').remove('.woocommerce-shipping-fields');
+    });
     var ResursOmni = new ResursOmni();
     //ResursOmni.setDebug(1);
     ResursOmni.init();

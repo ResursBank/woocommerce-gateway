@@ -213,7 +213,7 @@ if (function_exists('curl_init')) {
         private $TorneCurlVersion = "5.0.0";
 
         /** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-        private $TorneCurlRelease = "20161129";
+        private $TorneCurlRelease = "20161216";
 
         /**
          * Autodetecting of SSL capabilities section
@@ -275,10 +275,12 @@ if (function_exists('curl_init')) {
         private $CurlIp = null;
         private $CurlIpType = null;
 
+        private $useLocalCookies = false;
         private $CookiePath = null;
         private $SaveCookies = false;
         private $CookieFile = null;
         private $CookiePathCreated = false;
+	    private $UseCookieExceptions = false;
         public $AllowTempAsCookiePath = false;
 
         /** @var null Sets a HTTP_REFERER to the http call */
@@ -339,6 +341,16 @@ if (function_exists('curl_init')) {
         public $canThrow = true;
 
         /**
+         * Defines whether, when there is an incoming SOAP-call, we should try to make the SOAP initialization twice.
+         * This is a kind of fallback when users forget to add ?wsdl or &wsdl in urls that requires this to call for SOAP.
+         * It may happen when setting CURL_POST_AS to a SOAP-call but, the URL is not defined as one.
+         * Setting this to false, may suppress important errors, since this will suppress fatal errors at first try.
+         *
+         * @var bool
+         */
+        public $SoapTryOnce = true;
+
+        /**
          * TorneLIB_CURL constructor.
          */
         public function __construct()
@@ -362,6 +374,28 @@ if (function_exists('curl_init')) {
             if (!count(glob($this->CookiePath . "/*")) && $this->CookiePathCreated) {
                 @rmdir($this->CookiePath);
             }
+        }
+
+        /**
+         * Enable the use of local cookie storage
+         *
+         * Use this only if necessary and if you are planning to cookies locally while, for example, needs to set a logged in state more permanent during get/post/etc
+         *
+         * @param bool $enabled
+         */
+        public function setLocalCookies($enabled = false) {
+            $this->useLocalCookies = $enabled;
+        }
+
+        /**
+         * Allow the initCookie-function to throw exceptions if the local cookie store can not be created properly
+         *
+         * Exceptions are invoked, normally when the function for initializing cookies can not create the storage directory. This is something you should consider disabled in a production environment.
+         *
+         * @param bool $enabled
+         */
+        public function setCookieExceptions($enabled = false) {
+            $this->UseCookieExceptions = $enabled;
         }
 
         /**
@@ -447,6 +481,10 @@ if (function_exists('curl_init')) {
          */
         private function initCookiePath()
         {
+            if (defined('TORNELIB_DISABLE_CURL_COOKIES') || !$this->useLocalCookies) {
+                return;
+            }
+
             /**
              * TORNEAPI_COOKIES has priority over TORNEAPI_PATH that is the default path
              */
@@ -476,7 +514,7 @@ if (function_exists('curl_init')) {
                     } else {
                         $this->CookiePath = realpath(__DIR__ . "/../cookies");
                     }
-                    if (empty($this->CookiePath) || !is_dir($this->CookiePath)) {
+                    if ($this->UseCookieExceptions && (empty($this->CookiePath) || !is_dir($this->CookiePath))) {
                         throw new \Exception(__FUNCTION__ . ": Could not set up a proper cookiepath [To override this, use AllowTempAsCookiePath (not recommended)]", 1002);
                     }
                 }
@@ -971,11 +1009,12 @@ if (function_exists('curl_init')) {
          * Call cUrl with a GET
          *
          * @param string $url
+         * @param int $postAs
          * @return array
          */
-        public function doGet($url = '')
+        public function doGet($url = '', $postAs = CURL_POST_AS::POST_AS_NORMAL)
         {
-            $content = $this->handleUrlCall($url, array(), CURL_METHODS::METHOD_GET);
+            $content = $this->handleUrlCall($url, array(), CURL_METHODS::METHOD_GET, $postAs);
             $ResponseArray = $this->ParseResponse($content);
             return $ResponseArray;
         }
@@ -1032,10 +1071,11 @@ if (function_exists('curl_init')) {
                 $this->CurlURL = $url;
             }
 
-            if (preg_match("/\?wsdl$|\&wsdl$/i", $this->CurlURL)) {
+            if (preg_match("/\?wsdl$|\&wsdl$/i", $this->CurlURL) || $postAs == CURL_POST_AS::POST_AS_SOAP) {
                 $Soap = new Tornevall_SimpleSoap($this->CurlURL, $this->curlopt);
                 $Soap->setThrowableState($this->canThrow);
                 $Soap->setSoapAuthentication($this->AuthData);
+                $Soap->SoapTryOnce = $this->SoapTryOnce;
                 return $Soap->getSoap();
             }
 
@@ -1216,7 +1256,7 @@ class Tornevall_SimpleSoap extends Tornevall_cURL {
     protected $addSoapOptions = array(
         'exceptions' => true,
         'trace' => true,
-        'cache_wsdl' => WSDL_CACHE_BOTH
+        'cache_wsdl' => 0       // Replacing WSDL_CACHE_NONE (WSDL_CACHE_BOTH = 3)
     );
     private $soapUrl;
     private $AuthData;
@@ -1229,6 +1269,7 @@ class Tornevall_SimpleSoap extends Tornevall_cURL {
 
     public $SoapFaultString = null;
     public $SoapFaultCode = 0;
+    public $SoapTryOnce = true;
 
     function __construct($Url, $SoapOptions = array())
     {
@@ -1255,13 +1296,51 @@ class Tornevall_SimpleSoap extends Tornevall_cURL {
         $this->canThrowSoapFaults = $throwable;
     }
 
+    /**
+     * Generate the SOAP
+     *
+     * @return $this
+     * @throws \Exception
+     */
     public function getSoap()
     {
         $this->soapClient = null;
         if (gettype($this->sslopt['stream_context']) == "resource") {
             $this->soapOptions['stream_context'] = $this->sslopt['stream_context'];
         }
-        $this->soapClient = new \SoapClient($this->soapUrl, $this->soapOptions);
+
+        if ($this->SoapTryOnce) {
+            $this->soapClient = new \SoapClient($this->soapUrl, $this->soapOptions);
+        } else {
+            try {
+                /*
+                 * FailoverMethod is active per default, trying to parry SOAP-sites that requires ?wsdl in the urls
+                 */
+                $this->soapClient = @new \SoapClient($this->soapUrl, $this->soapOptions);
+            } catch (\Exception $soapException) {
+                if (isset($soapException->faultcode) && $soapException->faultcode == "WSDL") {
+                    /*
+                     * If an exception has been invoked, check if the url contains a ?wsdl or &wsdl - if not, it may be the problem.
+                     * In that case, retry the call and throw an exception if we fail twice.
+                     */
+                    if (!preg_match("/\?wsdl|\&wsdl/i", $this->soapUrl)) {
+                        /*
+                         * Try to determine how the URL is built before trying this.
+                         */
+                        if (preg_match("/\?/", $this->soapUrl)) {
+                            $this->soapUrl .= "&wsdl";
+                        } else {
+                            $this->soapUrl .= "?wsdl";
+                        }
+                        try {
+                            $this->soapClient = @new \SoapClient($this->soapUrl, $this->soapOptions);
+                        } catch (\Exception $soapException) {
+                            throw new \Exception($soapException->getMessage(), $soapException->getCode());
+                        }
+                    }
+                }
+            }
+        }
         return $this;
     }
 
@@ -1361,6 +1440,7 @@ abstract class CURL_POST_AS
 {
     const POST_AS_NORMAL = 0;
     const POST_AS_JSON = 1;
+    const POST_AS_SOAP = 2;
 }
 
 /**

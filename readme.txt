@@ -2,8 +2,8 @@
 Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 4.6.1
-Stable tag: 1.2.8
+Tested up to: 4.7
+Stable tag: 1.2.7.14
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Resurs Bank Payment Gateway for WooCommerce.
 == Description ==
 
 Resurs Bank payment gateway for WooCommerce.
-Tested with WooCommerce up to version 2.6.8
+Tested with WooCommerce up to version 2.6.12
 Requires PHP 5.4 or later.
 For the use of OmniCheckout you also need cURL (EComPHP).
 
@@ -47,9 +47,34 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-= 1.2.8 =
+= 1.2.7.14 =
 
- * Compatibility issues discovered with PHP 7
+ * E-Mail confirmations are sent before booking completed (https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/issues/9/e-mail-confirmations-are-sent-before)
+ * Zero/null values are not properly encoded, using PHP >= 7 (https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/issues/8/zero-null-values-are-not-properly-encoded)
+
+= 1.2.7.13 =
+
+ Ghost Version. Releasing something with a version number of 13, on friday 13th is probably not a good idea.
+
+= 1.2.7.12 =
+
+ * Resurs issue #71430: Moving reduceOrderStock to successUrl (Resurs Checkout/Omni)
+
+= 1.2.7.11 =
+
+ * cUrl NetworkLib updated
+
+= 1.2.7.10 =
+
+ * Delivery address- and shipping address form fields are not properly removed as Resurs Checkout is active in some themes
+
+= 1.2.7.9 =
+
+ * Use SKU instead of postid for setting article (optional)
+ 
+= 1.2.7.8 =
+
+ * Hosted flow url parsing error fix
 
 = 1.2.7.7 =
 

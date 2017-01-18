@@ -3,12 +3,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 1.2.8
+ * Version: 1.2.7.14
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "1.2.8");
+define('RB_WOO_VERSION', "1.2.7.14");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -429,6 +429,17 @@ function woocommerce_gateway_resurs_bank_init()
                     'description' => __('The tax rate that will be added to the payment methods', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
+                'useSku' => array(
+                    'title' => __('Use articles real id (SKU instead of the WordPress-id) whenever it is possible', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'true' => 'true',
+                        'false' => 'false',
+                    ),
+                    'default' => 'false',
+                    'description' => __('This feature enables article numbers instead of the regular WordPress post ids that is usually used during payment booking. Note: If there is no article number (SKU) set, this function will fall back to the regular ID', 'WC_Payment_Gateway'),
+                    'desc_tip' => false,
+                ),
                 'reduceOrderStock' => array(
                     'title' => __('During payment process, also handle order by reducing order stock', 'WC_Payment_Gateway'),
                     'type' => 'select',
@@ -768,9 +779,14 @@ function woocommerce_gateway_resurs_bank_init()
                 $rates = array_shift($_tax->get_rates($data->get_tax_class()));
                 $vatPct = (double)$rates['rate'];
                 $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
+                $setSku = $data->get_sku();
+                $bookArtId = $data->id;
+                if (resursOption("useSku") && !empty($setSku)) {
+                    $bookArtId = $setSku;
+                }
                 $spec_lines[] = array(
                     'id' => $data->id,
-                    'artNo' => $data->id,
+                    'artNo' => $bookArtId,
                     'description' => (empty($data->post->post_title) ? 'Beskrivning' : $data->post->post_title),
                     'quantity' => $item['quantity'],
                     'unitMeasure' => 'st',
@@ -799,7 +815,7 @@ function woocommerce_gateway_resurs_bank_init()
             $shipping_tax = (float)$cart->shipping_tax_total;
             $shipping_total = (float)($shipping + $shipping_tax);
             /*
-             * Compatibility
+             * Compatibility (Discovered in PHP7)
              */
             $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping, 2) * 100) ? @round($shipping_tax / $shipping, 2) * 100 : 0);
 
@@ -1469,18 +1485,13 @@ function woocommerce_gateway_resurs_bank_init()
                                 $order->set_payment_method($omniClass);
                                 $order->set_address($wooBillingAddress, 'billing');
                                 $order->set_address($wooDeliveryAddress, 'shipping');
+                                // This creates extra confirmation mails during the order process, which may cause probles on denied checked
                                 //$order->update_status('on-hold', __('The payment are waiting for confirmation from Resurs Bank', 'WC_Payment_Gateway'));
                                 update_post_meta($orderId, 'paymentId', $requestedPaymentId);
                                 update_post_meta($orderId, 'omniPaymentMethod', $omniPaymentMethod);
                                 $hasInternalErrors = false;
                                 $internalErrorMessage = null;
                                 //WC()->session->set('omniRef', null);
-                                if (resursOption('reduceOrderStock')) {
-                                    /*
-                                     * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
-                                     */
-                                    $order->reduce_order_stock();
-                                }
                                 // Running through process_payment fixes the empty-cart. And that's a better way, since if
                                 // errors occurs on this level, we won't empty the cart on errors.
                                 //WC()->cart->empty_cart();
@@ -1598,6 +1609,12 @@ function woocommerce_gateway_resurs_bank_init()
                         wc_add_notice( __('The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.', 'WC_Payment_Gateway'), 'error' );
                         $getRedirectUrl = $woocommerce->cart->get_cart_url();
                     } else {
+						if (resursOption('reduceOrderStock')) {
+							/*
+							 * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
+							 */
+							$order->reduce_order_stock();
+						}
                         $order->update_status('processing', __('The payment are signed and booked', 'WC_Payment_Gateway'));
                         $getRedirectUrl = $this->get_return_url($order);
                         WC()->cart->empty_cart();
