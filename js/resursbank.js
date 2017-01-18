@@ -26,7 +26,7 @@ $RB(document).ready(function ($) {
                 that.register_payment_update();
                 that.register_ssn_address_fetch();
                 that.shipping_address = $('.shipping_address');
-                that.sign_notice = $('<p></p>').addClass('sign_notice').text('Ändring av leveransadress kräver e-signering.');
+                that.sign_notice = $('<p></p>').addClass('sign_notice').text(getResursPhrase('deliveryRequiresSigning'));
 
                 if ($('.resurs-bank-payment-method').length !== 0) {
                     that.shipping_address.prepend(that.sign_notice);
@@ -161,7 +161,7 @@ $RB(document).ready(function ($) {
                     }
                     this.ssnInput = this.ssnP.find('input');
                     if (typeof this.ssnP === "undefined") {
-                        console.log("I can not show errors since the element is missing");
+                        console.log(getResursPhrase("ssnElementMissing"));
                     }
 
                     if (typeof data.error !== 'undefined') {
@@ -230,11 +230,21 @@ $RB(document).ready(function ($) {
     }
 );
 
+/**
+ * Handle translation tables from WordPress localizer
+ *
+ * @param phraseName
+ * @param countryId
+ * @returns {*}
+ */
 function getResursPhrase(phraseName, countryId) {
     if (typeof rb_getaddress_fields[phraseName] !== "undefined") {
         return rb_getaddress_fields[phraseName];
+    } else if (typeof rb_general_translations[phraseName] !== "undefined") {
+        return rb_general_translations[phraseName];
     } else {
-        return "Lost in translation";
+        // Returning a string instead of the phrase may only be a dumb act.
+        return "Lost in translation on phrase '" + phraseName + "'";
     }
 }
 
@@ -246,19 +256,6 @@ function getMethodType(customerType) {
     var currentCustomerType = "";
     var enterNumberPhrase = "";
     var labelNumberPhrase = "";
-
-    /*
-     var methodCountry = $RB('#resursSelectedCountry');
-     if (methodCountry.val() != "SE") {
-     $RB('#ssn_field_field').hide();
-     } else {
-     $RB('#ssn_field_field').show();
-     }
-     */
-
-    if ($RB('.nm-checkout-login-coupon') > 0) {
-        console.log("here");
-    }
 
     if ($RB('#resursSelectedCountry').length > 0 && $RB('#ssn_field').length > 0) {
         currentResursCountry = $RB('#resursSelectedCountry').val();
@@ -327,7 +324,7 @@ function preSetResursMethods(customerType, returnedObjects) {
     customerType = customerType.toLowerCase();
 
     if ($RB('#ssnCustomerType:checked').length === 0 && ($RB('#billing_company').length > 0 && $RB('#billing_company').val() == "")) {
-        /* The moment when we cannot predict the method of choice, we'll show both methods */
+        // The moment when we cannot predict the method of choice, we'll show both methods
         $RB('li[class*=payment_method_resurs]').each(function () {
             showElm = document.getElementsByClassName(this.className);
             if (showElm.length > 0) {
@@ -400,12 +397,30 @@ if (typeof ResursCheckout !== "undefined") {
     resursCheckout.setDebug(1);
     resursCheckout.init();
     resursCheckout.setPurchaseFailCallback(function () {
-        handleResursCheckoutError("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method");
+        // OmniRef.
+        var omniRef;
+        if (typeof omnivars.OmniRef !== "undefined") {
+            omniRef = omnivars.OmniRef;
+            var preBookUrl = omnivars.OmniPreBookUrl + "&pRef=" + omniRef + "&purchaseFail=1&set-no-session=1";
+            $RB.ajax(
+                {
+                    url: preBookUrl,
+                    type: "GET"
+                }
+            ).success(
+                function (successData) {
+                    // Do nothing, as we actually only touch the status.
+                }
+            ).fail(
+                function (x, y) {
+                    handleResursCheckoutError(getResursPhrase("purchaseAjaxInternalFailure"));
+                }
+            );        }
+        handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
     });
     resursCheckout.setBookingCallback(function (omniJsObject) {
         var omniRef = omnivars.OmniRef;
         var currentResursCheckoutFrame = document.getElementsByTagName("iframe")[0];
-
         var postData = {};
         /*
          * Merge the rest
@@ -450,7 +465,7 @@ if (typeof ResursCheckout !== "undefined") {
                         errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
                         if (!isSuccess) {
                             if (errorString === "" || errorString === null) {
-                                errorString = "Something went wrong when we tried to book your order. Please contact customer support for more information.";
+                                errorString = getResursPhrase("theAjaxWasNotAccepted");
                             }
                             handleResursCheckoutError(errorString);
                         }
@@ -460,11 +475,13 @@ if (typeof ResursCheckout !== "undefined") {
                 ).fail(
                     function (x, y) {
                         resursCheckout.confirmOrder(false);
-                        var errorString = "Something went wrong. Please contact customer support for more information.";
+                        var errorString = getResursPhrase("theAjaxWentWrong");
                         if (typeof x.statusText !== "undefined") {
                             errorString = x.statusText;
                         }
-                        handleResursCheckoutError("BookByAJAXError: " + errorString);
+                        var partialError = getResursPhrase("theAjaxWentWrongWithThisMessage");
+                        var contactUs = getResursPhrase("contactSupport");
+                        handleResursCheckoutError(partialError + errorString + " - " + contactUs);
                         return false;
                     }
                 );
