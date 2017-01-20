@@ -1334,6 +1334,7 @@ class ResursBank
         if (strtoupper($callbackTypeString) == "FINALIZATION") {return ResursCallbackTypes::FINALIZATION; }
         if (strtoupper($callbackTypeString) == "AUTOMATIC_FRAUD_CONTROL") {return ResursCallbackTypes::AUTOMATIC_FRAUD_CONTROL; }
         if (strtoupper($callbackTypeString) == "UNFREEZE") {return ResursCallbackTypes::UNFREEZE; }
+        if (strtoupper($callbackTypeString) == "BOOKED") {return ResursCallbackTypes::BOOKED; }
         return ResursCallbackTypes::UNDEFINED;
     }
 
@@ -1349,6 +1350,7 @@ class ResursBank
         if ($callbackType == ResursCallbackTypes::TEST) { return array('param1', 'param2', 'param3', 'param4', 'param5'); }
         if ($callbackType == ResursCallbackTypes::UNFREEZE) { return array('paymentId'); }
         if ($callbackType == ResursCallbackTypes::UPDATE) { return array('paymentId'); }
+        if ($callbackType == ResursCallbackTypes::BOOKED) { return array('paymentId'); }
         return array();
     }
 
