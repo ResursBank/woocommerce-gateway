@@ -236,11 +236,21 @@ $RB(document).ready(function( $ ) {
     }
 );
 
+/**
+ * Handle translation tables from WordPress localizer
+ *
+ * @param phraseName
+ * @param countryId
+ * @returns {*}
+ */
 function getResursPhrase(phraseName, countryId) {
     if (typeof rb_getaddress_fields[phraseName] !== "undefined") {
         return rb_getaddress_fields[phraseName];
+    } else if (typeof rb_general_translations[phraseName] !== "undefined") {
+        return rb_general_translations[phraseName];
     } else {
-        return "Lost in translation";
+        // Returning a string instead of the phrase may only be a dumb act.
+        return "Lost in translation on phrase '" + phraseName + "'";
     }
 }
 
