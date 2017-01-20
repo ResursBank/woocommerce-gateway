@@ -3,7 +3,7 @@ Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.7
-Stable tag: 1.2.7.14
+Stable tag: 1.2.7.15
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,11 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 
 == Changelog ==
+
+= 1.2.7.15 =
+
+ * Hotfix implementation of BOOKED callback (simple mode) - Bitbucket ID #10, Resurs issue #71526
+ * Hotfix error messaging fix - Bitbucket ID #2, Resurs issue #71619
 
 = 1.2.7.14 =
 

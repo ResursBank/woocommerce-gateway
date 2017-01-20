@@ -3,12 +3,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 1.2.7.14
+ * Version: 1.2.7.15
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "1.2.7.14");
+define('RB_WOO_VERSION', "1.2.7.15");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -130,6 +130,14 @@ function woocommerce_gateway_resurs_bank_init()
                     'digest_parameters' => array(
                         'paymentId' => 'paymentId',
                     ),
+                    'BOOKED' => array(
+                        'uri_components' => array(
+                            'paymentId' => 'paymentId',
+                        ),
+                        'digest_parameters' => array(
+                            'paymentId' => 'paymentId',
+                        ),
+                    )
                 )
             );
             $this->init_form_fields();
@@ -235,8 +243,9 @@ function woocommerce_gateway_resurs_bank_init()
                      */
                     if (isset(WC()->session) && $setSessionEnable) {
                         $omniRef = $this->flow->generatePreferredId(25, "Omni");
+                        $newOmniRef = $omniRef;
                         $currentOmniRef = WC()->session->get('omniRef');
-
+                        $omniId = WC()->session->get("omniid");
                         if (isset($_REQUEST['event-type']) && $_REQUEST['event-type'] == "prepare-omni-order" && isset($_REQUEST['orderRef']) && !empty($_REQUEST['orderRef'])) {
                             $omniRef = $_REQUEST['orderRef'];
                             $currentOmniRefAge = 0;
@@ -252,6 +261,32 @@ function woocommerce_gateway_resurs_bank_init()
                             WC()->session->set('omniRef', $omniRef);
                             WC()->session->set('omniRefCreated', time());
                             WC()->session->set('omniRefAge', $currentOmniRefAge);
+                        }
+                    } else {
+                        if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
+                            if (isset($_REQUEST['purchaseFail']) && $_REQUEST['purchaseFail'] == 1) {
+                                $returnResult = array(
+                                    'success' => false,
+                                    'errorString' => "",
+                                    'errorCode' => "",
+                                    'verified' => false,
+                                    'hasOrder' => false,
+                                    'resursData' => array()
+                                );
+                                if (isset($_GET['pRef'])) {
+                                    $purchaseFailOrderId = wc_get_order_id_by_payment_id($_GET['pRef']);
+                                    $purchareFailOrder = new WC_Order($purchaseFailOrderId);
+                                    $purchareFailOrder->update_status('failed', __('Resurs Bank denied purchase', 'WC_Payment_Gateway'));
+                                    WC()->session->set("resursCreatePass", 0);
+                                    $returnResult['success'] = true;
+                                    $returnResult['errorString'] = "Denied by Resurs";
+                                    $returnResult['errorCode'] = "200";
+                                    $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
+                                    die();
+                                }
+                                $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
+                                die();
+                            }
                         }
                     }
                 }
@@ -680,6 +715,43 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->update_status('completed', __('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
                     $order->payment_complete();
                     break;
+                case 'BOOKED':
+                    $order->update_status('processing');
+                    break;
+                /*
+                 * The below code belongs to the BOOKED event.
+                 * In the future, injecting order lines as the BOOKED callback is running may be supported, but since
+                 * WooCommerce itself offers a bunch of extra fees, we are currently excluding this, since we missing too much
+                 * important values to inject a proper payment spec into woocommerce orderadmin. Besides, by only injecting data
+                 * like this, may prevent other systems to catch summaries of a correct order.
+                 */
+                /*
+                $dataPOST = null;
+                if ($_SERVER['CONTENT_LENGTH'] > 0) {
+                    $dataPOST = @json_decode(trim(file_get_contents('php://input')));
+                }
+                if (isset($dataPOST->addedPaymentSpecificationLines)) {
+                    foreach ($dataPOST->addedPaymentSpecificationLines as $addedArticle) {
+                        // artNo, description, quantity, unitAmountWithoutVat, vatPct, totalVatAmount
+                        $item = array(
+                            'order_item_name' => $addedArticle->artNo,
+                            'order_item_type' => 'line_item'
+                        );
+                        $item_id = wc_add_order_item($orderId, $item);
+                        wc_add_order_item_meta( $item_id, '_qty', $addedArticle->quantity);
+                        wc_add_order_item_meta( $item_id, '_line_subtotal', $addedArticle->unitAmountWithoutVat*$addedArticle->quantity);
+                        wc_add_order_item_meta( $item_id, '_line_total', $addedArticle->unitAmountWithoutVat);
+                        wc_add_order_item_meta( $item_id, '_line_subtotal_tax', $addedArticle->totalVatAmount);
+                        wc_add_order_item_meta( $item_id, '_line_tax', $addedArticle->totalVatAmount);
+                        $tax_data             = array();
+                        $tax_data['total']    = wc_format_decimal($addedArticle->totalVatAmount);
+                        $tax_data['subtotal'] = wc_format_decimal($addedArticle->totalVatAmount);
+                        $postMeta = get_post_meta($orderId);
+                        $orderTotal = $postMeta['_order_total'][0] + $addedArticle->unitAmountWithoutVat + $addedArticle->totalVatAmount;
+                        wc_add_order_item_meta( $item_id, '_line_tax_data', $tax_data );
+                        update_post_meta( $orderId, '_order_total', $orderTotal);
+                    }
+                }*/
                 case 'UPDATE':
                     // Currently unsupported
                 default:
@@ -1511,6 +1583,7 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                         $returnResult['success'] = true;
                         $responseCode = 200;
+                        WC()->session->set("resursCreatePass", "1");
                     } else {
                         /*
                          * If the order already exists, continue without errors (if we reached this code, it has been because of the nonce which should be considered safe enough)
@@ -1604,17 +1677,17 @@ function woocommerce_gateway_resurs_bank_init()
                     $order = new WC_Order($order_id);
 
                     if ($request['failInProgress'] == "1" || isset($_REQUEST['failInProgress']) && $_REQUEST['failInProgress'] == "1") {
-                        WC()->session->set("order_awaiting_payment");
                         $order->update_status('failed', __('The payment failed during purchase', 'WC_Payment_Gateway'));
-                        wc_add_notice( __('The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.', 'WC_Payment_Gateway'), 'error' );
+                        wc_add_notice( __("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.", 'WC_Payment_Gateway'), 'error' );
+                        WC()->session->set("order_awaiting_payment");
                         $getRedirectUrl = $woocommerce->cart->get_cart_url();
                     } else {
-						if (resursOption('reduceOrderStock')) {
-							/*
-							 * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
-							 */
-							$order->reduce_order_stock();
-						}
+                        if (resursOption('reduceOrderStock')) {
+                            /*
+                             * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
+                             */
+                            $order->reduce_order_stock();
+                        }
                         $order->update_status('processing', __('The payment are signed and booked', 'WC_Payment_Gateway'));
                         $getRedirectUrl = $this->get_return_url($order);
                         WC()->cart->empty_cart();
@@ -2200,8 +2273,6 @@ EOT;
 
                 /* Make sure we do not use UPDATEs yet */
                 $this->flow->unSetCallback(ResursCallbackTypes::UPDATE);
-                /* Make sure we do not use BOOKED until we can handle booked properly */
-                $this->flow->unSetCallback(ResursCallbackTypes::BOOKED);
                 foreach ($this->callback_types as $callback => $options) {
                     $this->register_callback($callback, $options);
                 }
@@ -2656,12 +2727,52 @@ EOT;
                 'OmniRefCreated' => isset($omniRefCreated) && !empty($omniRefCreated) ? $omniRefCreated : null,
                 'OmniRefAge' => $omniRefAge
             );
+            $setSessionEnable = true;
+            $setSession = isset($_REQUEST['set-no-session']) ? $_REQUEST['set-no-session'] : null;
+            if ($setSession == 1) { $setSessionEnable = false; } else { $setSessionEnable = true; }
+            /*
+             * During the creation of new omnivars, make sure they are not duplicates from older orders.
+             */
+            if ($setSessionEnable && function_exists('WC') && isset(WC()->session)) {
+                $currentOmniRef = WC()->session->get('omniRef');
+                // The resursCreatePass variable is only set when everything was successful.
+                $resursCreatePass = WC()->session->get('resursCreatePass');
+                $orderControl = wc_get_order_id_by_payment_id($currentOmniRef);
+                if (!empty($orderControl)) {
+                    $checkOrder = new WC_Order($orderControl);
+                    // currentOrderStatus checks what status the order had when created
+                    $currentOrderStatus = $checkOrder->get_status();
+                    $preventCleanup = array(
+                        'pending', 'failed'
+                    );
+                    $allowCleanupSession = false;
+                    if (!in_array($currentOrderStatus, $preventCleanup)) {$allowCleanupSession = true;}
+                    if (($resursCreatePass && $currentOmniRef) || ($allowCleanupSession)) {
+                        $refreshUrl = wc_get_cart_url();
+                        $thisSession = new WC_Session_Handler();
+                        $thisSession->destroy_session();
+                        $thisSession->cleanup_sessions();
+                        wp_destroy_all_sessions();
+                        wp_safe_redirect($refreshUrl);
+                    }
+                }
+            }
         }
         $resursLanguageLocalization = array(
             'getAddressEnterGovernmentId' => __('Enter social security number', 'WC_Payment_Gateway'),
             'getAddressEnterCompany' => __('Enter corporate government identity', 'WC_Payment_Gateway'),
             'labelGovernmentId' => __('Government id', 'WC_Payment_Gateway'),
             'labelCompanyId' => __('Corporate government id', 'WC_Payment_Gateway'),
+        );
+        $generalJsTranslations = array(
+            'deliveryRequiresSigning' => __("Changing delivery address requires signing", 'WC_Payment_Gateway'),
+            'ssnElementMissing' => __("I can not show errors since the element is missing", 'WC_Payment_Gateway'),
+            'purchaseAjaxInternalFailure' => __("The purchase has failed, due to an internal server error: The shop could not properly update the order.", 'WC_Payment_Gateway'),
+            'resursPurchaseNotAccepted' => __("The purchase was rejected by Resurs Bank. Please contact customer services, or try again with another payment method.", 'WC_Payment_Gateway'),
+            'theAjaxWasNotAccepted' => __("Something went wrong when we tried to book your order. Please contact customer support for more information.", 'WC_Payment_Gateway'),
+            'theAjaxWentWrong' => __("An internal error occured while trying to book the order. Please contact customer support for more information.", 'WC_Payment_Gateway'),
+            'theAjaxWentWrongWithThisMessage' => __("An internal error occured while trying to book the order:", 'WC_Payment_Gateway') . " ",
+            'contactSupport' => __("Please contact customer support for more information.", 'WC_Payment_Gateway')
         );
 
         $oneRandomValue = null;
@@ -2672,6 +2783,7 @@ EOT;
         wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css');
         wp_enqueue_script('resursbankmain', plugin_dir_url(__FILE__) . 'js/resursbank.js' . $oneRandomValue, array('jquery'));
         wp_localize_script('resursbankmain', 'rb_getaddress_fields', $resursLanguageLocalization);
+        wp_localize_script('resursbankmain', 'rb_general_translations', $generalJsTranslations);
         wp_localize_script('resursbankmain', 'ajax_object', $ajaxObject);
         wp_localize_script('resursbankmain', 'omnivars', $OmniVars);
     }
