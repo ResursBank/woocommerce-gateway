@@ -31,7 +31,7 @@ class ResursBank
     /** @var string The version of this gateway */
     private $version = "1.0.0";
     /** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-    private $lastUpdate = "20161222";
+    private $lastUpdate = "20170116";
     private $preferredId = null;
     private $ocShopScript = null;
     private $formTemplateRuleArray = array();
@@ -576,6 +576,12 @@ class ResursBank
                         $useResponseCode = $ResursResponse->status;
                     }
                     throw new Exception($ResursResponse->error, $useResponseCode);
+                }
+                /*
+                 * Must handle ecommerce errors too.
+                 */
+                if (isset($ResursResponse->errorCode) && $ResursResponse->errorCode > 0) {
+                    throw new Exception(isset($ResursResponse->description) && !empty($ResursResponse->description) ? $ResursResponse->description : "Unknown error in " . __FUNCTION__, $ResursResponse->errorCode);
                 }
             }
         } else {
@@ -1339,6 +1345,7 @@ class ResursBank
         if (strtoupper($callbackTypeString) == "FINALIZATION") {return ResursCallbackTypes::FINALIZATION; }
         if (strtoupper($callbackTypeString) == "AUTOMATIC_FRAUD_CONTROL") {return ResursCallbackTypes::AUTOMATIC_FRAUD_CONTROL; }
         if (strtoupper($callbackTypeString) == "UNFREEZE") {return ResursCallbackTypes::UNFREEZE; }
+        if (strtoupper($callbackTypeString) == "BOOKED") {return ResursCallbackTypes::BOOKED; }
         return ResursCallbackTypes::UNDEFINED;
     }
 
@@ -1354,6 +1361,7 @@ class ResursBank
         if ($callbackType == ResursCallbackTypes::TEST) { return array('param1', 'param2', 'param3', 'param4', 'param5'); }
         if ($callbackType == ResursCallbackTypes::UNFREEZE) { return array('paymentId'); }
         if ($callbackType == ResursCallbackTypes::UPDATE) { return array('paymentId'); }
+        if ($callbackType == ResursCallbackTypes::BOOKED) { return array('paymentId'); }
         return array();
     }
 
