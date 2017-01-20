@@ -2738,7 +2738,7 @@ EOT;
                 // The resursCreatePass variable is only set when everything was successful.
                 $resursCreatePass = WC()->session->get('resursCreatePass');
                 $orderControl = wc_get_order_id_by_payment_id($currentOmniRef);
-                if (!empty($orderControl)) {
+                if (!empty($orderControl) && !empty($currentOmniRef)) {
                     $checkOrder = new WC_Order($orderControl);
                     // currentOrderStatus checks what status the order had when created
                     $currentOrderStatus = $checkOrder->get_status();
@@ -2747,7 +2747,7 @@ EOT;
                     );
                     $allowCleanupSession = false;
                     if (!in_array($currentOrderStatus, $preventCleanup)) {$allowCleanupSession = true;}
-                    if (($resursCreatePass && $currentOmniRef) || ($allowCleanupSession)) {
+                    if (($resursCreatePass && !empty($currentOmniRef)) || ($allowCleanupSession)) {
                         $refreshUrl = wc_get_cart_url();
                         $thisSession = new WC_Session_Handler();
                         $thisSession->destroy_session();
