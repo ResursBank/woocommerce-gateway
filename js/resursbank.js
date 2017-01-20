@@ -394,7 +394,13 @@ if (typeof ResursCheckout !== "undefined") {
         jQuery('div').remove('.woocommerce-shipping-fields');
     });
     var resursCheckout = ResursCheckout('#resurs-checkout-container');
-    resursCheckout.setDebug(1);
+    /*
+     * Automatically raise debugging if in test mode (= Disabled for production)
+     *
+     */
+    if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest == "1") {
+        resursCheckout.setDebug(1);
+    }
     resursCheckout.init();
     resursCheckout.setPurchaseFailCallback(function () {
         // OmniRef.
