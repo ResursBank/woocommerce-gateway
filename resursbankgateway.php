@@ -716,7 +716,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->payment_complete();
                     break;
                 case 'BOOKED':
-                    $order->update_status('processing');
+                    $order->update_status('processing', __('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
                     break;
                 /*
                  * The below code belongs to the BOOKED event.
