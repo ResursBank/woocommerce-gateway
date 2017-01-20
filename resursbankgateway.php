@@ -129,15 +129,15 @@ function woocommerce_gateway_resurs_bank_init()
                     ),
                     'digest_parameters' => array(
                         'paymentId' => 'paymentId',
-                    ),
-                    'BOOKED' => array(
-                        'uri_components' => array(
-                            'paymentId' => 'paymentId',
-                        ),
-                        'digest_parameters' => array(
-                            'paymentId' => 'paymentId',
-                        ),
                     )
+                ),
+                'BOOKED' => array(
+                    'uri_components' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                    'digest_parameters' => array(
+                        'paymentId' => 'paymentId',
+                    ),
                 )
             );
             $this->init_form_fields();
