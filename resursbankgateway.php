@@ -692,14 +692,17 @@ function woocommerce_gateway_resurs_bank_init()
             switch ($event_type) {
                 case 'UNFREEZE':
                     $order->update_status('processing');
+                    $order->add_order_note(__('The Resurs Bank event UNFREEZE received', 'WC_Payment_Gateway'));
                     break;
                 case 'AUTOMATIC_FRAUD_CONTROL':
                     switch ($request['result']) {
                         case 'THAWED':
-                            $order->update_status('processing', __('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED', 'WC_Payment_Gateway'));
+                            $order->update_status('processing');
+                            $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED', 'WC_Payment_Gateway'));
                             break;
                         case 'FROZEN':
-                            $order->update_status('on-hold', __('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN', 'WC_Payment_Gateway'));
+                            $order->update_status('on-hold');
+                            $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN', 'WC_Payment_Gateway'));
                             break;
                         default:
                             break;
@@ -712,11 +715,13 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->cancel_order(__('ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway'));
                     break;
                 case 'FINALIZATION':
-                    $order->update_status('completed', __('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
+                    $order->update_status('completed');
+                    $order->add_order_note(__('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
                     $order->payment_complete();
                     break;
                 case 'BOOKED':
-                    $order->update_status('processing', __('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
+                    $order->update_status('processing');
+                    $order->add_order_note(__('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
                     break;
                 /*
                  * The below code belongs to the BOOKED event.
