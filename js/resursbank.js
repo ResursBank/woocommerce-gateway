@@ -401,13 +401,15 @@ if (null !== omnivars) {
     var OMNICHECKOUT_IFRAME_URL = omnivars.OMNICHECKOUT_IFRAME_URL;
     //var OMNICHECKOUT = omnivars.OMNICHECKOUT;
 }
-if (typeof ResursOmni !== "undefined") {
+if (typeof ResursOmni !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
     jQuery(document).ready(function ($) {
         jQuery('div').remove('.woocommerce-billing-fields');
         jQuery('div').remove('.woocommerce-shipping-fields');
     });
     var ResursOmni = new ResursOmni();
-    //ResursOmni.setDebug(1);
+    if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest !== null && omnivars.isResursTest == "1") {
+        resursCheckout.setDebug(1);
+    }
     ResursOmni.init();
     ResursOmni.setPurchaseFailCallback(function() {
         handleOmniError("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method");

@@ -2705,8 +2705,8 @@ EOT;
         if ('no' == get_option('woocommerce_resurs-bank_settings')['enabled']) {
             return;
         }
-        wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js');
         if (isResursOmni()) {
+			wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js');
             $omniBookUrl = home_url('/');
             $omniBookUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $omniBookUrl);
             $omniBookUrl = add_query_arg('event-type', 'prepare-omni-order', $omniBookUrl);
