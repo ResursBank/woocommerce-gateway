@@ -270,6 +270,21 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'default' => 'false'
             ),
+            'devResursSimulation' => array(
+                'title' => __('Developers Resurs Simulation', 'WC_Payment_Gateway'),
+                'description' => __('Enable this feature and things may go wrong (this is automatically disabled in production)', 'WC_Payment_Gateway'),
+                'type' => 'select',
+                'options' => array(
+                    'true' => 'true',
+                    'false' => 'false',
+                ),
+                'default' => 'false'
+            ),
+            'devSimulateSuccessUrl' => array(
+                'title' => __('If in simulation mode, set another successurl than intended to this value', 'WC_Payment_Gateway'),
+                'type' => 'text',
+                'default' => 'https://google.com/?test+landingpage'
+            ),
         );
 
         if ($addId) {

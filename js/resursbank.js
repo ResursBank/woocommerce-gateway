@@ -388,7 +388,7 @@ if (null !== omnivars) {
     var RESURSCHECKOUT_IFRAME_URL = omnivars.RESURSCHECKOUT_IFRAME_URL;
 }
 
-if (typeof ResursCheckout !== "undefined") {
+if (typeof ResursCheckout !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
     jQuery(document).ready(function ($) {
         jQuery('div').remove('.woocommerce-billing-fields');
         jQuery('div').remove('.woocommerce-shipping-fields');
@@ -398,7 +398,7 @@ if (typeof ResursCheckout !== "undefined") {
      * Automatically raise debugging if in test mode (= Disabled for production)
      *
      */
-    if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest == "1") {
+    if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest !== null && omnivars.isResursTest == "1") {
         resursCheckout.setDebug(1);
     }
     resursCheckout.init();

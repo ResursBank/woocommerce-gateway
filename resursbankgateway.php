@@ -94,6 +94,7 @@ function woocommerce_gateway_resurs_bank_init()
             ));
 
             hasResursOmni();
+            isResursSimulation(); // Make sure settings are properly set each round
 
             $this->id = "resurs-bank";
             $this->method_title = "Resurs Bank Administration";
@@ -416,14 +417,17 @@ function woocommerce_gateway_resurs_bank_init()
             switch ($event_type) {
                 case 'UNFREEZE':
                     $order->update_status('processing');
+                    $order->add_order_note(__('The Resurs Bank event UNFREEZE received', 'WC_Payment_Gateway'));
                     break;
                 case 'AUTOMATIC_FRAUD_CONTROL':
                     switch ($request['result']) {
                         case 'THAWED':
-                            $order->update_status('processing', __('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED', 'WC_Payment_Gateway'));
+                            $order->update_status('processing');
+                            $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED', 'WC_Payment_Gateway'));
                             break;
                         case 'FROZEN':
-                            $order->update_status('on-hold', __('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN', 'WC_Payment_Gateway'));
+                            $order->update_status('on-hold');
+                            $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN', 'WC_Payment_Gateway'));
                             break;
                         default:
                             break;
@@ -436,11 +440,13 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->cancel_order(__('ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway'));
                     break;
                 case 'FINALIZATION':
-                    $order->update_status('completed', __('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
+                    $order->update_status('completed');
+                    $order->add_order_note(__('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
                     $order->payment_complete();
                     break;
                 case 'BOOKED':
-                    $order->update_status('processing', __('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
+                    $order->update_status('processing');
+                    $order->add_order_note(__('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
                     break;
                     /*
                      * The below code belongs to the BOOKED event.
@@ -481,8 +487,6 @@ function woocommerce_gateway_resurs_bank_init()
                 default:
                     break;
             }
-            $path = plugin_dir_path(__FILE__) . '/dump/WC_Resurs_Bank_callback_response_' . $event_type . '_.html';
-            $path = str_replace('//', '/', $path);
             header('HTTP/1.0 204 No Response');
         }
 
@@ -2433,8 +2437,8 @@ EOT;
         if ('no' == get_option('woocommerce_resurs-bank_settings')['enabled']) {
             return;
         }
-        wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js');
         if (isResursOmni()) {
+            wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js');
             $omniBookUrl = home_url('/');
             $omniBookUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $omniBookUrl);
             $omniBookUrl = add_query_arg('event-type', 'prepare-omni-order', $omniBookUrl);
@@ -3161,6 +3165,43 @@ function isResursTest()
     return false;
 }
 
+/**
+ * Payment gateway destroyer.
+ *
+ * Only enabled in very specific environments.
+ *
+ * @return bool
+ */
+function isResursSimulation() {
+    if (!isResursTest()) {
+        return repairResursSimulation();
+    }
+    if (getResursOption("devResursSimulation")) {
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $mustContain = array('.loc$', '.local$', '^localhost$', '.localhost$');
+            $hasRequiredEnvironment = false;
+            foreach ($mustContain as $hostContainer) {
+                if (preg_match("/$hostContainer/", $_SERVER['HTTP_HOST'])) {
+                    return true;
+                }
+            }
+            /*
+             * If you really want to force this, use one of the following variables from a define or, if in .htaccess:
+             * SetEnv FORCE_RESURS_SIMULATION "true"
+             * As this is invoked, only if really set to test mode, this should not be able to destroy anything in production.
+             */
+            if ((defined('FORCE_RESURS_SIMULATION') && FORCE_RESURS_SIMULATION === true) || (isset($_SERVER['FORCE_RESURS_SIMULATION']) && $_SERVER['FORCE_RESURS_SIMULATION'] == "true")) {
+                return true;
+            }
+        }
+    }
+    return repairResursSimulation();
+}
+function repairResursSimulation($returnRepairState = false) {
+    setResursOption("devSimulateErrors", $returnRepairState);
+    return $returnRepairState;
+}
+
 /********************** OMNICHECKOUT RELATED STARTS HERE ******************/
 
 /**
@@ -3211,7 +3252,6 @@ function hasResursOmni()
 {
     $resursEnabled = resursOption("enabled");
     $flowType = resursOption("flowtype");
-
     if (is_admin()) {
         $omniOption = get_option('woocommerce_resurs_bank_omnicheckout_settings');
         if ($flowType == "resurs_bank_omnicheckout") {
@@ -3309,3 +3349,6 @@ function isResursDemo()
     }
     return false;
 }
+
+
+isResursSimulation();
