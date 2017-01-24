@@ -49,8 +49,12 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 = 1.2.7.15 =
 
- * Hotfix implementation of BOOKED callback (simple mode) - Bitbucket ID #10, Resurs issue #71526
- * Hotfix error messaging fix - Bitbucket ID #2, Resurs issue #71619
+ * #2: Set up better error messages for local bookings / BookByAjaxError (RB #71514)
+ * #10: Support callback event BOOKED (RB #71526)
+ * #11: Clear old session on "not returning to thank you"Clear old session on "not returning to thank you" / avoid omniRef on empty cart (RB #71608)
+ * #12: Log DENY from Resurs Checkout (RB #71619)
+ * #15: Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
+ * #16: Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
 
 = 1.2.7.14 =
 
