@@ -408,19 +408,42 @@ if (typeof ResursOmni !== "undefined" && typeof omnivars !== "undefined" && omni
     });
     var ResursOmni = new ResursOmni();
     if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest !== null && omnivars.isResursTest == "1") {
-        resursCheckout.setDebug(1);
+        ResursOmni.setDebug(1);
     }
     ResursOmni.init();
-    ResursOmni.setPurchaseFailCallback(function() {
-        handleOmniError("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method");
+    ResursOmni.setPurchaseFailCallback(function () {
+        // OmniRef.
+        var omniRef;
+        if (typeof omnivars.OmniRef !== "undefined") {
+            omniRef = omnivars.OmniRef;
+            var preBookUrl = omnivars.OmniPreBookUrl + "&pRef=" + omniRef + "&purchaseFail=1&set-no-session=1";
+            $RB.ajax(
+                {
+                    url: preBookUrl,
+                    type: "GET"
+                }
+            ).success(
+                function (successData) {
+                    // Do nothing, as we actually only touch the status.
+                }
+            ).fail(
+                function (x, y) {
+                    handleResursCheckoutError(getResursPhrase("purchaseAjaxInternalFailure"));
+                }
+            );
+        }
+        handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
     });
 }
 
 function handleOmniError(omniErrorMessage) {
+    handleResursCheckoutError(omniErrorMessage);
+}
+function handleResursCheckoutError(resursErrorMessage) {
     var checkoutForm = $RB('form.checkout');
     if (checkoutForm.length > 0) {
         $RB('.woocommerce-error, .woocommerce-message').remove();
-        checkoutForm.prepend('<div class="woocommerce-error">' + omniErrorMessage + '</div>');
+        checkoutForm.prepend('<div class="woocommerce-error">' + resursErrorMessage + '</div>');
         $RB('html, body').animate({
             scrollTop: ( $RB('form.checkout').offset().top - 100 )
         }, 1000);
@@ -428,7 +451,7 @@ function handleOmniError(omniErrorMessage) {
         /*
          * Fall back on an alert if something went wrong with the page
          */
-        alert(omniErrorMessage);
+        alert(resursErrorMessage);
     }
 }
 

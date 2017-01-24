@@ -1682,7 +1682,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $order = new WC_Order($order_id);
 
                     if ($request['failInProgress'] == "1" || isset($_REQUEST['failInProgress']) && $_REQUEST['failInProgress'] == "1") {
-                        $order->update_status('failed', __('The payment failed during purchase', 'WC_Payment_Gateway'));
+                        $order->update_status('cancelled', __('The payment failed during purchase', 'WC_Payment_Gateway'));
                         wc_add_notice( __("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.", 'WC_Payment_Gateway'), 'error' );
                         WC()->session->set("order_awaiting_payment");
                         $getRedirectUrl = $woocommerce->cart->get_cart_url();
