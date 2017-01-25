@@ -2593,9 +2593,13 @@ EOT;
                         } catch (Exception $e) {
                             $flowErrorMessage = $e->getMessage();
                             $flowCode = $e->getCode();
+                            $order->update_status($old_status_slug);
+                            $order->add_order_note(__('Finalization failed', 'WC_Payment_Gateway') . ": " . $flowErrorMessage);
                         }
                     } else {
                         $flowErrorMessage = __('Can not finalize the payment', 'WC_Payment_Gateway');
+                        $order->update_status($old_status_slug);
+                        $order->add_order_note(__('Finalization failed', 'WC_Payment_Gateway') . ": " . __('The order is not debitable', 'WC_Payment_Gateway'));
                     }
                     if (!empty($flowErrorMessage)) {
                         $_SESSION['resurs_bank_admin_notice'] = array(

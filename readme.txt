@@ -55,6 +55,7 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
  * #12: Log DENY from Resurs Checkout (RB #71619)
  * #15: Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
  * #16: Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
+ * #18: Do not set completed if finalization is unavailable (RB #71905)
 
 = 1.2.7.14 =
 
