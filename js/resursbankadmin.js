@@ -2,6 +2,8 @@
  * Resurs Bank AdminPanel
  */
 
+var $RB = jQuery.noConflict();
+
 window.onload = function () {
     jQuery(document).ready(function ($) {
         jQuery('#woocommerce_resurs-bank_registerCallbacksButton').val(rb_buttons.registerCallbacksButton);
@@ -75,4 +77,53 @@ function adminResursChangeFlowByCountry(o) {
             }
         });
     }
+}
+
+function resursEditProtectedField(currentField, ns) {
+    $RB.ajax({
+        url: rbAjaxSetup.ran,
+        type: 'POST',
+        data: {
+            'wants': currentField.id,
+            'ns': ns
+        }
+    }).done(
+        function(data) {
+            if (typeof data["fail"] !== "undefined") {
+                if (data["fail"] === false) {
+                    $RB('#' + currentField.id + "_value").val(data["response"]);
+                }
+            }
+            resursProtectedFieldToggle(currentField.id);
+        }
+    ).fail(function (x, y) {
+        alert("Fail");
+    });
+}
+function resursSaveProtectedField(currentFieldId, ns) {
+    var setVal = $RB('#' + currentFieldId + "_value").val();
+    $RB.ajax({
+        url: rbAjaxSetup.ran,
+        type: 'post',
+        data: {
+            'puts': currentFieldId,
+            'value': setVal,
+            'ns': ns
+        }
+    }).done(function(data) {
+        if (typeof data["fail"] !== "undefined") {
+            if (data["fail"] === false) {
+
+            } else {
+                alert("Not sucessful");
+            }
+        }
+        resursProtectedFieldToggle(currentFieldId);
+    }).fail(function(x, y) {
+        alert("Fail");
+    });
+}
+function resursProtectedFieldToggle(currentField) {
+    $RB('#' + currentField).toggle("medium");
+    $RB('#' + currentField + "_hidden").toggle("medium");
 }
