@@ -34,7 +34,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public function get_sections() {
         $sections = array(
             '' => 'Basic Configuration',
-            'credentials' => 'Credentials',
             'advanced' => 'Advanced Configuration'
         );
         return apply_filters( 'woocommerce_get_sections_' . $this->id, $sections );
@@ -61,20 +60,44 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public function resurs_settings_save()
     {
         $this->oldFormFields = getResursWooFormFields($this->CONFIG_NAMESPACE);
+        /** @var $saveAll Sets a saveAll function to active, so that we can save all settings in the same times for which the parameters can be found in oldFormFields */
+        $saveAll = true;
         $saveArray = array();
-        foreach ($this->oldFormFields as $fieldKey => $fieldData) {
-
-            if (isset($_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey])) {
-                $saveArray[$fieldKey] = $_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey];
-            } else {
-                if (isset($fieldData['default'])) {
-                    $saveArray[$fieldKey] = $fieldData['default'];
+        if (count($_POST) && !$saveAll) {
+            /*
+             * In the past, we looped through the form field to save everything in the same time, but since we're changing the way how the saves
+             * are being made (by moving settings into different settings) we'll use postvars instead, so there is no risk of overwriting settings
+             * with empty values.
+             */
+            foreach ($_POST as $postKey => $postVal) {
+                $postKeyNameSpace = str_replace($this->CONFIG_NAMESPACE . "_", '', $postKey);
+                if (isset($this->oldFormFields[$postKeyNameSpace])) {
+                    $saveArray[$postKeyNameSpace] = $postVal;
+                }
+            }
+        } else {
+            foreach ($this->oldFormFields as $fieldKey => $fieldData) {
+                if (isset($_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey])) {
+                    $saveArray[$fieldKey] = $_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey];
+                } else {
+                    if (!empty(getResursOption($fieldKey))) {
+                        $saveArray[$fieldKey] = getResursOption($fieldKey);
+                    } else {
+                        $saveArray[$fieldKey] = $fieldData['default'];
+                    }
                 }
             }
         }
         update_option("woocommerce_resurs-bank_settings", $saveArray);
         //woocommerce_update_options($this->oldFormFields);
     }
+
+    private function getFormSettings($settingKey = '') {
+        if (isset($this->oldFormFields[$settingKey])) {
+            return $this->oldFormFields[$settingKey];
+        }
+    }
+
 
     private function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
@@ -93,21 +116,53 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnCheckbox;
     }
 
-    private function setTextBox($settingKey = '', $namespace = '', $defaultValue = "", $scriptLoader = "")
+    private function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
-        $returnCheckbox = '
+        $formSettings = $this->getFormSettings($settingKey);
+        $textFieldType = isset($formSettings['type']) ? $formSettings['type'] : "text";
+        $isPassword = false;
+        if ($textFieldType == "password") {
+            $isPassword = true;
+        }
+
+        $returnTextBox = '
                 <tr>
-                    <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
+                    <th scope="row" '.$scriptLoader.'>' . $this->oldFormFields[$settingKey]['title'] . '</th>
+        ';
+
+        if (!$isPassword) {
+            $returnTextBox .= '
                     <td>
-                        <input '.$scriptLoader.' type="checkbox"
+                        <input ' . $scriptLoader . ' type="text"
                             name="' . $namespace . '_' . $settingKey . '"
                             id="' . $namespace . '_' . $settingKey . '"
-                            ' . (getResursOption($settingKey) === true || getResursOption($settingKey) == "1" ? 'checked="checked"' : "") . '
-                               value="' . $defaultValue . '">' . $this->oldFormFields[$settingKey]['label'] . '
-                    </td>
+                            size="64"
+                            '.$scriptLoader.'
+                            value="' . getResursOption($settingKey) . '"> ' . $this->oldFormFields[$settingKey]['label'] . '
+                            ' . $isPassword . '
+                            </td>
+        ';
+        } else {
+            $returnTextBox .= '
+                <td style="cursor: pointer;">
+                <span onclick="resursEditProtectedField(this, \''.$namespace.'\')" id="' . $namespace . '_' . $settingKey . '">'.__('Click to edit', 'WC_Payment_Gateway').'</span>
+                <span id="' . $namespace . '_' . $settingKey . '_hidden" style="display:none;">
+                    <input ' . $scriptLoader . ' type="text"
+                            id="' . $namespace . '_' . $settingKey . '_value"
+                            size="64"
+                            '.$scriptLoader.'
+                            value=""> ' . $this->oldFormFields[$settingKey]['label'] . '
+                            <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \''.$namespace.'\')" value="'.__("Save").'">
+                </span>
+                </td>
+            ';
+        }
+        $returnTextBox .= '
+                            </td>
                 </tr>
         ';
-        return $returnCheckbox;
+
+        return $returnTextBox;
     }
 
     private function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
@@ -169,9 +224,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             <h1><?php echo __('Resurs Bank payment gateway configuration', 'WC_Payment_Gateway') ?></h1>
             Plugin version <?php echo rbWcGwVersion() . (!empty($currentVersion) ? " (" . $currentVersion . ")" : "") ?>
             <table class="form-table">
-                <?php echo $this->setCheckBox('enabled', $namespace) ?>
-                <?php echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)"); ?>
-                <?php echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null); ?>
+                <?php
+                    echo $this->setCheckBox('enabled', $namespace);
+                    echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
+                    echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
+                    echo $this->setTextBox('login', $namespace);
+                    echo $this->setTextBox('password', $namespace);
+                ?>
             </table>
         </div>
         <?php

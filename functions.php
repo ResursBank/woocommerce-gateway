@@ -6,7 +6,6 @@ if (!function_exists('getResursWooFormFields')) {
     function getResursWooFormFields($addId = null)
     {
         global $wpdb, $woocommerce;
-
         $rates = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates
 				ORDER BY tax_rate_order
@@ -216,16 +215,6 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'default' => 'true'
             ),
-            /*'uglifyResursAdmin' => array(
-                'title' => __('Bootstrap buttons in Resurs Configuration', 'WC_Payment_Gateway'),
-                'description' => __('Using bootstrap in Resurs configuration will change the look of Resurs Bank administration interface', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'true' => 'true',
-                    'false' => 'false',
-                ),
-                'default' => 'false'
-            ),*/
             'demoshopMode' => array(
                 'title' => __('Demoshopläge', 'WC_Payment_Gateway'),
                 'description' => __('Define if this shop is a demo store or not, which opens for more functionality (This option also forces the use of test environment)', 'WC_Payment_Gateway'),
@@ -271,7 +260,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'default' => 'false'
             ),
             'devResursSimulation' => array(
-                'title' => __('Developers Resurs Simulation', 'WC_Payment_Gateway'),
+                'title' => __('Resurs developer mode for simulations', 'WC_Payment_Gateway'),
                 'description' => __('Enable this feature and things may go wrong (this is automatically disabled in production)', 'WC_Payment_Gateway'),
                 'type' => 'select',
                 'options' => array(
@@ -281,7 +270,8 @@ if (!function_exists('getResursWooFormFields')) {
                 'default' => 'false'
             ),
             'devSimulateSuccessUrl' => array(
-                'title' => __('If in simulation mode, set another successurl than intended to this value', 'WC_Payment_Gateway'),
+                'title' => __('SuccessUrl-simulation', 'WC_Payment_Gateway'),
+                'description' => __('If you are in simulation mode, you can enter your own successurl here, for which Resurs Checkout is sending you to, during a purchase', 'WC_Payment_Gateway'),
                 'type' => 'text',
                 'default' => 'https://google.com/?test+landingpage'
             ),

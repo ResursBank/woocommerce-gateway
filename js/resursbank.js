@@ -421,7 +421,8 @@ if (typeof ResursCheckout !== "undefined" && typeof omnivars !== "undefined" && 
                 function (x, y) {
                     handleResursCheckoutError(getResursPhrase("purchaseAjaxInternalFailure"));
                 }
-            );        }
+            );
+        }
         handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
     });
     resursCheckout.setBookingCallback(function (omniJsObject) {

@@ -319,12 +319,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $currentOmniRef = WC()->session->get('omniRef');
         }
         if ($_REQUEST['payment_method'] === 'resurs_bank_omnicheckout' && !empty($currentOmniRef)) {
-            //$cart = $woocommerce->session->cart;
-            //$currentCartTotal = $woocommerce->cart->total;
             $paymentSpec = self::get_payment_spec($woocommerce->cart);
             if (isset($paymentSpec['totalAmount'])) {
-                //$paymentSpecAmount = $paymentSpec['totalAmount'];
-                //$OmniUrl = $flow->getOmniUrl();
                 $flow = initializeResursFlow();
                 $updateSpec = array(
                     'orderLines' => $paymentSpec['specLines']

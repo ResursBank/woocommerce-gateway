@@ -373,15 +373,42 @@ function woocommerce_gateway_resurs_bank_init()
         public function check_callback_response()
         {
             global $woocommerce, $wpdb;
-
             $url_arr = parse_url($_SERVER["REQUEST_URI"]);
             $url_arr['query'] = str_replace('amp;', '', $url_arr['query']);
             parse_str($url_arr['query'], $request);
-
             if (!count($request) && isset($_GET['event-type'])) {
                 $request = $_GET;
             }
             $event_type = $request['event-type'];
+            if ($event_type == "noevent") {
+                $myResponse = null;
+                $myBool = true;
+
+                $setType = isset($_REQUEST['puts']) ? $_REQUEST['puts'] : "";
+                $setValue = isset($_REQUEST['value']) ? $_REQUEST['value'] : "";
+                $reqNamespace = isset($_REQUEST['ns']) ? $_REQUEST['ns'] : "";
+
+                $reqType = isset($_REQUEST['wants']) ? $_REQUEST['wants'] : "";
+                $reqNonce = isset($_REQUEST['ran']) ? $_REQUEST['ran'] : "";
+                if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
+                    $reqType = str_replace($reqNamespace ."_", '', $reqType);
+                    $myBool = false;
+                    $myResponse = getResursOption($reqType);
+                } else if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
+                    $setType = str_replace($reqNamespace ."_", '', $setType);
+                    $myBool = false;
+                    setResursOption($setType, $setValue);
+                    $myResponse = $setType . ":OK";
+                }
+
+                $response = array(
+                    'response' => $myResponse,
+                    'fail' => $myBool
+                );
+                $this->returnJsonResponse($response);
+                exit;
+            }
+
             if ($event_type === 'check_signing_response') {
                 $this->check_signing_response();
                 return;
@@ -1502,7 +1529,6 @@ function woocommerce_gateway_resurs_bank_init()
                 wc_add_notice(__('Something went wrong during the signing process.', 'WC_Payment_Gateway'), 'error');
                 return;
             }
-
             wp_safe_redirect($this->get_return_url($order));
             return;
         }
@@ -2534,7 +2560,7 @@ EOT;
     function admin_enqueue_script($hook)
     {
         wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css');
-        wp_enqueue_script('resursBankAdminScript', plugin_dir_url(__FILE__) . '/js/resursbankadmin.js');
+        wp_enqueue_script('resursBankAdminScript', plugin_dir_url(__FILE__) . 'js/resursbankadmin.js');
 
         if (isset($_REQUEST['section']) && preg_match("/resurs-bank|resurs_bank/i", $_REQUEST['section'])) {
             /*
@@ -2549,6 +2575,13 @@ EOT;
             'refreshPaymentMethods' => __('Update available payment methods', 'WC_Payment_Gateway')
         );
         wp_localize_script('resursBankAdminScript', 'rb_buttons', $specialAdminButtons);
+        $configUrl = home_url("/");
+        $configUrl = add_query_arg('event-type', 'noevent', $configUrl);
+        $configUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $configUrl);
+        $adminAjax = array(
+            'ran' => wp_nonce_url($configUrl, "requestResursAdmin", 'ran')
+        );
+        wp_localize_script('resursBankAdminScript', 'rbAjaxSetup', $adminAjax);
 
         if ('woocommerce_page_wc-settings' !== $hook) {
             return;
