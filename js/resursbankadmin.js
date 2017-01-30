@@ -100,7 +100,7 @@ function resursEditProtectedField(currentField, ns) {
         alert("Fail");
     });
 }
-function resursSaveProtectedField(currentFieldId, ns) {
+function resursSaveProtectedField(currentFieldId, ns, cb) {
     var setVal = $RB('#' + currentFieldId + "_value").val();
     $RB.ajax({
         url: rbAjaxSetup.ran,
@@ -113,7 +113,9 @@ function resursSaveProtectedField(currentFieldId, ns) {
     }).done(function(data) {
         if (typeof data["fail"] !== "undefined") {
             if (data["fail"] === false) {
-
+                if (cb !== "") {
+                    runResursAdminCallback(cb);
+                }
             } else {
                 alert("Not sucessful");
             }
@@ -126,4 +128,19 @@ function resursSaveProtectedField(currentFieldId, ns) {
 function resursProtectedFieldToggle(currentField) {
     $RB('#' + currentField).toggle("medium");
     $RB('#' + currentField + "_hidden").toggle("medium");
+}
+
+
+function runResursAdminCallback(callbackName) {
+    $RB.ajax({
+        url: rbAjaxSetup.ran,
+        type: "post",
+        data: {
+            'run': callbackName
+        }
+    }).done(function(data) {
+        console.dir(data);
+    }).fail(function(x, y) {
+        alert("Administration callback not successful");
+    });
 }

@@ -387,18 +387,34 @@ function woocommerce_gateway_resurs_bank_init()
                 $setType = isset($_REQUEST['puts']) ? $_REQUEST['puts'] : "";
                 $setValue = isset($_REQUEST['value']) ? $_REQUEST['value'] : "";
                 $reqNamespace = isset($_REQUEST['ns']) ? $_REQUEST['ns'] : "";
-
                 $reqType = isset($_REQUEST['wants']) ? $_REQUEST['wants'] : "";
                 $reqNonce = isset($_REQUEST['ran']) ? $_REQUEST['ran'] : "";
-                if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
-                    $reqType = str_replace($reqNamespace ."_", '', $reqType);
-                    $myBool = false;
-                    $myResponse = getResursOption($reqType);
-                } else if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
-                    $setType = str_replace($reqNamespace ."_", '', $setType);
-                    $myBool = false;
-                    setResursOption($setType, $setValue);
-                    $myResponse = $setType . ":OK";
+
+                if (!empty($reqType) || !empty($setType)) {
+                    if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
+                        $reqType = str_replace($reqNamespace . "_", '', $reqType);
+                        $myBool = false;
+                        $myResponse = getResursOption($reqType);
+                    } else if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
+                        $setType = str_replace($reqNamespace . "_", '', $setType);
+                        $myBool = false;
+                        setResursOption($setType, $setValue);
+                        $myResponse = $setType . ":OK";
+                    }
+                } else {
+                    if (isset($_REQUEST['run'])) {
+                        $responseArray = array();
+
+                        if (wp_verify_nonce($reqNonce, "requestResursAdmin")) {
+                            if ($_REQUEST['run'] == "updateResursPaymentMethods") {
+                                $responseArray = $this->flow->getPaymentMethods();
+                            }
+                        } else {
+                            $responseArray = array('Authorized' => false);
+                        }
+                        $myResponse = array($_REQUEST['run'] . "Response" => $responseArray);
+                        $myBool = false;
+                    }
                 }
 
                 $response = array(

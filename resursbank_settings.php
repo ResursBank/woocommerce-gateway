@@ -20,23 +20,26 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     private $current_section;
     private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
     private $oldFormFields;
+    private $flow;
 
     function __construct()
     {
-        $this->label = __( 'Resurs Bank', 'woocommerce' );
+        $this->flow = initializeResursFlow();
+        $this->label = __('Resurs Bank', 'woocommerce');
         $this->oldFormFields = getResursWooFormFields();
         add_filter('woocommerce_settings_tabs_array', array($this, "resurs_settings_tab"), 50);
         add_action('woocommerce_settings_' . $this->id, array($this, 'resursbank_settings_show'), 10);
-        add_action('woocommerce_update_options_'. $this->id, array($this, 'resurs_settings_save'));
+        add_action('woocommerce_update_options_' . $this->id, array($this, 'resurs_settings_save'));
         parent::__construct();
     }
 
-    public function get_sections() {
+    public function get_sections()
+    {
         $sections = array(
             '' => 'Basic Configuration',
             'advanced' => 'Advanced Configuration'
         );
-        return apply_filters( 'woocommerce_get_sections_' . $this->id, $sections );
+        return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
 
     /**
@@ -92,7 +95,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         //woocommerce_update_options($this->oldFormFields);
     }
 
-    private function getFormSettings($settingKey = '') {
+    private function getFormSettings($settingKey = '')
+    {
         if (isset($this->oldFormFields[$settingKey])) {
             return $this->oldFormFields[$settingKey];
         }
@@ -127,7 +131,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         $returnTextBox = '
                 <tr>
-                    <th scope="row" '.$scriptLoader.'>' . $this->oldFormFields[$settingKey]['title'] . '</th>
+                    <th scope="row" ' . $scriptLoader . '>' . $this->oldFormFields[$settingKey]['title'] . '</th>
         ';
 
         if (!$isPassword) {
@@ -137,22 +141,24 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             name="' . $namespace . '_' . $settingKey . '"
                             id="' . $namespace . '_' . $settingKey . '"
                             size="64"
-                            '.$scriptLoader.'
+                            ' . $scriptLoader . '
                             value="' . getResursOption($settingKey) . '"> ' . $this->oldFormFields[$settingKey]['label'] . '
                             ' . $isPassword . '
                             </td>
         ';
         } else {
+            /*
+             * The scriptloader in this section will be set up as a callback for "afterclicks"
+             */
             $returnTextBox .= '
                 <td style="cursor: pointer;">
-                <span onclick="resursEditProtectedField(this, \''.$namespace.'\')" id="' . $namespace . '_' . $settingKey . '">'.__('Click to edit', 'WC_Payment_Gateway').'</span>
+                <span onclick="resursEditProtectedField(this, \'' . $namespace . '\')" id="' . $namespace . '_' . $settingKey . '">' . __('Click to edit', 'WC_Payment_Gateway') . '</span>
                 <span id="' . $namespace . '_' . $settingKey . '_hidden" style="display:none;">
                     <input ' . $scriptLoader . ' type="text"
                             id="' . $namespace . '_' . $settingKey . '_value"
                             size="64"
-                            '.$scriptLoader.'
                             value=""> ' . $this->oldFormFields[$settingKey]['label'] . '
-                            <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \''.$namespace.'\')" value="'.__("Save").'">
+                            <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \'' . $namespace . '\', \'' . $scriptLoader . '\')" value="' . __("Save") . '">
                 </span>
                 </td>
             ';
@@ -171,8 +177,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 <tr>
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
                     <td>
-                    <select '.$scriptLoader.'
-                    '. ($listCount > 1 ? "size=\"" . $listCount . "\" multiple ": "") .'
+                    <select ' . $scriptLoader . '
+                    ' . ($listCount > 1 ? "size=\"" . $listCount . "\" multiple " : "") . '
                         name="' . $namespace . '_' . $settingKey . '"
                         id="' . $namespace . '_' . $settingKey . '">
                     ';
@@ -225,12 +231,65 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             Plugin version <?php echo rbWcGwVersion() . (!empty($currentVersion) ? " (" . $currentVersion . ")" : "") ?>
             <table class="form-table">
                 <?php
-                    echo $this->setCheckBox('enabled', $namespace);
-                    echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
-                    echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
-                    echo $this->setTextBox('login', $namespace);
-                    echo $this->setTextBox('password', $namespace);
+                echo $this->setCheckBox('enabled', $namespace);
+                echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
+                echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
+                echo $this->setTextBox('login', $namespace);
+                echo $this->setTextBox('password', $namespace, "updateResursPaymentMethods");
+
+                try {
+                    $this->paymentMethods = $this->flow->getPaymentMethods();
+                } catch (Exception $e) {
+
+                }
+
+                if (count($this->paymentMethods)) {
+
+                    ?>
+                    <table class="wc_gateways widefat" cellspacing="0" style="width: 800px;">
+                        <thead>
+                        <tr>
+                            <th class="sort"></th>
+                            <th class="name">Betalmetod</th>
+                            <th class="id">ID</th>
+                            <th class="status">Aktiverad</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+
+                        $sortByDescription = array();
+                        foreach ($this->paymentMethods as $methodArray) {
+                            $description = $methodArray->description;
+                            $sortByDescription[$description] = $methodArray;
+                        }
+                        ksort($sortByDescription);
+
+                        $url = admin_url('admin.php');
+                        $url = add_query_arg('page', $_REQUEST['page'], $url);
+                        $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+
+                        foreach ($sortByDescription as $methodArray) {
+                            ?>
+                            <tr>
+                                <td width="1%">&nbsp;</td>
+                                <td class="name">
+                                    <a href="<?php echo $url;?>&section=resurs_bank_nr_<?php echo $methodArray->id ?>"><?php echo $methodArray->description ?></a>
+                                </td>
+                                <td class="id"><?php echo $methodArray->id ?></td>
+                                <td class="status">-</td>
+                            </tr>
+                            <?php
+                        }
+                        ?>
+                        </tbody>
+                    </table>
+
+                    <?php
+                }
                 ?>
+
+
             </table>
         </div>
         <?php
