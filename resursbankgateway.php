@@ -3029,25 +3029,32 @@ function wc_get_payment_id_by_order_id($orderId = '')
  * @param string $key
  * @return bool
  */
-function resursOption($key = "", $checkParentOption = false)
+function resursOption($key = "")
 {
     $response = get_option('woocommerce_resurs-bank_settings')[$key];
     if (empty($response)) {
         $response = get_option($key);
     }
-    if ($response === "true") {
-        return true;
-    }
-    if ($response === "false") {
-        return false;
-    }
-    if ($response === "yes") {
-        return true;
-    }
-    if ($response === "no") {
-        return false;
-    }
+    if ($response === "true") { return true; }
+    if ($response === "false") { return false; }
+    if ($response === "yes") { return true; }
+    if ($response === "no") { return false; }
     return $response;
+}
+
+/**
+ * Returns true or false depending if the key exists in the resursOption-array
+ *
+ * @param string $key
+ * @return bool
+ */
+function issetResursOption($key = "") {
+    $response = get_option('woocommerce_resurs-bank_settings');
+    if (isset($response[$key])) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 function getResursOption($key = "", $checkParentOption = false)

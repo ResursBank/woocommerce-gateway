@@ -36,8 +36,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public function get_sections()
     {
         $sections = array(
-            '' => 'Basic Configuration',
-            'advanced' => 'Advanced Configuration'
+            '' => __('Basic settings', 'WC_Payment_Gateway'),
+            'advanced' => __('Advanced settings', 'WC_Payment_Gateway')
         );
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
@@ -199,26 +199,19 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      */
     public function resursbank_settings_show()
     {
-        if (isset($_REQUEST['section']) && !empty($_REQUEST['section'])) {
-            $this->current_section = $_REQUEST['section'];
-        }
-
-        $namespace = $this->CONFIG_NAMESPACE;
-
         $url = admin_url('admin.php');
         $url = add_query_arg('page', $_REQUEST['page'], $url);
         $url = add_query_arg('tab', $_REQUEST['tab'], $url);
         $url = add_query_arg('section', $_REQUEST['section'], $url);
 
+        if (isset($_REQUEST['section']) && !empty($_REQUEST['section'])) {
+            $this->current_section = $_REQUEST['section'];
+        }
+
+        $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
+        $namespace = $this->CONFIG_NAMESPACE;
+
         if (isset($_REQUEST['save'])) {
-            /*
-            foreach ($this->oldFormFields as $fieldKey => $fieldArray) {
-                $postKeyName = $namespace . "_" . $fieldKey;
-                if (!isset($_POST[$postKeyName])) {
-                    setResursOption($fieldKey, '');
-                }
-            }
-            */
             wp_safe_redirect($url);
         }
         $longSimplified = __('Simplified Shop Flow: Payments goes through Resurs Bank API (Default)', 'WC_Payment_Gateway');
@@ -231,61 +224,77 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             Plugin version <?php echo rbWcGwVersion() . (!empty($currentVersion) ? " (" . $currentVersion . ")" : "") ?>
             <table class="form-table">
                 <?php
-                echo $this->setCheckBox('enabled', $namespace);
-                echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
-                echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
-                echo $this->setTextBox('login', $namespace);
-                echo $this->setTextBox('password', $namespace, "updateResursPaymentMethods");
 
-                try {
-                    $this->paymentMethods = $this->flow->getPaymentMethods();
-                } catch (Exception $e) {
-
-                }
-
-                if (count($this->paymentMethods)) {
-
-                    ?>
-                    <table class="wc_gateways widefat" cellspacing="0" style="width: 800px;">
-                        <thead>
-                        <tr>
-                            <th class="sort"></th>
-                            <th class="name">Betalmetod</th>
-                            <th class="id">ID</th>
-                            <th class="status">Aktiverad</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php
-
-                        $sortByDescription = array();
-                        foreach ($this->paymentMethods as $methodArray) {
-                            $description = $methodArray->description;
-                            $sortByDescription[$description] = $methodArray;
-                        }
-                        ksort($sortByDescription);
-
-                        $url = admin_url('admin.php');
-                        $url = add_query_arg('page', $_REQUEST['page'], $url);
-                        $url = add_query_arg('tab', $_REQUEST['tab'], $url);
-
-                        foreach ($sortByDescription as $methodArray) {
-                            ?>
-                            <tr>
-                                <td width="1%">&nbsp;</td>
-                                <td class="name">
-                                    <a href="<?php echo $url;?>&section=resurs_bank_nr_<?php echo $methodArray->id ?>"><?php echo $methodArray->description ?></a>
-                                </td>
-                                <td class="id"><?php echo $methodArray->id ?></td>
-                                <td class="status">-</td>
-                            </tr>
-                            <?php
-                        }
+                if (empty($section)) {
+                    echo $this->setCheckBox('enabled', $namespace);
+                    echo $this->setDropDown('serverEnv', $namespace, array('live' => 'Live', 'test' => 'Test'));
+                    echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
+                    echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
+                    echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
+                    echo $this->setTextBox('login', $namespace);
+                    echo $this->setTextBox('password', $namespace, "updateResursPaymentMethods");
+                    try {
+                        $this->paymentMethods = $this->flow->getPaymentMethods();
+                    } catch (Exception $e) {
+                    }
+                    if (count($this->paymentMethods)) {
                         ?>
-                        </tbody>
-                    </table>
+                        <table class="wc_gateways widefat" cellspacing="0" style="width: 800px;">
+                            <thead>
+                            <tr>
+                                <th class="sort"></th>
+                                <th class="name">Betalmetod</th>
+                                <th class="id">ID</th>
+                                <th class="status">Aktiverad</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php
 
-                    <?php
+                            $sortByDescription = array();
+                            foreach ($this->paymentMethods as $methodArray) {
+                                $description = $methodArray->description;
+                                $sortByDescription[$description] = $methodArray;
+                            }
+                            ksort($sortByDescription);
+
+                            $url = admin_url('admin.php');
+                            $url = add_query_arg('page', $_REQUEST['page'], $url);
+                            $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+
+                            foreach ($sortByDescription as $methodArray) {
+                                ?>
+                                <tr>
+                                    <td width="1%">&nbsp;</td>
+                                    <td class="name"><a
+                                                href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $methodArray->id ?>"><?php echo $methodArray->description ?></a>
+                                    </td>
+                                    <td class="id"><?php echo $methodArray->id ?></td>
+                                    <td class="status">-</td>
+                                </tr>
+                                <?php
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+
+                        <?php
+                    }
+                } else if ($section == "advanced") {
+                    echo $this->setCheckBox('demoshopMode', $namespace);
+                    echo $this->setTextBox('baseLiveURL', $namespace);
+                    echo $this->setTextBox('baseTestURL', $namespace);
+                    echo $this->setTextBox('customCallbackUri', $namespace);
+                    echo $this->setTextBox('costOfPurchaseCss', $namespace);
+                    echo $this->setCheckBox('waitForFraudControl', $namespace);
+                    echo $this->setCheckBox('annulIfFrozen', $namespace);
+                    echo $this->setCheckBox('finalizeIfBooked', $namespace);
+
+                    echo $this->setCheckBox('getAddress', $namespace);
+                    echo $this->setCheckBox('streamlineBehaviour', $namespace);
+                    echo $this->setCheckBox('handleNatConnections', $namespace);
+                } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
+
                 }
                 ?>
 
@@ -296,6 +305,27 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         //echo "<pre>";
         //print_R(getResursWooFormFields());
+    }
+    private function getTaxRatesArray() {
+        global $wpdb;
+        $rate_select = array();
+        $rates = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates
+				ORDER BY tax_rate_order
+				LIMIT %d
+				",
+            1000
+        ));
+        foreach ($rates as $rate) {
+            $rate_name = $rate->tax_rate_class;
+            if ('' === $rate_name) {
+                $rate_name = 'standard';
+            }
+            $rate_name = str_replace('-', ' ', $rate_name);
+            $rate_name = ucwords($rate_name);
+            $rate_select[$rate->tax_rate_class] = $rate_name;
+        }
+        return $rate_select;
     }
 }
 
