@@ -3,7 +3,7 @@ Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.7
-Stable tag: 1.2.7.15
+Stable tag: 1.2.7.16
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,20 +47,25 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 1.2.7.16 =
+
+ * WOO-23: Division by zero on line 939 (RB #72149)
+ * WOO-24: Undefined indexes and properties (RB #71250)
+
 = 1.2.7.15 =
 
- * #2: Set up better error messages for local bookings / BookByAjaxError (RB #71514)
- * #10: Support callback event BOOKED (RB #71526)
- * #11: Clear old session on "not returning to thank you"Clear old session on "not returning to thank you" / avoid omniRef on empty cart (RB #71608)
- * #12: Log DENY from Resurs Checkout (RB #71619)
- * #15: Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
- * #16: Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
- * #18: Do not set completed if finalization is unavailable (RB #71905)
+ * WOO-2: Set up better error messages for local bookings / BookByAjaxError (RB #71514)
+ * WOO-10: Support callback event BOOKED (RB #71526)
+ * WOO-11: Clear old session on "not returning to thank you"Clear old session on "not returning to thank you" / avoid omniRef on empty cart (RB #71608)
+ * WOO-12: Log DENY from Resurs Checkout (RB #71619)
+ * WOO-15: Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
+ * WOO-16: Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
+ * WOO-18: Do not set completed if finalization is unavailable (RB #71905)
 
 = 1.2.7.14 =
 
- * E-Mail confirmations are sent before booking completed (https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/issues/9/e-mail-confirmations-are-sent-before)
- * Zero/null values are not properly encoded, using PHP >= 7 (https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/issues/8/zero-null-values-are-not-properly-encoded)
+ * WOO-9: E-Mail confirmations are sent before booking completed (RB #70191)
+ * WOO-8: Zero/null values are not properly encoded, using PHP >= 7 (RB #70321)
 
 = 1.2.7.13 =
 

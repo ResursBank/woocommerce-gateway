@@ -3,12 +3,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 1.2.7.15
+ * Version: 1.2.7.16
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "1.2.7.15");
+define('RB_WOO_VERSION', "1.2.7.16");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -263,7 +263,7 @@ function woocommerce_gateway_resurs_bank_init()
                             WC()->session->set('omniRefAge', $currentOmniRefAge);
                         }
                     } else {
-                        if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
+                        if (isset($_REQUEST['omnicheckout_nonce']) && wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
                             if (isset($_REQUEST['purchaseFail']) && $_REQUEST['purchaseFail'] == 1) {
                                 $returnResult = array(
                                     'success' => false,
@@ -934,7 +934,11 @@ function woocommerce_gateway_resurs_bank_init()
                      * Ignore this fee if it matches the Resurs description.
                      */
                     //if ($fee == $resursPriceDescription) { continue; }
-                    $rate = ($fee->tax / $fee->amount) * 100;
+                    if ($fee->tax > 0) {
+                        $rate = ($fee->tax / $fee->amount) * 100;
+                    } else {
+                        $rate = 0;
+                    }
                     $spec_lines[] = array(
                         'id' => $fee->id,
                         'artNo' => $fee->id,
@@ -2045,7 +2049,7 @@ function woocommerce_gateway_resurs_bank_init()
 		{
 			global \$woocommerce;
 			if (isset(\$_REQUEST)) {
-				if (\$_REQUEST['payment_method'] === '{$class_name}') {
+				if (isset(\$_REQUEST['payment_method']) && \$_REQUEST['payment_method'] === '{$class_name}') {
 					\$payment_method = \$_REQUEST['payment_method'];
 					\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
 					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
@@ -2100,6 +2104,9 @@ function woocommerce_gateway_resurs_bank_init()
     			return \$methods;
     		}
     		global \$woocommerce;
+    		if (!isset(\$woocommerce->cart)) {
+    		    return \$methods;
+    		}
             \$cart = \$woocommerce->cart;
             \$total = \$cart->total;
 
@@ -2459,8 +2466,13 @@ EOT;
                 foreach ($paymentMethods as $objId) {
                     if (isset($objId->id) && isset($objId->customerType)) {
                         $nr = "resurs_bank_nr_" . $objId->id;
-                        $responseArray[strtolower($objId->customerType)][] = $nr;
-                    }
+                        if (is_array($objId->customerType)) {
+                            foreach ($objId->customerType as $arrType) {
+                                $responseArray[strtolower($arrType)][] = $nr;
+                            }
+                        } else {
+                            $responseArray[strtolower($objId->customerType)][] = $nr;
+                        }                    }
                 }
             }
             header('Content-Type: application/json');
@@ -2714,6 +2726,7 @@ EOT;
         if ('no' == get_option('woocommerce_resurs-bank_settings')['enabled']) {
             return;
         }
+        $OmniVars = array();
         if (isResursOmni()) {
 			wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js');
             $omniBookUrl = home_url('/');
