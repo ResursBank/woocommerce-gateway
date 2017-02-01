@@ -2466,8 +2466,13 @@ EOT;
                 foreach ($paymentMethods as $objId) {
                     if (isset($objId->id) && isset($objId->customerType)) {
                         $nr = "resurs_bank_nr_" . $objId->id;
-                        $responseArray[strtolower($objId->customerType)][] = $nr;
-                    }
+                        if (is_array($objId->customerType)) {
+                            foreach ($objId->customerType as $arrType) {
+                                $responseArray[strtolower($arrType)][] = $nr;
+                            }
+                        } else {
+                            $responseArray[strtolower($objId->customerType)][] = $nr;
+                        }                    }
                 }
             }
             header('Content-Type: application/json');
