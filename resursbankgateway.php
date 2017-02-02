@@ -3,12 +3,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 1.2.7.16
+ * Version: 1.2.7.17
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "1.2.7.16");
+define('RB_WOO_VERSION', "1.2.7.17");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -294,7 +294,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             if (!empty($this->login) && !empty($this->password)) {
                 $this->paymentMethods = $this->get_payment_methods();
-                $pluginPaymentMethodsPath = plugin_dir_path(__FILE__) . '/includes/';
+                $pluginPaymentMethodsPath = plugin_dir_path(__FILE__) . 'includes';
 
                 /**
                  * Make sure all files are still there (i.e. when upgrading the plugin) - based on issue #66524
@@ -304,7 +304,7 @@ function woocommerce_gateway_resurs_bank_init()
                     foreach ($this->paymentMethods['methods'] as $methodArray) {
                         if (isset($methodArray->id)) {
                             $id = $methodArray->id;
-                            if (!file_exists($pluginPaymentMethodsPath . "/resurs_bank_nr_" . $id)) {
+                            if (!file_exists($pluginPaymentMethodsPath . "/resurs_bank_nr_" . $id . ".php")) {
                                 $this->paymentMethods['generate_new_files'] = true;
                                 break;
                             }
@@ -1804,7 +1804,6 @@ function woocommerce_gateway_resurs_bank_init()
                 $class_files[] = 'resurs_bank_nr_' . $payment_method->id . '.php';
                 $class = $this->write_class_to_file($payment_method);
             }
-
             set_transient('resurs_bank_class_files', $class_files);
         }
 
@@ -1839,7 +1838,6 @@ function woocommerce_gateway_resurs_bank_init()
             $path_to_icon = $this->icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
             $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
             $has_icon = (string)file_exists($temp_icon);
-
             $ajaxUrl = admin_url('admin-ajax.php');
             $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
             $class = <<<EOT
@@ -2104,25 +2102,27 @@ function woocommerce_gateway_resurs_bank_init()
     			return \$methods;
     		}
     		global \$woocommerce;
-    		if (!isset(\$woocommerce->cart)) {
-    		    return \$methods;
-    		}
-            \$cart = \$woocommerce->cart;
-            \$total = \$cart->total;
+    		// If the cart exists, we are probably located in the checkout. If that is so, check if the method
+    		// are allowed to show. If the cart don't exist, this will generate undefined objects and show up errors
+    		// on screen, if screen logging is enabled.
+    		if (isset(\$woocommerce->cart)) {
+                \$cart = \$woocommerce->cart;
+                \$total = \$cart->total;
 
-            \$minLimit = '{$minLimit}';
-            \$maxLimit = '{$maxLimit}';
-            if (\$total > 0) {
+                \$minLimit = '{$minLimit}';
+                \$maxLimit = '{$maxLimit}';
+                if (\$total > 0) {
                     if (\$total >= \$maxLimit || \$total <= \$minLimit)
                     {
                         if (!isResursTest()) {
                             return \$methods;
                         }
                     }
-            }
-    		if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
-    			return \$methods;
-    		}
+                }
+            	if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
+            		return \$methods;
+            	}
+        	}
     		\$methods[] = '{$class_name}';
     		return \$methods;
     	}
@@ -2290,9 +2290,10 @@ EOT;
                 }
             }
             if (isset($_REQUEST['woocommerce_resurs-bank_refreshPaymentMethods'])) {
-                $this->paymentMethods = $this->get_payment_methods(true);
+                // If the button is presset, it should show up - all other cases will not do this.
+                $this->paymentMethods['generate_new_files'] = true;
                 if (empty($this->paymentMethods['error'])) {
-                    if (true === $this->paymentMethods['generate_new_files']) {
+                    if (isset($this->paymentMethods['generate_new_files']) && $this->paymentMethods['generate_new_files'] === true) {
                         $this->generate_payment_gateways($this->paymentMethods['methods']);
                         wp_safe_redirect($url);
                     }
