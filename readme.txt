@@ -2,8 +2,8 @@
 Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 4.7
-Stable tag: 1.2.7.16
+Tested up to: 4.7.2
+Stable tag: 1.2.7.17
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Resurs Bank Payment Gateway for WooCommerce.
 == Description ==
 
 Resurs Bank payment gateway for WooCommerce.
-Tested with WooCommerce up to version 2.6.12
+Tested with WooCommerce up to version 2.6.13
 Requires PHP 5.4 or later.
 For the use of OmniCheckout you also need cURL (EComPHP).
 
@@ -46,6 +46,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 
 == Changelog ==
+
+= 1.2.7.17 =
+
+ * WOO-26: Payment methods are not showing up in admin (RB #72208)
 
 = 1.2.7.16 =
 
