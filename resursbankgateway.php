@@ -3,12 +3,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 1.2.7.17
+ * Version: 1.2.7.18
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "1.2.7.17");
+define('RB_WOO_VERSION', "1.2.7.18");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -293,8 +293,8 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if (!empty($this->login) && !empty($this->password)) {
-                $this->paymentMethods = $this->get_payment_methods();
                 $pluginPaymentMethodsPath = plugin_dir_path(__FILE__) . 'includes';
+                $this->paymentMethods = $this->get_payment_methods();
 
                 /**
                  * Make sure all files are still there (i.e. when upgrading the plugin) - based on issue #66524
@@ -2292,6 +2292,7 @@ EOT;
             if (isset($_REQUEST['woocommerce_resurs-bank_refreshPaymentMethods'])) {
                 // If the button is presset, it should show up - all other cases will not do this.
                 $this->paymentMethods['generate_new_files'] = true;
+                $this->get_payment_methods(true);
                 if (empty($this->paymentMethods['error'])) {
                     if (isset($this->paymentMethods['generate_new_files']) && $this->paymentMethods['generate_new_files'] === true) {
                         $this->generate_payment_gateways($this->paymentMethods['methods']);
@@ -2327,14 +2328,22 @@ EOT;
         {
             $returnArr = array();
             $paymentMethods = get_transient('resurs_bank_payment_methods');
-
             $returnArr = array();
             if (false === ($paymentMethods = get_transient('resurs_bank_payment_methods')) || $force_file_refresh) {
-
                 $temp_class_files = get_transient('resurs_bank_class_files');
+
+                $allIncludes = array();
+                $currentIncludes = array();
+                foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
+                    $allIncludes[] = $filename;
+                }
+
                 if (is_array($temp_class_files)) {
                     foreach ($temp_class_files as $class_name) {
-                        $path = plugin_dir_path(__FILE__) . '/includes/' . $class_name;
+                        $path = plugin_dir_path(__FILE__) . 'includes/' . $class_name;
+                        if (!in_array($path, $currentIncludes)) {
+                            $currentIncludes[] = $path;
+                        }
                         $path = str_replace('//', '/', $path);
 
                         if (file_exists($path)) {
@@ -2346,7 +2355,11 @@ EOT;
                     }
                     delete_transient('resurs_bank_class_files');
                 }
-
+                foreach ($allIncludes as $exclude) {
+                    if (!in_array($exclude, $currentIncludes)) {
+                        @unlink($exclude);
+                    }
+                }
                 try {
                     if (is_object($this->flow)) {
                         try {
