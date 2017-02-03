@@ -151,7 +151,8 @@ function woocommerce_gateway_resurs_bank_init()
             $this->serverEnv = $this->get_option('serverEnv');
 
             /*
-             * The flow configurator is only available in demo mode
+             * The flow configurator is only available in demo mode.
+             * 170203: Do not remove this since it is internally used (not only i demoshop)
              */
             if (isset($_REQUEST['flowconfig'])) {
                 if (isResursDemo()) {
@@ -183,7 +184,7 @@ function woocommerce_gateway_resurs_bank_init()
                     if (isset($this->login) && !empty($this->login) && $updatedFlow) {
                         try {
                             $this->paymentMethods = $this->get_payment_methods();
-                            $this->generate_payment_gateways($this->paymentMethods['methods']);
+                            //$this->generate_payment_gateways($this->paymentMethods['methods']);
                             $methodUpdateMessage = __('Payment method gateways are updated', 'WC_Payment_Gateway') . "...\n";
                         } catch (Exception $e) {
                             $methodUpdateMessage = $e->getMessage();
@@ -288,32 +289,6 @@ function woocommerce_gateway_resurs_bank_init()
                                 die();
                             }
                         }
-                    }
-                }
-            }
-
-            if (!empty($this->login) && !empty($this->password)) {
-                $pluginPaymentMethodsPath = plugin_dir_path(__FILE__) . 'includes';
-                $this->paymentMethods = $this->get_payment_methods();
-
-                /**
-                 * Make sure all files are still there (i.e. when upgrading the plugin) - based on issue #66524
-                 * Can only be run by admins.
-                 */
-                if (resursOption("enabled") && is_admin() && isset($this->paymentMethods['methods']) && is_array($this->paymentMethods['methods']) && count($this->paymentMethods['methods'])) {
-                    foreach ($this->paymentMethods['methods'] as $methodArray) {
-                        if (isset($methodArray->id)) {
-                            $id = $methodArray->id;
-                            if (!file_exists($pluginPaymentMethodsPath . "/resurs_bank_nr_" . $id . ".php")) {
-                                $this->paymentMethods['generate_new_files'] = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (empty($this->paymentMethods['error'])) {
-                    if (true === $this->paymentMethods['generate_new_files']) {
-                        $this->generate_payment_gateways($this->paymentMethods['methods']);
                     }
                 }
             }
@@ -450,12 +425,6 @@ function woocommerce_gateway_resurs_bank_init()
                     'class' => 'btn btn-primary',
                     'type' => 'submit',
                     'value' => __('Register Callbacks', 'WC_Payment_Gateway'),
-                ),
-                'refreshPaymentMethods' => array(
-                    'title' => __('Update available payment methods', 'WC_Payment_Gateway'),
-                    'class' => 'btn btn-primary',
-                    'type' => 'submit',
-                    'value' => __('Update available payment methods', 'WC_Payment_Gateway'),
                 ),
                 'priceTaxClass' => array(
                     'title' => 'Moms',
@@ -1434,7 +1403,7 @@ function woocommerce_gateway_resurs_bank_init()
              * Without the nonce, no background order can prepare
              */
             if (isset($_REQUEST['omnicheckout_nonce'])) {
-                if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
+                if (isset($_REQUEST['omnicheckout_nonce']) && wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
                     $hasInternalErrors = false;
                     $returnResult['verified'] = true;
 
@@ -1797,13 +1766,15 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function generate_payment_gateways($payment_methods)
         {
+            $this->UnusedPaymentClassesCleanup();
             $methods = array();
             $class_files = array();
             foreach ($payment_methods as $payment_method) {
                 $methods[] = 'resurs-bank-id-' . $payment_method->id;
                 $class_files[] = 'resurs_bank_nr_' . $payment_method->id . '.php';
-                $class = $this->write_class_to_file($payment_method);
+                $this->write_class_to_file($payment_method);
             }
+            $this->UnusedPaymentClassesCleanup($class_files);
             set_transient('resurs_bank_class_files', $class_files);
         }
 
@@ -2289,18 +2260,13 @@ EOT;
                     $this->register_callback($callback, $options);
                 }
             }
-            if (isset($_REQUEST['woocommerce_resurs-bank_refreshPaymentMethods'])) {
-                // If the button is presset, it should show up - all other cases will not do this.
-                $this->paymentMethods['generate_new_files'] = true;
-                $this->get_payment_methods(true);
-                if (empty($this->paymentMethods['error'])) {
-                    if (isset($this->paymentMethods['generate_new_files']) && $this->paymentMethods['generate_new_files'] === true) {
-                        $this->generate_payment_gateways($this->paymentMethods['methods']);
-                        wp_safe_redirect($url);
-                    }
-                }
-            }
             if (isset($_REQUEST['save'])) {
+                try {
+                    if (isset($this->login) && !empty($this->login)) {
+                        $this->get_payment_methods();
+                    }
+                } catch (Exception $e) {
+                }
                 wp_safe_redirect($url);
             }
 
@@ -2318,6 +2284,24 @@ EOT;
         }
 
         /**
+         * @param $temp_class_files
+         */
+        private function UnusedPaymentClassesCleanup($temp_class_files) {
+            $allIncludes = array();
+            $path = plugin_dir_path(__FILE__) . 'includes/';
+            foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
+                $allIncludes[] = str_replace($path, '', $filename);
+            }
+            if (is_array($temp_class_files)) {
+                foreach ($allIncludes as $exclude) {
+                    if (!in_array($exclude, $temp_class_files)) {
+                        @unlink($path . $exclude);
+                    }
+                }
+            }
+        }
+
+        /**
          * Get available payment methods. Either from Resurs Bank API or transient cache
          *
          * @param bool $force_file_refresh If new files should be forced or not
@@ -2327,63 +2311,20 @@ EOT;
         public function get_payment_methods($force_file_refresh = false)
         {
             $returnArr = array();
-            $paymentMethods = get_transient('resurs_bank_payment_methods');
-            $returnArr = array();
-            if (false === ($paymentMethods = get_transient('resurs_bank_payment_methods')) || $force_file_refresh) {
-                $temp_class_files = get_transient('resurs_bank_class_files');
-
-                $allIncludes = array();
-                $currentIncludes = array();
-                foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
-                    $allIncludes[] = $filename;
-                }
-
-                if (is_array($temp_class_files)) {
-                    foreach ($temp_class_files as $class_name) {
-                        $path = plugin_dir_path(__FILE__) . 'includes/' . $class_name;
-                        if (!in_array($path, $currentIncludes)) {
-                            $currentIncludes[] = $path;
-                        }
-                        $path = str_replace('//', '/', $path);
-
-                        if (file_exists($path)) {
-                            @unlink($path);
-                            if (file_exists($path)) {
-                                throw new Exception("File permission error for $path");
-                            }
-                        }
-                    }
-                    delete_transient('resurs_bank_class_files');
-                }
-                foreach ($allIncludes as $exclude) {
-                    if (!in_array($exclude, $currentIncludes)) {
-                        @unlink($exclude);
-                    }
-                }
-                try {
-                    if (is_object($this->flow)) {
-                        try {
-                            $paymentMethods = $this->flow->getPaymentMethods();
-                            set_transient('resurs_bank_payment_methods', $paymentMethods, 24 * HOUR_IN_SECONDS);
-                            $returnArr['error'] = '';
-                            $returnArr['methods'] = $paymentMethods;
-                            $returnArr['generate_new_files'] = true;
-                        } catch (Exception $e) {
-                            $returnArr['error'] = $e->getMessage();
-                            $returnArr['methods'] = '';
-                            $returnArr['generate_new_files'] = false;
-                        }
-                    }
-                } catch (Exception $e) {
-                    throw $e;
-                }
-            } else {
+            try {
+                $paymentMethods = $this->flow->getPaymentMethods();
+                $this->generate_payment_gateways($paymentMethods);
                 $returnArr['error'] = '';
                 $returnArr['methods'] = $paymentMethods;
+                $returnArr['generate_new_files'] = true;
+            } catch (Exception $e) {
+                $returnArr['error'] = $e->getMessage();
+                $returnArr['methods'] = '';
                 $returnArr['generate_new_files'] = false;
             }
             return $returnArr;
         }
+
 
         /**
          * Get address for a specific government ID

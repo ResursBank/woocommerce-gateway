@@ -13,7 +13,7 @@ Resurs Bank Payment Gateway for WooCommerce.
 == Description ==
 
 Resurs Bank payment gateway for WooCommerce.
-Tested with WooCommerce up to version 2.6.13
+Tested with WooCommerce up to version 2.6.14
 Requires PHP 5.4 or later.
 For the use of OmniCheckout you also need cURL (EComPHP).
 
