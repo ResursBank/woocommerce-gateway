@@ -115,12 +115,6 @@ if (!function_exists('getResursWooFormFields')) {
                 'type' => 'submit',
                 'value' => __('Register Callbacks', 'WC_Payment_Gateway'),
             ),
-            'refreshPaymentMethods' => array(
-                'title' => __('Update available payment methods', 'WC_Payment_Gateway'),
-                'class' => 'btn btn-primary',
-                'type' => 'submit',
-                'value' => __('Update available payment methods', 'WC_Payment_Gateway'),
-            ),
             'priceTaxClass' => array(
                 'title' => 'Moms',
                 'type' => 'select',

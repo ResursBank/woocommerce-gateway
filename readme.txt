@@ -2,8 +2,8 @@
 Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 4.7
-Stable tag: 1.3.0
+Tested up to: 4.7.2
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Resurs Bank Payment Gateway for WooCommerce.
 == Description ==
 
 Resurs Bank payment gateway for WooCommerce.
-Tested with WooCommerce up to version 2.6.12
+Tested with WooCommerce up to version 2.6.13
 Requires PHP 5.4 or later.
 For the use of OmniCheckout you also need cURL (EComPHP).
 
@@ -47,24 +47,37 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-= 1.3.0 =
+= 2.0.0 =
 
- * #3: Administration Control Panel UI - Refactored (RB #70342)
+ * WOO-3: Administration Control Panel UI - Refactored (RB #70342)
+
+= 1.2.7.18 =
+
+ * WOO-27: Updating payment methods keeps deprecated methods listed in admin (RB #72243)
+
+= 1.2.7.17 =
+
+ * WOO-26: Payment methods are not showing up in admin (RB #72208)
+
+= 1.2.7.16 =
+
+ * WOO-23: Division by zero on line 939
+ * WOO-24: Undefined indexes and properties
 
 = 1.2.7.15 =
 
- * #2: Set up better error messages for local bookings / BookByAjaxError (RB #71514)
- * #10: Support callback event BOOKED (RB #71526)
- * #11: Clear old session on "not returning to thank you"Clear old session on "not returning to thank you" / avoid omniRef on empty cart (RB #71608)
- * #12: Log DENY from Resurs Checkout (RB #71619)
- * #15: Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
- * #16: Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
- * #18: Do not set completed if finalization is unavailable (RB #71905)
+ * WOO-2: Set up better error messages for local bookings / BookByAjaxError (RB #71514)
+ * WOO-10: Support callback event BOOKED (RB #71526)
+ * WOO-11: Clear old session on "not returning to thank you"Clear old session on "not returning to thank you" / avoid omniRef on empty cart (RB #71608)
+ * WOO-12: Log DENY from Resurs Checkout (RB #71619)
+ * WOO-15: Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
+ * WOO-16: Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
+ * WOO-18: Do not set completed if finalization is unavailable (RB #71905)
 
 = 1.2.7.14 =
 
- * #9: E-Mail confirmations are sent before booking completed (RB #70191)
- * #8: Zero/null values are not properly encoded, using PHP >= 7 (RB #70321)
+ * WOO-9: E-Mail confirmations are sent before booking completed (RB #70191)
+ * WOO-8: Zero/null values are not properly encoded, using PHP >= 7 (RB #70321)
 
 = 1.2.7.13 =
 

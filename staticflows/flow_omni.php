@@ -471,7 +471,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                  * Ignore this fee if it matches the Resurs description.
                  */
                 //if ($fee == $resursPriceDescription) { continue; }
-                $rate = ($fee->tax / $fee->amount) * 100;
+                if ($fee->tax > 0) {
+                    $rate = ($fee->tax / $fee->amount) * 100;
+                } else {
+                    $rate = 0;
+                }
                 $spec_lines[] = array(
                     'id' => $fee->id,
                     'artNo' => $fee->id,

@@ -153,7 +153,8 @@ function woocommerce_gateway_resurs_bank_init()
             $this->serverEnv = $this->get_option('serverEnv');
 
             /*
-             * The flow configurator is only available in demo mode
+             * The flow configurator is only available in demo mode.
+             * 170203: Do not remove this since it is internally used (not only i demoshop).
              */
             if (isset($_REQUEST['flowconfig'])) {
                 if (isResursDemo()) {
@@ -185,7 +186,7 @@ function woocommerce_gateway_resurs_bank_init()
                     if (isset($this->login) && !empty($this->login) && $updatedFlow) {
                         try {
                             $this->paymentMethods = $this->get_payment_methods();
-                            $this->generate_payment_gateways($this->paymentMethods['methods']);
+                            //$this->generate_payment_gateways($this->paymentMethods['methods']);
                             $methodUpdateMessage = __('Payment method gateways are updated', 'WC_Payment_Gateway') . "...\n";
                         } catch (Exception $e) {
                             $methodUpdateMessage = $e->getMessage();
@@ -264,7 +265,7 @@ function woocommerce_gateway_resurs_bank_init()
                             WC()->session->set('omniRefAge', $currentOmniRefAge);
                         }
                     } else {
-                        if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
+                        if (isset($_REQUEST['omnicheckout_nonce']) && wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
                             if (isset($_REQUEST['purchaseFail']) && $_REQUEST['purchaseFail'] == 1) {
                                 $returnResult = array(
                                     'success' => false,
@@ -293,31 +294,6 @@ function woocommerce_gateway_resurs_bank_init()
                 }
             }
 
-            if (!empty($this->login) && !empty($this->password)) {
-                $this->paymentMethods = $this->get_payment_methods();
-                $pluginPaymentMethodsPath = plugin_dir_path(__FILE__) . '/includes/';
-
-                /**
-                 * Make sure all files are still there (i.e. when upgrading the plugin) - based on issue #66524
-                 * Can only be run by admins.
-                 */
-                if (resursOption("enabled") && is_admin() && isset($this->paymentMethods['methods']) && is_array($this->paymentMethods['methods']) && count($this->paymentMethods['methods'])) {
-                    foreach ($this->paymentMethods['methods'] as $methodArray) {
-                        if (isset($methodArray->id)) {
-                            $id = $methodArray->id;
-                            if (!file_exists($pluginPaymentMethodsPath . "/resurs_bank_nr_" . $id)) {
-                                $this->paymentMethods['generate_new_files'] = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (empty($this->paymentMethods['error'])) {
-                    if (true === $this->paymentMethods['generate_new_files']) {
-                        $this->generate_payment_gateways($this->paymentMethods['methods']);
-                    }
-                }
-            }
             add_action('woocommerce_api_wc_resurs_bank', array($this, 'check_callback_response'));
             if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
@@ -700,7 +676,11 @@ function woocommerce_gateway_resurs_bank_init()
                      * Ignore this fee if it matches the Resurs description.
                      */
                     //if ($fee == $resursPriceDescription) { continue; }
-                    $rate = ($fee->tax / $fee->amount) * 100;
+                    if ($fee->tax > 0) {
+                        $rate = ($fee->tax / $fee->amount) * 100;
+                    } else {
+                        $rate = 0;
+                    }
                     $spec_lines[] = array(
                         'id' => $fee->id,
                         'artNo' => $fee->id,
@@ -1561,9 +1541,9 @@ function woocommerce_gateway_resurs_bank_init()
             foreach ($payment_methods as $payment_method) {
                 $methods[] = 'resurs-bank-id-' . $payment_method->id;
                 $class_files[] = 'resurs_bank_nr_' . $payment_method->id . '.php';
-                $class = $this->write_class_to_file($payment_method);
+                $this->write_class_to_file($payment_method);
             }
-
+            $this->UnusedPaymentClassesCleanup($class_files);
             set_transient('resurs_bank_class_files', $class_files);
         }
 
@@ -1808,7 +1788,7 @@ function woocommerce_gateway_resurs_bank_init()
 		{
 			global \$woocommerce;
 			if (isset(\$_REQUEST)) {
-				if (\$_REQUEST['payment_method'] === '{$class_name}') {
+				if (isset(\$_REQUEST['payment_method']) && \$_REQUEST['payment_method'] === '{$class_name}') {
 					\$payment_method = \$_REQUEST['payment_method'];
 					\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
 					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
@@ -1863,22 +1843,27 @@ function woocommerce_gateway_resurs_bank_init()
     			return \$methods;
     		}
     		global \$woocommerce;
-            \$cart = \$woocommerce->cart;
-            \$total = \$cart->total;
+    		// If the cart exists, we are probably located in the checkout. If that is so, check if the method
+    		// are allowed to show. If the cart don't exist, this will generate undefined objects and show up errors
+    		// on screen, if screen logging is enabled.
+    		if (isset(\$woocommerce->cart)) {
+                \$cart = \$woocommerce->cart;
+                \$total = \$cart->total;
 
-            \$minLimit = '{$minLimit}';
-            \$maxLimit = '{$maxLimit}';
-            if (\$total > 0) {
+                \$minLimit = '{$minLimit}';
+                \$maxLimit = '{$maxLimit}';
+                if (\$total > 0) {
                     if (\$total >= \$maxLimit || \$total <= \$minLimit)
                     {
                         if (!isResursTest()) {
                             return \$methods;
                         }
                     }
-            }
-    		if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
-    			return \$methods;
-    		}
+                }
+            	if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
+            		return \$methods;
+            	}
+        	}
     		\$methods[] = '{$class_name}';
     		return \$methods;
     	}
@@ -2049,16 +2034,15 @@ EOT;
                     $this->register_callback($callback, $options);
                 }
             }
-            if (isset($_REQUEST['woocommerce_resurs-bank_refreshPaymentMethods'])) {
-                $this->paymentMethods = $this->get_payment_methods(true);
-                if (empty($this->paymentMethods['error'])) {
-                    if (true === $this->paymentMethods['generate_new_files']) {
-                        $this->generate_payment_gateways($this->paymentMethods['methods']);
-                        wp_safe_redirect($url);
-                    }
-                }
-            }
+
+
             if (isset($_REQUEST['save'])) {
+                try {
+                    if (isset($this->login) && !empty($this->login)) {
+                        $this->get_payment_methods();
+                    }
+                } catch (Exception $e) {
+                }
                 wp_safe_redirect($url);
             }
 
@@ -2076,6 +2060,24 @@ EOT;
         }
 
         /**
+         * @param $temp_class_files
+         */
+        private function UnusedPaymentClassesCleanup($temp_class_files) {
+            $allIncludes = array();
+            $path = plugin_dir_path(__FILE__) . 'includes/';
+            foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
+                $allIncludes[] = str_replace($path, '', $filename);
+            }
+            if (is_array($temp_class_files)) {
+                foreach ($allIncludes as $exclude) {
+                    if (!in_array($exclude, $temp_class_files)) {
+                        @unlink($path . $exclude);
+                    }
+                }
+            }
+        }
+
+        /**
          * Get available payment methods. Either from Resurs Bank API or transient cache
          *
          * @param bool $force_file_refresh If new files should be forced or not
@@ -2085,47 +2087,15 @@ EOT;
         public function get_payment_methods($force_file_refresh = false)
         {
             $returnArr = array();
-            $paymentMethods = get_transient('resurs_bank_payment_methods');
-
-            $returnArr = array();
-            if (false === ($paymentMethods = get_transient('resurs_bank_payment_methods')) || $force_file_refresh) {
-
-                $temp_class_files = get_transient('resurs_bank_class_files');
-                if (is_array($temp_class_files)) {
-                    foreach ($temp_class_files as $class_name) {
-                        $path = plugin_dir_path(__FILE__) . '/includes/' . $class_name;
-                        $path = str_replace('//', '/', $path);
-
-                        if (file_exists($path)) {
-                            @unlink($path);
-                            if (file_exists($path)) {
-                                throw new Exception("File permission error for $path");
-                            }
-                        }
-                    }
-                    delete_transient('resurs_bank_class_files');
-                }
-
-                try {
-                    if (is_object($this->flow)) {
-                        try {
-                            $paymentMethods = $this->flow->getPaymentMethods();
-                            set_transient('resurs_bank_payment_methods', $paymentMethods, 24 * HOUR_IN_SECONDS);
-                            $returnArr['error'] = '';
-                            $returnArr['methods'] = $paymentMethods;
-                            $returnArr['generate_new_files'] = true;
-                        } catch (Exception $e) {
-                            $returnArr['error'] = $e->getMessage();
-                            $returnArr['methods'] = '';
-                            $returnArr['generate_new_files'] = false;
-                        }
-                    }
-                } catch (Exception $e) {
-                    throw $e;
-                }
-            } else {
+            try {
+                $paymentMethods = $this->flow->getPaymentMethods();
+                $this->generate_payment_gateways($paymentMethods);
                 $returnArr['error'] = '';
                 $returnArr['methods'] = $paymentMethods;
+                $returnArr['generate_new_files'] = true;
+            } catch (Exception $e) {
+                $returnArr['error'] = $e->getMessage();
+                $returnArr['methods'] = '';
                 $returnArr['generate_new_files'] = false;
             }
             return $returnArr;
@@ -2481,6 +2451,7 @@ EOT;
         if ('no' == get_option('woocommerce_resurs-bank_settings')['enabled']) {
             return;
         }
+        $OmniVars = array();
         if (isResursOmni()) {
             wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js');
             $omniBookUrl = home_url('/');
