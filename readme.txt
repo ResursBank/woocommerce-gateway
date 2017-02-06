@@ -47,6 +47,11 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 1.2.7.18 =
+
+ * WOO-27 (RB #72243) - As we create the list of methods, we also loop the includes path to see if there are unused files there and removes them. Index.php has been replaced with a .htaccess file to keep the path unviewable in Apache environments (how about IIS?). We will however only look for resurs*.php-based files, so if there are index.php left in the space, it won't harm anyone.
+ * WOO-27 RB #72243 - Now using "Save"-button only instead of all other strange turns, that the legacies plugin had implemented.
+
 = 1.2.7.17 =
 
  * WOO-26: Payment methods are not showing up in admin (RB #72208)
