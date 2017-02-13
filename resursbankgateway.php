@@ -379,16 +379,35 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 } else {
                     if (isset($_REQUEST['run'])) {
+                        $arg = null;
+                        if (isset($_REQUEST['arg'])) {
+                            $arg = $_REQUEST['arg'];
+                        }
                         $responseArray = array();
-
                         if (wp_verify_nonce($reqNonce, "requestResursAdmin")) {
                             if ($_REQUEST['run'] == "updateResursPaymentMethods") {
                                 $responseArray = $this->flow->getPaymentMethods();
+                            } else if ($_REQUEST['run'] == "methodToggle") {
+                                $dbMethodName = "woocommerce_resurs_bank_nr_" . $arg . "_settings";
+                                $responseMethod = get_option($dbMethodName);
+                                if (is_array($responseMethod) && count($responseMethod)) {
+                                    $isEnabled = $responseMethod['enabled'];
+                                    if ($isEnabled == "yes" || $isEnabled == "true" || $isEnabled == "1") {
+                                        $isEnabled = "no";
+                                        $responseHtml = '<span class="status-disabled tips">-</span>';
+                                    } else {
+                                        $isEnabled = "yes";
+                                        $responseHtml = '<span class="status-enabled tips">-</span>';
+                                    }
+                                    setResursOption("enabled", $isEnabled, $dbMethodName);
+                                    $responseArray['element'] = "status_" . $arg;
+                                    $responseArray['html'] = $responseHtml;
+                                }
                             }
                         } else {
                             $responseArray = array('Authorized' => false);
                         }
-                        $myResponse = array($_REQUEST['run'] . "Response" => $responseArray);
+                        $myResponse = array($_REQUEST['run'] . "Response" => $responseArray, "arg" => $arg);
                         $myBool = false;
                     }
                 }
@@ -831,9 +850,16 @@ function woocommerce_gateway_resurs_bank_init()
                                 $fieldGenHtml .= '</div>';
                             }
 
+                            /*
+                             * MarGul Change
+                             * Use translations for the Read More Button. Also added a fixed width and height on the onClick button.
+                             */
+                            $translation = CountryHandler::getDictionary();
+                            $read_more = (!empty($translation)) ? $translation['read_more'] : 'Read More';
+
                             $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
                             if ($specificType != "CARD") {
-                                $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes\')">' . __('Read more', 'WC_Payment_Gateway') . '</button>';
+                                $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __($read_more, 'WC_Payment_Gateway') . '</button>';
                             }
                             // Fix: There has been an echo here, instead of a fieldGenHtml
                             $fieldGenHtml .= '<input type="hidden" value="' . $id . '" class="resurs-bank-payment-method">';
@@ -841,7 +867,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
                             $fieldGenHtml = $this->description . "<br><br>";
                             if ($specificType != "CARD") {
-                                $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes\')">' . __('Read more', 'WC_Payment_Gateway') . '</button>';
+                                $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __($read_more, 'WC_Payment_Gateway') . '</button>';
                             }
                         }
                     }
@@ -1556,7 +1582,6 @@ function woocommerce_gateway_resurs_bank_init()
         {
             $class_name = 'resurs_bank_nr_' . $payment_method->id;
             if (!file_exists(plugin_dir_path(__FILE__) . '/includes/' . $class_name)) {
-
             } else {
                 if (!in_array(plugin_dir_path(__FILE__) . '/includes/' . $class_name, get_included_files())) {
                     include(plugin_dir_path(__FILE__) . '/includes/' . $class_name);
@@ -2425,8 +2450,20 @@ EOT;
 
         $selectedCountry = resursOption("country");
         if (resursOption("getAddress") && !isResursOmni()) {
-            echo '<input type="radio" id="ssnCustomerType" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . __('Private', 'WC_Payment_Gateway') . " ";
-            echo '<input type="radio" id="ssnCustomerType" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . __('Company', 'WC_Payment_Gateway');
+            /*
+             * MarGul change
+             * If it's demoshop get the translation.
+             */
+            $private = 'Private';
+            $company = 'Company';
+            if ( isResursDemo() ) {
+                $translation = CountryHandler::getDictionary();
+                $private = $translation['private'];
+                $company = $translation['company'];
+            }
+            // Here we use the translated or not translated values for Private and Company radiobuttons
+            echo '<input type="radio" id="ssnCustomerType" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . __($private, 'WC_Payment_Gateway') . " ";
+            echo '<input type="radio" id="ssnCustomerType" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . __($company, 'WC_Payment_Gateway');
             echo '<input type="hidden" id="resursSelectedCountry" value="' . $selectedCountry . '">';
             woocommerce_form_field('ssn_field', array(
                 'type' => 'text',
@@ -2435,7 +2472,13 @@ EOT;
                 'placeholder' => __('Enter your government id (social security number)', 'WC_Payment_Gateway'),
             ), $checkout->get_value('ssn_field'));
             if ('SE' == $selectedCountry) {
-                echo '<a href="#" class="button" id="fetch_address">' . __('Get address', 'WC_Payment_Gateway') . '</a><br>';
+                /*
+                 * MarGul change
+                 * Take the translation for Get Address.
+                 */
+                $translation = CountryHandler::getDictionary();
+                $get_address = (!empty($translation)) ? $translation['get_address'] : 'Get address';
+                echo '<a href="#" class="button" id="fetch_address">' . __($get_address, 'WC_Payment_Gateway') . '</a><br>';
             }
         }
         return $checkout;
@@ -2508,12 +2551,28 @@ EOT;
                 }
             }
         }
+
         $resursLanguageLocalization = array(
             'getAddressEnterGovernmentId' => __('Enter social security number', 'WC_Payment_Gateway'),
             'getAddressEnterCompany' => __('Enter corporate government identity', 'WC_Payment_Gateway'),
             'labelGovernmentId' => __('Government id', 'WC_Payment_Gateway'),
             'labelCompanyId' => __('Corporate government id', 'WC_Payment_Gateway'),
         );
+
+        /*
+         * MarGul change
+         * Overwrite the language translations if it's demoshop.
+         */
+        if (isResursDemo()) {
+            $translation = CountryHandler::getDictionary();
+            $resursLanguageLocalization = [
+                'getAddressEnterGovernmentId' => __($translation['enter_ssn_num'], 'WC_Payment_Gateway'),
+                'getAddressEnterCompany' => __($translation['enter_gov_id'], 'WC_Payment_Gateway'),
+                'labelGovernmentId' => __($translation['gov_id'], 'WC_Payment_Gateway'),
+                'labelCompanyId' => __($translation['corp_gov_id'], 'WC_Payment_Gateway'),
+            ];
+        }
+
         $generalJsTranslations = array(
                 'deliveryRequiresSigning' => __("Changing delivery address requires signing", 'WC_Payment_Gateway'),
                 'ssnElementMissing' => __("I can not show errors since the element is missing", 'WC_Payment_Gateway'),
@@ -2997,12 +3056,53 @@ function wc_get_payment_id_by_order_id($orderId = '')
 
 /**
  * Get specific options from the Resurs configuration set
+ *
  * @param string $key
+ * @param string $namespace
  * @return bool
  */
-function resursOption($key = "")
+function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings")
 {
-    $response = get_option('woocommerce_resurs-bank_settings')[$key];
+
+    /*
+     * MarGul change
+     * If it's demoshop it will take the config from sessions instead of db
+     */
+    if(isResursDemo()) {
+        // Override database setting with the theme (demoshops) flowtype SESSION setting if it's set.
+        if ($key == "flowtype") {
+            if (!empty($_SESSION['rb_checkout_flow'])) {
+                $accepted = ['simplifiedshopflow', 'resurs_bank_hosted', 'resurs_bank_omnicheckout'];
+                if (in_array(strtolower($_SESSION['rb_checkout_flow']), $accepted)) {
+                    return $_SESSION['rb_checkout_flow'];
+                }
+            }
+        }
+
+        // Override database setting with the theme (demoshops) country SESSION setting if it's set.
+        if ($key == "country") {
+            if (!empty($_SESSION['rb_country'])) {
+                $accepted = ['se', 'dk', 'no', 'fi'];
+                if (in_array(strtolower($_SESSION['rb_country']), $accepted)) {
+                    return strtoupper($_SESSION['rb_country']);
+                }
+            }
+        }
+
+        if ($key == 'login') {
+            if (!empty($_SESSION['rb_country_data'])) {
+                return $_SESSION['rb_country_data']['account']['login'];
+            }
+        }
+
+        if ($key == 'password') {
+            if (!empty($_SESSION['rb_country_data'])) {
+                return $_SESSION['rb_country_data']['account']['password'];
+            }
+        }
+    }
+
+    $response = get_option($namespace)[$key];
     if (empty($response)) {
         $response = get_option($key);
     }
@@ -3019,8 +3119,8 @@ function resursOption($key = "")
  * @param string $key
  * @return bool
  */
-function issetResursOption($key = "") {
-    $response = get_option('woocommerce_resurs-bank_settings');
+function issetResursOption($key = "", $namespace = 'woocommerce_resurs-bank_settings') {
+    $response = get_option($namespace);
     if (isset($response[$key])) {
         return true;
     } else {
@@ -3028,9 +3128,14 @@ function issetResursOption($key = "") {
     }
 }
 
-function getResursOption($key = "", $checkParentOption = false)
+/**
+ * @param string $key
+ * @param string $namespace
+ * @return bool
+ */
+function getResursOption($key = "", $namespace = "woocommerce_resurs-bank_settings")
 {
-    return resursOption($key, $checkParentOption);
+    return resursOption($key, $namespace);
 }
 
 /**
@@ -3050,16 +3155,18 @@ function hasResursOptionValue($key = "")
 
 /**
  * Set a new value in resursoptions
+ *
  * @param string $key
  * @param string $value
+ * @param string $configurationSpace
  * @return bool
  */
-function setResursOption($key = "", $value = "")
+function setResursOption($key = "", $value = "", $configurationSpace = "woocommerce_resurs-bank_settings")
 {
-    $allOptions = get_option('woocommerce_resurs-bank_settings');
+    $allOptions = get_option($configurationSpace);
     if (!empty($key)) {
         $allOptions[$key] = $value;
-        update_option('woocommerce_resurs-bank_settings', $allOptions);
+        update_option($configurationSpace, $allOptions);
         return true;
     }
     return false;
