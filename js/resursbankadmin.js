@@ -132,14 +132,24 @@ function resursProtectedFieldToggle(currentField) {
 
 
 function runResursAdminCallback(callbackName) {
+    var setArg;
+    if (typeof arguments[1] !== "undefined") {
+        setArg = arguments[1];
+    }
     $RB.ajax({
         url: rbAjaxSetup.ran,
         type: "post",
         data: {
-            'run': callbackName
+            'run': callbackName,
+            'arg': setArg
         }
     }).done(function(data) {
-        console.dir(data);
+        if (typeof data["response"] === "object" && typeof data["response"][callbackName + "Response"] !== "undefined") {
+            var response = data["response"][callbackName + "Response"];
+            if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
+                $RB('#' + response["element"]).html(response["html"]);
+            }
+        }
     }).fail(function(x, y) {
         alert("Administration callback not successful");
     });

@@ -17,7 +17,7 @@ include('functions.php');
 class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 {
     public $id = "tab_resursbank";
-    private $current_section;
+    //private $current_section;
     private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
     private $oldFormFields;
     private $flow;
@@ -91,7 +91,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         }
-        update_option("woocommerce_resurs-bank_settings", $saveArray);
+
+        $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
+        if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
+            $namespace = "woocommerce_" . $section;
+            $this->CONFIG_NAMESPACE = $namespace;
+        }
+        update_option($this->CONFIG_NAMESPACE . "_settings", $saveArray);
         //woocommerce_update_options($this->oldFormFields);
     }
 
@@ -204,10 +210,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $url = add_query_arg('tab', $_REQUEST['tab'], $url);
         $url = add_query_arg('section', $_REQUEST['section'], $url);
 
-        if (isset($_REQUEST['section']) && !empty($_REQUEST['section'])) {
-            $this->current_section = $_REQUEST['section'];
-        }
-
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         $namespace = $this->CONFIG_NAMESPACE;
 
@@ -263,14 +265,30 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             $url = add_query_arg('tab', $_REQUEST['tab'], $url);
 
                             foreach ($sortByDescription as $methodArray) {
+                                $curId = isset($methodArray->id) ? $methodArray->id: "";
+                                $settingsControl = get_option("woocommerce_resurs_bank_nr_" . $curId . "_settings");
+                                $isEnabled = false;
+                                if (is_array($settingsControl) && count($settingsControl)) {
+                                    if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") { $isEnabled = true; }
+                                }
                                 ?>
                                 <tr>
                                     <td width="1%">&nbsp;</td>
                                     <td class="name"><a
-                                                href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $methodArray->id ?>"><?php echo $methodArray->description ?></a>
+                                                href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
                                     </td>
                                     <td class="id"><?php echo $methodArray->id ?></td>
-                                    <td class="status">-</td>
+                                    <?php if (!$isEnabled) { ?>
+                                        <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;" onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
+                                            <span class="status-disabled tips">-</span>
+                                        </td>
+                                    <?php } else {
+                                        ?>
+                                        <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;" onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
+                                            <span class="status-enabled tips">-</span>
+                                        </td>
+                                        <?php
+                                    } ?>
                                 </tr>
                                 <?php
                             }
@@ -294,7 +312,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
                     echo $this->setCheckBox('handleNatConnections', $namespace);
                 } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
+                    $namespace = "woocommerce_" . $section;
+                    $this->CONFIG_NAMESPACE = $namespace;
 
+                    //getResursOption();
+
+                    echo $this->setCheckBox('enabled', $namespace);
+                    echo $this->setTextBox('title', $namespace);
+                    echo $this->setTextBox('description', $namespace);
                 }
                 ?>
 
