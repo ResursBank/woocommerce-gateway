@@ -30,6 +30,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         add_filter('woocommerce_settings_tabs_array', array($this, "resurs_settings_tab"), 50);
         add_action('woocommerce_settings_' . $this->id, array($this, 'resursbank_settings_show'), 10);
         add_action('woocommerce_update_options_' . $this->id, array($this, 'resurs_settings_save'));
+        $getOpt = get_option('woocommerce_resurs-bank_settings');
+
+        if (!hasResursOptionValue('enabled')) {
+            $this->resurs_settings_save();
+        }
         parent::__construct();
     }
 
@@ -37,6 +42,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     {
         $sections = array(
             '' => __('Basic settings', 'WC_Payment_Gateway'),
+            'shopflow' => __('Shop flow behaviour ', 'WC_Payment_Gateway'),
             'advanced' => __('Advanced settings', 'WC_Payment_Gateway')
         );
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
@@ -60,8 +66,27 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      *
      * woocommerce_update_options will in this case save settings per row instead of the old proper way, as a serialized string with our settings.
      */
-    public function resurs_settings_save()
+    public function resurs_settings_save($setSection = "")
     {
+        $section =  "woocommerce_resurs-bank";
+
+        if (isset($_REQUEST['section']) && !empty($_REQUEST['section'])) {
+            $section = $_REQUEST['section'];
+            if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
+                $section = "woocommerce_" . $section;
+            } else {
+                /*
+                 * As we only have two sections (excluding payment methods) we will fall back to this name again...
+                 */
+                $section =  "woocommerce_resurs-bank";
+            }
+        }
+
+        if (!empty($setSection)) {
+            $section = $setSection;
+        }
+
+        $this->CONFIG_NAMESPACE = $section;
         $this->oldFormFields = getResursWooFormFields($this->CONFIG_NAMESPACE);
         /** @var $saveAll Sets a saveAll function to active, so that we can save all settings in the same times for which the parameters can be found in oldFormFields */
         $saveAll = true;
@@ -83,22 +108,39 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 if (isset($_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey])) {
                     $saveArray[$fieldKey] = $_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey];
                 } else {
-                    if (!empty(getResursOption($fieldKey))) {
-                        $saveArray[$fieldKey] = getResursOption($fieldKey);
+                    $curOption = $this->getOptionByNamespace($fieldKey, $this->CONFIG_NAMESPACE);
+                    if ($fieldData['type'] == "checkbox") {
+                        $saveArray[$fieldKey] = "no";
                     } else {
-                        $saveArray[$fieldKey] = $fieldData['default'];
+                        if (!empty($curOption)) {
+                            $saveArray[$fieldKey] = $curOption;
+                        } else {
+                            $saveArray[$fieldKey] = $fieldData['default'];
+                        }
                     }
                 }
             }
         }
-
-        $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
-        if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-            $namespace = "woocommerce_" . $section;
-            $this->CONFIG_NAMESPACE = $namespace;
-        }
-        update_option($this->CONFIG_NAMESPACE . "_settings", $saveArray);
         //woocommerce_update_options($this->oldFormFields);
+        update_option($section . "_settings", $saveArray);
+    }
+
+    private function getOptionByNamespace($optionKey, $namespace) {
+        $useNamespace = $namespace;
+        if (!preg_match("/_settings$/i", $namespace)) {
+            $useNamespace .= "_settings";
+        }
+        $this->oldFormFields = resursFormFieldArray();
+        $returnedOption = null;
+        if (hasResursOptionValue($optionKey, $useNamespace)) {
+            $returnedOption = getResursOption($optionKey, $useNamespace);
+        } else {
+            $fetchOption = $this->oldFormFields[$optionKey];
+            if (isset($fetchOption['default'])) {
+                $returnedOption = $fetchOption['default'];
+            }
+        }
+        return $returnedOption;
     }
 
     private function getFormSettings($settingKey = '')
@@ -111,6 +153,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
     private function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
+        $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
+
         $returnCheckbox = '
                 <tr>
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
@@ -118,8 +162,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         <input type="checkbox"
                             name="' . $namespace . '_' . $settingKey . '"
                             id="' . $namespace . '_' . $settingKey . '"
-                            ' . (getResursOption($settingKey) === true || getResursOption($settingKey) == "1" ? 'checked="checked"' : "") . '
-                               value="true">' . $this->oldFormFields[$settingKey]['label'] . '
+                            ' . ($isChecked ? 'checked="checked"' : "") . '
+                               value="yes">' . $this->oldFormFields[$settingKey]['label'] . '
                     </td>
                 </tr>
         ';
@@ -128,6 +172,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
     private function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
+        $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
         $textFieldType = isset($formSettings['type']) ? $formSettings['type'] : "text";
         $isPassword = false;
@@ -148,7 +193,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             id="' . $namespace . '_' . $settingKey . '"
                             size="64"
                             ' . $scriptLoader . '
-                            value="' . getResursOption($settingKey) . '"> ' . $this->oldFormFields[$settingKey]['label'] . '
+                            value="' . $UseValue . '"> ' . $this->oldFormFields[$settingKey]['label'] . '
                             ' . $isPassword . '
                             </td>
         ';
@@ -179,6 +224,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
     private function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
     {
+        // TODO: Value (multi+simple)
         $returnDropDown = '
                 <tr>
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
@@ -214,6 +260,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $namespace = $this->CONFIG_NAMESPACE;
 
         if (isset($_REQUEST['save'])) {
+            $isResursSave = true;
             wp_safe_redirect($url);
         }
         $longSimplified = __('Simplified Shop Flow: Payments goes through Resurs Bank API (Default)', 'WC_Payment_Gateway');
@@ -266,7 +313,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                             foreach ($sortByDescription as $methodArray) {
                                 $curId = isset($methodArray->id) ? $methodArray->id: "";
-                                $settingsControl = get_option("woocommerce_resurs_bank_nr_" . $curId . "_settings");
+
+                                $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
+                                if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                                    $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
+                                }
+                                write_resurs_class_to_file($methodArray);
+
+                                $settingsControl = get_option($optionNamespace);
                                 $isEnabled = false;
                                 if (is_array($settingsControl) && count($settingsControl)) {
                                     if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") { $isEnabled = true; }
@@ -298,25 +352,22 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                         <?php
                     }
-                } else if ($section == "advanced") {
-                    echo $this->setCheckBox('demoshopMode', $namespace);
-                    echo $this->setTextBox('baseLiveURL', $namespace);
-                    echo $this->setTextBox('baseTestURL', $namespace);
+                } else if ($section == "shopflow") {
                     echo $this->setTextBox('customCallbackUri', $namespace);
-                    echo $this->setTextBox('costOfPurchaseCss', $namespace);
                     echo $this->setCheckBox('waitForFraudControl', $namespace);
                     echo $this->setCheckBox('annulIfFrozen', $namespace);
                     echo $this->setCheckBox('finalizeIfBooked', $namespace);
-
-                    echo $this->setCheckBox('getAddress', $namespace);
+                } else if ($section == "advanced") {
+                    //echo $this->setTextBox('baseLiveURL', $namespace);
+                    //echo $this->setTextBox('baseTestURL', $namespace);
+                    echo $this->setCheckBox('demoshopMode', $namespace);
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
+                    echo $this->setTextBox('costOfPurchaseCss', $namespace);
+                    echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setCheckBox('handleNatConnections', $namespace);
                 } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
                     $namespace = "woocommerce_" . $section;
                     $this->CONFIG_NAMESPACE = $namespace;
-
-                    //getResursOption();
-
                     echo $this->setCheckBox('enabled', $namespace);
                     echo $this->setTextBox('title', $namespace);
                     echo $this->setTextBox('description', $namespace);
@@ -327,9 +378,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             </table>
         </div>
         <?php
-
-        //echo "<pre>";
-        //print_R(getResursWooFormFields());
     }
     private function getTaxRatesArray() {
         global $wpdb;

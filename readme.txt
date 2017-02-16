@@ -51,6 +51,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
  * WOO-3: Administration Control Panel UI - Refactored (RB #70342)
 
+= 1.2.7.19 =
+
+ * WOO-32: Some parts of the system still needs the transent configuration to set output values properly (RB #72692)
+
 = 1.2.7.18 =
 
  * WOO-27: Updating payment methods keeps deprecated methods listed in admin (RB #72243)

@@ -14,9 +14,29 @@ if (!function_exists('getResursWooFormFields')) {
         return $resursAdminForm;
     }
 
+    /**
+     * Get the plugin url
+     *
+     * @return string
+     */
+    function plugin_url()
+    {
+        return untrailingslashit(plugins_url('/', __FILE__));
+    }
+
     function resursFormFieldArray($formFieldName = 'defaults')
     {
         global $wpdb, $woocommerce;
+
+        $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
+        if (empty($section)) {
+            $formFieldName = "defaults";
+        } else if ($section == "advanced") {
+            $formFieldName = "defaults";
+        } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
+            $formFieldName = "paymentmethods";
+        }
+
         $rates = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates
 				ORDER BY tax_rate_order
@@ -41,6 +61,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
                     'label' => 'Activate Resurs Bank',
+                    'label' => __('Enable/Disable', 'woocommerce'),
                 ),
                 'country' => array(
                     'title' => __('Country', 'WC_Payment_Gateway'),
@@ -282,23 +303,25 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
             );
         } else if ($formFieldName == "paymentmethods") {
+            //$icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
+            $icon = "";
             $returnArray = array(
                 'enabled' => array(
                     'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
-                    'label' => 'Aktivera Resurs Bank Faktura legal',
+                    'label' => __('Enable/Disable', 'woocommerce'),
                 ),
                 'title' => array(
                     'title' => 'Title',
                     'type' => 'text',
-                    'default' => 'Resurs Bank Faktura legal',
+                    'default' => '',
                     'description' => __('This controls the payment method title which the user sees during checkout.', 'woocommerce'),
                     'desc_tip' => true,
                 ),
                 'icon' => array(
                     'title' => __('Custom payment method icon', 'WC_Payment_Gateway'),
                     'type' => 'text',
-                    'default' => $this->icon,
+                    'default' => $icon,
                     'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.', 'WC_Payment_Gateway'),
                 ),
                 'enableMethodIcon' => array(
@@ -309,7 +332,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'description' => array(
                     'title' => 'Description',
                     'type' => 'textarea',
-                    'default' => 'Betala med Resurs Bank Faktura legal',
+                    'default' => '',
                     'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
                     'desc_tip' => true,
                 ),
@@ -328,5 +351,348 @@ if (!function_exists('getResursWooFormFields')) {
             );
         }
         return $returnArray;
+    }
+}
+
+
+if (!function_exists('write_resurs_class_to_file')) {
+
+    function write_resurs_class_to_file($payment_method)
+    {
+        $class_name = 'resurs_bank_nr_' . $payment_method->id;
+        if (!file_exists(plugin_dir_path(__FILE__) . '/includes/' . $class_name)) {
+        } else {
+            if (!in_array(plugin_dir_path(__FILE__) . '/includes/' . $class_name, get_included_files())) {
+                include(plugin_dir_path(__FILE__) . '/includes/' . $class_name);
+            }
+        }
+
+        $initName = 'woocommerce_gateway_resurs_bank_nr_' . $payment_method->id . '_init';
+        $class_name = 'resurs_bank_nr_' . $payment_method->id;
+        $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
+        $method_name = $payment_method->description;
+        $type = strtolower($payment_method->type);
+        $customerType = $payment_method->customerType;
+        $minLimit = $payment_method->minLimit;
+        $maxLimit = $payment_method->maxLimit;
+
+        //$icon_name = strtolower($method_name);
+        $icon_name = "resurs-standard";
+        //$icon_name = str_replace(array('å', 'ä', 'ö', ' '), array('a', 'a', 'o', '_'), $icon_name);
+
+        $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
+
+        $path_to_icon = $icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $plugin_url. '/img/' . $icon_name . '.png');
+        $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
+        $has_icon = (string)file_exists($temp_icon);
+        $ajaxUrl = admin_url('admin-ajax.php');
+        $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+        $class = <<<EOT
+<?php
+	class {$class_name} extends WC_Resurs_Bank {
+		public function __construct()
+		{
+			\$this->id           = '{$class_name}';
+			\$this->id_short           = '{$payment_method->id}';
+			\$this->has_icon();
+			\$this->method_title = '{$method_name}';
+			if (!isResursHosted()) {
+				\$this->has_fields   = true;
+			} else {
+				\$this->has_fields   = false;
+			}
+
+			\$this->init_form_fields();
+			\$this->init_settings();
+
+            \$this->minLimit = '{$minLimit}';
+            \$this->maxLimit = '{$maxLimit}';
+			\$this->title       = \$this->get_option( 'title' );
+
+			if (empty(\$this->title)) {
+    			\$this->flow = initializeResursFlow();
+    			\$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
+			    \$this->title = \$realTimePaymentMethod->description;
+			}
+
+			\$this->description = \$this->get_option( 'description' );
+
+			if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
+				add_action( 'woocommerce_update_options_payment_gateways_' . \$this->id, array( \$this, 'process_admin_options' ) );
+			} else {
+				add_action( 'woocommerce_update_options_payment_gateways', array( \$this, 'process_admin_options' ) );
+			}
+			//add_action( 'woocommerce_calculate_totals', array( \$this, 'calculate_totals' ), 10, 1 );
+			// Payment listener/API hook
+
+			add_action( 'woocommerce_api_{$class_name}', array( \$this, 'check_signing_response' ) );
+		}
+
+		function init_form_fields() {
+			\$this->form_fields = array(
+				'enabled' => array(
+						'title' => __('Enable/Disable', 'woocommerce'),
+						'type'  => 'checkbox',
+						'label' => 'Aktivera Resurs Bank {$method_name}',
+					),
+				'title' => array(
+						'title'       => 'Title',
+						'type'        => 'text',
+						'default'     => 'Resurs Bank {$method_name}',
+						'description' => __( 'This controls the payment method title which the user sees during checkout.', 'woocommerce' ),
+						'desc_tip'    => true,
+					),
+				'icon' => array(
+						'title'   => __('Custom payment method icon', 'WC_Payment_Gateway'),
+						'type'    => 'text',
+						'default' => \$this->icon,
+						'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.', 'WC_Payment_Gateway'),
+					),
+				'enableMethodIcon' => array(
+						'title' => __('Enable/Disable payment method icon', 'woocommerce'),
+						'type'  => 'checkbox',
+						'label' => 'Enables displaying of logotype at payment method choice',
+					),
+				'description' => array(
+						'title'       => 'Description',
+						'type'        => 'textarea',
+						'default'     => 'Betala med Resurs Bank {$method_name}',
+						'description' => __( 'This controls the payment method description which the user sees during checkout.', 'woocommerce' ),
+						'desc_tip'    => true,
+					),
+				'price' => array(
+						'title'       => 'Avgift',
+						'type'        => 'number',
+						'default'     => 0,
+						'description' => __('Payment fee for this payment method', 'WC_Payment_Gateway'),
+						'desc_tip'    => false,
+					),
+				'priceDescription' => array(
+						'title'   => __('Description of this payment method fee', 'WC_Payment_Gateway'),
+						'type'    => 'textarea',
+						'default' => '',
+					),
+			);
+		}
+
+		public function calculate_totals( \$totals )
+		{
+			global \$woocommerce;
+		    \$available_gateways = \$woocommerce->payment_gateways->get_available_payment_gateways();
+		    \$current_gateway = '';
+		    if ( ! empty( \$available_gateways ) ) {
+		        // Chosen Method
+		        if ( isset( \$woocommerce->session->chosen_payment_method ) && isset( \$available_gateways[ \$woocommerce->session->chosen_payment_method ] ) ) {
+		            \$current_gateway = \$available_gateways[ \$woocommerce->session->chosen_payment_method ];
+		        } elseif ( isset( \$available_gateways[ get_option( 'woocommerce_default_gateway' ) ] ) ) {
+		            \$current_gateway = \$available_gateways[ get_option( 'woocommerce_default_gateway' ) ];
+		        } else {
+		            \$current_gateway =  current( \$available_gateways );
+
+		        }
+		    }
+		    if(\$current_gateway!=''){
+		        \$current_gateway_id = \$current_gateway->id;
+		        \$extra_charges_id = 'woocommerce_' . \$current_gateway_id . '_settings';
+		        \$extra_charges = (float)get_option( \$extra_charges_id)['price'];
+		        //var_dump(\$extra_charges, \$extra_charges_id);
+		        if(\$extra_charges){
+		            \$totals->cart_contents_total = \$totals->cart_contents_total + \$extra_charges;
+		            \$this->current_gateway_title = \$current_gateway -> title;
+		            \$this->current_gateway_extra_charges = \$extra_charges;
+		            add_action( 'woocommerce_review_order_before_order_total',  array( \$this, 'add_payment_gateway_extra_charges_row'));
+		        }
+
+		    }
+		    return \$totals;
+		}
+
+		public function add_payment_gateway_extra_charges_row()
+		{
+			?>
+		    <tr class="payment-extra-charge">
+		        <th><?php echo \$this->current_gateway_title?> Extra Charges</th>
+		        <td><?php echo woocommerce_price(\$this->current_gateway_extra_charges); ?></td>
+			 </tr>
+			 <?php
+		}
+
+		public function get_current_gateway()
+		{
+			global \$woocommerce;
+			\$available_gateways = \$woocommerce->payment_gateways->get_available_payment_gateways();
+			\$current_gateway = null;
+			\$default_gateway = get_option( 'woocommerce_default_gateway' );
+			if ( ! empty( \$available_gateways ) ) {
+				
+			   // Chosen Method
+				if ( isset( \$woocommerce->session->chosen_payment_method ) && isset( \$available_gateways[ \$woocommerce->session->chosen_payment_method ] ) ) {
+					\$current_gateway = \$available_gateways[ \$woocommerce->session->chosen_payment_method ];
+				} elseif ( isset( \$available_gateways[ \$default_gateway ] ) ) {
+					\$current_gateway = \$available_gateways[ \$default_gateway ];
+				} else {
+					\$current_gateway = current( \$available_gateways );
+				}
+			}
+			if ( ! is_null( \$current_gateway ) )
+				return \$current_gateway;
+			else 
+				return false;
+		}
+
+		public function has_icon()
+		{
+		    \$this->iconEnabled = \$this->get_option('enableMethodIcon');
+		    if (\$this->iconEnabled == "true" || \$this->iconEnabled == "1" || \$this->iconEnabled == "yes") {
+    			if ( file_exists( '{$temp_icon}' ) ) {
+    				\$this->icon = '{$path_to_icon}';
+    			}
+    			\$storedIcon = \$this->get_option('icon');
+    			if (\$storedIcon !== \$this->icon && !empty(\$storedIcon)) {
+    			    \$this->icon = \$storedIcon;
+    			}
+		    }
+		}
+
+		public function payment_fields()
+		{
+			global \$woocommerce;
+			\$cart = \$woocommerce->cart;
+			//var_dump(\$woocommerce->session->chosen_payment_method, \$_REQUEST);
+			if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
+				echo '<p>Denna betalningsmetod är inte tillgänglig för dig, vänligen välj en annan</p>';
+				return;
+			}
+			if (isset(\$_REQUEST) && isset(\$_REQUEST['payment_method'])) {
+				if (\$_REQUEST['payment_method'] === '{$class_name}') {
+                   /*
+				    * Start payment session are used even if we're in hosted or simplified mode.
+				    * There is a read more button that is created here.
+				    */
+        		    \$payment_session = \$this->start_payment_session( '{$payment_method->id}', \$this );
+				}
+			}
+		}
+
+		public function admin_options()
+		{
+			?>
+			<h3><?php echo \$this->method_title; ?></h3>
+			<p>På denna sida kan du ändra inställningar för Resurs Bank {$method_name}</p>
+
+				<table class="form-table">
+
+                    <span id="paymentMethodName" style="display:none">{$class_name}</span>
+					<?php \$this->generate_settings_html(); ?>
+
+				</table>
+
+			<?php
+		}
+
+		public static function interfere_checkout()
+		{
+		}
+
+		public static function interfere_checkout_review( \$value )
+		{
+		}
+
+		public static function interfere_update_order_review( \$posted )
+		{
+			global \$woocommerce;
+			if (isset(\$_REQUEST)) {
+				if (isset(\$_REQUEST['payment_method']) && \$_REQUEST['payment_method'] === '{$class_name}') {
+					\$payment_method = \$_REQUEST['payment_method'];
+					\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
+					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
+					//\$payment_fee_tax_pct = (float)get_option( 'woocommerce_resurs-bank_settings' )['pricePct'];
+					//\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
+
+					\$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
+
+					\$payment_fee_tax_class_rates = \$woocommerce->cart->tax->get_rates( \$payment_fee_tax_class );
+
+					\$payment_fee_tax = \$woocommerce->cart->tax->calc_tax(\$payment_fee, \$payment_fee_tax_class_rates);
+
+		        	if ( false === empty( get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'] ) ) {
+						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'];
+					} else {
+						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['title'];
+					}
+					\$woocommerce->cart->add_fee( \$fee_title, \$payment_fee, true, \$payment_fee_tax_class );
+				}
+			}
+		}
+
+		public static function interfere_checkout_process( \$posted )
+		{
+			global \$woocommerce;
+			if (isset(\$_REQUEST)) {
+				if (\$_REQUEST['payment_method'] === '{$class_name}') {
+					\$payment_method = \$_REQUEST['payment_method'];
+					\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
+					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
+					//\$payment_fee_tax_pct = (float)get_option( 'woocommerce_resurs-bank_settings' )['pricePct'];
+					\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
+					\$payment_fee_tax = (float)\$payment_fee * ( \$payment_fee_tax_pct / 100 );
+
+					\$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
+
+					if ( false === empty( get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'] ) ) {
+						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'];
+					} else {
+						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['title'];
+					}
+
+					\$woocommerce->cart->add_fee( \$fee_title, \$payment_fee, true, \$payment_fee_tax_class );
+				}
+			}
+		}
+	}
+
+    if (!hasResursOmni()) {
+	    function woocommerce_add_resurs_bank_gateway_{$class_name}( \$methods ) {
+    		if ( 'no' == get_option( 'woocommerce_resurs-bank_settings' )['enabled']) {
+    			return \$methods;
+    		}
+    		global \$woocommerce;
+    		// If the cart exists, we are probably located in the checkout. If that is so, check if the method
+    		// are allowed to show. If the cart don't exist, this will generate undefined objects and show up errors
+    		// on screen, if screen logging is enabled.
+    		if (isset(\$woocommerce->cart)) {
+                \$cart = \$woocommerce->cart;
+                \$total = \$cart->total;
+
+                \$minLimit = '{$minLimit}';
+                \$maxLimit = '{$maxLimit}';
+                if (\$total > 0) {
+                    if (\$total >= \$maxLimit || \$total <= \$minLimit)
+                    {
+                        if (!isResursTest()) {
+                            return \$methods;
+                        }
+                    }
+                }
+            	if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
+            		return \$methods;
+            	}
+        	}
+    		\$methods[] = '{$class_name}';
+    		return \$methods;
+    	}
+    	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway_{$class_name}' );
+    	add_action( 'woocommerce_checkout_process', '{$class_name}::interfere_checkout',0 );
+    	add_action( 'woocommerce_checkout_order_review', '{$class_name}::interfere_checkout_review', 1 );
+    	add_action( 'woocommerce_checkout_update_order_review', '{$class_name}::interfere_update_order_review', 1 );
+    	add_action( 'woocommerce_checkout_process', '{$class_name}::interfere_checkout_process', 1 );
+    	add_action( 'woocommerce_cart_calculate_fees', '{$class_name}::interfere_update_order_review', 1 ); /* For WooCommerce updated after 1.5.x */
+	}
+EOT;
+
+        $path = plugin_dir_path(__FILE__) . '/includes/' . $class_name . '.php';
+        $path = str_replace('//', '/', $path);
+
+        file_put_contents($path, $class);
     }
 }

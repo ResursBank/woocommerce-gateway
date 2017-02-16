@@ -3,17 +3,17 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 1.2.8
+ * Version: 2.0.0
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "1.2.8");
+define('RB_WOO_VERSION', "2.0.0");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
-//include('resursbank_settings.php');
 include('functions.php');
+//include('resursbank_settings.php');
 
 if (function_exists('add_action')) {
     add_action('plugins_loaded', 'woocommerce_gateway_resurs_bank_init');
@@ -400,6 +400,7 @@ function woocommerce_gateway_resurs_bank_init()
                                         $responseHtml = '<span class="status-enabled tips">-</span>';
                                     }
                                     setResursOption("enabled", $isEnabled, $dbMethodName);
+                                    $responseArray['valueSet'] = $isEnabled;
                                     $responseArray['element'] = "status_" . $arg;
                                     $responseArray['html'] = $responseHtml;
                                 }
@@ -433,7 +434,7 @@ function woocommerce_gateway_resurs_bank_init()
             if ($event_type == 'AUTOMATIC_FRAUD_CONTROL') {
                 $check_digest = $request['paymentId'] . $request['result'] . $currentSalt;
             } else {
-                $check_digest = $request['paymentId'] . get_transient('resurs_bank_digest_salt');
+                $check_digest = $request['paymentId'] . $currentSalt;
             }
             $check_digest = sha1($check_digest);
             $check_digest = strtoupper($check_digest);
@@ -789,6 +790,9 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentSpec = $this->get_payment_spec($cart);
             $totalAmount = $paymentSpec['totalAmount'];
             $methodList = get_transient("resurs_bank_payment_methods");
+            //$ecomMethodList = $this->get_payment_methods(false, true);
+            //$ecomExtractedList = is_array($ecomMethodList['methods']) ? $ecomMethodList['methods'] : array();
+            //if (is_array($ecomExtractedList)) { $methodList = $ecomExtractedList; }
 
             $fieldGenHtml = "";
             foreach ($methodList as $methodIndex => $method) {
@@ -854,7 +858,11 @@ function woocommerce_gateway_resurs_bank_init()
                              * MarGul Change
                              * Use translations for the Read More Button. Also added a fixed width and height on the onClick button.
                              */
-                            $translation = CountryHandler::getDictionary();
+                            if (class_exists("CountryHandler")) {
+                                $translation = CountryHandler::getDictionary();
+                            } else {
+                                $translation = array();
+                            }
                             $read_more = (!empty($translation)) ? $translation['read_more'] : 'Read More';
 
                             $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
@@ -1580,331 +1588,7 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function write_class_to_file($payment_method)
         {
-            $class_name = 'resurs_bank_nr_' . $payment_method->id;
-            if (!file_exists(plugin_dir_path(__FILE__) . '/includes/' . $class_name)) {
-            } else {
-                if (!in_array(plugin_dir_path(__FILE__) . '/includes/' . $class_name, get_included_files())) {
-                    include(plugin_dir_path(__FILE__) . '/includes/' . $class_name);
-                }
-            }
-
-            $initName = 'woocommerce_gateway_resurs_bank_nr_' . $payment_method->id . '_init';
-            $class_name = 'resurs_bank_nr_' . $payment_method->id;
-            $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
-            $method_name = $payment_method->description;
-            $type = strtolower($payment_method->type);
-            $customerType = $payment_method->customerType;
-            $minLimit = $payment_method->minLimit;
-            $maxLimit = $payment_method->maxLimit;
-
-            //$icon_name = strtolower($method_name);
-            $icon_name = "resurs-standard";
-            //$icon_name = str_replace(array('å', 'ä', 'ö', ' '), array('a', 'a', 'o', '_'), $icon_name);
-            $path_to_icon = $this->icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
-            $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
-            $has_icon = (string)file_exists($temp_icon);
-
-            $ajaxUrl = admin_url('admin-ajax.php');
-            $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-            $class = <<<EOT
-<?php
-	class {$class_name} extends WC_Resurs_Bank {
-		public function __construct()
-		{
-			\$this->id           = '{$class_name}';
-			\$this->has_icon();
-			\$this->method_title = '{$method_name}';
-			if (!isResursHosted()) {
-				\$this->has_fields   = true;
-			} else {
-				\$this->has_fields   = false;
-			}
-
-			\$this->init_form_fields();
-			\$this->init_settings();
-
-            \$this->minLimit = '{$minLimit}';
-            \$this->maxLimit = '{$maxLimit}';
-			\$this->title       = \$this->get_option( 'title' );
-			\$this->description = \$this->get_option( 'description' );
-
-			if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
-				add_action( 'woocommerce_update_options_payment_gateways_' . \$this->id, array( \$this, 'process_admin_options' ) );
-			} else {
-				add_action( 'woocommerce_update_options_payment_gateways', array( \$this, 'process_admin_options' ) );
-			}
-			//add_action( 'woocommerce_calculate_totals', array( \$this, 'calculate_totals' ), 10, 1 );
-			// Payment listener/API hook
-
-			add_action( 'woocommerce_api_{$class_name}', array( \$this, 'check_signing_response' ) );
-		}
-
-		function init_form_fields() {
-			\$this->form_fields = array(
-				'enabled' => array(
-						'title' => __('Enable/Disable', 'woocommerce'),
-						'type'  => 'checkbox',
-						'label' => 'Aktivera Resurs Bank {$method_name}',
-					),
-				'title' => array(
-						'title'       => 'Title',
-						'type'        => 'text',
-						'default'     => 'Resurs Bank {$method_name}',
-						'description' => __( 'This controls the payment method title which the user sees during checkout.', 'woocommerce' ),
-						'desc_tip'    => true,
-					),
-				'icon' => array(
-						'title'   => __('Custom payment method icon', 'WC_Payment_Gateway'),
-						'type'    => 'text',
-						'default' => \$this->icon,
-						'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.', 'WC_Payment_Gateway'),
-					),
-				'enableMethodIcon' => array(
-						'title' => __('Enable/Disable payment method icon', 'woocommerce'),
-						'type'  => 'checkbox',
-						'label' => 'Enables displaying of logotype at payment method choice',
-					),
-				'description' => array(
-						'title'       => 'Description',
-						'type'        => 'textarea',
-						'default'     => 'Betala med Resurs Bank {$method_name}',
-						'description' => __( 'This controls the payment method description which the user sees during checkout.', 'woocommerce' ),
-						'desc_tip'    => true,
-					),
-				'price' => array(
-						'title'       => 'Avgift',
-						'type'        => 'number',
-						'default'     => 0,
-						'description' => __('Payment fee for this payment method', 'WC_Payment_Gateway'),
-						'desc_tip'    => false,
-					),
-				'priceDescription' => array(
-						'title'   => __('Description of this payment method fee', 'WC_Payment_Gateway'),
-						'type'    => 'textarea',
-						'default' => '',
-					),
-			);
-		}
-
-		public function calculate_totals( \$totals )
-		{
-			global \$woocommerce;
-		    \$available_gateways = \$woocommerce->payment_gateways->get_available_payment_gateways();
-		    \$current_gateway = '';
-		    if ( ! empty( \$available_gateways ) ) {
-		        // Chosen Method
-		        if ( isset( \$woocommerce->session->chosen_payment_method ) && isset( \$available_gateways[ \$woocommerce->session->chosen_payment_method ] ) ) {
-		            \$current_gateway = \$available_gateways[ \$woocommerce->session->chosen_payment_method ];
-		        } elseif ( isset( \$available_gateways[ get_option( 'woocommerce_default_gateway' ) ] ) ) {
-		            \$current_gateway = \$available_gateways[ get_option( 'woocommerce_default_gateway' ) ];
-		        } else {
-		            \$current_gateway =  current( \$available_gateways );
-
-		        }
-		    }
-		    if(\$current_gateway!=''){
-		        \$current_gateway_id = \$current_gateway->id;
-		        \$extra_charges_id = 'woocommerce_' . \$current_gateway_id . '_settings';
-		        \$extra_charges = (float)get_option( \$extra_charges_id)['price'];
-		        //var_dump(\$extra_charges, \$extra_charges_id);
-		        if(\$extra_charges){
-		            \$totals->cart_contents_total = \$totals->cart_contents_total + \$extra_charges;
-		            \$this->current_gateway_title = \$current_gateway -> title;
-		            \$this->current_gateway_extra_charges = \$extra_charges;
-		            add_action( 'woocommerce_review_order_before_order_total',  array( \$this, 'add_payment_gateway_extra_charges_row'));
-		        }
-
-		    }
-		    return \$totals;
-		}
-
-		public function add_payment_gateway_extra_charges_row()
-		{
-			?>
-		    <tr class="payment-extra-charge">
-		        <th><?php echo \$this->current_gateway_title?> Extra Charges</th>
-		        <td><?php echo woocommerce_price(\$this->current_gateway_extra_charges); ?></td>
-			 </tr>
-			 <?php
-		}
-
-		public function get_current_gateway()
-		{
-			global \$woocommerce;
-			\$available_gateways = \$woocommerce->payment_gateways->get_available_payment_gateways();
-			\$current_gateway = null;
-			\$default_gateway = get_option( 'woocommerce_default_gateway' );
-			if ( ! empty( \$available_gateways ) ) {
-				
-			   // Chosen Method
-				if ( isset( \$woocommerce->session->chosen_payment_method ) && isset( \$available_gateways[ \$woocommerce->session->chosen_payment_method ] ) ) {
-					\$current_gateway = \$available_gateways[ \$woocommerce->session->chosen_payment_method ];
-				} elseif ( isset( \$available_gateways[ \$default_gateway ] ) ) {
-					\$current_gateway = \$available_gateways[ \$default_gateway ];
-				} else {
-					\$current_gateway = current( \$available_gateways );
-				}
-			}
-			if ( ! is_null( \$current_gateway ) )
-				return \$current_gateway;
-			else 
-				return false;
-		}
-
-		public function has_icon()
-		{
-		    \$this->iconEnabled = \$this->get_option('enableMethodIcon');
-		    if (\$this->iconEnabled == "true" || \$this->iconEnabled == "1" || \$this->iconEnabled == "yes") {
-    			if ( file_exists( '{$temp_icon}' ) ) {
-    				\$this->icon = '{$path_to_icon}';
-    			}
-    			\$storedIcon = \$this->get_option('icon');
-    			if (\$storedIcon !== \$this->icon && !empty(\$storedIcon)) {
-    			    \$this->icon = \$storedIcon;
-    			}
-		    }
-		}
-
-		public function payment_fields()
-		{
-			global \$woocommerce;
-			\$cart = \$woocommerce->cart;
-			//var_dump(\$woocommerce->session->chosen_payment_method, \$_REQUEST);
-			if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
-				echo '<p>Denna betalningsmetod är inte tillgänglig för dig, vänligen välj en annan</p>';
-				return;
-			}
-			if (isset(\$_REQUEST) && isset(\$_REQUEST['payment_method'])) {
-				if (\$_REQUEST['payment_method'] === '{$class_name}') {
-                   /*
-				    * Start payment session are used even if we're in hosted or simplified mode.
-				    * There is a read more button that is created here.
-				    */
-        		    \$payment_session = \$this->start_payment_session( '{$payment_method->id}', \$this );
-				}
-			}
-		}
-
-		public function admin_options()
-		{
-			?>
-			<h3><?php echo \$this->method_title; ?></h3>
-			<p>På denna sida kan du ändra inställningar för Resurs Bank {$method_name}</p>
-
-				<table class="form-table">
-
-                    <span id="paymentMethodName" style="display:none">{$class_name}</span>
-					<?php \$this->generate_settings_html(); ?>
-
-				</table>
-
-			<?php
-		}
-
-		public static function interfere_checkout()
-		{
-		}
-
-		public static function interfere_checkout_review( \$value )
-		{
-		}
-
-		public static function interfere_update_order_review( \$posted )
-		{
-			global \$woocommerce;
-			if (isset(\$_REQUEST)) {
-				if (isset(\$_REQUEST['payment_method']) && \$_REQUEST['payment_method'] === '{$class_name}') {
-					\$payment_method = \$_REQUEST['payment_method'];
-					\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
-					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
-					//\$payment_fee_tax_pct = (float)get_option( 'woocommerce_resurs-bank_settings' )['pricePct'];
-					//\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
-
-					\$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
-
-					\$payment_fee_tax_class_rates = \$woocommerce->cart->tax->get_rates( \$payment_fee_tax_class );
-
-					\$payment_fee_tax = \$woocommerce->cart->tax->calc_tax(\$payment_fee, \$payment_fee_tax_class_rates);
-
-		        	if ( false === empty( get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'] ) ) {
-						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'];
-					} else {
-						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['title'];
-					}
-					\$woocommerce->cart->add_fee( \$fee_title, \$payment_fee, true, \$payment_fee_tax_class );
-				}
-			}
-		}
-
-		public static function interfere_checkout_process( \$posted )
-		{
-			global \$woocommerce;
-			if (isset(\$_REQUEST)) {
-				if (\$_REQUEST['payment_method'] === '{$class_name}') {
-					\$payment_method = \$_REQUEST['payment_method'];
-					\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
-					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
-					//\$payment_fee_tax_pct = (float)get_option( 'woocommerce_resurs-bank_settings' )['pricePct'];
-					\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
-					\$payment_fee_tax = (float)\$payment_fee * ( \$payment_fee_tax_pct / 100 );
-
-					\$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
-
-					if ( false === empty( get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'] ) ) {
-						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'];
-					} else {
-						\$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['title'];
-					}
-
-					\$woocommerce->cart->add_fee( \$fee_title, \$payment_fee, true, \$payment_fee_tax_class );
-				}
-			}
-		}
-	}
-
-    if (!hasResursOmni()) {
-	    function woocommerce_add_resurs_bank_gateway_{$class_name}( \$methods ) {
-    		if ( 'no' == get_option( 'woocommerce_resurs-bank_settings' )['enabled']) {
-    			return \$methods;
-    		}
-    		global \$woocommerce;
-    		// If the cart exists, we are probably located in the checkout. If that is so, check if the method
-    		// are allowed to show. If the cart don't exist, this will generate undefined objects and show up errors
-    		// on screen, if screen logging is enabled.
-    		if (isset(\$woocommerce->cart)) {
-                \$cart = \$woocommerce->cart;
-                \$total = \$cart->total;
-
-                \$minLimit = '{$minLimit}';
-                \$maxLimit = '{$maxLimit}';
-                if (\$total > 0) {
-                    if (\$total >= \$maxLimit || \$total <= \$minLimit)
-                    {
-                        if (!isResursTest()) {
-                            return \$methods;
-                        }
-                    }
-                }
-            	if ( isset( \$_COOKIE['{$class_name}_denied'] ) ) {
-            		return \$methods;
-            	}
-        	}
-    		\$methods[] = '{$class_name}';
-    		return \$methods;
-    	}
-    	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway_{$class_name}' );
-    	add_action( 'woocommerce_checkout_process', '{$class_name}::interfere_checkout',0 );
-    	add_action( 'woocommerce_checkout_order_review', '{$class_name}::interfere_checkout_review', 1 );
-    	add_action( 'woocommerce_checkout_update_order_review', '{$class_name}::interfere_update_order_review', 1 );
-    	add_action( 'woocommerce_checkout_process', '{$class_name}::interfere_checkout_process', 1 );
-    	add_action( 'woocommerce_cart_calculate_fees', '{$class_name}::interfere_update_order_review', 1 ); /* For WooCommerce updated after 1.5.x */
-	}
-EOT;
-
-            $path = plugin_dir_path(__FILE__) . '/includes/' . $class_name . '.php';
-            $path = str_replace('//', '/', $path);
-
-            file_put_contents($path, $class);
+            write_resurs_class_to_file($payment_method);
         }
 
         /**
@@ -2060,7 +1744,6 @@ EOT;
                 }
             }
 
-
             if (isset($_REQUEST['save'])) {
                 try {
                     if (isset($this->login) && !empty($this->login)) {
@@ -2106,15 +1789,22 @@ EOT;
          * Get available payment methods. Either from Resurs Bank API or transient cache
          *
          * @param bool $force_file_refresh If new files should be forced or not
+         * @param bool $skipGateway Set to true if you want to skip the gateway generator (normally, you want this while listing methods in a checkout, not else)
          * @return array Array containing an error message, if any errors occurred, and the payment methods, if any available and no errors occurred.
          * @throws Exception
          */
-        public function get_payment_methods($force_file_refresh = false)
+        public function get_payment_methods($force_file_refresh = false, $skipGateway = false)
         {
             $returnArr = array();
             try {
                 $paymentMethods = $this->flow->getPaymentMethods();
-                $this->generate_payment_gateways($paymentMethods);
+                if (!$skipGateway) {
+                    $this->generate_payment_gateways($paymentMethods);
+                }
+                /*
+                 *  This is normally wanted by some parts of the system
+                 */
+                set_transient('resurs_bank_payment_methods', $paymentMethods);
                 $returnArr['error'] = '';
                 $returnArr['methods'] = $paymentMethods;
                 $returnArr['generate_new_files'] = true;
@@ -2476,7 +2166,11 @@ EOT;
                  * MarGul change
                  * Take the translation for Get Address.
                  */
-                $translation = CountryHandler::getDictionary();
+                if (class_exists('CountryHandler')) {
+                    $translation = CountryHandler::getDictionary();
+                } else {
+                    $translation = array();
+                }
                 $get_address = (!empty($translation)) ? $translation['get_address'] : 'Get address';
                 echo '<a href="#" class="button" id="fetch_address">' . __($get_address, 'WC_Payment_Gateway') . '</a><br>';
             }
@@ -3063,7 +2757,6 @@ function wc_get_payment_id_by_order_id($orderId = '')
  */
 function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings")
 {
-
     /*
      * MarGul change
      * If it's demoshop it will take the config from sessions instead of db
@@ -3103,13 +2796,14 @@ function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings"
     }
 
     $response = get_option($namespace)[$key];
+
     if (empty($response)) {
         $response = get_option($key);
     }
-    if ($response === "true") { return true; }
-    if ($response === "false") { return false; }
-    if ($response === "yes") { return true; }
-    if ($response === "no") { return false; }
+    if ($response == "true") { return true; }
+    if ($response == "false") { return false; }
+    if ($response == "yes") { return true; }
+    if ($response == "no") { return false; }
     return $response;
 }
 
@@ -3144,9 +2838,9 @@ function getResursOption($key = "", $namespace = "woocommerce_resurs-bank_settin
  * @param string $key
  * @return bool
  */
-function hasResursOptionValue($key = "")
+function hasResursOptionValue($key = "", $namespace = 'woocommerce_resurs-bank_settings')
 {
-    $optionValues = get_option('woocommerce_resurs-bank_settings');
+    $optionValues = get_option($namespace);
     if (isset($optionValues[$key])) {
         return true;
     }
