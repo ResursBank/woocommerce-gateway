@@ -327,6 +327,8 @@ if (function_exists('curl_init')) {
 
         /** @var bool Try to automatically parse the retrieved body content. Supports, amongst others json, serialization, etc */
         public $CurlAutoParse = true;
+        /** @var bool Allow parsing of content bodies (tags) */
+        private $allowParseHtml = false;
 
         /**
          * Authentication
@@ -413,6 +415,10 @@ if (function_exists('curl_init')) {
          */
         public function setCookieExceptions($enabled = false) {
             $this->UseCookieExceptions = $enabled;
+        }
+
+        public function setParseHtml($enabled = false) {
+            $this->allowParseHtml = $enabled;
         }
 
         /**
@@ -896,7 +902,10 @@ if (function_exists('curl_init')) {
          * If this functions receives a json string or any other special content (as PHP-serializations), it will try to convert that string automatically to a readable array.
          *
          * @param string $content
-         * @return mixed|null
+         * @param bool $isFullRequest
+         * @param null $contentType
+         * @return array|mixed|null
+         * @throws \Exception
          */
         public function ParseContent($content = '', $isFullRequest = false, $contentType = null)
         {
@@ -929,7 +938,97 @@ if (function_exists('curl_init')) {
                     return null;
                 }
             }
+            if ($this->allowParseHtml && empty($parsedContent)) {
+                if (class_exists('DOMDocument')) {
+                    $DOM = new \DOMDocument();
+                    $DOM->loadHTML($content);
+                    if (isset($DOM->childNodes->length) && $DOM->childNodes->length > 0) {
+                        $elementsByTagName = $DOM->getElementsByTagName('*');
+                        $childNodeArray = $this->getChildNodes($elementsByTagName);
+                        $childTagArray = $this->getChildNodes($elementsByTagName, 'tagnames');
+                        $childIdArray = $this->getChildNodes($elementsByTagName, 'id');
+                        $parsedContent = array(
+                            'ByNodes' => array(),
+                            'ByClosestTag' => array(),
+                            'ById' => array()
+                        );
+                        if (is_array($childNodeArray) && count($childNodeArray)) {
+                            $parsedContent['ByNodes'] = $childNodeArray;
+                        }
+                        if (is_array($childTagArray) && count($childTagArray)) {
+                            $parsedContent['ByClosestTag'] = $childTagArray;
+                        }
+                        if (is_array($childIdArray) && count($childIdArray)) {
+                            $parsedContent['ById'] = $childIdArray;
+                        }
+                    }
+                } else {
+                    throw new \Exception("Can not parse DOMDocuments without the DOMDocuments class");
+                }
+            }
             return $parsedContent;
+        }
+
+        /**
+         * Experimental: Convert DOMDocument to an array
+         *
+         * @param array $childNode
+         * @param string $getAs
+         * @param bool $hasParent
+         * @return array
+         */
+        private function getChildNodes($childNode = array(), $getAs = '', $hasParent = false) {
+            $childNodeArray = array();
+            $childAttributeArray = array();
+            $childIdArray = array();
+            if (is_object($childNode)) {
+                foreach ($childNode as $nodeItem) {
+                    if (is_object($nodeItem)) {
+                        if (isset($nodeItem->tagName)) {
+                            if (strtolower($nodeItem->tagName) == "title") {
+                                $elementData['pageTitle'] = $nodeItem->nodeValue;
+                            }
+                            $elementData = array('tagName' => $nodeItem->tagName);
+                            $elementData['id'] = $nodeItem->getAttribute('id');
+                            $elementData['name'] = $nodeItem->getAttribute('name');
+                            $elementData['context'] = $nodeItem->nodeValue;
+                            if ($nodeItem->hasChildNodes()) {
+                                $elementData['childElement'] = $this->getChildNodes($nodeItem->childNodes, $getAs, true);
+                            }
+                            $identificationName = $nodeItem->tagName;
+                            if (empty($identificationName) && !empty($elementData['name'])) {
+                                $identificationName = $elementData['name'];
+                            }
+                            if (empty($identificationName) && !empty($elementData['id'])) {
+                                $identificationName = $elementData['id'];
+                            }
+                            $childNodeArray[] = $elementData;
+                            if (!isset($childAttributeArray[$identificationName])) {
+                                $childAttributeArray[$identificationName] = $elementData;
+                            } else {
+                                $childAttributeArray[$identificationName][] = $elementData;
+                            }
+                            if (!empty($elementData['id'])) {
+                                if (!isset($childIdArray[$elementData['id']])) {
+                                    $childIdArray[$elementData['id']] = $elementData;
+                                } else {
+                                    $childIdArray[$elementData['id']][] = $elementData;
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            }
+            if (empty($getAs) || $getAs== "domnodes") {
+                $returnContext = $childNodeArray;
+            } else if ($getAs == "tagnames") {
+                $returnContext = $childAttributeArray;
+            } else if ($getAs == "id") {
+                $returnContext = $childIdArray;
+            }
+            return $returnContext;
         }
 
         /**
