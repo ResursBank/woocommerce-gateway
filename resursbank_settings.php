@@ -314,6 +314,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             <tr>
                                 <th class="sort"></th>
                                 <th class="name"><?php echo __('Method', 'WC_Payment_Gateway') ?></th>
+                                <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
                                 <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
                                 <th class="status"><?php echo __('Status', 'WC_Payment_Gateway') ?></th>
                                 <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
@@ -349,12 +350,17 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                         $isEnabled = true;
                                     }
                                 }
+                                $maTitle = $methodArray->description;
+                                if (isset($settingsControl['title']) && !empty($settingsControl['title'])) {
+                                    $maTitle = $settingsControl['title'];
+                                }
                                 ?>
                                 <tr>
                                     <td width="1%">&nbsp;</td>
                                     <td class="name"><a
                                                 href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
                                     </td>
+                                    <td class="title"><?php echo $maTitle ?></td>
                                     <td class="id"><?php echo $methodArray->id ?></td>
                                     <?php if (!$isEnabled) { ?>
                                         <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
