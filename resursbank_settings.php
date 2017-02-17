@@ -42,7 +42,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     {
         $sections = array(
             '' => __('Basic settings', 'WC_Payment_Gateway'),
-            'shopflow' => __('Shop flow behaviour ', 'WC_Payment_Gateway'),
+            'shopflow' => __('Shop flow settings ', 'WC_Payment_Gateway'),
             'advanced' => __('Advanced settings', 'WC_Payment_Gateway')
         );
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
