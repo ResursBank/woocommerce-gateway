@@ -316,6 +316,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => '',
                     'description' => __('This controls the payment method title which the user sees during checkout.', 'woocommerce'),
+                    'label'       => __('If you are leaving this field empty, the default title will be used in the checkout', 'woocommerce' ),
                     'desc_tip' => true,
                 ),
                 'icon' => array(
