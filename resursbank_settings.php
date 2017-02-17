@@ -155,7 +155,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     private function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
         $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
-
         $returnCheckbox = '
                 <tr>
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
@@ -164,7 +163,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             name="' . $namespace . '_' . $settingKey . '"
                             id="' . $namespace . '_' . $settingKey . '"
                             ' . ($isChecked ? 'checked="checked"' : "") . '
-                               value="yes">' . $this->oldFormFields[$settingKey]['label'] . '
+                               value="yes">' . $this->oldFormFields[$settingKey]['label'] . '<br>
+                               <br>
+                            <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
+
                     </td>
                 </tr>
         ';
@@ -194,7 +196,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             id="' . $namespace . '_' . $settingKey . '"
                             size="64"
                             ' . $scriptLoader . '
-                            value="' . $UseValue . '"><br><i>' . $this->oldFormFields[$settingKey]['label'] . '</i>
+                            value="' . $UseValue . '"> <i>' . $this->oldFormFields[$settingKey]['label'] . '</i><br>
+                            <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
                             ' . $isPassword . '
                             </td>
         ';
@@ -211,7 +214,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             size="64"
                             value=""> ' . $this->oldFormFields[$settingKey]['label'] . '
                             <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \'' . $namespace . '\', \'' . $scriptLoader . '\')" value="' . __("Save") . '">
-                </span>
+                            <br><i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
+                       </span>
                 </td>
             ';
         }
@@ -240,7 +244,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $returnDropDown .= '<option value="' . $optionKey . '" ' . ($optionKey == $savedValue ? "selected" : "") . '>' . $optionValue . '</option>';
         }
         $returnDropDown .= '
-                    </select>
+                    </select><br>
+                            <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
                     </td>
                 </tr>
         ';
@@ -290,7 +295,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             } else if ($section == "advanced") {
                 echo '<h1>' . __('Resurs Bank Configuration - Advanced settings', 'WC_Payment_Gateway') . '</h1>';
             } else if (preg_match("/^resurs_bank_nr_/i", $section)) {
-                echo '<h1>' . __('Resurs Bank Configuration', 'WC_Payment_Gateway') . ' - '.$methodDescription.' (' . $theMethod . ')</h1>';
+                echo '<h1>' . __('Resurs Bank Configuration', 'WC_Payment_Gateway') . ' - ' . $methodDescription . ' (' . $theMethod . ')</h1>';
             } else {
                 echo '<h1>' . __('Resurs Bank payment gateway configuration', 'WC_Payment_Gateway') . '</h1>
                     Plugin version ' . rbWcGwVersion() . ' ' . (!empty($currentVersion) ? $currentVersion : "");
