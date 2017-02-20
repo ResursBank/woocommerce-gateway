@@ -358,7 +358,8 @@ function woocommerce_gateway_resurs_bank_init()
             $event_type = $request['event-type'];
             if ($event_type == "noevent") {
                 $myResponse = null;
-                $myBool = true;
+                $myBool = false;
+                $errorMessage = "";
 
                 $setType = isset($_REQUEST['puts']) ? $_REQUEST['puts'] : "";
                 $setValue = isset($_REQUEST['value']) ? $_REQUEST['value'] : "";
@@ -369,13 +370,29 @@ function woocommerce_gateway_resurs_bank_init()
                 if (!empty($reqType) || !empty($setType)) {
                     if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
                         $reqType = str_replace($reqNamespace . "_", '', $reqType);
-                        $myBool = false;
+                        $myBool = true;
                         $myResponse = getResursOption($reqType);
                     } else if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
+                        $failSetup = false;
+                        if ($setType == "woocommerce_resurs-bank_password") {
+                            $testUser = getResursOption("login");
+                            $testPass = $setValue;
+                            $newFlow = initializeResursFlow($testUser, $testPass);
+                            try {
+                                $newFlow->getPaymentMethods();
+                                $myBool = true;
+                            } catch (Exception $e) {
+                                $myBool = false;
+                                $failSetup = true;
+                                $errorMessage = $e->getMessage();
+                            }
+                        }
                         $setType = str_replace($reqNamespace . "_", '', $setType);
-                        $myBool = false;
-                        setResursOption($setType, $setValue);
-                        $myResponse = $setType . ":OK";
+                        if (!$failSetup) {
+                            $myBool = true;
+                            setResursOption($setType, $setValue);
+                            $myResponse = $setType . ":OK";
+                        }
                     }
                 } else {
                     if (isset($_REQUEST['run'])) {
@@ -386,11 +403,16 @@ function woocommerce_gateway_resurs_bank_init()
                         $responseArray = array();
                         if (wp_verify_nonce($reqNonce, "requestResursAdmin")) {
                             if ($_REQUEST['run'] == "updateResursPaymentMethods") {
-                                $responseArray = $this->flow->getPaymentMethods();
+                                try {
+                                    $responseArray = $this->flow->getPaymentMethods();
+                                } catch (Exception $e) {
+                                    $errorMessage = $e->getMessage();
+                                }
                             } else if ($_REQUEST['run'] == "methodToggle") {
                                 $dbMethodName = "woocommerce_resurs_bank_nr_" . $arg . "_settings";
                                 $responseMethod = get_option($dbMethodName);
                                 if (is_array($responseMethod) && count($responseMethod)) {
+                                    $myBool = true;
                                     $isEnabled = $responseMethod['enabled'];
                                     if ($isEnabled == "yes" || $isEnabled == "true" || $isEnabled == "1") {
                                         $isEnabled = "no";
@@ -408,14 +430,16 @@ function woocommerce_gateway_resurs_bank_init()
                         } else {
                             $responseArray = array('Authorized' => false);
                         }
-                        $myResponse = array($_REQUEST['run'] . "Response" => $responseArray, "arg" => $arg);
-                        $myBool = false;
+                        $myResponse = array(
+                            $_REQUEST['run'] . "Response" => $responseArray
+                        );
                     }
                 }
 
                 $response = array(
                     'response' => $myResponse,
-                    'fail' => $myBool
+                    'success' => $myBool,
+                    'errorMessage' => $errorMessage
                 );
                 $this->returnJsonResponse($response);
                 exit;
@@ -2901,14 +2925,24 @@ function wc_get_order_item_type_by_item_id($item_id, $getItemName = false)
 /**
  * Initialize EComPHP, the key of almost everything in this plugin
  *
+ * @param string $overrideUser
+ * @param string $overridePassword
  * @return ResursBank
  */
-function initializeResursFlow()
+function initializeResursFlow($overrideUser = "", $overridePassword = "")
 {
     global $current_user;
     $username = resursOption("login");
     $password = resursOption("password");
     $useEnvironment = getServerEnv();
+
+    if (!empty($overrideUser)) {
+        $username = $overrideUser;
+    }
+    if (!empty($overridePassword)) {
+        $password = $overridePassword;
+    }
+
     $initFlow = new ResursBank($username, $password);
     $initFlow->convertObjects = true;
     $initFlow->convertObjectsOnGet = true;

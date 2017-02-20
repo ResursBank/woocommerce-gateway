@@ -89,15 +89,15 @@ function resursEditProtectedField(currentField, ns) {
         }
     }).done(
         function(data) {
-            if (typeof data["fail"] !== "undefined") {
-                if (data["fail"] === false) {
+            if (typeof data["success"] !== "undefined") {
+                if (data["success"] === true) {
                     $RB('#' + currentField.id + "_value").val(data["response"]);
                 }
             }
             resursProtectedFieldToggle(currentField.id);
         }
     ).fail(function (x, y) {
-        alert("Fail");
+        alert("Fail ("+x+", "+y+")");
     });
 }
 function resursSaveProtectedField(currentFieldId, ns, cb) {
@@ -116,13 +116,21 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
         }
     }).done(function(data) {
         processId.html("");
-        if (typeof data["fail"] !== "undefined") {
-            if (data["fail"] === false) {
+        if (typeof data["success"] !== "undefined") {
+            if (data["success"] === true) {
                 if (cb !== "") {
-                    runResursAdminCallback(cb);
+                    runResursAdminCallback(cb, currentFieldId);
                 }
             } else {
-                alert("Not sucessful");
+                if (typeof data["errorMessage"] !== "undefined" && data["errorMessage"] != "") {
+                    if (processId.length > 0) {
+                        processId.html('<div class="label label-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                    } else {
+                        alert("Not successful: " + data["errorMessage"]);
+                    }
+                } else {
+                    alert("Not successful");
+                }
             }
         }
         resursProtectedFieldToggle(currentFieldId);
@@ -130,7 +138,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
         if (processId.length > 0) {
             processId.html("The saving on this field was unsuccessful.");
         } else {
-            alert("Fail");
+            alert("The saving on this field was unsuccessful.");
         }
     });
 }
@@ -165,6 +173,15 @@ function runResursAdminCallback(callbackName) {
             var response = data["response"][callbackName + "Response"];
             if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
                 $RB('#' + response["element"]).html(response["html"]);
+            }
+            if (typeof data["success"] !== "undefined" && typeof data["errorMessage"] !== "undefined") {
+                if (data["success"] === false && data["errorMessage"] !== "") {
+                    if (typeof testProcElement === "object") {
+                        testProcElement.html('<div class="label label-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                    } else {
+                        alert(data["errorMessage"]);
+                    }
+                }
             }
         }
     }).fail(function(x, y) {
