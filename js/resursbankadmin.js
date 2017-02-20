@@ -106,13 +106,20 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
         processId.html('<img src="'+rb_buttons.resursSpinner+'" border="0">');
     }
     var setVal = $RB('#' + currentFieldId + "_value").val();
+    var subVal;
+
+    if (currentFieldId == "woocommerce_resurs-bank_password") {
+        subVal=$RB("#woocommerce_resurs-bank_login").val();
+    }
+
     $RB.ajax({
         url: rbAjaxSetup.ran,
         type: 'post',
         data: {
             'puts': currentFieldId,
             'value': setVal,
-            'ns': ns
+            'ns': ns,
+            's': subVal
         }
     }).done(function(data) {
         processId.html("");

@@ -374,8 +374,9 @@ function woocommerce_gateway_resurs_bank_init()
                         $myResponse = getResursOption($reqType);
                     } else if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
                         $failSetup = false;
+                        $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
                         if ($setType == "woocommerce_resurs-bank_password") {
-                            $testUser = getResursOption("login");
+                            $testUser = $subVal;
                             $testPass = $setValue;
                             $newFlow = initializeResursFlow($testUser, $testPass);
                             try {
@@ -391,6 +392,7 @@ function woocommerce_gateway_resurs_bank_init()
                         if (!$failSetup) {
                             $myBool = true;
                             setResursOption($setType, $setValue);
+                            setResursOption("login", $subVal);
                             $myResponse = $setType . ":OK";
                         }
                     }
