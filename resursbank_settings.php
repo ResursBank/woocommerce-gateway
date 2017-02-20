@@ -207,15 +207,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
              */
             $returnTextBox .= '
                 <td style="cursor: pointer;">
-                <span onclick="resursEditProtectedField(this, \'' . $namespace . '\')" id="' . $namespace . '_' . $settingKey . '">' . __('Click to edit', 'WC_Payment_Gateway') . '</span>
-                <span id="' . $namespace . '_' . $settingKey . '_hidden" style="display:none;">
-                    <input ' . $scriptLoader . ' type="text"
-                            id="' . $namespace . '_' . $settingKey . '_value"
-                            size="64"
-                            value=""> ' . $this->oldFormFields[$settingKey]['label'] . '
-                            <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \'' . $namespace . '\', \'' . $scriptLoader . '\')" value="' . __("Save") . '">
-                            <br><i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
-                       </span>
+                    <span onclick="resursEditProtectedField(this, \'' . $namespace . '\')" id="' . $namespace . '_' . $settingKey . '">' . __('Click to edit', 'WC_Payment_Gateway') . '</span>
+                    <span id="' . $namespace . '_' . $settingKey . '_hidden" style="display:none;">
+                        <input ' . $scriptLoader . ' type="text" id="' . $namespace . '_' . $settingKey . '_value" size="64" value=""> ' . $this->oldFormFields[$settingKey]['label'] . '
+                        <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \'' . $namespace . '\', \'' . $scriptLoader . '\')" value="' . __("Save") . '">
+                        <br><i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
+                    </span><br>
+                    <span id="process_' . $namespace . '_' . $settingKey . '"></span>
                 </td>
             ';
         }
@@ -370,13 +368,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     <?php if (!$isEnabled) { ?>
                                         <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
                                             onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
-                                            <span class="status-disabled tips">-</span>
+                                            <span class="status-disabled tips" data-tip="<?php echo __( 'Disabled', 'woocommerce' )?>">-</span>
                                         </td>
                                     <?php } else {
                                         ?>
                                         <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
                                             onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
-                                            <span class="status-enabled tips">-</span>
+                                            <span class="status-enabled tips" data-tip="<?php echo __( 'Enabled', 'woocommerce' )?>">-</span>
                                         </td>
                                         <?php
                                     } ?>

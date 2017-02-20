@@ -101,6 +101,10 @@ function resursEditProtectedField(currentField, ns) {
     });
 }
 function resursSaveProtectedField(currentFieldId, ns, cb) {
+    var processId = $RB('#process_' + currentFieldId);
+    if (processId.length > 0) {
+        processId.html('<img src="'+rb_buttons.resursSpinner+'" border="0">');
+    }
     var setVal = $RB('#' + currentFieldId + "_value").val();
     $RB.ajax({
         url: rbAjaxSetup.ran,
@@ -111,6 +115,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
             'ns': ns
         }
     }).done(function(data) {
+        processId.html("");
         if (typeof data["fail"] !== "undefined") {
             if (data["fail"] === false) {
                 if (cb !== "") {
@@ -122,7 +127,11 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
         }
         resursProtectedFieldToggle(currentFieldId);
     }).fail(function(x, y) {
-        alert("Fail");
+        if (processId.length > 0) {
+            processId.html("The saving on this field was unsuccessful.");
+        } else {
+            alert("Fail");
+        }
     });
 }
 function resursProtectedFieldToggle(currentField) {
@@ -133,8 +142,13 @@ function resursProtectedFieldToggle(currentField) {
 
 function runResursAdminCallback(callbackName) {
     var setArg;
+    var testProcElement;
     if (typeof arguments[1] !== "undefined") {
         setArg = arguments[1];
+        testProcElement = $RB('#process_' + setArg);
+        if (typeof testProcElement === "object") {
+            testProcElement.html('<img src="'+rb_buttons.resursSpinner+'" border="0">');
+        }
     }
     $RB.ajax({
         url: rbAjaxSetup.ran,
@@ -144,6 +158,9 @@ function runResursAdminCallback(callbackName) {
             'arg': setArg
         }
     }).done(function(data) {
+        if (typeof testProcElement === "object") {
+            testProcElement.html('');
+        }
         if (typeof data["response"] === "object" && typeof data["response"][callbackName + "Response"] !== "undefined") {
             var response = data["response"][callbackName + "Response"];
             if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
@@ -151,6 +168,10 @@ function runResursAdminCallback(callbackName) {
             }
         }
     }).fail(function(x, y) {
-        alert("Administration callback not successful");
+        if (typeof testProcElement === "object") {
+            testProcElement.html("Administration callback not successful");
+        } else {
+            alert("Administration callback not successful");
+        }
     });
 }

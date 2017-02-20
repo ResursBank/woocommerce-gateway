@@ -394,10 +394,10 @@ function woocommerce_gateway_resurs_bank_init()
                                     $isEnabled = $responseMethod['enabled'];
                                     if ($isEnabled == "yes" || $isEnabled == "true" || $isEnabled == "1") {
                                         $isEnabled = "no";
-                                        $responseHtml = '<span class="status-disabled tips">-</span>';
+                                        $responseHtml = '<span class="status-disabled tips" data-tip="'.__( 'Disabled', 'woocommerce' ).'">-</span>';
                                     } else {
                                         $isEnabled = "yes";
-                                        $responseHtml = '<span class="status-enabled tips">-</span>';
+                                        $responseHtml = '<span class="status-enabled tips" data-tip="'.__( 'Enabled', 'woocommerce' ).'">-</span>';
                                     }
                                     setResursOption("enabled", $isEnabled, $dbMethodName);
                                     $responseArray['valueSet'] = $isEnabled;
@@ -2312,7 +2312,8 @@ function woocommerce_gateway_resurs_bank_init()
         }
         $specialAdminButtons = array(
             'registerCallbacksButton' => __('Register Callbacks', 'WC_Payment_Gateway'),
-            'refreshPaymentMethods' => __('Update available payment methods', 'WC_Payment_Gateway')
+            'refreshPaymentMethods' => __('Update available payment methods', 'WC_Payment_Gateway'),
+            'resursSpinner' => plugin_dir_url(__FILE__) . "loader.gif"
         );
         wp_localize_script('resursBankAdminScript', 'rb_buttons', $specialAdminButtons);
         $configUrl = home_url("/");
