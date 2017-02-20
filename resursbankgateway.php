@@ -342,7 +342,6 @@ function woocommerce_gateway_resurs_bank_init()
             }
         }
 
-
         /**
          * Check the callback event received and perform the appropriate action
          */
@@ -367,11 +366,16 @@ function woocommerce_gateway_resurs_bank_init()
                 $reqType = isset($_REQUEST['wants']) ? $_REQUEST['wants'] : "";
                 $reqNonce = isset($_REQUEST['ran']) ? $_REQUEST['ran'] : "";
 
+                $newPaymentMethodsList = null;
                 if (!empty($reqType) || !empty($setType)) {
                     if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
                         $reqType = str_replace($reqNamespace . "_", '', $reqType);
                         $myBool = true;
                         $myResponse = getResursOption($reqType);
+                        if (empty($myResponse)) {
+                            // Make sure this returns a string and not a bool.
+                            $myResponse = '';
+                        }
                     } else if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
                         $failSetup = false;
                         $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
@@ -380,7 +384,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $testPass = $setValue;
                             $newFlow = initializeResursFlow($testUser, $testPass);
                             try {
-                                $newFlow->getPaymentMethods();
+                                $newPaymentMethodsList = $newFlow->getPaymentMethods();
                                 $myBool = true;
                             } catch (Exception $e) {
                                 $myBool = false;
@@ -393,7 +397,10 @@ function woocommerce_gateway_resurs_bank_init()
                             $myBool = true;
                             setResursOption($setType, $setValue);
                             setResursOption("login", $subVal);
-                            $myResponse = $setType . ":OK";
+                            //$myResponse = $setType . ":OK";
+                            $myResponse['element'] = "currentResursPaymentMethods";
+                            //$myResponse['html'] = generatePaymentMethodHtml($newPaymentMethodsList, "something_else");
+                            $myResponse['html'] = '<div class="label label-success">' . __('Please reload or save this page to have the payment methods updated', 'WC_Payment_Gateway') . '</div>';
                         }
                     }
                 } else {
@@ -406,7 +413,8 @@ function woocommerce_gateway_resurs_bank_init()
                         if (wp_verify_nonce($reqNonce, "requestResursAdmin")) {
                             if ($_REQUEST['run'] == "updateResursPaymentMethods") {
                                 try {
-                                    $responseArray = $this->flow->getPaymentMethods();
+                                    //$responseArray = $this->flow->getPaymentMethods();
+                                    $responseArray = true;
                                 } catch (Exception $e) {
                                     $errorMessage = $e->getMessage();
                                 }
@@ -427,6 +435,8 @@ function woocommerce_gateway_resurs_bank_init()
                                     $responseArray['valueSet'] = $isEnabled;
                                     $responseArray['element'] = "status_" . $arg;
                                     $responseArray['html'] = $responseHtml;
+                                } else {
+                                    $errorMessage = __("Configuration has not yet been initiated.", "WC_Payment_Gateway");
                                 }
                             }
                         } else {
@@ -2827,10 +2837,10 @@ function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings"
     if (empty($response)) {
         $response = get_option($key);
     }
-    if ($response == "true") { return true; }
-    if ($response == "false") { return false; }
-    if ($response == "yes") { return true; }
-    if ($response == "no") { return false; }
+    if ($response === "true") { return true; }
+    if ($response === "false") { return false; }
+    if ($response === "yes") { return true; }
+    if ($response === "no") { return false; }
     return $response;
 }
 

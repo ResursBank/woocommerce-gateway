@@ -65,11 +65,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      * Another way to save our incoming data.
      *
      * woocommerce_update_options will in this case save settings per row instead of the old proper way, as a serialized string with our settings.
+     *
+     * @param string $setSection
      */
     public function resurs_settings_save($setSection = "")
     {
         $section = "woocommerce_resurs-bank";
-
         if (isset($_REQUEST['section']) && !empty($_REQUEST['section'])) {
             $section = $_REQUEST['section'];
             if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
@@ -81,11 +82,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 $section = "woocommerce_resurs-bank";
             }
         }
-
         if (!empty($setSection)) {
             $section = $setSection;
         }
-
         $this->CONFIG_NAMESPACE = $section;
         $this->oldFormFields = getResursWooFormFields($this->CONFIG_NAMESPACE);
         /** @var $saveAll Sets a saveAll function to active, so that we can save all settings in the same times for which the parameters can be found in oldFormFields */
@@ -309,10 +308,19 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
                     echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
                     echo $this->setTextBox('login', $namespace);
-                    echo $this->setTextBox('password', $namespace, "updateResursPaymentMethods");
+                    echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
+                    echo '<tr><td colspan="2" id="currentResursPaymentMethods">';
                     if (count($this->paymentMethods)) {
+                        foreach ($this->paymentMethods as $methodArray) {
+                            $curId = isset($methodArray->id) ? $methodArray->id : "";
+                            $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
+                            if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                                $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
+                            }
+                        }
+                        //generatePaymentMethodHtml($this->paymentMethods);
                         ?>
-                        <table class="wc_gateways widefat" cellspacing="0" style="width: 800px;">
+                        <table class="wc_gateways widefat" cellspacing="0px" cellpadding="0px" style="width: inherit;">
                             <thead>
                             <tr>
                                 <th class="sort"></th>
@@ -332,20 +340,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 $sortByDescription[$description] = $methodArray;
                             }
                             ksort($sortByDescription);
-
                             $url = admin_url('admin.php');
                             $url = add_query_arg('page', $_REQUEST['page'], $url);
                             $url = add_query_arg('tab', $_REQUEST['tab'], $url);
-
                             foreach ($sortByDescription as $methodArray) {
                                 $curId = isset($methodArray->id) ? $methodArray->id : "";
-
                                 $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                                if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                                /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
                                     $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
-                                }
+                                }*/
                                 write_resurs_class_to_file($methodArray);
-
                                 $settingsControl = get_option($optionNamespace);
                                 $isEnabled = false;
                                 if (is_array($settingsControl) && count($settingsControl)) {
@@ -360,21 +364,25 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 ?>
                                 <tr>
                                     <td width="1%">&nbsp;</td>
-                                    <td class="name"><a
+                                    <td class="name" width="300px"><a
                                                 href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
                                     </td>
-                                    <td class="title"><?php echo $maTitle ?></td>
+                                    <td class="title" width="300px"><?php echo $maTitle ?></td>
                                     <td class="id"><?php echo $methodArray->id ?></td>
                                     <?php if (!$isEnabled) { ?>
-                                        <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
+                                        <td id="status_<?php echo $curId; ?>" class="status"
+                                            style="cursor: pointer;"
                                             onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
-                                            <span class="status-disabled tips" data-tip="<?php echo __( 'Disabled', 'woocommerce' )?>">-</span>
+                                                <span class="status-disabled tips"
+                                                      data-tip="<?php echo __('Disabled', 'woocommerce') ?>">-</span>
                                         </td>
                                     <?php } else {
                                         ?>
-                                        <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
+                                        <td id="status_<?php echo $curId; ?>" class="status"
+                                            style="cursor: pointer;"
                                             onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
-                                            <span class="status-enabled tips" data-tip="<?php echo __( 'Enabled', 'woocommerce' )?>">-</span>
+                                                <span class="status-enabled tips"
+                                                      data-tip="<?php echo __('Enabled', 'woocommerce') ?>">-</span>
                                         </td>
                                         <?php
                                     } ?>
@@ -385,9 +393,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             ?>
                             </tbody>
                         </table>
-
                         <?php
                     }
+                    echo '</td></tr>';
                 } else if ($section == "shopflow") {
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setCheckBox('waitForFraudControl', $namespace);

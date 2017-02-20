@@ -125,6 +125,12 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
         processId.html("");
         if (typeof data["success"] !== "undefined") {
             if (data["success"] === true) {
+                if (typeof data["response"] === "object") {
+                    var response = data["response"];
+                    if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
+                        $RB('#' + response["element"]).html(response["html"]);
+                    }
+                }
                 if (cb !== "") {
                     runResursAdminCallback(cb, currentFieldId);
                 }

@@ -1,5 +1,12 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/*
+ * Admin functions only
+ */
 load_plugin_textdomain('WC_Payment_Gateway', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
 if (!function_exists('getResursWooFormFields')) {
@@ -315,7 +322,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => 'Title',
                     'type' => 'text',
                     'default' => '',
-                    'description' => __('If you are leaving this field empty, the default title will be used in the checkout', 'woocommerce' ),
+                    'description' => __('If you are leaving this field empty, the default title will be used in the checkout', 'woocommerce'),
                     'desc_tip' => true,
                 ),
                 'icon' => array(
@@ -354,40 +361,40 @@ if (!function_exists('getResursWooFormFields')) {
     }
 }
 
+if (is_admin()) {
+    if (!function_exists('write_resurs_class_to_file')) {
 
-if (!function_exists('write_resurs_class_to_file')) {
-
-    function write_resurs_class_to_file($payment_method)
-    {
-        $class_name = 'resurs_bank_nr_' . $payment_method->id;
-        if (!file_exists(plugin_dir_path(__FILE__) . '/includes/' . $class_name)) {
-        } else {
-            if (!in_array(plugin_dir_path(__FILE__) . '/includes/' . $class_name, get_included_files())) {
-                include(plugin_dir_path(__FILE__) . '/includes/' . $class_name);
+        function write_resurs_class_to_file($payment_method)
+        {
+            $class_name = 'resurs_bank_nr_' . $payment_method->id;
+            if (!file_exists(plugin_dir_path(__FILE__) . '/includes/' . $class_name)) {
+            } else {
+                if (!in_array(plugin_dir_path(__FILE__) . '/includes/' . $class_name, get_included_files())) {
+                    include(plugin_dir_path(__FILE__) . '/includes/' . $class_name);
+                }
             }
-        }
 
-        $initName = 'woocommerce_gateway_resurs_bank_nr_' . $payment_method->id . '_init';
-        $class_name = 'resurs_bank_nr_' . $payment_method->id;
-        $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
-        $method_name = $payment_method->description;
-        $type = strtolower($payment_method->type);
-        $customerType = $payment_method->customerType;
-        $minLimit = $payment_method->minLimit;
-        $maxLimit = $payment_method->maxLimit;
+            $initName = 'woocommerce_gateway_resurs_bank_nr_' . $payment_method->id . '_init';
+            $class_name = 'resurs_bank_nr_' . $payment_method->id;
+            $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
+            $method_name = $payment_method->description;
+            $type = strtolower($payment_method->type);
+            $customerType = $payment_method->customerType;
+            $minLimit = $payment_method->minLimit;
+            $maxLimit = $payment_method->maxLimit;
 
-        //$icon_name = strtolower($method_name);
-        $icon_name = "resurs-standard";
-        //$icon_name = str_replace(array('å', 'ä', 'ö', ' '), array('a', 'a', 'o', '_'), $icon_name);
+            //$icon_name = strtolower($method_name);
+            $icon_name = "resurs-standard";
+            //$icon_name = str_replace(array('å', 'ä', 'ö', ' '), array('a', 'a', 'o', '_'), $icon_name);
 
-        $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
+            $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
 
-        $path_to_icon = $icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $plugin_url. '/img/' . $icon_name . '.png');
-        $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
-        $has_icon = (string)file_exists($temp_icon);
-        $ajaxUrl = admin_url('admin-ajax.php');
-        $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-        $class = <<<EOT
+            $path_to_icon = $icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $plugin_url . '/img/' . $icon_name . '.png');
+            $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
+            $has_icon = (string)file_exists($temp_icon);
+            $ajaxUrl = admin_url('admin-ajax.php');
+            $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+            $class = <<<EOT
 <?php
 	class {$class_name} extends WC_Resurs_Bank {
 		public function __construct()
@@ -690,9 +697,99 @@ if (!function_exists('write_resurs_class_to_file')) {
 	}
 EOT;
 
-        $path = plugin_dir_path(__FILE__) . '/includes/' . $class_name . '.php';
-        $path = str_replace('//', '/', $path);
+            $path = plugin_dir_path(__FILE__) . '/includes/' . $class_name . '.php';
+            $path = str_replace('//', '/', $path);
 
-        file_put_contents($path, $class);
+            file_put_contents($path, $class);
+        }
+    }
+
+    if (!function_exists('generatePaymentMethodHtml')) {
+        function generatePaymentMethodHtml($methodArray = array(), $returnAs = "html")
+        {
+            if ($returnAs != "html") {
+                @ob_start();
+            }
+            ?>
+            <table class="wc_gateways widefat" cellspacing="0px" cellpadding="0px" style="width: inherit;">
+                <thead>
+                <tr>
+                    <th class="sort"></th>
+                    <th class="name"><?php echo __('Method', 'WC_Payment_Gateway') ?></th>
+                    <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
+                    <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
+                    <th class="status"><?php echo __('Status', 'WC_Payment_Gateway') ?></th>
+                    <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+
+                $sortByDescription = array();
+                foreach ($methodArray as $methodArray) {
+                    $description = $methodArray->description;
+                    $sortByDescription[$description] = $methodArray;
+                }
+                ksort($sortByDescription);
+                $url = admin_url('admin.php');
+                $url = add_query_arg('page', $_REQUEST['page'], $url);
+                $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+                foreach ($sortByDescription as $methodArray) {
+                    $curId = isset($methodArray->id) ? $methodArray->id : "";
+                    $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
+                    /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                        $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
+                    }*/
+                    write_resurs_class_to_file($methodArray);
+                    $settingsControl = get_option($optionNamespace);
+                    $isEnabled = false;
+                    if (is_array($settingsControl) && count($settingsControl)) {
+                        if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
+                            $isEnabled = true;
+                        }
+                    }
+                    $maTitle = $methodArray->description;
+                    if (isset($settingsControl['title']) && !empty($settingsControl['title'])) {
+                        $maTitle = $settingsControl['title'];
+                    }
+                    ?>
+                    <tr>
+                        <td width="1%">&nbsp;</td>
+                        <td class="name" width="300px"><a
+                                    href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
+                        </td>
+                        <td class="title" width="300px"><?php echo $maTitle ?></td>
+                        <td class="id"><?php echo $methodArray->id ?></td>
+                        <?php if (!$isEnabled) { ?>
+                            <td id="status_<?php echo $curId; ?>" class="status"
+                                style="cursor: pointer;"
+                                onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
+                                                <span class="status-disabled tips"
+                                                      data-tip="<?php echo __('Disabled', 'woocommerce') ?>">-</span>
+                            </td>
+                        <?php } else {
+                            ?>
+                            <td id="status_<?php echo $curId; ?>" class="status"
+                                style="cursor: pointer;"
+                                onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
+                                                <span class="status-enabled tips"
+                                                      data-tip="<?php echo __('Enabled', 'woocommerce') ?>">-</span>
+                            </td>
+                            <?php
+                        } ?>
+                        <td id="process_<?php echo $curId; ?>"></td>
+                    </tr>
+                    <?php
+                }
+                ?>
+                </tbody>
+            </table>
+            <?php
+            if ($returnAs != "html") {
+                $methodTable = @ob_get_contents();
+                @ob_end_clean();
+                return $methodTable;
+            }
+        }
     }
 }
