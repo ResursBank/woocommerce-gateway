@@ -414,6 +414,7 @@ function woocommerce_gateway_resurs_bank_init()
                             if ($_REQUEST['run'] == "updateResursPaymentMethods") {
                                 try {
                                     //$responseArray = $this->flow->getPaymentMethods();
+                                    // Do not reveal stuff at this level.
                                     $responseArray = true;
                                 } catch (Exception $e) {
                                     $errorMessage = $e->getMessage();
