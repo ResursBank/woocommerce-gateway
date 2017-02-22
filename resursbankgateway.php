@@ -440,6 +440,13 @@ function woocommerce_gateway_resurs_bank_init()
                                 } else {
                                     $errorMessage = __("Configuration has not yet been initiated.", "WC_Payment_Gateway");
                                 }
+                            } else if ($_REQUEST['run'] == "getMyCallbacks") {
+
+                                $responseArray = array();
+
+                                foreach ($this->callback_types as $callType => $ignoreContent) {
+                                    $responseArray[$callType] = $this->flow->getRegisteredEventCallback($callType);
+                                }
                             }
                         } else {
                             $responseArray = array('Authorized' => false);
