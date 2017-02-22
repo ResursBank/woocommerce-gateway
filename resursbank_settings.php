@@ -43,8 +43,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $sections = array(
             '' => __('Basic settings', 'WC_Payment_Gateway'),
             'shopflow' => __('Shop flow settings ', 'WC_Payment_Gateway'),
-            'advanced' => __('Advanced settings', 'WC_Payment_Gateway')
         );
+        if (isResursOmni()) {
+            $sections['rc'] = __('Resurs Checkout', 'WC_Payment_Gateway');
+        }
+
+        $sections['advanced'] = __('Advanced settings', 'WC_Payment_Gateway');
+
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
 
@@ -297,7 +302,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 echo '<h1>' . __('Resurs Bank payment gateway configuration', 'WC_Payment_Gateway') . '</h1>
                     Plugin version ' . rbWcGwVersion() . ' ' . (!empty($currentVersion) ? $currentVersion : "");
             }
-
             ?>
             <table class="form-table">
                 <?php
@@ -307,9 +311,21 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
                     echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
-                    echo $this->setTextBox('login', $namespace);
+                    echo $this->setTextBox('login', $namespace, 'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
-                    echo '<tr><td colspan="2" id="currentResursPaymentMethods">';
+                    echo '<tr>
+                    <th scope="row">
+                    '.__('Available payment methods', 'woocommerce').'
+                    </th>
+                    <td id="currentResursPaymentMethods">
+                    ';
+                    if (!count($this->paymentMethods)) {
+                        echo '<span class="label label-info">'.__('The list of available payment methods will appear, when credentials has been entered.', 'woocommerce').'</span><br>';
+                    }
+                    if (isResursOmni()) {
+                        echo '<span class="label label-danger">'.__('Payment methods are not editable when using Resurs Checkout.', 'woocommerce').'</span><br>';
+                    }
+
                     if (count($this->paymentMethods)) {
                         foreach ($this->paymentMethods as $methodArray) {
                             $curId = isset($methodArray->id) ? $methodArray->id : "";
@@ -326,9 +342,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <th class="sort"></th>
                                 <th class="name"><?php echo __('Method', 'WC_Payment_Gateway') ?></th>
                                 <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
-                                <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
-                                <th class="status"><?php echo __('Status', 'WC_Payment_Gateway') ?></th>
-                                <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
+                                <?php if (!isResursOmni()) { ?>
+                                    <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
+                                    <th class="status"><?php echo __('Status', 'WC_Payment_Gateway') ?></th>
+                                    <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
+                                <?php } ?>
                             </tr>
                             </thead>
                             <tbody>
@@ -346,9 +364,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             foreach ($sortByDescription as $methodArray) {
                                 $curId = isset($methodArray->id) ? $methodArray->id : "";
                                 $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                                /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                                if (!hasResursOptionValue('enabled', $optionNamespace)) {
                                     $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
-                                }*/
+                                }
                                 write_resurs_class_to_file($methodArray);
                                 $settingsControl = get_option($optionNamespace);
                                 $isEnabled = false;
@@ -358,35 +376,42 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     }
                                 }
                                 $maTitle = $methodArray->description;
-                                if (isset($settingsControl['title']) && !empty($settingsControl['title'])) {
+                                if (isset($settingsControl['title']) && !empty($settingsControl['title']) && !isResursOmni()) {
                                     $maTitle = $settingsControl['title'];
                                 }
                                 ?>
                                 <tr>
                                     <td width="1%">&nbsp;</td>
-                                    <td class="name" width="300px"><a
-                                                href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
+                                    <td class="name" width="300px">
+                                        <?php if (!isResursOmni()) { ?>
+                                            <a href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
+                                        <?php } else {
+                                            echo $methodArray->description;
+                                        }
+                                        ?>
                                     </td>
                                     <td class="title" width="300px"><?php echo $maTitle ?></td>
-                                    <td class="id"><?php echo $methodArray->id ?></td>
-                                    <?php if (!$isEnabled) { ?>
-                                        <td id="status_<?php echo $curId; ?>" class="status"
-                                            style="cursor: pointer;"
-                                            onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
+                                    <?php if (!isResursOmni()) { ?>
+                                        <td class="id"><?php echo $methodArray->id ?></td>
+                                        <?php if (!$isEnabled) { ?>
+                                            <td id="status_<?php echo $curId; ?>" class="status"
+                                                style="cursor: pointer;"
+                                                onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
                                                 <span class="status-disabled tips"
                                                       data-tip="<?php echo __('Disabled', 'woocommerce') ?>">-</span>
-                                        </td>
-                                    <?php } else {
-                                        ?>
-                                        <td id="status_<?php echo $curId; ?>" class="status"
-                                            style="cursor: pointer;"
-                                            onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
+                                            </td>
+                                        <?php } else {
+                                            ?>
+                                            <td id="status_<?php echo $curId; ?>" class="status"
+                                                style="cursor: pointer;"
+                                                onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
                                                 <span class="status-enabled tips"
                                                       data-tip="<?php echo __('Enabled', 'woocommerce') ?>">-</span>
-                                        </td>
-                                        <?php
-                                    } ?>
-                                    <td id="process_<?php echo $curId; ?>"></td>
+                                            </td>
+                                            <?php
+                                        } ?>
+                                        <td id="process_<?php echo $curId; ?>"></td>
+                                    <?php } ?>
                                 </tr>
                                 <?php
                             }
@@ -397,15 +422,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     }
                     echo '</td></tr>';
                 } else if ($section == "shopflow") {
-                    echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setCheckBox('waitForFraudControl', $namespace);
                     echo $this->setCheckBox('annulIfFrozen', $namespace);
                     echo $this->setCheckBox('finalizeIfBooked', $namespace);
                 } else if ($section == "advanced") {
-                    //echo $this->setTextBox('baseLiveURL', $namespace);
-                    //echo $this->setTextBox('baseTestURL', $namespace);
                     echo $this->setCheckBox('demoshopMode', $namespace);
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
+                    echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
                     echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setCheckBox('handleNatConnections', $namespace);
@@ -415,6 +438,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('enabled', $namespace);
                     echo $this->setTextBox('title', $namespace);
                     echo $this->setTextBox('description', $namespace);
+                    echo $this->setTextBox('price', $namespace);
+                    echo $this->setTextBox('priceDescription', $namespace);
+                    echo $this->setCheckBox('enableMethodIcon', $namespace);
+                    echo $this->setTextBox('icon', $namespace);
                 }
                 ?>
 

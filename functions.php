@@ -67,8 +67,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'enabled' => array(
                     'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
-                    'label' => 'Activate Resurs Bank',
-                    'label' => __('Enable/Disable', 'woocommerce'),
+                    'label' => __('Enabled', 'woocommerce'),
                 ),
                 'country' => array(
                     'title' => __('Country', 'WC_Payment_Gateway'),
@@ -98,7 +97,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'title' => array(
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
-                    'default' => 'Resurs Bank',
+                    'default' => '',
                     'description' => __('This controls the payment method title, which the user sees during checkout.', 'woocommerce'),
                     'desc_tip' => true,
                 ),
@@ -142,8 +141,9 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'default' => 'test',
                 ),
+                // Replacement URL for callbacks if different from default homeurl settings
                 'customCallbackUri' => array(
-                    'title' => __('Replacement URL for callbacks if different from default homeurl settings', 'WC_Payment_Gateway'),
+                    'title' => __('Custom callback URL', 'WC_Payment_Gateway'),
                     'description' => __('If your callback URL has another URL than the defaults, you may enter the URL here. Default value is your site-URL. If this value is empty, the URL will be automatically generated.', 'WC_Payment_Gateway'),
                     'type' => 'text',
                     'default' => '',
@@ -179,6 +179,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'true' => 'true',
                         'false' => 'false',
                     ),
+                    'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
                     'description' => __('Defines whether the plugin should wait for the fraud control when booking payments, or not', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
@@ -190,6 +191,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'true' => 'true',
                         'false' => 'false',
                     ),
+                    'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
                     'description' => __('Defines if a payment should be annulled immediately if Resurs Bank returns a FROZEN state', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
@@ -201,6 +203,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'true' => 'true',
                         'false' => 'false',
                     ),
+                    'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
                     'description' => __('Defines if a payment should be debited immediately on a booked payment', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
@@ -231,41 +234,45 @@ if (!function_exists('getResursWooFormFields')) {
                 'getAddress' => array(
                     'title' => __('getAddressBox Enabled', 'WC_Payment_Gateway'),
                     'description' => __('If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active.', 'WC_Payment_Gateway'),
-                    'type' => 'select',
+                    'type' => 'checkbox',
                     'options' => array(
                         'true' => 'true',
                         'false' => 'false',
                     ),
+                    'label' => __('Enabled', 'woocommerce'),
                     'default' => 'true'
                 ),
                 'streamlineBehaviour' => array(
                     'title' => __('Streamlined customer field behaviour', 'WC_Payment_Gateway'),
                     'description' => __('Fields that are required to complete an order from Resurs Bank, are hidden when active, since the fields required for Resurs Bank are inherited from WooCommerce fields by default.', 'WC_Payment_Gateway'),
-                    'type' => 'select',
+                    'type' => 'checkbox',
                     'options' => array(
                         'true' => 'true',
                         'false' => 'false',
                     ),
+                    'label' => __('Enabled', 'woocommerce'),
                     'default' => 'true'
                 ),
                 'demoshopMode' => array(
                     'title' => __('Demoshopläge', 'WC_Payment_Gateway'),
                     'description' => __('Define if this shop is a demo store or not, which opens for more functionality (This option also forces the use of test environment)', 'WC_Payment_Gateway'),
-                    'type' => 'select',
+                    'type' => 'checkbox',
                     'options' => array(
                         'true' => 'true',
                         'false' => 'false',
                     ),
+                    'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false'
                 ),
                 'getAddressUseProduction' => array(
                     'title' => __('Make getAddress fetch live data while in test mode', 'WC_Payment_Gateway'),
                     'description' => __('If enabled, live data will be available on getAddress-requests while in demo shop. Credentials for production are required. Feature does not work for Omni Checkout.', 'WC_Payment_Gateway'),
-                    'type' => 'select',
+                    'type' => 'checkbox',
                     'options' => array(
                         'true' => 'true',
                         'false' => 'false',
                     ),
+                    'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false'
                 ),
                 'ga_login' => array(
@@ -334,7 +341,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'enableMethodIcon' => array(
                     'title' => __('Enable/Disable payment method icon', 'woocommerce'),
                     'type' => 'checkbox',
-                    'label' => 'Enables displaying of logotype at payment method choice',
+                    'label' => 'Enable displaying of logotype at payment method choice',
                 ),
                 'description' => array(
                     'title' => 'Description',
