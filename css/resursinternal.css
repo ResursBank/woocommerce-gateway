@@ -97,13 +97,47 @@
 
 
 
+.configSeparateTitle {
+    font-size: 16px !important;
+    font-weight: bold;
+    background: #dddddd;
+    text-align: center !important;
+    padding: 5px !important;
+    border-top: 1px solid grey;
+    border-bottom: 1px solid grey;
+}
+.resursConfigSeparator {
+}
+
+.configSeparateTitleSmall {
+    font-size: 12px !important;
+    font-weight: bold;
+    background: #cccccc;
+    text-align: center !important;
+    padding: 5px !important;
+    width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    border-top: 1px dotted grey;
+    border-bottom: 1px dotted grey;
+}
 
 
 
 
-
-
-
+.label-big {
+    font-size: 16px !important;
+}
+.label-border {
+    border: 1px dashed;
+}
+.label-nofat {
+    font-weight: normal !important;
+}
+.label-center {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
 
 
 

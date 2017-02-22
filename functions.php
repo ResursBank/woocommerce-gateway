@@ -205,7 +205,7 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
-                    'description' => __('Defines if a payment should be debited immediately on a booked payment', 'WC_Payment_Gateway'),
+                    'description' => __('Defines if a payment should be debited immediately on a booked payment (Not available for Resurs Checkout)', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'adminRestoreGatewaysWhenMissing' => array(
@@ -266,7 +266,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'getAddressUseProduction' => array(
                     'title' => __('Make getAddress fetch live data while in test mode', 'WC_Payment_Gateway'),
-                    'description' => __('If enabled, live data will be available on getAddress-requests while in demo shop. Credentials for production are required. Feature does not work for Omni Checkout.', 'WC_Payment_Gateway'),
+                    'description' => __('If enabled, live data will be available on getAddress-requests while in demo shop. Credentials for production - and enabling of demoshop mode - are required! Feature does not work for Omni Checkout.', 'WC_Payment_Gateway'),
                     'type' => 'checkbox',
                     'options' => array(
                         'true' => 'true',
@@ -406,6 +406,7 @@ if (is_admin()) {
 	class {$class_name} extends WC_Resurs_Bank {
 		public function __construct()
 		{
+		    \$this->hasErrors = false;
 			\$this->id           = '{$class_name}';
 			\$this->id_short           = '{$payment_method->id}';
 			\$this->has_icon();
@@ -425,7 +426,12 @@ if (is_admin()) {
 
 			if (empty(\$this->title)) {
     			\$this->flow = initializeResursFlow();
-    			\$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
+    			try {
+    			    // Fetch this data if there is no errors during controls (this could for example, if credentials are wrong, generate errors that makes the site unreachable)
+    			    \$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
+    			} catch (Exception \$realTimeException) {
+    			    \$this->hasErrors = true;
+    			}
 			    \$this->title = \$realTimePaymentMethod->description;
 			}
 

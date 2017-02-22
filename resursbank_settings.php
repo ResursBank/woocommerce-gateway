@@ -114,7 +114,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 } else {
                     $curOption = $this->getOptionByNamespace($fieldKey, $this->CONFIG_NAMESPACE);
                     if ($fieldData['type'] == "checkbox") {
-                        $saveArray[$fieldKey] = "no";
+                        if ($curOption == "1") {
+                            $curOption = "yes";
+                        }
+                        if ($curOption == "0") {
+                            $curOption = "no";
+                        }
+                        $saveArray[$fieldKey] = $curOption;
                     } else {
                         if (!empty($curOption)) {
                             $saveArray[$fieldKey] = $curOption;
@@ -254,6 +260,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnDropDown;
     }
 
+    private function setSeparator($separatorTitle = "", $setClass = "configSeparateTitle")
+    {
+        return '<tr><th colspan="2" class="resursConfigSeparator"><div class=" '.$setClass.'">' . $separatorTitle . '</div></th></tr>';
+    }
+
+
     /**
      * Primary configuration tab
      */
@@ -285,7 +297,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 $this->paymentMethods = $this->flow->getPaymentMethodSpecific($theMethod);
                 $methodDescription = $this->paymentMethods->description;
             }
-
         } catch (Exception $e) {
         }
 
@@ -306,24 +317,27 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             <table class="form-table">
                 <?php
                 if (empty($section)) {
+                    echo $this->setSeparator(__('Plugin and checkout', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('enabled', $namespace);
-                    echo $this->setDropDown('serverEnv', $namespace, array('live' => 'Live', 'test' => 'Test'));
-                    echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
+                    echo $this->setSeparator(__('API Settings', 'WC_Payment_Gateway'));
+                    echo $this->setDropDown('serverEnv', $namespace, array('live' => 'Live', 'test' => 'Test'));
                     echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
+                    echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
                     echo $this->setTextBox('login', $namespace, 'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
+                    echo $this->setSeparator(__('Payment methods', 'WC_Payment_Gateway')); // , "configSeparateTitleSmall"
                     echo '<tr>
                     <th scope="row">
-                    '.__('Available payment methods', 'woocommerce').'
+                    <!--' . __('Available payment methods', 'woocommerce') . ' -->
                     </th>
                     <td id="currentResursPaymentMethods">
                     ';
                     if (!count($this->paymentMethods)) {
-                        echo '<span class="label label-info">'.__('The list of available payment methods will appear, when credentials has been entered.', 'woocommerce').'</span><br>';
+                        echo '<div class="label label-danger label-big label-nofat label-center">' . __('The list of available payment methods will appear, when credentials has been entered.', 'WC_Payment_Gateway') . '</div><br>';
                     }
                     if (isResursOmni()) {
-                        echo '<span class="label label-danger">'.__('Payment methods are not editable when using Resurs Checkout.', 'woocommerce').'</span><br>';
+                        echo '<span class="label label-danger">' . __('Payment methods are not editable when using Resurs Checkout.', 'woocommerce') . '</span><br>';
                     }
 
                     if (count($this->paymentMethods)) {
@@ -426,12 +440,29 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('annulIfFrozen', $namespace);
                     echo $this->setCheckBox('finalizeIfBooked', $namespace);
                 } else if ($section == "advanced") {
-                    echo $this->setCheckBox('demoshopMode', $namespace);
+                    echo $this->setSeparator(__('Miscellaneous', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
+                    echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
+                    echo $this->setSeparator(__('Customer address handling', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('getAddress', $namespace);
+                    echo $this->setSeparator(__('Testing and development', 'WC_Payment_Gateway'));
+                    echo $this->setCheckBox('devResursSimulation', $namespace);
+                    echo $this->setTextBox('devSimulateSuccessUrl', $namespace);
+                    echo $this->setSeparator(__('Special test occasions', 'WC_Payment_Gateway'), 'configSeparateTitleSmall');
+                    echo $this->setCheckBox('demoshopMode', $namespace);
+
+                    // TODO: WOO-44
+                    /*
+                    echo $this->setCheckBox('getAddressUseProduction', $namespace);
+                    echo $this->setTextBox('ga_login', $namespace);
+                    echo $this->setTextBox('ga_password', $namespace);
+                    */
+
+                    echo $this->setSeparator(__('Network', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('handleNatConnections', $namespace);
+
                 } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
                     $namespace = "woocommerce_" . $section;
                     $this->CONFIG_NAMESPACE = $namespace;
