@@ -334,10 +334,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <td id="currentResursPaymentMethods">
                     ';
                     if (!count($this->paymentMethods)) {
-                        echo '<div class="label label-danger label-big label-nofat label-center">' . __('The list of available payment methods will appear, when credentials has been entered.', 'WC_Payment_Gateway') . '</div><br>';
+                        echo '<div class="label label-danger label-big label-nofat label-center">' . __('The list of available payment methods will appear, when credentials has been entered', 'WC_Payment_Gateway') . '</div><br>';
                     }
                     if (isResursOmni()) {
-                        echo '<span class="label label-danger">' . __('Payment methods are not editable when using Resurs Checkout.', 'woocommerce') . '</span><br>';
+                        echo '<div class="label label-danger label-big label-nofat label-center label-border">' . __('Payment methods are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
                     }
 
                     if (count($this->paymentMethods)) {
@@ -358,7 +358,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
                                 <?php if (!isResursOmni()) { ?>
                                     <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
-                                    <th class="status"><?php echo __('Status', 'WC_Payment_Gateway') ?></th>
+                                    <th class="status"><?php echo __('Enabled/Disabled', 'WC_Payment_Gateway') ?></th>
                                     <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
                                 <?php } ?>
                             </tr>

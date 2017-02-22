@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2017-02-22 13:08+0100\n"
-"PO-Revision-Date: 2017-02-22 13:09+0100\n"
+"POT-Creation-Date: 2017-02-22 13:29+0100\n"
+"PO-Revision-Date: 2017-02-22 13:29+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -534,14 +534,18 @@ msgstr "Tillgängliga betalningsmetoder"
 #: resursbank_settings.php:337
 msgid ""
 "The list of available payment methods will appear, when credentials has been "
-"entered."
+"entered"
 msgstr ""
 "Listan över tillgängliga betalningsmetoder dyker upp när "
 "inloggningsuppgifter är ifyllda"
 
 #: resursbank_settings.php:340
-msgid "Payment methods are not editable when using Resurs Checkout."
-msgstr "Betalningsmetoder kan ej redigeras när Resurs Checkout är aktiverad."
+msgid ""
+"Payment methods are not editable when using Resurs Checkout - Contact "
+"support if you want to do any changes"
+msgstr ""
+"Betalningsmetoder är inte redigeringsbara när Resurs Checkout används - "
+"kontakta supporten om du vill göra några ändringar"
 
 #: resursbank_settings.php:443
 msgid "Miscellaneous"
@@ -1019,6 +1023,21 @@ msgstr ""
 #. Author URI of the plugin/theme
 msgid "https://test.resurs.com/docs/display/ecom/WooCommerce"
 msgstr ""
+
+#~ msgid "Payment methods are not editable when using Resurs Checkout"
+#~ msgstr ""
+#~ "Betalningsmetoder är inte redigeringsbara när Resurs Checkout används"
+
+#~ msgid ""
+#~ "The list of available payment methods will appear, when credentials has "
+#~ "been entered."
+#~ msgstr ""
+#~ "Listan över tillgängliga betalningsmetoder dyker upp när "
+#~ "inloggningsuppgifter är ifyllda"
+
+#~ msgid "Payment methods are not editable when using Resurs Checkout."
+#~ msgstr ""
+#~ "Betalningsmetoder kan ej redigeras när Resurs Checkout är aktiverad."
 
 #~ msgid ""
 #~ "If enabled, live data will be available on getAddress-requests while in "
