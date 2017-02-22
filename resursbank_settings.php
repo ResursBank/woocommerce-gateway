@@ -358,7 +358,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
                                 <?php if (!isResursOmni()) { ?>
                                     <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
-                                    <th class="status"><?php echo __('Enabled/Disabled', 'WC_Payment_Gateway') ?></th>
+                                    <th class="status"><?php echo __('Enable/Disable', 'WC_Payment_Gateway') ?></th>
                                     <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
                                 <?php } ?>
                             </tr>
