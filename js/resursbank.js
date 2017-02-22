@@ -19,7 +19,6 @@ $RB(document).ready(function ($) {
                 });
             }
         });
-
         woocommerce_resurs_bank = {
             init: function () {
                 var that = this;
@@ -51,7 +50,6 @@ $RB(document).ready(function ($) {
                         }
                     }
                 });
-
                 $('#billing_email').on('keyup', function () {
                     if ($('#applicant-email-address').length > 0) {
                         $('#applicant-email-address').val($(this).val());
@@ -65,7 +63,6 @@ $RB(document).ready(function ($) {
                         $('#applicant-mobile-number').val($(this).val());
                     }
                 });
-
                 $('#ssn_field').on('keyup', function () {
                     $('#applicant-government-id').val($(this).val());
                 });
@@ -305,8 +302,7 @@ function getMethodType(customerType) {
     }
 }
 
-function ResursRegexMatch(objectBound, regEx) {
-}
+function ResursRegexMatch(objectBound, regEx) {}
 
 function preSetResursMethods(customerType, returnedObjects) {
     var hideElm;
@@ -512,5 +508,3 @@ function handleResursCheckoutError(resursErrorMessage) {
         alert(resursErrorMessage);
     }
 }
-
-

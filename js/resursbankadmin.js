@@ -4,52 +4,45 @@
 
 var $RB = jQuery.noConflict();
 
-window.onload = function () {
-    jQuery(document).ready(function ($) {
-        jQuery('#woocommerce_resurs-bank_registerCallbacksButton').val(rb_buttons.registerCallbacksButton);
-        jQuery('#woocommerce_resurs-bank_refreshPaymentMethods').val(rb_buttons.refreshPaymentMethods);
-        jQuery('select[id*="finalizeIfBooked"]').bind("change", function () {
-                if (this.value === "true") {
-                    var doUpdateMethods = confirm('This requires that callbacks are up to date. Do you want to fix this now?');
-                    if (doUpdateMethods) {
-                        jQuery('input[id*="registerCallbacksButton"]').click();
-                    }
+$RB(document).ready(function ($) {
+    jQuery('#woocommerce_resurs-bank_registerCallbacksButton').val(rb_buttons.registerCallbacksButton);
+    jQuery('#woocommerce_resurs-bank_refreshPaymentMethods').val(rb_buttons.refreshPaymentMethods);
+    jQuery('select[id*="finalizeIfBooked"]').bind("change", function () {
+            if (this.value === "true") {
+                var doUpdateMethods = confirm('This requires that callbacks are up to date. Do you want to fix this now?');
+                if (doUpdateMethods) {
+                    jQuery('input[id*="registerCallbacksButton"]').click();
                 }
             }
-        );
-
-
-        if (jQuery('#paymentMethodName').length > 0) {
-            var methodName = jQuery('#paymentMethodName').html();
-            var iconFieldName = "#woocommerce_" + methodName + "_icon";
-            var iconField = jQuery(iconFieldName);
-            if (iconField.length > 0) {
-                iconField.after('<br><img src="' + iconField.val() + '">');
-            }
         }
-
-
-        var $el, $ps, $up, totalHeight;
-        jQuery(".resurs-read-more-box .button").click(function () {
-            jQuery('.resurs-read-more-box')
-                .css({
-                    // Set height to prevent instant jumpdown when max height is removed
-                    "height": jQuery('#resursInfo').height,
-                    "max-height": 9999
-                }).animate({
-                "height": jQuery('#resursInfo').height
-            });
-
-            // fade out read-more
-            jQuery('#resursInfoButton').fadeOut();
-
-            // prevent jump-down
-            return false;
-
+    );
+    if (jQuery('#paymentMethodName').length > 0) {
+        var methodName = jQuery('#paymentMethodName').html();
+        var iconFieldName = "#woocommerce_" + methodName + "_icon";
+        var iconField = jQuery(iconFieldName);
+        if (iconField.length > 0) {
+            iconField.after('<br><img src="' + iconField.val() + '">');
+        }
+    }
+    var $el, $ps, $up, totalHeight;
+    jQuery(".resurs-read-more-box .button").click(function () {
+        jQuery('.resurs-read-more-box')
+            .css({
+                // Set height to prevent instant jumpdown when max height is removed
+                "height": jQuery('#resursInfo').height,
+                "max-height": 9999
+            }).animate({
+            "height": jQuery('#resursInfo').height
         });
-    });
-}
 
+        // fade out read-more
+        jQuery('#resursInfoButton').fadeOut();
+
+        // prevent jump-down
+        return false;
+
+    });
+});
 var fullFlowCollection = [];
 var currentFlowCollection = [];
 var flowRules = {
@@ -88,7 +81,7 @@ function resursEditProtectedField(currentField, ns) {
             'ns': ns
         }
     }).done(
-        function(data) {
+        function (data) {
             if (typeof data["success"] !== "undefined") {
                 if (data["success"] === true) {
                     $RB('#' + currentField.id + "_value").val(data["response"]);
@@ -97,19 +90,19 @@ function resursEditProtectedField(currentField, ns) {
             resursProtectedFieldToggle(currentField.id);
         }
     ).fail(function (x, y) {
-        alert("Fail ("+x+", "+y+")");
+        alert("Fail (" + x + ", " + y + ")");
     });
 }
 function resursSaveProtectedField(currentFieldId, ns, cb) {
     var processId = $RB('#process_' + currentFieldId);
     if (processId.length > 0) {
-        processId.html('<img src="'+rb_buttons.resursSpinner+'" border="0">');
+        processId.html('<img src="' + rb_buttons.resursSpinner + '" border="0">');
     }
     var setVal = $RB('#' + currentFieldId + "_value").val();
     var subVal;
 
     if (currentFieldId == "woocommerce_resurs-bank_password") {
-        subVal=$RB("#woocommerce_resurs-bank_login").val();
+        subVal = $RB("#woocommerce_resurs-bank_login").val();
     }
 
     $RB.ajax({
@@ -121,7 +114,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
             'ns': ns,
             's': subVal
         }
-    }).done(function(data) {
+    }).done(function (data) {
         processId.html("");
         if (typeof data["success"] !== "undefined") {
             if (data["success"] === true) {
@@ -147,7 +140,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
             }
         }
         resursProtectedFieldToggle(currentFieldId);
-    }).fail(function(x, y) {
+    }).fail(function (x, y) {
         if (processId.length > 0) {
             processId.html("The saving on this field was unsuccessful.");
         } else {
@@ -159,8 +152,6 @@ function resursProtectedFieldToggle(currentField) {
     $RB('#' + currentField).toggle("medium");
     $RB('#' + currentField + "_hidden").toggle("medium");
 }
-
-
 function runResursAdminCallback(callbackName) {
     var setArg;
     var testProcElement;
@@ -168,7 +159,7 @@ function runResursAdminCallback(callbackName) {
         setArg = arguments[1];
         testProcElement = $RB('#process_' + setArg);
         if (typeof testProcElement === "object") {
-            testProcElement.html('<img src="'+rb_buttons.resursSpinner+'" border="0">');
+            testProcElement.html('<img src="' + rb_buttons.resursSpinner + '" border="0">');
         }
     }
     $RB.ajax({
@@ -178,7 +169,7 @@ function runResursAdminCallback(callbackName) {
             'run': callbackName,
             'arg': setArg
         }
-    }).done(function(data) {
+    }).done(function (data) {
         if (typeof testProcElement === "object") {
             testProcElement.html('');
         }
@@ -197,7 +188,7 @@ function runResursAdminCallback(callbackName) {
                 }
             }
         }
-    }).fail(function(x, y) {
+    }).fail(function (x, y) {
         if (typeof testProcElement === "object") {
             testProcElement.html("Administration callback not successful");
         } else {
