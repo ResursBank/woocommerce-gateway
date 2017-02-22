@@ -10,9 +10,9 @@ if (!defined('ABSPATH')) {
 load_plugin_textdomain('WC_Payment_Gateway', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
 if (!function_exists('getResursWooFormFields')) {
-    function getResursWooFormFields($addId = null)
+    function getResursWooFormFields($addId = null, $namespace = "")
     {
-        $resursAdminForm = resursFormFieldArray();
+        $resursAdminForm = resursFormFieldArray($namespace);
         if ($addId) {
             foreach ($resursAdminForm as $formKey => $formArray) {
                 $resursAdminForm[$formKey]['id'] = $addId . "_" . $formKey;
@@ -31,18 +31,39 @@ if (!function_exists('getResursWooFormFields')) {
         return untrailingslashit(plugins_url('/', __FILE__));
     }
 
-    function resursFormFieldArray($formFieldName = 'defaults')
+    function resursFormFieldArray($formSectionName = '')
     {
         global $wpdb, $woocommerce;
 
+        $hasForcedSection = false;
+        $forcedSection = "";
+        /*
+         * Currently used by omni_flow, to override the section as it comes from a variable and not a GET-parameter.
+         */
+        if (!empty($formSectionName)) {
+            $hasForcedSection = true;
+            $forcedSection = $formSectionName;
+        }
+
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         if (empty($section)) {
-            $formFieldName = "defaults";
+            $formSectionName = "defaults";
+        } else if ($section == "shopflow") {
+            $formSectionName = "defaults";
         } else if ($section == "advanced") {
-            $formFieldName = "defaults";
+            $formSectionName = "defaults";
         } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-            $formFieldName = "paymentmethods";
+            $formSectionName = "paymentmethods";
+        } else {
+            $formSectionName = $section;
         }
+        if ($hasForcedSection && !empty($forcedSection)) {
+            $formSectionName = $forcedSection;
+        }
+
+        /*
+         *  $formFieldName is actually the section name
+         */
 
         $rates = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates
@@ -62,7 +83,7 @@ if (!function_exists('getResursWooFormFields')) {
             $rate_select[$rate->tax_rate_class] = $rate_name;
         }
 
-        if ($formFieldName == "defaults") {
+        if ($formSectionName == "defaults") {
             $returnArray = array(
                 'enabled' => array(
                     'title' => __('Enable/Disable', 'woocommerce'),
@@ -316,7 +337,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'https://google.com/?test+landingpage'
                 ),
             );
-        } else if ($formFieldName == "paymentmethods") {
+        } else if ($formSectionName == "paymentmethods") {
             //$icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
             $icon = "";
             $returnArray = array(
@@ -361,6 +382,62 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Description of this payment method fee', 'WC_Payment_Gateway'),
                     'type' => 'textarea',
                     'default' => '',
+                ),
+            );
+        } else if ($formSectionName == "resurs_bank_omnicheckout") {
+            $returnArray = array(
+                'enabled' => array(
+                    'title' => __('Enable/Disable', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => 'Aktivera Resurs Checkout',
+                ),
+                'title' => array(
+                    'title' => 'Title',
+                    'type' => 'text',
+                    'default' => 'Resurs Checkout',
+                    'description' => __('This controls the title of Resurs Checkout as a payment method in the checkout', 'woocommerce'),
+                    'desc_tip' => true,
+                ),
+                'description' => array(
+                    'title' => 'Description',
+                    'type' => 'textarea',
+                    'default' => 'Betala med Resurs Checkout',
+                    'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
+                    'desc_tip' => true,
+                ),
+                'iFrameLocation' => array(
+                    'title' => __('iFrame location', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
+                        'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
+                        'inMethods' => __('In payment method list', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'afterCheckoutForm',
+                    'description' => __('The country for which the payment services should be used', 'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'omniFrameNotReloading' => array(
+                    'title' => __('Reload checkout on cart changes', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'true' => 'true',
+                        'false' => 'false',
+                    ),
+                    'default' => 'false',
+                    'description' => __('If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe', 'WC_Payment_Gateway'),
+                    'desc_tip' => false,
+                ),
+                'cleanOmniCustomerFields' => array(
+                    'title' => __('Remove all default customer fields when loading Omni Checkout iframe', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'true' => 'true',
+                        'false' => 'false',
+                    ),
+                    'default' => 'false',
+                    'description' => __('Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected.', 'WC_Payment_Gateway'),
+                    'desc_tip' => true,
                 ),
             );
         }

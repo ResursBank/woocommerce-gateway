@@ -88,61 +88,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     function init_form_fields()
     {
-        $this->form_fields = array(
-            'enabled' => array(
-                'title' => __('Enable/Disable', 'woocommerce'),
-                'type' => 'checkbox',
-                'label' => 'Aktivera Resurs Bank Faktura privat',
-            ),
-            'title' => array(
-                'title' => 'Title',
-                'type' => 'text',
-                'default' => 'Resurs Bank Omnicheckout',
-                'description' => __('This controls the payment method title which the user sees during checkout.', 'woocommerce'),
-                'desc_tip' => true,
-            ),
-            'description' => array(
-                'title' => 'Description',
-                'type' => 'textarea',
-                'default' => 'Betala med OmniCheckout (Resurs Bank)',
-                'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
-                'desc_tip' => true,
-            ),
-            'iFrameLocation' => array(
-                'title' => __('iFrame location', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
-                    'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
-                    'inMethods' => __('In payment method list', 'WC_Payment_Gateway'),
-                ),
-                'default' => 'afterCheckoutForm',
-                'description' => __('The country for which the payment services should be used', 'WC_Payment_Gateway'),
-                'desc_tip' => true,
-            ),
-            'omniFrameNotReloading' => array(
-                'title' => __('Reload checkout on cart changes', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'true' => 'true',
-                    'false' => 'false',
-                ),
-                'default' => 'false',
-                'description' => __('If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe', 'WC_Payment_Gateway'),
-                'desc_tip' => false,
-            ),
-            'cleanOmniCustomerFields' => array(
-                'title' => __('Remove all default customer fields when loading Omni Checkout iframe', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'true' => 'true',
-                    'false' => 'false',
-                ),
-                'default' => 'false',
-                'description' => __('Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected.', 'WC_Payment_Gateway'),
-                'desc_tip' => true,
-            ),
-        );
+        $this->form_fields = getResursWooFormFields(null, 'resurs_bank_omnicheckout');
     }
 
     public function calculate_totals($totals)

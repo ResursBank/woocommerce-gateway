@@ -19,6 +19,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public $id = "tab_resursbank";
     //private $current_section;
     private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
+    /** @var array THe oldFormFields are not so old actually. They are still in use! */
     private $oldFormFields;
     private $flow;
 
@@ -32,6 +33,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         add_action('woocommerce_update_options_' . $this->id, array($this, 'resurs_settings_save'));
         $getOpt = get_option('woocommerce_resurs-bank_settings');
 
+        if (!hasResursOptionValue('enabled', 'woocommerce_resurs_bank_omnicheckout_settings')) {
+            $this->resurs_settings_save('resurs_bank_omnicheckout');
+        }
         if (!hasResursOptionValue('enabled')) {
             $this->resurs_settings_save();
         }
@@ -40,14 +44,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
     public function get_sections()
     {
-        $sections = array(
-            '' => __('Basic settings', 'WC_Payment_Gateway'),
-            'shopflow' => __('Shop flow settings ', 'WC_Payment_Gateway'),
-        );
-        if (isResursOmni()) {
-            $sections['rc'] = __('Resurs Checkout', 'WC_Payment_Gateway');
-        }
+        $sections = array();    // Adaptive array.
 
+        $sections[''] = __('Basic settings', 'WC_Payment_Gateway');
+        if (isResursOmni()) {
+            $sections['resurs_bank_omnicheckout'] = __('Resurs Checkout', 'WC_Payment_Gateway');
+        }
+        $sections['shopflow'] = __('Shop flow settings ', 'WC_Payment_Gateway');
         $sections['advanced'] = __('Advanced settings', 'WC_Payment_Gateway');
 
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
@@ -80,18 +83,19 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $section = $_REQUEST['section'];
             if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
                 $section = "woocommerce_" . $section;
+            } else if ($section == "resurs_bank_omnicheckout") {
+                $section = "woocommerce_" . $section;
+                $this->CONFIG_NAMESPACE = $section;
             } else {
-                /*
-                 * As we only have two sections (excluding payment methods) we will fall back to this name again...
-                 */
                 $section = "woocommerce_resurs-bank";
             }
         }
         if (!empty($setSection)) {
             $section = $setSection;
         }
-        $this->CONFIG_NAMESPACE = $section;
+
         $this->oldFormFields = getResursWooFormFields($this->CONFIG_NAMESPACE);
+
         /** @var $saveAll Sets a saveAll function to active, so that we can save all settings in the same times for which the parameters can be found in oldFormFields */
         $saveAll = true;
         $saveArray = array();
@@ -131,6 +135,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         }
+
         //woocommerce_update_options($this->oldFormFields);
         update_option($section . "_settings", $saveArray);
     }
@@ -160,7 +165,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             return $this->oldFormFields[$settingKey];
         }
     }
-
 
     private function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
@@ -237,6 +241,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
     private function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
     {
+        $formSettings = $this->getFormSettings($settingKey);
+        if (is_null($optionsList)) { $optionsList = array(); }
+        /*
+         * Failover to prior forms.
+         */
+        if (is_array($optionsList) && isset($formSettings['options']) && count($formSettings['options']) && !count($optionsList)) {
+            $optionsList = $formSettings['options'];
+        }
         // TODO: Value (multi+simple)
         $returnDropDown = '
                 <tr>
@@ -262,7 +274,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
     private function setSeparator($separatorTitle = "", $setClass = "configSeparateTitle")
     {
-        return '<tr><th colspan="2" class="resursConfigSeparator"><div class=" '.$setClass.'">' . $separatorTitle . '</div></th></tr>';
+        return '<tr><th colspan="2" class="resursConfigSeparator"><div class=" ' . $setClass . '">' . $separatorTitle . '</div></th></tr>';
     }
 
 
@@ -321,9 +333,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('enabled', $namespace);
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
                     echo $this->setSeparator(__('API Settings', 'WC_Payment_Gateway'));
-                    echo $this->setDropDown('serverEnv', $namespace, array('live' => 'Live', 'test' => 'Test'));
-                    echo $this->setDropDown('flowtype', $namespace, array('simplifiedshopflow' => $longSimplified, 'resurs_bank_hosted' => $longHosted, 'resurs_bank_omnicheckout' => $longOmni), null);
-                    echo $this->setDropDown('country', $namespace, array('SE' => 'Sweden', 'DK' => 'Denmark', 'NO' => 'Norway', 'FI' => 'Finland'), "onchange=adminResursChangeFlowByCountry(this)");
+                    echo $this->setDropDown('serverEnv', $namespace);
+                    echo $this->setDropDown('flowtype', $namespace);
+                    echo $this->setDropDown('country', $namespace, null, "onchange=adminResursChangeFlowByCountry(this)");
                     echo $this->setTextBox('login', $namespace, 'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
                     echo $this->setSeparator(__('Payment methods', 'WC_Payment_Gateway')); // , "configSeparateTitleSmall"
@@ -439,6 +451,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('waitForFraudControl', $namespace);
                     echo $this->setCheckBox('annulIfFrozen', $namespace);
                     echo $this->setCheckBox('finalizeIfBooked', $namespace);
+                } else if ($section == "resurs_bank_omnicheckout") {
+                    $namespace = "woocommerce_" . $section;
+                    $this->CONFIG_NAMESPACE = $namespace;
+                    echo $this->setCheckBox('enabled', $namespace);
+                    echo $this->setSeparator(__('Visuals', 'WC_Payment_Gateway'));
+                    echo $this->setTextBox('title', $namespace);
+                    echo $this->setTextBox('description', $namespace);
+                    echo $this->setSeparator(__('Checkout', 'WC_Payment_Gateway'));
+                    echo $this->setDropDown('iFrameLocation', $namespace);
+                    echo $this->setSeparator(__('Advanced', 'WC_Payment_Gateway'));
+                    echo $this->setDropDown('omniFrameNotReloading', $namespace);
+                    echo $this->setDropDown('cleanOmniCustomerFields', $namespace);
                 } else if ($section == "advanced") {
                     echo $this->setSeparator(__('Miscellaneous', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
@@ -464,15 +488,20 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('handleNatConnections', $namespace);
 
                 } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-                    $namespace = "woocommerce_" . $section;
-                    $this->CONFIG_NAMESPACE = $namespace;
-                    echo $this->setCheckBox('enabled', $namespace);
-                    echo $this->setTextBox('title', $namespace);
-                    echo $this->setTextBox('description', $namespace);
-                    echo $this->setTextBox('price', $namespace);
-                    echo $this->setTextBox('priceDescription', $namespace);
-                    echo $this->setCheckBox('enableMethodIcon', $namespace);
-                    echo $this->setTextBox('icon', $namespace);
+                    if (!isResursOmni()) {
+                        $namespace = "woocommerce_" . $section;
+                        $this->CONFIG_NAMESPACE = $namespace;
+                        echo $this->setCheckBox('enabled', $namespace);
+                        echo $this->setTextBox('title', $namespace);
+                        echo $this->setTextBox('description', $namespace);
+                        echo $this->setTextBox('price', $namespace);
+                        echo $this->setTextBox('priceDescription', $namespace);
+                        echo $this->setCheckBox('enableMethodIcon', $namespace);
+                        echo $this->setTextBox('icon', $namespace);
+                    } else {
+                        echo "<br>";
+                        echo '<div class="label label-danger label-big label-nofat label-center">' . __('The payment method editor is not availabe while Resurs Checkout is active', 'WC_Payment_Gateway') . '</div>';
+                    }
                 }
                 ?>
 
