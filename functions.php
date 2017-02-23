@@ -338,7 +338,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'callbackUpdateInterval' => array(
                     'title' => __('Callback update interval', 'WC_Payment_Gateway'),
-                    'description' => __('Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. You need to enable this function to have an effect.', 'WC_Payment_Gateway'),
+                    'description' => __('Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. This function has to be enabled above, to have any effect. Interval is set in days.', 'WC_Payment_Gateway'),
                     'type' => 'text',
                     'default' => '7'
                 ),
