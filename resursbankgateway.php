@@ -27,7 +27,6 @@ $resursGlobalNotice = false;
  */
 function woocommerce_gateway_resurs_bank_init()
 {
-
     if (!class_exists('WC_Payment_Gateway')) return;
     if (class_exists('WC_Resurs_Bank')) return;
 
@@ -72,7 +71,6 @@ function woocommerce_gateway_resurs_bank_init()
      */
     class WC_Resurs_Bank extends WC_Payment_Gateway
     {
-
         protected $flow = null;
 
         /**
@@ -398,9 +396,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $myBool = true;
                             setResursOption($setType, $setValue);
                             setResursOption("login", $subVal);
-                            //$myResponse = $setType . ":OK";
                             $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
-                            //$myResponse['html'] = generatePaymentMethodHtml($newPaymentMethodsList, "something_else");
                             $myResponse['html'] = '<div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have the payment methods updated', 'WC_Payment_Gateway') . '</div>';
                         }
                     }
@@ -443,14 +439,18 @@ function woocommerce_gateway_resurs_bank_init()
                             } else if ($_REQUEST['run'] == "getMyCallbacks") {
                                 $responseArray = array();
                                 if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
-                                    foreach ($this->callback_types as $callType => $ignoreContent) {
-                                        $responseArray[$callType] = $this->flow->getRegisteredEventCallback($callType);
+                                    try {
+                                        foreach ($this->callback_types as $callType => $ignoreContent) {
+                                            $responseArray[$callType] = $this->flow->getRegisteredEventCallback($callType);
+                                        }
+                                    } catch (Exception $e) {
+                                        $errorMessage = $e->getMessage();
                                     }
                                 }
                             } else if ($_REQUEST['run'] == "setMyCallbacks") {
                                 $responseArray = array();
                                 if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
-
+                                    set_transient('resurs_bank_last_callback_setup', time());
                                     try {
                                         $salt = uniqid(mt_rand(), true);
                                         set_transient('resurs_bank_digest_salt', $salt);
@@ -2388,10 +2388,15 @@ function woocommerce_gateway_resurs_bank_init()
                 wp_enqueue_style("resursAdminBootstrap", "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css");
             }
         }
+
+        $requestForCallbacks = callbackUpdateRequest();
+
         $adminJs = array(
             'resursSpinner' => plugin_dir_url(__FILE__) . "loader.gif",
             'callbacks_registered' => __('callbacks has been registered', 'WC_Payment_Gateway'),
             'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
+            'requestForCallbacks' => $requestForCallbacks,
+            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway')
         );
         wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");
@@ -3292,6 +3297,7 @@ function isResursDemo()
     }
     return false;
 }
+
 
 
 isResursSimulation();

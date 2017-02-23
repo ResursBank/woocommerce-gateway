@@ -336,6 +336,19 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => 'https://google.com/?test+landingpage'
                 ),
+                'callbackUpdateInterval' => array(
+                    'title' => __('Callback update interval'),
+                    'description' => __('Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. You need to enable this function to have an effect.', 'WC_Payment_Gateway'),
+                    'type' => 'text',
+                    'default' => '7'
+                ),
+                'callbackUpdateAutomation' => array(
+                    'title' => __('Enable automatic callback updates', 'woocommerce'),
+                    'description' => __('Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'label' => __('Enable/Disable', 'woocommerce'),
+                    'default' => 'false'
+                )
             );
         } else if ($formSectionName == "paymentmethods") {
             //$icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
@@ -892,6 +905,41 @@ EOT;
                 @ob_end_clean();
                 return $methodTable;
             }
+        }
+    }
+}
+
+if (!function_exists('callbackUpdateRequest')) {
+    /**
+     * Checks, in adminUI if there is need for callback requests.
+     *
+     * @return bool
+     */
+    function callbackUpdateRequest()
+    {
+        /*
+         * Prepare callback checker, if logged into admin interface.
+         *
+         * This function enabled background updates of callback updating, instead of running on load in foreground, which probably makes the
+         * administration GUI feel slower than necessary.
+         */
+        $requestForCallbacks = false;
+        $callbackUpdateInterval = "";
+        if (!empty(getResursOption("login")) && !empty(getResursOption("password")) && is_admin()) {
+            /*
+             * Make sure callbacks are up to date with an interval
+             */
+            $callbackUpdateInterval = !empty(getResursOption("callbackUpdateInterval")) ? intval(getResursOption("callbackUpdateInterval")) : 7;
+            if ($callbackUpdateInterval > 7 || $callbackUpdateInterval < 0) {
+                $callbackUpdateInterval = 7;
+            }
+            $lastCallbackRequest = get_transient('resurs_bank_last_callback_setup');
+            $lastCallbackRequestDiff = time() - $lastCallbackRequest;
+            $dayInterval = $callbackUpdateInterval * 86400;
+            if ((getResursOption("callbackUpdateAutomation") && $lastCallbackRequestDiff >= $dayInterval) || empty($lastCallbackRequest)) {
+                $requestForCallbacks = true;
+            }
+            return $requestForCallbacks;
         }
     }
 }

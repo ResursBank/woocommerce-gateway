@@ -8,7 +8,12 @@ $RB(document).ready(function ($) {
     /*
      * This one fixes our new requirements.
      */
-    runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
+
+    if (typeof adminJs["requestForCallbacks"] !== "undefined" && (adminJs["requestForCallbacks"] === false || adminJs["requestForCallbacks"] == "" || null === adminJs["requestForCallbacks"])) {
+        runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
+    } else {
+        doUpdateResursCallbacks();
+    }
 
     // TODO: This might come back when stuff are cleared out
     /*
@@ -214,18 +219,31 @@ function runResursAdminCallback(callbackName) {
 // resursCallbackArray
 function showResursCallbackArray(cbArrayResponse) {
     if (typeof cbArrayResponse["response"] !== "undefined" && typeof cbArrayResponse["response"]["getMyCallbacksResponse"] !== "undefined") {
-        var callbackContent= '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
-        callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
+        var callbackListSize = 0;
         $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function(cbName,cbObj) {
-            if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
-                callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
-            }
+            callbackListSize++;
         });
-        callbackContent += "</table><br>";
-        callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="'+adminJs["update_callbacks"]+'"><br>';
-        $RB('#callbackContent').html(callbackContent);
+        if (callbackListSize > 0) {
+            var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
+            callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
+            $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function (cbName, cbObj) {
+                if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
+                    callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
+                }
+            });
+            callbackContent += "</table><br>";
+            callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
+            $RB('#callbackContent').html(callbackContent);
+        } else {
+            if (adminJs["requestForCallbacks"] === "1") {
+                $RB('#callbackContent').html('<b><i>' + adminJs["noCallbacksSet"] + '</i></b>');
+            }
+        }
     } else {
         $RB('#callbackContent').html("");
+    }
+    if (typeof cbArrayResponse["errorMessage"] !== "undefined" && cbArrayResponse["errorMessage"] !== "") {
+        $RB('#callbackContent').html(cbArrayResponse["errorMessage"]);
     }
 }
 
@@ -241,6 +259,9 @@ function updateResursCallbacksResult(resultResponse) {
             callbackCount = successCheck["registeredCallbacks"];
         }
         $RB('#callbackContent').html(callbackCount+' '+ adminJs["callbacks_registered"] +'<br><img src="' + adminJs.resursSpinner + '" border="0">');
+        if ($RB('#callbacksRequireUpdate').length > 0) {
+            $RB('#callbacksRequireUpdate').hide();
+        }
         runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
     }
 }

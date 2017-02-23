@@ -332,6 +332,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             ?>
             <table class="form-table">
                 <?php
+
                 if (empty($section)) {
                     echo $this->setSeparator(__('Plugin and checkout', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('enabled', $namespace);
@@ -346,6 +347,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '<tr>
                     <th>&nbsp;</th>
                     <td>
+                    ';
+                    if (callbackUpdateRequest()) {
+                        echo '<div id="callbacksRequireUpdate" style="margin-top: 8px;" class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . __('Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...', 'WC_Payment_Gateway') . '</div><br><br>';
+                    }
+                    echo '
                             <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' . __('Callback URLs registered at Resurs Bank', 'WC_Payment_Gateway') . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
@@ -362,7 +368,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Payment methods', 'WC_Payment_Gateway')); // , "configSeparateTitleSmall"
                     echo '<tr>
                     <th scope="row">
-                    <!--' . __('Available payment methods', 'woocommerce') . ' -->
                     </th>
                     <td id="currentResursPaymentMethods">
                     ';
@@ -490,6 +495,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
+                    echo $this->setSeparator(__('Callbacks', 'WC_Payment_Gateway'));
+                    echo $this->setCheckBox('callbackUpdateAutomation', $namespace);
+                    echo $this->setTextBox('callbackUpdateInterval', $namespace);
                     echo $this->setSeparator(__('Customer address handling', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setSeparator(__('Testing and development', 'WC_Payment_Gateway'));
