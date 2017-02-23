@@ -337,7 +337,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'https://google.com/?test+landingpage'
                 ),
                 'callbackUpdateInterval' => array(
-                    'title' => __('Callback update interval'),
+                    'title' => __('Callback update interval', 'WC_Payment_Gateway'),
                     'description' => __('Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. You need to enable this function to have an effect.', 'WC_Payment_Gateway'),
                     'type' => 'text',
                     'default' => '7'
@@ -346,7 +346,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Enable automatic callback updates', 'woocommerce'),
                     'description' => __('Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time', 'WC_Payment_Gateway'),
                     'type' => 'checkbox',
-                    'label' => __('Enable/Disable', 'woocommerce'),
+                    'label' => __('Enable/Disable', 'WC_Payment_Gateway'),
                     'default' => 'false'
                 )
             );
