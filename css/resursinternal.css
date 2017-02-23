@@ -125,16 +125,16 @@
 
 
 
-.label-big {
+.labelBoot-big {
     font-size: 16px !important;
 }
-.label-border {
+.labelBoot-border {
     border: 1px dashed;
 }
-.label-nofat {
+.labelBoot-nofat {
     font-weight: normal !important;
 }
-.label-center {
+.labelBoot-center {
     margin-left: auto !important;
     margin-right: auto !important;
 }
@@ -144,6 +144,10 @@
     border-spacing: 0px !important;
     word-spacing: 0px !important;
     line-height: 0.4em !important;
+}
+.rbCallbackTableFont {
+    font-size: 12px !important;
+    text-wrap: normal !important;
 }
 #callbackContent {
     align-content: center;
@@ -156,7 +160,7 @@
  * with the same classes.
  */
 
-.label {
+.labelBoot {
     display: inline;
     padding: .2em .6em .3em;
     font-size: 75%;
@@ -169,75 +173,75 @@
     border-radius: .25em
 }
 
-a.label:focus, a.label:hover {
+a.labelBoot:focus, a.labelBoot:hover {
     color: #fff;
     text-decoration: none;
     cursor: pointer
 }
 
-.label:empty {
+.labelBoot:empty {
     display: none
 }
 
-.btn .label {
+.btn .labelBoot {
     position: relative;
     top: -1px
 }
 
 /*noinspection CssUnusedSymbol*/
-.label-default {
+.labelBoot-default {
     background-color: #777
 }
 
 /*noinspection CssUnusedSymbol,CssUnusedSymbol*/
-.label-default[href]:focus, .label-default[href]:hover {
+.labelBoot-default[href]:focus, .labelBoot-default[href]:hover {
     background-color: #5e5e5e
 }
 
 /*noinspection CssUnusedSymbol*/
-.label-primary {
+.labelBoot-primary {
     background-color: #337ab7
 }
 
 /*noinspection CssUnusedSymbol,CssUnusedSymbol*/
-.label-primary[href]:focus, .label-primary[href]:hover {
+.labelBoot-primary[href]:focus, .labelBoot-primary[href]:hover {
     background-color: #286090
 }
 
 /*noinspection CssUnusedSymbol*/
-.label-success {
+.labelBoot-success {
     background-color: #5cb85c
 }
 
 /*noinspection CssUnusedSymbol,CssUnusedSymbol*/
-.label-success[href]:focus, .label-success[href]:hover {
+.labelBoot-success[href]:focus, .labelBoot-success[href]:hover {
     background-color: #449d44
 }
 
 /*noinspection CssUnusedSymbol*/
-.label-info {
+.labelBoot-info {
     background-color: #5bc0de
 }
 
 /*noinspection CssUnusedSymbol,CssUnusedSymbol*/
-.label-info[href]:focus, .label-info[href]:hover {
+.labelBoot-info[href]:focus, .labelBoot-info[href]:hover {
     background-color: #31b0d5
 }
 
 /*noinspection CssUnusedSymbol*/
-.label-warning {
+.labelBoot-warning {
     background-color: #f0ad4e
 }
 
 /*noinspection CssUnusedSymbol,CssUnusedSymbol*/
-.label-warning[href]:focus, .label-warning[href]:hover {
+.labelBoot-warning[href]:focus, .labelBoot-warning[href]:hover {
     background-color: #ec971f
 }
 
-.label-danger {
+.labelBoot-danger {
     background-color: #d9534f
 }
 
-.label-danger[href]:focus, .label-danger[href]:hover {
+.labelBoot-danger[href]:focus, .labelBoot-danger[href]:hover {
     background-color: #c9302c
 }

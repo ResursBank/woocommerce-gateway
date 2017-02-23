@@ -75,6 +75,16 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     function admin_options()
     {
+        // The WOO-48 should expire this section.
+        $_REQUEST['tab'] = "tab_resursbank";
+        $_REQUEST['section'] = "resurs_bank_omnicheckout";
+        $url = admin_url('admin.php');
+        $url = add_query_arg('page', $_REQUEST['page'], $url);
+        $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+        $url = add_query_arg('section', $_REQUEST['section'], $url);
+        wp_safe_redirect($url);
+        die("Deprecated space");
+
         ?>
         <table class="form-table">
             <h2>Custom shopFlow - <?php echo $this->method_title; ?></h2>

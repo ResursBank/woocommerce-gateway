@@ -399,9 +399,9 @@ function woocommerce_gateway_resurs_bank_init()
                             setResursOption($setType, $setValue);
                             setResursOption("login", $subVal);
                             //$myResponse = $setType . ":OK";
-                            $myResponse['element'] = "currentResursPaymentMethods";
+                            $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
                             //$myResponse['html'] = generatePaymentMethodHtml($newPaymentMethodsList, "something_else");
-                            $myResponse['html'] = '<div class="label label-success label-big label-nofat label-center">' . __('Please reload or save this page to have the payment methods updated', 'WC_Payment_Gateway') . '</div>';
+                            $myResponse['html'] = '<div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have the payment methods updated', 'WC_Payment_Gateway') . '</div>';
                         }
                     }
                 } else {
@@ -441,11 +441,30 @@ function woocommerce_gateway_resurs_bank_init()
                                     $errorMessage = __("Configuration has not yet been initiated.", "WC_Payment_Gateway");
                                 }
                             } else if ($_REQUEST['run'] == "getMyCallbacks") {
-
                                 $responseArray = array();
+                                if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
+                                    foreach ($this->callback_types as $callType => $ignoreContent) {
+                                        $responseArray[$callType] = $this->flow->getRegisteredEventCallback($callType);
+                                    }
+                                }
+                            } else if ($_REQUEST['run'] == "setMyCallbacks") {
+                                $responseArray = array();
+                                if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
 
-                                foreach ($this->callback_types as $callType => $ignoreContent) {
-                                    $responseArray[$callType] = $this->flow->getRegisteredEventCallback($callType);
+                                    try {
+                                        $salt = uniqid(mt_rand(), true);
+                                        set_transient('resurs_bank_digest_salt', $salt);
+                                        $this->flow->unSetCallback(ResursCallbackTypes::UPDATE);
+                                        $regCount = 0;
+                                        $responseArray['registeredCallbacks'] = 0;
+                                        foreach ($this->callback_types as $callback => $options) {
+                                            $this->register_callback($callback, $options);
+                                            $regCount++;
+                                        }
+                                        $responseArray['registeredCallbacks'] = $regCount;
+                                    } catch (Exception $e) {
+                                        $responseArray['errorstring'] = $e->getMessage();
+                                    }
                                 }
                             }
                         } else {
@@ -1771,15 +1790,20 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function admin_options()
         {
+            $_REQUEST['tab'] = "tab_resursbank";
+            $_REQUEST['section'] = "";
             $url = admin_url('admin.php');
             $url = add_query_arg('page', $_REQUEST['page'], $url);
             $url = add_query_arg('tab', $_REQUEST['tab'], $url);
             $url = add_query_arg('section', $_REQUEST['section'], $url);
+            wp_safe_redirect($url);
+            die("Deprecated space");
 
-            /*
-             * Redirect this page to the new tab settings
-             */
-
+            // WOO-48 removal space begin
+            $url = admin_url('admin.php');
+            $url = add_query_arg('page', $_REQUEST['page'], $url);
+            $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+            $url = add_query_arg('section', $_REQUEST['section'], $url);
             if (isset($_REQUEST['woocommerce_resurs-bank_registerCallbacksButton'])) {
                 $salt = uniqid(mt_rand(), true);
                 set_transient('resurs_bank_digest_salt', $salt);
@@ -1790,7 +1814,6 @@ function woocommerce_gateway_resurs_bank_init()
                     $this->register_callback($callback, $options);
                 }
             }
-
             if (isset($_REQUEST['save'])) {
                 try {
                     if (isset($this->login) && !empty($this->login)) {
@@ -1800,7 +1823,6 @@ function woocommerce_gateway_resurs_bank_init()
                 }
                 wp_safe_redirect($url);
             }
-
             ?>
             <h3><?php echo $this->method_title; ?></h3>
             <?php
@@ -1812,6 +1834,7 @@ function woocommerce_gateway_resurs_bank_init()
                 <?php $this->generate_settings_html(); ?>
             </table>
             <?php
+            // WOO-48 removal space begin
         }
 
         /**
@@ -2365,12 +2388,12 @@ function woocommerce_gateway_resurs_bank_init()
                 wp_enqueue_style("resursAdminBootstrap", "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css");
             }
         }
-        $specialAdminButtons = array(
-            'registerCallbacksButton' => __('Register Callbacks', 'WC_Payment_Gateway'),
-            'refreshPaymentMethods' => __('Update available payment methods', 'WC_Payment_Gateway'),
-            'resursSpinner' => plugin_dir_url(__FILE__) . "loader.gif"
+        $adminJs = array(
+            'resursSpinner' => plugin_dir_url(__FILE__) . "loader.gif",
+            'callbacks_registered' => __('callbacks has been registered', 'WC_Payment_Gateway'),
+            'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
         );
-        wp_localize_script('resursBankAdminScript', 'rb_buttons', $specialAdminButtons);
+        wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");
         $configUrl = add_query_arg('event-type', 'noevent', $configUrl);
         $configUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $configUrl);

@@ -10,20 +10,6 @@ $RB(document).ready(function ($) {
      */
     runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
 
-    //jQuery('#woocommerce_resurs-bank_registerCallbacksButton').val(rb_buttons.registerCallbacksButton);
-    //jQuery('#woocommerce_resurs-bank_refreshPaymentMethods').val(rb_buttons.refreshPaymentMethods);
-    /*
-    jQuery('select[id*="finalizeIfBooked"]').bind("change", function () {
-            if (this.value === "true") {
-                var doUpdateMethods = confirm('This requires that callbacks are up to date. Do you want to fix this now?');
-                if (doUpdateMethods) {
-                    jQuery('input[id*="registerCallbacksButton"]').click();
-                }
-            }
-        }
-    );
-    */
-
     // TODO: This might come back when stuff are cleared out
     /*
     if (jQuery('#paymentMethodName').length > 0) {
@@ -106,7 +92,7 @@ function resursEditProtectedField(currentField, ns) {
 function resursSaveProtectedField(currentFieldId, ns, cb) {
     var processId = $RB('#process_' + currentFieldId);
     if (processId.length > 0) {
-        processId.html('<img src="' + rb_buttons.resursSpinner + '" border="0">');
+        processId.html('<img src="' + adminJs.resursSpinner + '" border="0">');
     }
     var setVal = $RB('#' + currentFieldId + "_value").val();
     var subVal;
@@ -131,7 +117,13 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
                 if (typeof data["response"] === "object") {
                     var response = data["response"];
                     if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
-                        $RB('#' + response["element"]).html(response["html"]);
+                        if (typeof response["element"] === "object") {
+                            $RB.each(response["element"], function(elementIndex, elementName) {
+                                $RB('#' + elementName).html(response["html"]);
+                            });
+                        } else {
+                            $RB('#' + response["element"]).html(response["html"]);
+                        }
                     }
                 }
                 if (cb !== "") {
@@ -140,7 +132,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
             } else {
                 if (typeof data["errorMessage"] !== "undefined" && data["errorMessage"] != "") {
                     if (processId.length > 0) {
-                        processId.html('<div class="label label-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                        processId.html('<div class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
                     } else {
                         alert("Not successful: " + data["errorMessage"]);
                     }
@@ -170,7 +162,7 @@ function runResursAdminCallback(callbackName) {
         if (typeof setArg !== "function") {
             testProcElement = $RB('#process_' + setArg);
             if (typeof testProcElement === "object") {
-                testProcElement.html('<img src="' + rb_buttons.resursSpinner + '" border="0">');
+                testProcElement.html('<img src="' + adminJs.resursSpinner + '" border="0">');
             }
         }
     }
@@ -198,7 +190,7 @@ function runResursAdminCallback(callbackName) {
             if (typeof data["success"] !== "undefined" && typeof data["errorMessage"] !== "undefined") {
                 if (data["success"] === false && data["errorMessage"] !== "") {
                     if (typeof testProcElement === "object") {
-                        testProcElement.html('<div class="label label-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                        testProcElement.html('<div class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
                     } else {
                         alert(data["errorMessage"]);
                     }
@@ -226,11 +218,11 @@ function showResursCallbackArray(cbArrayResponse) {
         callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
         $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function(cbName,cbObj) {
             if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
-                callbackContent += '<tr><th class="rbCallbackTableStatic">' + cbName + '</th><td class="rbCallbackTableStatic">' + cbObj["uriTemplate"] + "</td></tr>";
+                callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
             }
         });
         callbackContent += "</table><br>";
-        callbackContent += '<button onclick="doUpdateResursCallbacks()">Update callbacks</button>';
+        callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="'+adminJs["update_callbacks"]+'"><br>';
         $RB('#callbackContent').html(callbackContent);
     } else {
         $RB('#callbackContent').html("");
@@ -238,5 +230,17 @@ function showResursCallbackArray(cbArrayResponse) {
 }
 
 function doUpdateResursCallbacks() {
-    alert("Clickety!");
+    $RB('#callbackContent').html('<img src="' + adminJs.resursSpinner + '" border="0">');
+    runResursAdminCallback("setMyCallbacks", "updateResursCallbacksResult");
+}
+function updateResursCallbacksResult(resultResponse) {
+    if (typeof resultResponse["response"] !== "undefined" && typeof resultResponse["response"]["setMyCallbacksResponse"] !== "undefined") {
+        var successCheck = resultResponse["response"]["setMyCallbacksResponse"];
+        var callbackCount = "";
+        if (successCheck["errorstring"] != "") {
+            callbackCount = successCheck["registeredCallbacks"];
+        }
+        $RB('#callbackContent').html(callbackCount+' '+ adminJs["callbacks_registered"] +'<br><img src="' + adminJs.resursSpinner + '" border="0">');
+        runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
+    }
 }

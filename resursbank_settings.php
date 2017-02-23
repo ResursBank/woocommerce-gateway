@@ -346,7 +346,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '<tr>
                     <th>&nbsp;</th>
                     <td>
-                            <div class="label label-info label-big">' . __('Callback URLs registered at Resurs Bank', 'WC_Payment_Gateway') . '</div>
+                            <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' . __('Callback URLs registered at Resurs Bank', 'WC_Payment_Gateway') . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
                     if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
@@ -367,10 +367,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <td id="currentResursPaymentMethods">
                     ';
                     if (!count($this->paymentMethods)) {
-                        echo '<div class="label label-danger label-big label-nofat label-center">' . __('The list of available payment methods will appear, when credentials has been entered', 'WC_Payment_Gateway') . '</div><br>';
+                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered', 'WC_Payment_Gateway') . '</div><br>';
                     }
                     if (isResursOmni()) {
-                        echo '<div class="label label-danger label-big label-nofat label-center label-border">' . __('Payment methods are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
+                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Payment methods are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
                     }
 
                     if (count($this->paymentMethods)) {
@@ -521,7 +521,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo $this->setTextBox('icon', $namespace);
                     } else {
                         echo "<br>";
-                        echo '<div class="label label-danger label-big label-nofat label-center">' . __('The payment method editor is not availabe while Resurs Checkout is active', 'WC_Payment_Gateway') . '</div>';
+                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The payment method editor is not availabe while Resurs Checkout is active', 'WC_Payment_Gateway') . '</div>';
                     }
                 }
                 ?>
