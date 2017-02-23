@@ -167,9 +167,11 @@ function runResursAdminCallback(callbackName) {
     var testProcElement;
     if (typeof arguments[1] !== "undefined") {
         setArg = arguments[1];
-        testProcElement = $RB('#process_' + setArg);
-        if (typeof testProcElement === "object") {
-            testProcElement.html('<img src="' + rb_buttons.resursSpinner + '" border="0">');
+        if (typeof setArg !== "function") {
+            testProcElement = $RB('#process_' + setArg);
+            if (typeof testProcElement === "object") {
+                testProcElement.html('<img src="' + rb_buttons.resursSpinner + '" border="0">');
+            }
         }
     }
     $RB.ajax({
@@ -180,6 +182,11 @@ function runResursAdminCallback(callbackName) {
             'arg': setArg
         }
     }).done(function (data) {
+        if (typeof window[setArg] === "function") {
+            window[setArg](data);
+        } else {
+            setArg();
+        }
         if (typeof testProcElement === "object") {
             testProcElement.html('');
         }
@@ -199,6 +206,11 @@ function runResursAdminCallback(callbackName) {
             }
         }
     }).fail(function (x, y) {
+        if (typeof window[setArg] === "function") {
+            window[setArg]([]);
+        } else {
+            setArg();
+        }
         if (typeof testProcElement === "object") {
             testProcElement.html("Administration callback not successful");
         } else {
@@ -208,5 +220,23 @@ function runResursAdminCallback(callbackName) {
 }
 
 // resursCallbackArray
-function showResursCallbackArray(res) {
+function showResursCallbackArray(cbArrayResponse) {
+    if (typeof cbArrayResponse["response"] !== "undefined" && typeof cbArrayResponse["response"]["getMyCallbacksResponse"] !== "undefined") {
+        var callbackContent= '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
+        callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
+        $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function(cbName,cbObj) {
+            if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
+                callbackContent += '<tr><th class="rbCallbackTableStatic">' + cbName + '</th><td class="rbCallbackTableStatic">' + cbObj["uriTemplate"] + "</td></tr>";
+            }
+        });
+        callbackContent += "</table><br>";
+        callbackContent += '<button onclick="doUpdateResursCallbacks()">Update callbacks</button>';
+        $RB('#callbackContent').html(callbackContent);
+    } else {
+        $RB('#callbackContent').html("");
+    }
+}
+
+function doUpdateResursCallbacks() {
+    alert("Clickety!");
 }

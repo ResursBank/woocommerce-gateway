@@ -138,8 +138,16 @@
     margin-left: auto !important;
     margin-right: auto !important;
 }
-
-
+.rbCallbackTableStatic {
+    padding: 0px !important;
+    margin: 0px !important;
+    border-spacing: 0px !important;
+    word-spacing: 0px !important;
+    line-height: 0.4em !important;
+}
+#callbackContent {
+    align-content: center;
+}
 
 
 /*!

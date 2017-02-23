@@ -16,6 +16,7 @@ include('functions.php');
  */
 class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 {
+    private $spinner;
     public $id = "tab_resursbank";
     //private $current_section;
     private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
@@ -45,6 +46,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public function get_sections()
     {
         $sections = array();    // Adaptive array.
+        $this->spinner = plugin_dir_url(__FILE__) . "loader.gif";
 
         $sections[''] = __('Basic settings', 'WC_Payment_Gateway');
         if (isResursOmni()) {
@@ -242,7 +244,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     private function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
     {
         $formSettings = $this->getFormSettings($settingKey);
-        if (is_null($optionsList)) { $optionsList = array(); }
+        if (is_null($optionsList)) {
+            $optionsList = array();
+        }
         /*
          * Failover to prior forms.
          */
@@ -339,11 +343,21 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setTextBox('login', $namespace, 'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
                     echo $this->setSeparator(__('Callbacks', 'WC_Payment_Gateway')); // , "configSeparateTitleSmall"
-
                     echo '<tr>
-                        <th></th>
-                        <td id="resursCallbackArray"></td>
-                    </tr>';
+                    <th>&nbsp;</th>
+                    <td>
+                            <div class="label label-info label-big">' . __('Callback URLs registered at Resurs Bank', 'WC_Payment_Gateway') . '</div>
+                            <div id="callbackContent" style="margin-top: 8px;">
+                    ';
+                    if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
+                        echo '<img src="' . $this->spinner . '" border="0">';
+                    }
+                    echo '
+                    </div>
+                    
+                    </td>
+                    </tr>
+                    ';
 
                     echo $this->setSeparator(__('Payment methods', 'WC_Payment_Gateway')); // , "configSeparateTitleSmall"
                     echo '<tr>
