@@ -515,6 +515,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                     echo $this->setSeparator(__('Network', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('handleNatConnections', $namespace);
+                    echo $this->setSeparator(__('Maintenance', 'WC_Payment_Gateway'));
+                    echo '<tr><th>'.__('Clean up ', 'WC_Payment_Gateway').'</th><td>';
+                    echo '<input id="cleanResursSettings" type="button" value="'.__('Resurs settings', 'WC_Payment_Gateway').'" onclick="runResursAdminCallback(\'cleanRbSettings\', \'cleanResursSettings\')"> <span id="process_cleanResursSettings"></span><br>';
+                    echo '<input id="cleanResursMethods" type="button" value="'.__('Payment methods', 'WC_Payment_Gateway').'" onclick="runResursAdminCallback(\'cleanRbMethods\', \'cleanResursMethods\')"> <span id="process_cleanResursMethods"><span>';
+                    echo '</td></tr>';
 
                 } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
                     if (!isResursOmni()) {
@@ -532,6 +537,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The payment method editor is not availabe while Resurs Checkout is active', 'WC_Payment_Gateway') . '</div>';
                     }
                 }
+                echo $this->setSeparator(__('Save above configuration with the button below', 'WC_Payment_Gateway'));
                 ?>
 
 

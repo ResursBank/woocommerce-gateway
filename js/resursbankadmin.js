@@ -182,7 +182,9 @@ function runResursAdminCallback(callbackName) {
         if (typeof window[setArg] === "function") {
             window[setArg](data);
         } else {
-            setArg();
+            if (typeof setArg === "function") {
+                setArg();
+            }
         }
         if (typeof testProcElement === "object") {
             testProcElement.html('');
