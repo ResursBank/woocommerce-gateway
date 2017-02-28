@@ -346,7 +346,7 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function check_callback_response()
         {
-            global $woocommerce, $wpdb;
+            global $wpdb;
             $url_arr = parse_url($_SERVER["REQUEST_URI"]);
             $url_arr['query'] = str_replace('amp;', '', $url_arr['query']);
             parse_str($url_arr['query'], $request);
@@ -465,6 +465,33 @@ function woocommerce_gateway_resurs_bank_init()
                                     } catch (Exception $e) {
                                         $responseArray['errorstring'] = $e->getMessage();
                                     }
+                                }
+                            } else if ($_REQUEST['run'] == 'cleanRbSettings') {
+                                $numDel = $wpdb->query("DELETE FROM ".$wpdb->options." WHERE option_name LIKE '%resurs%bank%'");
+                                $responseArray['deleteOptions'] = $numDel;
+                                $responseArray['element'] = "process_cleanResursSettings";
+                                if ($numDel > 0) {
+                                    $myBool = true;
+                                    $responseArray['html'] = "OK";
+                                } else {
+                                    $responseArray['html'] = "";
+                                }
+                            } else if ($_REQUEST['run'] = 'cleanRbMethods') {
+                                $numDel = 0;
+                                $numConfirm = 0;
+                                foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
+                                    @unlink($filename);
+                                    $numDel ++;
+                                }
+                                foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) { $numConfirm++; }
+                                $responseArray['deleteFiles'] = 0;
+                                $responseArray['element'] = "process_cleanResursMethods";
+                                if ($numConfirm != $numDel) {
+                                    $responseArray['deleteFiles'] = $numDel;
+                                    $responseArray['html'] = "OK";
+                                    $myBool = true;
+                                } else {
+                                    $responseArray['html'] = "";
                                 }
                             }
                         } else {
@@ -3297,7 +3324,6 @@ function isResursDemo()
     }
     return false;
 }
-
 
 
 isResursSimulation();
