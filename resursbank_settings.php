@@ -344,8 +344,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setTextBox('login', $namespace, 'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
                     echo $this->setSeparator(__('Callbacks', 'WC_Payment_Gateway')); // , "configSeparateTitleSmall"
+
+                    $callSent = get_transient("resurs_callbacks_sent");
+                    $callRecv = get_transient("resurs_callbacks_received");
+
                     echo '<tr>
-                    <th>&nbsp;</th>
+                    <th></th>
                     <td>
                     ';
                     if (callbackUpdateRequest()) {
@@ -359,7 +363,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo '<img src="' . $this->spinner . '" border="0">';
                     }
                     echo '
+
                     </div>
+                    <b>'.__('Callback Tests', 'WC_Payment_Gateway').'</b><br>
+                    <table cellpadding="0" cellpadding="0" style="margin-bottom: 5px;" width="500px;">
+                    <tr>
+                    <td style="padding: 0px;">'.__('Last test run', 'WC_Payment_Gateway').'</td><td style="padding: 0px;" id="lastCbRun">'.($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callSent) : __('Never', 'WC_Payment_Gateway')) . '</td>
+                    </tr>
+                    <tr>
+                    <td style="padding: 0px;">'.__('Last test received', 'WC_Payment_Gateway').'</td><td style="padding: 0px;" id="lastCbRec">'.($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callRecv) : __('Never', 'WC_Payment_Gateway')).'</td>
+                    </tr>
+                    </table>
+                    <br>
                     
                     </td>
                     </tr>

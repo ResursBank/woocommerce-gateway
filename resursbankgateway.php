@@ -139,6 +139,22 @@ function woocommerce_gateway_resurs_bank_init()
                     'digest_parameters' => array(
                         'paymentId' => 'paymentId',
                     ),
+                ),
+                'TEST' => array(
+                    'uri_components' => array(
+                        'prm1' => 'param1',
+                        'prm2' => 'param2',
+                        'prm3' => 'param3',
+                        'prm4' => 'param4',
+                        'prm5' => 'param5'
+                    ),
+                    'digest_parameters' => array(
+                        'parameter1' => 'param1',
+                        'parameter2' => 'param2',
+                        'parameter3' => 'param3',
+                        'parameter4' => 'param4',
+                        'parameter5' => 'param5'
+                    )
                 )
             );
             $this->init_form_fields();
@@ -354,6 +370,14 @@ function woocommerce_gateway_resurs_bank_init()
                 $request = $_GET;
             }
             $event_type = $request['event-type'];
+
+            if ($event_type == "TEST") {
+                set_transient('resurs_callbacks_received', time());
+                set_transient('resurs_callbacks_content', $_REQUEST);
+                header('HTTP/1.0 204 CallbackWihtoutDigestTriggerOK');
+                die();
+            }
+
             if ($event_type == "noevent") {
                 $myResponse = null;
                 $myBool = false;
@@ -457,17 +481,28 @@ function woocommerce_gateway_resurs_bank_init()
                                         $this->flow->unSetCallback(ResursCallbackTypes::UPDATE);
                                         $regCount = 0;
                                         $responseArray['registeredCallbacks'] = 0;
+                                        $rList = array();
                                         foreach ($this->callback_types as $callback => $options) {
-                                            $this->register_callback($callback, $options);
+                                            $setUriTemplate = $this->register_callback($callback, $options);
+                                            $rList[$callback] = $setUriTemplate;
                                             $regCount++;
                                         }
+                                        set_transient('resurs_callbacks_sent', time());
+                                        $triggeredTest = $this->flow->testCallback();
                                         $responseArray['registeredCallbacks'] = $regCount;
+                                        $responseArray['registeredTemplates'] = $rList;
+                                        $responseArray['testTriggerActive'] = $triggeredTest;
+                                        $responseArray['testTriggerTimestamp'] = strftime('%Y-%m-%d (%H:%M:%S)', time());
                                     } catch (Exception $e) {
                                         $responseArray['errorstring'] = $e->getMessage();
                                     }
                                 }
+                            } else if ($_REQUEST['run'] == 'getLastCallbackTimestamp') {
+                                $lastRecv = get_transient('resurs_callbacks_received');
+                                $responseArray['element'] = "lastCbRec";
+                                $responseArray['html'] = ($lastRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $lastRecv) : __('Never', 'WC_Payment_Gateway'));
                             } else if ($_REQUEST['run'] == 'cleanRbSettings') {
-                                $numDel = $wpdb->query("DELETE FROM ".$wpdb->options." WHERE option_name LIKE '%resurs%bank%'");
+                                $numDel = $wpdb->query("DELETE FROM " . $wpdb->options . " WHERE option_name LIKE '%resurs%bank%'");
                                 $responseArray['deleteOptions'] = $numDel;
                                 $responseArray['element'] = "process_cleanResursSettings";
                                 if ($numDel > 0) {
@@ -481,9 +516,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 $numConfirm = 0;
                                 foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
                                     @unlink($filename);
-                                    $numDel ++;
+                                    $numDel++;
                                 }
-                                foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) { $numConfirm++; }
+                                foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
+                                    $numConfirm++;
+                                }
                                 $responseArray['deleteFiles'] = 0;
                                 $responseArray['element'] = "process_cleanResursMethods";
                                 if ($numConfirm != $numDel) {
@@ -625,10 +662,12 @@ function woocommerce_gateway_resurs_bank_init()
          *
          * @param  string $type The callback type to be registered
          * @param  array $options The parameters for the SOAP request
+         * @return bool|mixed|string|void
          * @throws Exception
          */
         public function register_callback($type, $options)
         {
+            $uriTemplate = null;
             if (false === is_object($this->flow)) {
                 $this->flow = initializeResursFlow();
             }
@@ -645,14 +684,22 @@ function woocommerce_gateway_resurs_bank_init()
                 foreach ($options['uri_components'] as $key => $value) {
                     $uriTemplate .= '&' . $key . '=' . '{' . $value . '}';
                 }
-                $uriTemplate .= '&digest={digest}';
-                $uriTemplate = str_replace('/&/', '&', $uriTemplate);
+                if ($type == "TEST") {
+                    $uriTemplate .= '&thisRandomValue=' . rand(10000, 32000);
+                } else {
+                    $uriTemplate .= '&digest={digest}';
+                }
+
+                //$uriTemplate = str_replace('/&/', '&', $uriTemplate);
+
+
                 $callbackType = $this->flow->getCallbackTypeByString($type);
                 $this->flow->setCallbackDigest(get_transient('resurs_bank_digest_salt'));
                 $this->flow->setCallback($callbackType, $uriTemplate);
             } catch (Exception $e) {
-                throw $e;
+                throw new Exception($e);
             }
+            return $uriTemplate;
         }
 
         /**

@@ -189,7 +189,7 @@ function runResursAdminCallback(callbackName) {
         if (typeof testProcElement === "object") {
             testProcElement.html('');
         }
-        if (typeof data["response"] === "object" && typeof data["response"][callbackName + "Response"] !== "undefined") {
+        if (typeof callbackName !== "undefined" && typeof data["response"] === "object" && typeof data["response"][callbackName + "Response"] !== "undefined") {
             var response = data["response"][callbackName + "Response"];
             if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
                 $RB('#' + response["element"]).html(response["html"]);
@@ -257,6 +257,10 @@ function updateResursCallbacksResult(resultResponse) {
     if (typeof resultResponse["response"] !== "undefined" && typeof resultResponse["response"]["setMyCallbacksResponse"] !== "undefined") {
         var successCheck = resultResponse["response"]["setMyCallbacksResponse"];
         var callbackCount = "";
+        if (typeof successCheck["testTriggerTimestamp"] !== "undefined") {
+            $RB('#lastCbRun').html(successCheck["testTriggerTimestamp"]);
+            setInterval('checkLastCallback()', 2000);
+        }
         if (successCheck["errorstring"] != "") {
             callbackCount = successCheck["registeredCallbacks"];
         }
@@ -266,4 +270,9 @@ function updateResursCallbacksResult(resultResponse) {
         }
         runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
     }
+}
+
+
+function checkLastCallback() {
+    runResursAdminCallback("getLastCallbackTimestamp");
 }
