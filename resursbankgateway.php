@@ -461,15 +461,29 @@ function woocommerce_gateway_resurs_bank_init()
                                     $errorMessage = __("Configuration has not yet been initiated.", "WC_Payment_Gateway");
                                 }
                             } else if ($_REQUEST['run'] == "getMyCallbacks") {
-                                $responseArray = array();
+                                $responseArray = array(
+                                    'callbacks' => array()
+                                );
                                 if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
-                                    try {
-                                        foreach ($this->callback_types as $callType => $ignoreContent) {
-                                            $responseArray[$callType] = $this->flow->getRegisteredEventCallback($callType);
+                                    $lastFetchedCacheTime = time() - get_transient("resurs_callback_templates_cache_last");
+                                    $lastFetchedCache = get_transient("resurs_callback_templates_cache");
+
+                                    if ($lastFetchedCacheTime >= 86400 || empty($lastFetchedCache) || isset($_REQUEST['force'])) {
+                                        try {
+                                            foreach ($this->callback_types as $callType => $ignoreContent) {
+                                                $responseArray['callbacks'][$callType] = $this->flow->getRegisteredEventCallback($callType);
+                                            }
+                                            set_transient("resurs_callback_templates_cache_last", time());
+                                            $myBool = true;
+                                        } catch (Exception $e) {
+                                            $errorMessage = $e->getMessage();
                                         }
+                                        set_transient("resurs_callback_templates_cache", $responseArray['callbacks']);
+                                        $responseArray['cached'] = false;
+                                    } else {
                                         $myBool = true;
-                                    } catch (Exception $e) {
-                                        $errorMessage = $e->getMessage();
+                                        $responseArray['callbacks'] = $lastFetchedCache;
+                                        $responseArray['cached'] = true;
                                     }
                                 }
                             } else if ($_REQUEST['run'] == "setMyCallbacks") {
@@ -483,6 +497,7 @@ function woocommerce_gateway_resurs_bank_init()
                                         $regCount = 0;
                                         $responseArray['registeredCallbacks'] = 0;
                                         $rList = array();
+                                        set_transient("resurs_callback_templates_cache_last", 0);
                                         foreach ($this->callback_types as $callback => $options) {
                                             $setUriTemplate = $this->register_callback($callback, $options);
                                             $rList[$callback] = $setUriTemplate;
@@ -2470,8 +2485,14 @@ function woocommerce_gateway_resurs_bank_init()
 
         $requestForCallbacks = callbackUpdateRequest();
 
+        $callbackUriCacheTime = get_transient("resurs_callback_templates_cache_last");
+        $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? strftime("%Y-%m-%d, %H:%M", $callbackUriCacheTime) : "";
+
         $adminJs = array(
             'resursSpinner' => plugin_dir_url(__FILE__) . "loader.gif",
+            'resursSpinnerLocal' => plugin_dir_url(__FILE__) . "loaderLocal.gif",
+            'callbackUrisCache' => __('The list of urls below is cached from an earlier response from Resurs Bank', 'WC_Payment_Gateway'),
+            'callbackUrisCacheTime' => $lastFetchedCacheTime,
             'callbacks_registered' => __('callbacks has been registered', 'WC_Payment_Gateway'),
             'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
             'requestForCallbacks' => $requestForCallbacks,

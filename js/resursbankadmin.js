@@ -8,7 +8,6 @@ $RB(document).ready(function ($) {
     /*
      * This one fixes our new requirements.
      */
-
     if (typeof adminJs["requestForCallbacks"] !== "undefined" && (adminJs["requestForCallbacks"] === false || adminJs["requestForCallbacks"] == "" || null === adminJs["requestForCallbacks"])) {
         runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
     } else {
@@ -229,18 +228,24 @@ function runResursAdminCallback(callbackName) {
 }
 
 function showResursCallbackArray(cbArrayResponse) {
+    var useCacheNote = false;   // For future use
     if (typeof cbArrayResponse !== "undefined" && typeof cbArrayResponse["response"] !== "undefined" && typeof cbArrayResponse["response"] !== null && typeof cbArrayResponse["success"] && cbArrayResponse["success"] !== false) {
         if (typeof cbArrayResponse["response"]["getMyCallbacksResponse"] !== "undefined") {
             var callbackListSize = 0;
-            $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function (cbName, cbObj) {
+            var callbackResponse = cbArrayResponse["response"]["getMyCallbacksResponse"];
+            var isCached = callbackResponse["cached"];
+            $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                 callbackListSize++;
             });
             if (callbackListSize > 0) {
                 var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
                 callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
-                $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function (cbName, cbObj) {
+                if (useCacheNote && isCached) {
+                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">'+adminJs["callbackUrisCache"]+ (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" :"") + '</td></tr>';
+                }
+                $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                     if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
-                        callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
+                        callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" ' + (isCached ? 'style="font-style:italic !important;"' : "") + ' width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
                     }
                 });
                 callbackContent += "</table><br>";

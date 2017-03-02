@@ -123,7 +123,14 @@
 }
 
 
-
+.uriTemplateLocation {
+    font-color: #990000 !important;
+    font-style: italic !important;
+    font-weight: bold !important;
+    right: 10px;
+    position: absolute;
+    display: block;
+}
 
 .labelBoot-big {
     font-size: 16px !important;
