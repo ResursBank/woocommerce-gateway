@@ -125,7 +125,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'description' => array(
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
-                    'default' => 'Betala med Resurs Bank',
+                    'default' => '',
                     'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
                     'desc_tip' => true,
                 ),
@@ -184,22 +184,14 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'reduceOrderStock' => array(
                     'title' => __('During payment process, also handle order by reducing order stock', 'WC_Payment_Gateway'),
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __('Defines whether the plugin should wait for the fraud control when booking payments, or not', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'waitForFraudControl' => array(
                     'title' => 'waitForFraudControl',
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
                     'description' => __('Defines whether the plugin should wait for the fraud control when booking payments, or not', 'WC_Payment_Gateway'),
@@ -207,11 +199,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'annulIfFrozen' => array(
                     'title' => 'annulIfFrozen',
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
                     'description' => __('Defines if a payment should be annulled immediately if Resurs Bank returns a FROZEN state', 'WC_Payment_Gateway'),
@@ -219,11 +207,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'finalizeIfBooked' => array(
                     'title' => 'finalizeIfBooked',
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
                     'description' => __('Defines if a payment should be debited immediately on a booked payment (Not available for Resurs Checkout)', 'WC_Payment_Gateway'),
@@ -243,11 +227,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'handleNatConnections' => array(
                     'title' => __('Handle NAT connections', 'WC_Payment_Gateway'),
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __('Defines if the plugin should perform a simple check against proxies on customer ip addresses (Not recommended to activate since it opens up for exploits, but if you have many connecting customers that seem to be on NATed networks, this may help a bit)', 'WC_Payment_Gateway'),
                     'desc_tip' => false,
@@ -313,21 +293,13 @@ if (!function_exists('getResursWooFormFields')) {
                 'randomizeJsLoaders' => array(
                     'title' => __('Prevent caching of included javascripts', 'WC_Payment_Gateway'),
                     'description' => __('Enable this feature, if resursbank.js tend to cache older versions even after the codebase are updated', 'WC_Payment_Gateway'),
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'default' => 'false'
                 ),
                 'devResursSimulation' => array(
                     'title' => __('Resurs developer mode for simulations', 'WC_Payment_Gateway'),
                     'description' => __('Enable this feature and things may go wrong (this is automatically disabled in production)', 'WC_Payment_Gateway'),
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'default' => 'false'
                 ),
                 'devSimulateSuccessUrl' => array(

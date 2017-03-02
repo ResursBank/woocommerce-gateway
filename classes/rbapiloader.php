@@ -123,7 +123,7 @@ class ResursBank
     public $configurationService = null;
     /** @var null Object developerWebService */
     public $developerWebService = null;
-    /** @var null Object simplifiedShowFlowService (this is what is primary used by this gateway) */
+    /** @var null Object simplifiedShopFlowService (this is what is primary used by this gateway) */
     public $simplifiedShopFlowService = null;
     /** @var null Object afterShopFlowService */
     public $afterShopFlowService = null;
@@ -219,7 +219,7 @@ class ResursBank
     /** @var null Card data object: If set, you can set up your own amount to apply for */
     private $cardDataOwnAmount = null;
 
-    /** @var string Customer id used at afterShowFlow */
+    /** @var string Customer id used at afterShopFlow */
     public $customerId = "";
 
     /**
@@ -3023,7 +3023,7 @@ class ResursBank
      */
 
     /**
-     * Set a logged in username (will be merged with the client name at aftershowFlow-level)
+     * Set a logged in username (will be merged with the client name at aftershopFlow-level)
      *
      * @param string $currentUsername
      */
