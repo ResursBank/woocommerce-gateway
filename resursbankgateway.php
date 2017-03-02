@@ -426,12 +426,12 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 } else {
                     if (isset($_REQUEST['run'])) {
-                        $arg = null;
-                        if (isset($_REQUEST['arg'])) {
-                            $arg = $_REQUEST['arg'];
-                        }
-                        $responseArray = array();
                         if (wp_verify_nonce($reqNonce, "requestResursAdmin")) {
+                            $arg = null;
+                            if (isset($_REQUEST['arg'])) {
+                                $arg = $_REQUEST['arg'];
+                            }
+                            $responseArray = array();
                             if ($_REQUEST['run'] == "updateResursPaymentMethods") {
                                 try {
                                     //$responseArray = $this->flow->getPaymentMethods();
@@ -467,6 +467,7 @@ function woocommerce_gateway_resurs_bank_init()
                                         foreach ($this->callback_types as $callType => $ignoreContent) {
                                             $responseArray[$callType] = $this->flow->getRegisteredEventCallback($callType);
                                         }
+                                        $myBool = true;
                                     } catch (Exception $e) {
                                         $errorMessage = $e->getMessage();
                                     }
@@ -487,6 +488,9 @@ function woocommerce_gateway_resurs_bank_init()
                                             $rList[$callback] = $setUriTemplate;
                                             $regCount++;
                                         }
+                                        if ($regCount > 0) {
+                                            $myBool = true;
+                                        }
                                         set_transient('resurs_callbacks_sent', time());
                                         $triggeredTest = $this->flow->testCallback();
                                         $responseArray['registeredCallbacks'] = $regCount;
@@ -499,6 +503,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 }
                             } else if ($_REQUEST['run'] == 'getLastCallbackTimestamp') {
                                 $lastRecv = get_transient('resurs_callbacks_received');
+                                $myBool = true;
                                 $responseArray['element'] = "lastCbRec";
                                 $responseArray['html'] = ($lastRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $lastRecv) : __('Never', 'WC_Payment_Gateway'));
                             } else if ($_REQUEST['run'] == 'cleanRbSettings') {
@@ -531,12 +536,12 @@ function woocommerce_gateway_resurs_bank_init()
                                     $responseArray['html'] = "";
                                 }
                             }
+                            $myResponse = array(
+                                $_REQUEST['run'] . "Response" => $responseArray
+                            );
                         } else {
-                            $responseArray = array('Authorized' => false);
+                            $errorMessage = __('Session expired of permission denied', 'WC_Payment_Gateway');
                         }
-                        $myResponse = array(
-                            $_REQUEST['run'] . "Response" => $responseArray
-                        );
                     }
                 }
 

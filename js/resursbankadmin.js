@@ -17,15 +17,15 @@ $RB(document).ready(function ($) {
 
     // TODO: This might come back when stuff are cleared out
     /*
-    if (jQuery('#paymentMethodName').length > 0) {
-        var methodName = jQuery('#paymentMethodName').html();
-        var iconFieldName = "#woocommerce_" + methodName + "_icon";
-        var iconField = jQuery(iconFieldName);
-        if (iconField.length > 0) {
-            iconField.after('<br><img src="' + iconField.val() + '">');
-        }
-    }
-    */
+     if (jQuery('#paymentMethodName').length > 0) {
+     var methodName = jQuery('#paymentMethodName').html();
+     var iconFieldName = "#woocommerce_" + methodName + "_icon";
+     var iconField = jQuery(iconFieldName);
+     if (iconField.length > 0) {
+     iconField.after('<br><img src="' + iconField.val() + '">');
+     }
+     }
+     */
 
     var $el, $ps, $up, totalHeight;
     jQuery(".resurs-read-more-box .button").click(function () {
@@ -123,7 +123,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
                     var response = data["response"];
                     if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
                         if (typeof response["element"] === "object") {
-                            $RB.each(response["element"], function(elementIndex, elementName) {
+                            $RB.each(response["element"], function (elementIndex, elementName) {
                                 $RB('#' + elementName).html(response["html"]);
                             });
                         } else {
@@ -189,7 +189,8 @@ function runResursAdminCallback(callbackName) {
         if (typeof testProcElement === "object") {
             testProcElement.html('');
         }
-        if (typeof callbackName !== "undefined" && typeof data["response"] === "object" && typeof data["response"][callbackName + "Response"] !== "undefined") {
+
+        if (typeof callbackName !== "undefined" && typeof data["response"] === "object" && data["response"] != null && typeof data["response"][callbackName + "Response"] !== "undefined") {
             var response = data["response"][callbackName + "Response"];
             if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
                 $RB('#' + response["element"]).html(response["html"]);
@@ -203,7 +204,16 @@ function runResursAdminCallback(callbackName) {
                     }
                 }
             }
+        } else {
+            if (typeof data["errorMessage"] !== "undefined") {
+                if (typeof data["element"] !== "undefined") {
+                    $RB('#' + data["element"]).html(data["errorMessage"]);
+                } else {
+                    alert(data["errorMessage"]);
+                }
+            }
         }
+
     }).fail(function (x, y) {
         if (typeof window[setArg] === "function") {
             window[setArg]([]);
@@ -218,34 +228,39 @@ function runResursAdminCallback(callbackName) {
     });
 }
 
-// resursCallbackArray
 function showResursCallbackArray(cbArrayResponse) {
-    if (typeof cbArrayResponse["response"] !== "undefined" && typeof cbArrayResponse["response"]["getMyCallbacksResponse"] !== "undefined") {
-        var callbackListSize = 0;
-        $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function(cbName,cbObj) {
-            callbackListSize++;
-        });
-        if (callbackListSize > 0) {
-            var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
-            callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
+    if (typeof cbArrayResponse !== "undefined" && typeof cbArrayResponse["response"] !== "undefined" && typeof cbArrayResponse["response"] !== null && typeof cbArrayResponse["success"] && cbArrayResponse["success"] !== false) {
+        if (typeof cbArrayResponse["response"]["getMyCallbacksResponse"] !== "undefined") {
+            var callbackListSize = 0;
             $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function (cbName, cbObj) {
-                if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
-                    callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
-                }
+                callbackListSize++;
             });
-            callbackContent += "</table><br>";
-            callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
-            $RB('#callbackContent').html(callbackContent);
-        } else {
-            if (adminJs["requestForCallbacks"] === "1") {
-                $RB('#callbackContent').html('<b><i>' + adminJs["noCallbacksSet"] + '</i></b>');
+            if (callbackListSize > 0) {
+                var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
+                callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
+                $RB.each(cbArrayResponse["response"]["getMyCallbacksResponse"], function (cbName, cbObj) {
+                    if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
+                        callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
+                    }
+                });
+                callbackContent += "</table><br>";
+                callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
+                $RB('#callbackContent').html(callbackContent);
+            } else {
+                if (adminJs["requestForCallbacks"] === "1") {
+                    $RB('#callbackContent').html('<b><i>' + adminJs["noCallbacksSet"] + '</i></b>');
+                }
             }
+        } else {
+            $RB('#callbackContent').html("");
+        }
+        if (typeof cbArrayResponse["errorMessage"] !== "undefined" && cbArrayResponse["errorMessage"] !== "") {
+            $RB('#callbackContent').html(cbArrayResponse["errorMessage"]);
         }
     } else {
-        $RB('#callbackContent').html("");
-    }
-    if (typeof cbArrayResponse["errorMessage"] !== "undefined" && cbArrayResponse["errorMessage"] !== "") {
-        $RB('#callbackContent').html(cbArrayResponse["errorMessage"]);
+        if (typeof cbArrayResponse["errorMessage"] !== "undefined" && cbArrayResponse["errorMessage"] !== "") {
+            $RB('#callbackContent').html(cbArrayResponse["errorMessage"]);
+        }
     }
 }
 
@@ -254,7 +269,7 @@ function doUpdateResursCallbacks() {
     runResursAdminCallback("setMyCallbacks", "updateResursCallbacksResult");
 }
 function updateResursCallbacksResult(resultResponse) {
-    if (typeof resultResponse["response"] !== "undefined" && typeof resultResponse["response"]["setMyCallbacksResponse"] !== "undefined") {
+    if (typeof resultResponse !== "undefined" && typeof resultResponse["response"] !== "undefined" && typeof resultResponse["response"] !== null && typeof resultResponse["success"] && resultResponse["success"] !== false) {
         var successCheck = resultResponse["response"]["setMyCallbacksResponse"];
         var callbackCount = "";
         if (typeof successCheck["testTriggerTimestamp"] !== "undefined") {
@@ -264,7 +279,7 @@ function updateResursCallbacksResult(resultResponse) {
         if (successCheck["errorstring"] != "") {
             callbackCount = successCheck["registeredCallbacks"];
         }
-        $RB('#callbackContent').html(callbackCount+' '+ adminJs["callbacks_registered"] +'<br><img src="' + adminJs.resursSpinner + '" border="0">');
+        $RB('#callbackContent').html(callbackCount + ' ' + adminJs["callbacks_registered"] + '<br><img src="' + adminJs.resursSpinner + '" border="0">');
         if ($RB('#callbacksRequireUpdate').length > 0) {
             $RB('#callbacksRequireUpdate').hide();
         }
