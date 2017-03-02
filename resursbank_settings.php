@@ -17,6 +17,7 @@ include('functions.php');
 class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 {
     private $spinner;
+    private $spinnerLocal;
     public $id = "tab_resursbank";
     //private $current_section;
     private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
@@ -47,6 +48,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     {
         $sections = array();    // Adaptive array.
         $this->spinner = plugin_dir_url(__FILE__) . "loader.gif";
+        $this->spinnerLocal = plugin_dir_url(__FILE__) . "spinnerLocal.gif";
 
         $sections[''] = __('Basic settings', 'WC_Payment_Gateway');
         if (isResursOmni()) {
@@ -360,7 +362,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
                     if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
-                        echo '<img src="' . $this->spinner . '" border="0">';
+                        $callbackUriCacheTime = time() - get_transient("resurs_callback_templates_cache_last");
+                        if ($callbackUriCacheTime <= 86400) {
+                            echo '<img src="' . $this->spinner . '" border="0">';
+                        } else {
+                            echo '<img src="' . $this->spinnerLocal . '" border="0">';
+                        }
                     }
                     echo '
 
