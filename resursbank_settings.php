@@ -53,8 +53,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $sections[''] = __('Basic settings', 'WC_Payment_Gateway');
         if (isResursOmni()) {
             $sections['resurs_bank_omnicheckout'] = __('Resurs Checkout', 'WC_Payment_Gateway');
+        } else {
+            $sections['shopflow'] = __('Shop flow settings ', 'WC_Payment_Gateway');
         }
-        $sections['shopflow'] = __('Shop flow settings ', 'WC_Payment_Gateway');
         $sections['advanced'] = __('Advanced settings', 'WC_Payment_Gateway');
 
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
@@ -506,9 +507,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     }
                     echo '</td></tr>';
                 } else if ($section == "shopflow") {
-                    echo $this->setCheckBox('waitForFraudControl', $namespace);
-                    echo $this->setCheckBox('annulIfFrozen', $namespace);
-                    echo $this->setCheckBox('finalizeIfBooked', $namespace);
+                    if (isResursOmni()) {
+                        echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Show flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
+                    } else {
+                        echo $this->setCheckBox('waitForFraudControl', $namespace);
+                        echo $this->setCheckBox('annulIfFrozen', $namespace);
+                        echo $this->setCheckBox('finalizeIfBooked', $namespace);
+                    }
                 } else if ($section == "resurs_bank_omnicheckout") {
                     $namespace = "woocommerce_" . $section;
                     $this->CONFIG_NAMESPACE = $namespace;
