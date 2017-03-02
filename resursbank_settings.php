@@ -255,26 +255,36 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         if (is_array($optionsList) && isset($formSettings['options']) && count($formSettings['options']) && !count($optionsList)) {
             $optionsList = $formSettings['options'];
         }
-        // TODO: Value (multi+simple)
         $returnDropDown = '
                 <tr>
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
                     <td>
+                    ';
+        if (count($optionsList) > 0) {
+            $returnDropDown .= '
                     <select ' . $scriptLoader . '
                     ' . ($listCount > 1 ? "size=\"" . $listCount . "\" multiple " : "") . '
                         name="' . $namespace . '_' . $settingKey . '"
                         id="' . $namespace . '_' . $settingKey . '">
                     ';
-        $savedValue = getResursOption($settingKey);
-        foreach ($optionsList as $optionKey => $optionValue) {
-            $returnDropDown .= '<option value="' . $optionKey . '" ' . ($optionKey == $savedValue ? "selected" : "") . '>' . $optionValue . '</option>';
-        }
-        $returnDropDown .= '
+            $savedValue = getResursOption($settingKey);
+            foreach ($optionsList as $optionKey => $optionValue) {
+                $returnDropDown .= '<option value="' . $optionKey . '" ' . ($optionKey == $savedValue ? "selected" : "") . '>' . $optionValue . '</option>';
+            }
+            $returnDropDown .= '
                     </select><br>
+                    ';
+        } else {
+            $returnDropDown .= '<div style="font-color:#990000 !important;font-weight: bold;">' . __('No selectable options are available for this option', 'WC_Payment_Gateway') . '</div>
+            <br>';
+        }
+
+        $returnDropDown .= '
                             <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
-                    </td>
+                            </td>
                 </tr>
         ';
+
         return $returnDropDown;
     }
 
@@ -363,7 +373,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     ';
                     if (!empty(getResursOption("login")) && !empty(getResursOption("password"))) {
                         $callbackUriCacheTime = time() - get_transient("resurs_callback_templates_cache_last");
-                        if ($callbackUriCacheTime <= 86400) {
+                        if ($callbackUriCacheTime >= 86400) {
                             echo '<img src="' . $this->spinner . '" border="0">';
                         } else {
                             echo '<img src="' . $this->spinnerLocal . '" border="0">';
@@ -372,13 +382,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '
 
                     </div>
-                    <b>'.__('Callback Tests', 'WC_Payment_Gateway').'</b><br>
+                    <b>' . __('Callback Tests', 'WC_Payment_Gateway') . '</b><br>
                     <table cellpadding="0" cellpadding="0" style="margin-bottom: 5px;" width="500px;">
                     <tr>
-                    <td style="padding: 0px;">'.__('Last test run', 'WC_Payment_Gateway').'</td><td style="padding: 0px;" id="lastCbRun">'.($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callSent) : __('Never', 'WC_Payment_Gateway')) . '</td>
+                    <td style="padding: 0px;">' . __('Last test run', 'WC_Payment_Gateway') . '</td><td style="padding: 0px;" id="lastCbRun">' . ($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callSent) : __('Never', 'WC_Payment_Gateway')) . '</td>
                     </tr>
                     <tr>
-                    <td style="padding: 0px;">'.__('Last test received', 'WC_Payment_Gateway').'</td><td style="padding: 0px;" id="lastCbRec">'.($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callRecv) : __('Never', 'WC_Payment_Gateway')).'</td>
+                    <td style="padding: 0px;">' . __('Last test received', 'WC_Payment_Gateway') . '</td><td style="padding: 0px;" id="lastCbRec">' . ($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callRecv) : __('Never', 'WC_Payment_Gateway')) . '</td>
                     </tr>
                     </table>
                     <br>
@@ -538,9 +548,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Network', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('handleNatConnections', $namespace);
                     echo $this->setSeparator(__('Maintenance', 'WC_Payment_Gateway'));
-                    echo '<tr><th>'.__('Clean up ', 'WC_Payment_Gateway').'</th><td>';
-                    echo '<input id="cleanResursSettings" type="button" value="'.__('Resurs settings', 'WC_Payment_Gateway').'" onclick="runResursAdminCallback(\'cleanRbSettings\', \'cleanResursSettings\')"> <span id="process_cleanResursSettings"></span><br>';
-                    echo '<input id="cleanResursMethods" type="button" value="'.__('Payment methods', 'WC_Payment_Gateway').'" onclick="runResursAdminCallback(\'cleanRbMethods\', \'cleanResursMethods\')"> <span id="process_cleanResursMethods"><span>';
+                    echo '<tr><th>' . __('Clean up ', 'WC_Payment_Gateway') . '</th><td>';
+                    echo '<input id="cleanResursSettings" type="button" value="' . __('Resurs settings', 'WC_Payment_Gateway') . '" onclick="runResursAdminCallback(\'cleanRbSettings\', \'cleanResursSettings\')"> <span id="process_cleanResursSettings"></span><br>';
+                    echo '<input id="cleanResursMethods" type="button" value="' . __('Payment methods', 'WC_Payment_Gateway') . '" onclick="runResursAdminCallback(\'cleanRbMethods\', \'cleanResursMethods\')"> <span id="process_cleanResursMethods"><span>';
                     echo '</td></tr>';
 
                 } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
