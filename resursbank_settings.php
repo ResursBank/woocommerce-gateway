@@ -88,6 +88,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $section = $_REQUEST['section'];
             if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
                 $section = "woocommerce_" . $section;
+                $this->CONFIG_NAMESPACE = $section;
+            } else if (preg_match("/^woocommerce_resurs_bank_nr_(.*?)$/i", $section)) {
+                $this->CONFIG_NAMESPACE = $section;
             } else if ($section == "resurs_bank_omnicheckout") {
                 $section = "woocommerce_" . $section;
                 $this->CONFIG_NAMESPACE = $section;
@@ -121,16 +124,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 if (isset($_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey])) {
                     $saveArray[$fieldKey] = $_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey];
                 } else {
-                    $curOption = $this->getOptionByNamespace($fieldKey, $this->CONFIG_NAMESPACE);
+                    /*
+                     * Handling of checkboxes that is located on different pages
+                     */
                     if ($fieldData['type'] == "checkbox") {
-                        if ($curOption == "1") {
-                            $curOption = "yes";
-                        }
-                        if ($curOption == "0") {
+                        if (isset($_POST['has_' . $fieldKey])) {
                             $curOption = "no";
+                        } else {
+                            $curOption = $this->getOptionByNamespace($fieldKey, $this->CONFIG_NAMESPACE);
                         }
                         $saveArray[$fieldKey] = $curOption;
                     } else {
+                        $curOption = $this->getOptionByNamespace($fieldKey, $this->CONFIG_NAMESPACE);
                         if (!empty($curOption)) {
                             $saveArray[$fieldKey] = $curOption;
                         } else {
@@ -145,7 +150,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         update_option($section . "_settings", $saveArray);
     }
 
-    private function getOptionByNamespace($optionKey, $namespace)
+    private
+    function getOptionByNamespace($optionKey, $namespace)
     {
         $useNamespace = $namespace;
         if (!preg_match("/_settings$/i", $namespace)) {
@@ -164,35 +170,34 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnedOption;
     }
 
-    private function getFormSettings($settingKey = '')
+    private
+    function getFormSettings($settingKey = '')
     {
         if (isset($this->oldFormFields[$settingKey])) {
             return $this->oldFormFields[$settingKey];
         }
     }
 
-    private function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
+    private
+    function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
         $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
         $returnCheckbox = '
                 <tr>
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
                     <td>
-                        <input type="checkbox"
-                            name="' . $namespace . '_' . $settingKey . '"
-                            id="' . $namespace . '_' . $settingKey . '"
-                            ' . ($isChecked ? 'checked="checked"' : "") . '
-                               value="yes">' . $this->oldFormFields[$settingKey]['label'] . '<br>
-                               <br>
-                            <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
-
+                    <input type="hidden" name="has_' . $settingKey . '">
+                    <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes">' . $this->oldFormFields[$settingKey]['label'] . '<br>
+                    <br>
+                       <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
                     </td>
                 </tr>
         ';
         return $returnCheckbox;
     }
 
-    private function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
+    private
+    function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
         $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
@@ -244,7 +249,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnTextBox;
     }
 
-    private function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
+    private
+    function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
     {
         $formSettings = $this->getFormSettings($settingKey);
         if (is_null($optionsList)) {
@@ -289,7 +295,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnDropDown;
     }
 
-    private function setSeparator($separatorTitle = "", $setClass = "configSeparateTitle")
+    private
+    function setSeparator($separatorTitle = "", $setClass = "configSeparateTitle")
     {
         return '<tr><th colspan="2" class="resursConfigSeparator"><div class=" ' . $setClass . '">' . $separatorTitle . '</div></th></tr>';
     }
@@ -298,7 +305,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     /**
      * Primary configuration tab
      */
-    public function resursbank_settings_show()
+    public
+    function resursbank_settings_show()
     {
         $url = admin_url('admin.php');
         $url = add_query_arg('page', $_REQUEST['page'], $url);
@@ -421,7 +429,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         }
                         //generatePaymentMethodHtml($this->paymentMethods);
                         ?>
-                        <table class="wc_gateways widefat" cellspacing="0px" cellpadding="0px" style="width: inherit;">
+                        <table class="wc_gateways widefat" cellspacing="0px" cellpadding="0px"
+                               style="width: inherit;">
                             <thead>
                             <tr>
                                 <th class="sort"></th>
@@ -508,7 +517,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '</td></tr>';
                 } else if ($section == "shopflow") {
                     if (isResursOmni()) {
-                        echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Show flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
+                        echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
                     } else {
                         echo $this->setCheckBox('waitForFraudControl', $namespace);
                         echo $this->setCheckBox('annulIfFrozen', $namespace);
@@ -583,7 +592,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         <?php
     }
 
-    private function getTaxRatesArray()
+    private
+    function getTaxRatesArray()
     {
         global $wpdb;
         $rate_select = array();

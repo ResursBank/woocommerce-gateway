@@ -421,7 +421,7 @@ function woocommerce_gateway_resurs_bank_init()
                             setResursOption($setType, $setValue);
                             setResursOption("login", $subVal);
                             $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
-                            $myResponse['html'] = '<div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have the payment methods updated', 'WC_Payment_Gateway') . '</div>';
+                            $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated', 'WC_Payment_Gateway') . '</div><br>';
                         }
                     }
                 } else {
