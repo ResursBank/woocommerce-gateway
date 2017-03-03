@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2017-03-02 15:57+0100\n"
-"PO-Revision-Date: 2017-03-02 15:58+0100\n"
+"POT-Creation-Date: 2017-03-03 14:55+0100\n"
+"PO-Revision-Date: 2017-03-03 14:56+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -30,13 +30,13 @@ msgstr ""
 #: includes/resurs_bank_nr_NEWCARD.php:50
 #: includes/resurs_bank_nr_PARTPAYMENT.php:50
 #: includes/resurs_bank_nr_PSPCARD.php:50 includes/resurs_bank_nr_SWISH.php:50
-#: resursbank_settings.php:441
+#: resursbank_settings.php:447
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktivera"
 
 #: functions.php:91 functions.php:195 functions.php:203 functions.php:211
 #: functions.php:243 functions.php:254 functions.php:265 functions.php:276
-#: functions.php:863 resursbank_settings.php:503 resursbankgateway.php:454
+#: functions.php:863 resursbank_settings.php:509 resursbankgateway.php:454
 #: staticflows/flow_omni.php:91
 msgid "Enabled"
 msgstr "Aktiverad"
@@ -69,19 +69,19 @@ msgstr "Välj det land som betalalternativen skall användas i"
 msgid "Flow type"
 msgstr "Flödestyp"
 
-#: functions.php:110 resursbank_settings.php:323
+#: functions.php:110 resursbank_settings.php:329
 msgid "Simplified Shop Flow: Payments goes through Resurs Bank API (Default)"
 msgstr ""
 "Förenklat flöde (Simplified Shop Flow): Betalningar hantera genom Resurs "
 "Banks API (Standard)"
 
-#: functions.php:111 resursbank_settings.php:324
+#: functions.php:111 resursbank_settings.php:330
 msgid ""
 "Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment"
 msgstr ""
 "Hostat flöde: Kunder omdirigeras till Resurs Bank för att slutföra köpet"
 
-#: functions.php:112 resursbank_settings.php:325
+#: functions.php:112 resursbank_settings.php:331
 msgid ""
 "Omni Checkout: Fully integrated payment solutions based on iframes (as much "
 "as possible including initial customer data are handled by Resurs Bank "
@@ -95,7 +95,7 @@ msgstr ""
 msgid "What kind of shop flow you want to use"
 msgstr "Vilken typ av flöde du vill använda"
 
-#: functions.php:119 functions.php:806 resursbank_settings.php:438
+#: functions.php:119 functions.php:806 resursbank_settings.php:444
 msgid "Title"
 msgstr "Titel"
 
@@ -515,11 +515,11 @@ msgstr ""
 "inte av att rensa upp alla nödvändiga fälten ordentligt. Denna inställningen "
 "löser det, men kan ha negativ effekt på andra egenskaper i kassan."
 
-#: functions.php:805 resursbank_settings.php:437
+#: functions.php:805 resursbank_settings.php:443
 msgid "Method"
 msgstr "Metod"
 
-#: functions.php:807 resursbank_settings.php:440
+#: functions.php:807 resursbank_settings.php:446
 msgid "ID"
 msgstr "ID"
 
@@ -527,11 +527,11 @@ msgstr "ID"
 msgid "Status"
 msgstr "Status"
 
-#: functions.php:809 resursbank_settings.php:442
+#: functions.php:809 resursbank_settings.php:448
 msgid "Process"
 msgstr "Process"
 
-#: functions.php:855 resursbank_settings.php:495 resursbankgateway.php:451
+#: functions.php:855 resursbank_settings.php:501 resursbankgateway.php:451
 #: staticflows/flow_omni.php:91
 msgid "Disabled"
 msgstr "Avaktiverad"
@@ -549,71 +549,71 @@ msgid ""
 "This controls the payment method title which the user sees during checkout."
 msgstr "Det här kontrollerar betalmetodens titel som kunden ser i kassan."
 
-#: resursbank_settings.php:31
+#: resursbank_settings.php:32
 msgid "Resurs Bank"
 msgstr "Resurs Bank"
 
-#: resursbank_settings.php:53
+#: resursbank_settings.php:54
 msgid "Basic settings"
 msgstr "Standardinställningar"
 
-#: resursbank_settings.php:55
+#: resursbank_settings.php:56
 msgid "Resurs Checkout"
 msgstr "Resurs Checkout"
 
-#: resursbank_settings.php:57
+#: resursbank_settings.php:58
 msgid "Shop flow settings "
 msgstr "Inställningar för shopflöde"
 
-#: resursbank_settings.php:59
+#: resursbank_settings.php:60
 msgid "Advanced settings"
 msgstr "Avancerade inställningar"
 
-#: resursbank_settings.php:73
+#: resursbank_settings.php:74
 msgid "Resurs Bank Administration"
 msgstr "Resurs Bank Administration"
 
-#: resursbank_settings.php:234
+#: resursbank_settings.php:241
 msgid "Click to edit"
 msgstr "Klicka för att redigera"
 
-#: resursbank_settings.php:237
+#: resursbank_settings.php:244
 msgid "Save"
 msgstr "Spara"
 
-#: resursbank_settings.php:285
+#: resursbank_settings.php:291
 msgid "No selectable options are available for this option"
 msgstr "Det finns inga valbara alternativ för den här inställningen"
 
-#: resursbank_settings.php:344
+#: resursbank_settings.php:350
 msgid "Resurs Bank Configuration - Shop flow"
 msgstr "Inställningar för Resurs Bank - Shopflöde"
 
-#: resursbank_settings.php:346
+#: resursbank_settings.php:352
 msgid "Resurs Bank Configuration - Advanced settings"
 msgstr "Inställningar för Resurs Bank - Avancerade inställningar"
 
-#: resursbank_settings.php:348
+#: resursbank_settings.php:354
 msgid "Resurs Bank Configuration"
 msgstr "Inställningar för Resurs Bank -"
 
-#: resursbank_settings.php:350
+#: resursbank_settings.php:356
 msgid "Resurs Bank payment gateway configuration"
 msgstr "Resus Bank payment gateway configuration"
 
-#: resursbank_settings.php:358
+#: resursbank_settings.php:364
 msgid "Plugin and checkout"
 msgstr "Plugin och kassa"
 
-#: resursbank_settings.php:361
+#: resursbank_settings.php:367
 msgid "API Settings"
 msgstr "API-inställningar"
 
-#: resursbank_settings.php:367 resursbank_settings.php:544
+#: resursbank_settings.php:373 resursbank_settings.php:550
 msgid "Callbacks"
 msgstr "Callbacks"
 
-#: resursbank_settings.php:377
+#: resursbank_settings.php:383
 msgid ""
 "Your callbacks requires an update. The plugin will do this for you as soon "
 "as this page has is done loading..."
@@ -621,32 +621,32 @@ msgstr ""
 "Dina callbacks behöver en uppdatering. Pluginet kommer att göra detta åt dig "
 "så fort siddan laddats klart..."
 
-#: resursbank_settings.php:380
+#: resursbank_settings.php:386
 msgid "Callback URLs registered at Resurs Bank"
 msgstr "Callbacks registrerade hos Resurs Bank"
 
-#: resursbank_settings.php:394
+#: resursbank_settings.php:400
 msgid "Callback Tests"
 msgstr "Callbacktester"
 
-#: resursbank_settings.php:397
+#: resursbank_settings.php:403
 msgid "Last test run"
 msgstr "Senaste testkörningen"
 
-#: resursbank_settings.php:397 resursbank_settings.php:400
+#: resursbank_settings.php:403 resursbank_settings.php:406
 #: resursbankgateway.php:523
 msgid "Never"
 msgstr "Aldrig"
 
-#: resursbank_settings.php:400
+#: resursbank_settings.php:406
 msgid "Last test received"
 msgstr "Senast mottagna test"
 
-#: resursbank_settings.php:409 resursbank_settings.php:567
+#: resursbank_settings.php:415 resursbank_settings.php:573
 msgid "Payment methods"
 msgstr "Betalningsmetoder"
 
-#: resursbank_settings.php:416
+#: resursbank_settings.php:422
 msgid ""
 "The list of available payment methods will appear, when credentials has been "
 "entered"
@@ -654,7 +654,7 @@ msgstr ""
 "Listan över tillgängliga betalningsmetoder dyker upp när "
 "inloggningsuppgifter är ifyllda"
 
-#: resursbank_settings.php:419
+#: resursbank_settings.php:425
 msgid ""
 "Payment methods are not editable when using Resurs Checkout - Contact "
 "support if you want to do any changes"
@@ -662,7 +662,7 @@ msgstr ""
 "Betalningsmetoder är inte redigeringsbara när Resurs Checkout används - "
 "kontakta supporten om du vill göra några ändringar"
 
-#: resursbank_settings.php:520
+#: resursbank_settings.php:526
 msgid ""
 "Shop flow settings are not editable when using Resurs Checkout - Contact "
 "support if you want to do any changes"
@@ -670,62 +670,66 @@ msgstr ""
 "Inställningarna för shopflödet är inte möjliga att redigera när Resurs "
 "Checkout är aktivt - Kontakta supporten om du vill göra några förändringar"
 
-#: resursbank_settings.php:530
+#: resursbank_settings.php:536
 msgid "Visuals"
 msgstr "Visuellt"
 
-#: resursbank_settings.php:533
+#: resursbank_settings.php:539
 msgid "Checkout"
 msgstr "Kassan"
 
-#: resursbank_settings.php:535
+#: resursbank_settings.php:541
 msgid "Advanced"
 msgstr "Avancerat"
 
-#: resursbank_settings.php:539
+#: resursbank_settings.php:545
 msgid "Miscellaneous"
 msgstr "Blandat"
 
-#: resursbank_settings.php:541
+#: resursbank_settings.php:547
 msgid "URL Settings"
 msgstr "URL-inställningar"
 
-#: resursbank_settings.php:547
+#: resursbank_settings.php:553
 msgid "Customer address handling"
 msgstr "Kunders adresshantering"
 
-#: resursbank_settings.php:549
+#: resursbank_settings.php:555
 msgid "Testing and development"
 msgstr "Test och utveckling"
 
-#: resursbank_settings.php:552
+#: resursbank_settings.php:558
 msgid "Special test occasions"
 msgstr "Speciella test-tillfällen"
 
-#: resursbank_settings.php:562
+#: resursbank_settings.php:568
 msgid "Network"
 msgstr "Nätverk"
 
-#: resursbank_settings.php:564
+#: resursbank_settings.php:570
 msgid "Maintenance"
 msgstr "Underhåll"
 
-#: resursbank_settings.php:565
+#: resursbank_settings.php:571
 msgid "Clean up "
 msgstr "Städa upp"
 
-#: resursbank_settings.php:566
+#: resursbank_settings.php:572
 msgid "Resurs settings"
 msgstr "Resurs inställningar"
 
 #: resursbank_settings.php:583
+msgid "Default title set by Resurs Bank is "
+msgstr "Standardtiteln som satts av Resurs Bank är"
+
+#: resursbank_settings.php:592
 msgid ""
 "The payment method editor is not availabe while Resurs Checkout is active"
 msgstr ""
 "Redigeraren för betalningsmetoder är inte tillgänglig när Resurs Checkout är "
 "aktiv"
 
-#: resursbank_settings.php:586
+#: resursbank_settings.php:595
 msgid "Save above configuration with the button below"
 msgstr "Spara ovanstående data med hjälp av knappen nedan"
 
@@ -755,7 +759,7 @@ msgstr "Resurs Bank nekade köpet"
 
 #: resursbankgateway.php:424
 msgid "Please reload or save this page to have this list updated"
-msgstr ""
+msgstr "Ladda om eller spara denna sidan för att uppdatera listan"
 
 #: resursbankgateway.php:461
 msgid "Configuration has not yet been initiated."
