@@ -18,6 +18,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 {
     private $spinner;
     private $spinnerLocal;
+    private $methodLabel;
     public $id = "tab_resursbank";
     //private $current_section;
     private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
@@ -212,6 +213,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <th scope="row" ' . $scriptLoader . '>' . $this->oldFormFields[$settingKey]['title'] . '</th>
         ';
 
+        $setLabel = $this->oldFormFields[$settingKey]['label'];
+        if (!empty($this->methodLabel)) {
+            $setLabel = $this->methodLabel;
+            $this->methodLabel = null;
+        }
+
         if (!$isPassword) {
             $returnTextBox .= '
                     <td>
@@ -220,7 +227,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             id="' . $namespace . '_' . $settingKey . '"
                             size="64"
                             ' . $scriptLoader . '
-                            value="' . $UseValue . '"> <i>' . $this->oldFormFields[$settingKey]['label'] . '</i><br>
+                            value="' . $UseValue . '"> <i>' . $setLabel . '</i><br>
                             <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
                             ' . $isPassword . '
                             </td>
@@ -245,7 +252,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             </td>
                 </tr>
         ';
-
         return $returnTextBox;
     }
 
@@ -571,7 +577,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     if (!isResursOmni()) {
                         $namespace = "woocommerce_" . $section;
                         $this->CONFIG_NAMESPACE = $namespace;
+
                         echo $this->setCheckBox('enabled', $namespace);
+
+                        $this->methodLabel = '<br>' . __('Default title set by Resurs Bank is ', 'WC_Payment_Gateway') . '<b> ' . $methodDescription . '</b>';
                         echo $this->setTextBox('title', $namespace);
                         echo $this->setTextBox('description', $namespace);
                         echo $this->setTextBox('price', $namespace);
