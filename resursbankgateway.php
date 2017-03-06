@@ -2496,7 +2496,8 @@ function woocommerce_gateway_resurs_bank_init()
             'callbacks_registered' => __('callbacks has been registered', 'WC_Payment_Gateway'),
             'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
             'requestForCallbacks' => $requestForCallbacks,
-            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway')
+            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway'),
+            'annulCantBeAlone' => __('This setting requires waitForFraudControl to be active', 'WC_Payment_Gateway')
         );
         wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");

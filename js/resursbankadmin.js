@@ -241,7 +241,7 @@ function showResursCallbackArray(cbArrayResponse) {
                 var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
                 callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
                 if (useCacheNote && isCached) {
-                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">'+adminJs["callbackUrisCache"]+ (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" :"") + '</td></tr>';
+                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td></tr>';
                 }
                 $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                     if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
@@ -301,9 +301,11 @@ function wfcComboControl(checkboxObject) {
     var currentObject = checkboxObject.id;
     var wfc = $RB('#woocommerce_resurs-bank_waitForFraudControl');
     var aif = $RB('#woocommerce_resurs-bank_annulIfFrozen');
-    if (currentObject == "woocommerce_resurs-bank_waitForFraudControl" && aif.attr("checked")) {
-        aif.attr("checked", false);
-    } else if (currentObject == "woocommerce_resurs-bank_annulIfFrozen" && wfc.attr("checked")) {
-        wfc.attr("checked", false);
+    if (!wfc.prop("checked") && aif.prop("checked")) {
+        wfc.attr("checked", true);
+        if ($RB('#annulIfFrozenWarning').length == 0) {
+            $RB('#columnRightannulIfFrozen').append('<br><div style="display:none;" id="annulIfFrozenWarning" class="labelBoot labelBoot-danger">'+ adminJs.annulCantBeAlone +'</div>');
+            $RB('#annulIfFrozenWarning').toggle("medium");
+        }
     }
 }
