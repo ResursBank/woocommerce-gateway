@@ -183,17 +183,32 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
         $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
+        $formSettings = $this->getFormSettings($settingKey);
+        $extraInfoMark = "";
+        if (isset($formSettings['info']) && !empty($formSettings['info'])) {
+            $extraInfoMark = '<span class="dashicons dashicons-visibility resurs-help-tip" onmouseover="$RB(\'#extraInfo'.$settingKey.'\').show(\'medium\')" onmouseout="$RB(\'#extraInfo'.$settingKey.'\').hide(\'medium\')"></span>';
+        }
         $returnCheckbox = '
                 <tr>
-                    <th scope="row" id="columnLeft'.$settingKey.'">' . $this->oldFormFields[$settingKey]['title'] . '</th>
-                    <td id="columnRight'.$settingKey.'">
+                    <th scope="row" id="columnLeft' . $settingKey . '">' . $this->oldFormFields[$settingKey]['title'] . " " . $extraInfoMark . '</th>
+                    <td id="columnRight' . $settingKey . '">
                     <input type="hidden" name="has_' . $settingKey . '">
-                    <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes" '.$scriptLoader.'>' . $this->oldFormFields[$settingKey]['label'] . '<br>
+                    <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes" ' . $scriptLoader . '>' . $this->oldFormFields[$settingKey]['label'] . '<br>
                     <br>
                        <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
                     </td>
                 </tr>
         ';
+
+        if (!empty($extraInfoMark)) {
+            $returnCheckbox .= '
+            <tr id="extraInfo'.$settingKey.'" style="display: none;">
+                <td></td>
+                <td class="rbAdminExtraInfo">'.$formSettings['info'].'</td>
+            </tr>
+            ';
+        }
+
         return $returnCheckbox;
     }
 
@@ -526,9 +541,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     if (isResursOmni()) {
                         echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
                     } else {
+                        $styleRecommended = "display: none";
+                        if (!getResursOption("waitForFraudControl") && !getResursOption("annulIfFrozen" && !getResursOption("finalizeIfBooked"))) {
+                            $styleRecommended = "";
+                        }
+                        echo '<div id="shopwFlowRecommendedSettings" style="' . $styleRecommended . '">' . __('When all the below settings are unchecked, you are running the plugin with a Resurs Bank preferred configuration', 'WC_Payment_Gateway') . '</div>';
                         echo $this->setCheckBox('waitForFraudControl', $namespace, 'onchange="wfcComboControl(this)"');
                         echo $this->setCheckBox('annulIfFrozen', $namespace, 'onchange="wfcComboControl(this)"');
-                        echo $this->setCheckBox('finalizeIfBooked', $namespace);
+                        echo $this->setCheckBox('finalizeIfBooked', $namespace, 'onchange="wfcComboControl(this)"');
                     }
                 } else if ($section == "resurs_bank_omnicheckout") {
                     $namespace = "woocommerce_" . $section;
