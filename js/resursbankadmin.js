@@ -296,3 +296,14 @@ function updateResursCallbacksResult(resultResponse) {
 function checkLastCallback() {
     runResursAdminCallback("getLastCallbackTimestamp");
 }
+
+function wfcComboControl(checkboxObject) {
+    var currentObject = checkboxObject.id;
+    var wfc = $RB('#woocommerce_resurs-bank_waitForFraudControl');
+    var aif = $RB('#woocommerce_resurs-bank_annulIfFrozen');
+    if (currentObject == "woocommerce_resurs-bank_waitForFraudControl" && aif.attr("checked")) {
+        aif.attr("checked", false);
+    } else if (currentObject == "woocommerce_resurs-bank_annulIfFrozen" && wfc.attr("checked")) {
+        wfc.attr("checked", false);
+    }
+}
