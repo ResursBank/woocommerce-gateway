@@ -185,8 +185,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
         $returnCheckbox = '
                 <tr>
-                    <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
-                    <td>
+                    <th scope="row" id="columnLeft'.$settingKey.'">' . $this->oldFormFields[$settingKey]['title'] . '</th>
+                    <td id="columnRight'.$settingKey.'">
                     <input type="hidden" name="has_' . $settingKey . '">
                     <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes" '.$scriptLoader.'>' . $this->oldFormFields[$settingKey]['label'] . '<br>
                     <br>
