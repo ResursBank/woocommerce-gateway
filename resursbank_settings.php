@@ -499,7 +499,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <tr>
                                     <td width="1%">&nbsp;</td>
                                     <td class="name" width="300px">
-                                        <?php if (!isResursOmni()) { ?>
+                                        <?php if (!isResursOmni(true)) { ?>
                                             <a href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
                                         <?php } else {
                                             echo $methodArray->description;
@@ -538,7 +538,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     }
                     echo '</td></tr>';
                 } else if ($section == "shopflow") {
-                    if (isResursOmni()) {
+                    if (isResursOmni(true)) {
                         echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
                     } else {
                         $styleRecommended = "display: none";
@@ -595,7 +595,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '</td></tr>';
 
                 } else if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-                    if (!isResursOmni()) {
+                    if (!isResursOmni(true)) {
                         $namespace = "woocommerce_" . $section;
                         $this->CONFIG_NAMESPACE = $namespace;
 
