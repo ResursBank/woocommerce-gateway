@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2017-03-06 15:09+0100\n"
-"PO-Revision-Date: 2017-03-06 15:10+0100\n"
+"POT-Creation-Date: 2017-03-06 15:14+0100\n"
+"PO-Revision-Date: 2017-03-06 15:14+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -79,14 +79,14 @@ msgid ""
 msgstr ""
 "Hostat flöde: Kunder omdirigeras till Resurs Bank för att slutföra köpet"
 
-#: functions.php:112 resursbank_settings.php:346
+#: functions.php:112
 msgid ""
-"Omni Checkout: Fully integrated payment solutions based on iframes (as much "
-"as possible including initial customer data are handled by Resurs Bank "
+"Resurs Checkout: Fully integrated payment solutions based on iframes (as "
+"much as possible including initial customer data are handled by Resurs Bank "
 "without leaving the checkout page)"
 msgstr ""
-"Omni-Checkout: Fullt integrerad betalningslösning som baseras på iframes (i "
-"så stor utsträckning om möjligt, där kunduppgifter initialt hanteras av "
+"Resurs Checkout: Fullt integrerad betalningslösning som baseras på iframes "
+"(i så stor utsträckning om möjligt, där kunduppgifter initialt hanteras av "
 "Resurs Bank utan att lämna kassan)"
 
 #: functions.php:115
@@ -572,6 +572,16 @@ msgstr "Spara"
 #: resursbank_settings.php:306
 msgid "No selectable options are available for this option"
 msgstr "Det finns inga valbara alternativ för den här inställningen"
+
+#: resursbank_settings.php:346
+msgid ""
+"Omni Checkout: Fully integrated payment solutions based on iframes (as much "
+"as possible including initial customer data are handled by Resurs Bank "
+"without leaving the checkout page)"
+msgstr ""
+"Resurs Checkout: Fullt integrerad betalningslösning som baseras på iframes "
+"(i så stor utsträckning om möjligt, där kunduppgifter initialt hanteras av "
+"Resurs Bank utan att lämna kassan)"
 
 #: resursbank_settings.php:365
 msgid "Resurs Bank Configuration - Shop flow"
@@ -1183,16 +1193,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Ladda om eller spara denna sidan för att uppdatera listan med "
 #~ "betalningsmetoder"
-
-#~ msgid ""
-#~ "Resurs Checkout: Fully integrated payment solutions based on iframes (as "
-#~ "much as possible including initial customer data are handled by Resurs "
-#~ "Bank without leaving the checkout page)"
-#~ msgstr ""
-#~ "Resurs Checkout: Fullt integrerad betalningslösning som baseras på "
-#~ "iframes (i så stor utsträckning om möjligt, där kunduppgifter initialt "
-#~ "hanteras av Resurs Bank utan att lämna kassan)https://resursbankplugins."
-#~ "atlassian.net/admin/users/add"
 
 #~ msgid ""
 #~ "If enabled, live data will be available on getAddress-requests while in "
