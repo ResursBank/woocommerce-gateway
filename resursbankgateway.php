@@ -421,7 +421,7 @@ function woocommerce_gateway_resurs_bank_init()
                             setResursOption($setType, $setValue);
                             setResursOption("login", $subVal);
                             $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
-                            $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated', 'WC_Payment_Gateway') . '</div><br>';
+                            $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated', 'WC_Payment_Gateway') . '</div><br><br>';
                         }
                     }
                 } else {
@@ -3246,16 +3246,17 @@ function repairResursSimulation($returnRepairState = false)
 /**
  * Check if the current payment method is currently enabled and selected
  *
+ * @param bool $ignoreActiveFlag
  * @return bool
  */
-function isResursOmni()
+function isResursOmni($ignoreActiveFlag = false)
 {
     global $woocommerce;
     if (isset($woocommerce->session)) {
         $currentMethod = $woocommerce->session->get('chosen_payment_method');
     }
     $flowType = resursOption("flowtype");
-    $hasOmni = hasResursOmni();
+    $hasOmni = hasResursOmni($ignoreActiveFlag);
     if (($hasOmni == 1 || $hasOmni === true) && $flowType === $currentMethod) {
         return true;
     }
@@ -3285,9 +3286,10 @@ function isResursHosted()
 /**
  * Check if the omniFlow is enabled at all (through flowType)
  *
+ * @param bool $ignoreActiveFlag Check this setting even though the plugin is not active
  * @return bool
  */
-function hasResursOmni()
+function hasResursOmni($ignoreActiveFlag)
 {
     $resursEnabled = resursOption("enabled");
     $flowType = resursOption("flowtype");
@@ -3300,7 +3302,7 @@ function hasResursOmni()
         }
         update_option('woocommerce_resurs_bank_omnicheckout_settings', $omniOption);
     }
-    if ($resursEnabled != "yes") {
+    if ($resursEnabled != "yes" && !$ignoreActiveFlag) {
         return false;
     }
     if ($flowType == "resurs_bank_omnicheckout") {
