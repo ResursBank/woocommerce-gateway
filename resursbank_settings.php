@@ -188,7 +188,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
                     <td>
                     <input type="hidden" name="has_' . $settingKey . '">
-                    <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes">' . $this->oldFormFields[$settingKey]['label'] . '<br>
+                    <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes" '.$scriptLoader.'>' . $this->oldFormFields[$settingKey]['label'] . '<br>
                     <br>
                        <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
                     </td>
@@ -525,8 +525,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     if (isResursOmni()) {
                         echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
                     } else {
-                        echo $this->setCheckBox('waitForFraudControl', $namespace);
-                        echo $this->setCheckBox('annulIfFrozen', $namespace);
+                        echo $this->setCheckBox('waitForFraudControl', $namespace, 'onchange="wfcComboControl(this)"');
+                        echo $this->setCheckBox('annulIfFrozen', $namespace, 'onchange="wfcComboControl(this)"');
                         echo $this->setCheckBox('finalizeIfBooked', $namespace);
                     }
                 } else if ($section == "resurs_bank_omnicheckout") {
