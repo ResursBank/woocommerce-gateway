@@ -301,11 +301,23 @@ function wfcComboControl(checkboxObject) {
     var currentObject = checkboxObject.id;
     var wfc = $RB('#woocommerce_resurs-bank_waitForFraudControl');
     var aif = $RB('#woocommerce_resurs-bank_annulIfFrozen');
+    var fib = $RB('#woocommerce_resurs-bank_finalizeIfBooked');
+
+    if ($RB('#annulIfFrozenWarning').length == 0) {
+        $RB('#columnRightannulIfFrozen').append('<br><div style="display:none;" id="annulIfFrozenWarning" class="labelBoot labelBoot-danger">' + adminJs.annulCantBeAlone + '</div>');
+    }
+
     if (!wfc.prop("checked") && aif.prop("checked")) {
         wfc.attr("checked", true);
-        if ($RB('#annulIfFrozenWarning').length == 0) {
-            $RB('#columnRightannulIfFrozen').append('<br><div style="display:none;" id="annulIfFrozenWarning" class="labelBoot labelBoot-danger">'+ adminJs.annulCantBeAlone +'</div>');
-            $RB('#annulIfFrozenWarning').toggle("medium");
-        }
+        $RB('#annulIfFrozenWarning').show("medium");
+    } else if (!aif.prop("checked")) {
+        $RB('#annulIfFrozenWarning').hide("medium");
     }
+
+    if (!wfc.prop("checked") && !aif.prop("checked") && !fib.prop("checked")) {
+        $RB('#shopwFlowRecommendedSettings').show('medium');
+    } else {
+        $RB('#shopwFlowRecommendedSettings').hide('medium');
+    }
+
 }
