@@ -419,10 +419,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <td id="currentResursPaymentMethods">
                     ';
                     if (!count($this->paymentMethods)) {
-                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered', 'WC_Payment_Gateway') . '</div><br>';
-                    }
-                    if (isResursOmni()) {
-                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Payment methods are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
+                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered', 'WC_Payment_Gateway') . '</div><br><br>';
+                    } else {
+                        if (isResursOmni(true)) {
+                            echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Payment methods are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
+                        }
                     }
 
                     if (count($this->paymentMethods)) {
@@ -442,7 +443,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <th class="sort"></th>
                                 <th class="name"><?php echo __('Method', 'WC_Payment_Gateway') ?></th>
                                 <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
-                                <?php if (!isResursOmni()) { ?>
+                                <?php if (!isResursOmni(true)) { ?>
                                     <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
                                     <th class="status"><?php echo __('Enable/Disable', 'WC_Payment_Gateway') ?></th>
                                     <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
@@ -476,7 +477,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     }
                                 }
                                 $maTitle = $methodArray->description;
-                                if (isset($settingsControl['title']) && !empty($settingsControl['title']) && !isResursOmni()) {
+                                if (isset($settingsControl['title']) && !empty($settingsControl['title']) && !isResursOmni(true)) {
                                     $maTitle = $settingsControl['title'];
                                 }
                                 ?>
@@ -491,7 +492,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                         ?>
                                     </td>
                                     <td class="title" width="300px"><?php echo $maTitle ?></td>
-                                    <?php if (!isResursOmni()) { ?>
+                                    <?php if (!isResursOmni(true)) { ?>
                                         <td class="id"><?php echo $methodArray->id ?></td>
                                         <?php if (!$isEnabled) { ?>
                                             <td id="status_<?php echo $curId; ?>" class="status"
