@@ -4,9 +4,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/*
- * Admin functions only
- */
 load_plugin_textdomain('WC_Payment_Gateway', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
 if (!function_exists('getResursWooFormFields')) {
@@ -109,7 +106,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'options' => array(
                         'simplifiedshopflow' => __('Simplified Shop Flow: Payments goes through Resurs Bank API (Default)', 'WC_Payment_Gateway'),
                         'resurs_bank_hosted' => __('Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment', 'WC_Payment_Gateway'),
-                        'resurs_bank_omnicheckout' => __('Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)', 'WC_Payment_Gateway'),
+                        'resurs_bank_omnicheckout' => __('Resurs Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)', 'WC_Payment_Gateway'),
                     ),
                     'default' => 'simplifiedshopflow',
                     'description' => __('What kind of shop flow you want to use', 'WC_Payment_Gateway'),
@@ -205,6 +202,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'false',
                     'description' => __('Defines if a payment should be annulled immediately if Resurs Bank returns a FROZEN state', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
+                    'info' => __('If you can\'t wait for an eventual manual handling to finish this could be set to true and the order is then annuled in Resurs\' system if it gets status FROZEN at the control, common with tickets and alike. *If this is set to true then waitForFraudControl must be set to true', 'WC_Payment_Gateway'),
                 ),
                 'finalizeIfBooked' => array(
                     'title' => 'finalizeIfBooked',
@@ -213,6 +211,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'false',
                     'description' => __('Defines if a payment should be debited immediately on a booked payment (Not available for Resurs Checkout)', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
+                    'info' => __('You can only use "true" if you have goods that can be delivered immediately, like electronic tickets and downloads', 'WC_Payment_Gateway'),
                 ),
                 'adminRestoreGatewaysWhenMissing' => array(
                     'title' => __('Restoring Payment Method gateway files', 'woocommerce'),
@@ -430,7 +429,6 @@ if (!function_exists('getResursWooFormFields')) {
         return $returnArray;
     }
 }
-
 if (is_admin()) {
     if (!function_exists('write_resurs_class_to_file')) {
 
@@ -795,6 +793,7 @@ EOT;
     if (!function_exists('generatePaymentMethodHtml')) {
         function generatePaymentMethodHtml($methodArray = array(), $returnAs = "html")
         {
+            $methodTable = "";
             if ($returnAs != "html") {
                 @ob_start();
             }
@@ -876,13 +875,12 @@ EOT;
             if ($returnAs != "html") {
                 $methodTable = @ob_get_contents();
                 @ob_end_clean();
-                return $methodTable;
             }
+            return $methodTable;
         }
     }
 }
-
-if (!function_exists('callbackUpdateRequest')) {
+if (!function_exists("callbackUpdateRequest")) {
     /**
      * Checks, in adminUI if there is need for callback requests.
      *
@@ -912,7 +910,7 @@ if (!function_exists('callbackUpdateRequest')) {
             if ((getResursOption("callbackUpdateAutomation") && $lastCallbackRequestDiff >= $dayInterval) || empty($lastCallbackRequest)) {
                 $requestForCallbacks = true;
             }
-            return $requestForCallbacks;
         }
+        return $requestForCallbacks;
     }
-}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+}

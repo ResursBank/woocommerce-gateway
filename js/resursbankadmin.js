@@ -241,7 +241,7 @@ function showResursCallbackArray(cbArrayResponse) {
                 var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
                 callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
                 if (useCacheNote && isCached) {
-                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td></tr>';
+                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">'+adminJs["callbackUrisCache"]+ (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" :"") + '</td></tr>';
                 }
                 $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                     if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
