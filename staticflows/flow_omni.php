@@ -432,17 +432,19 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 } else {
                     $rate = 0;
                 }
-                $spec_lines[] = array(
-                    'id' => $fee->id,
-                    'artNo' => $fee->id,
-                    'description' => $fee->name,
-                    'quantity' => 1,
-                    'unitMeasure' => 'st',
-                    'unitAmountWithoutVat' => $fee->amount,
-                    'vatPct' => !is_nan($rate) ? $rate: 0,
-                    'totalVatAmount' => $fee->tax,
-                    'totalAmount' => $fee->amount + $fee->tax,
-                );
+                if (!empty($fee->id)) {
+                    $spec_lines[] = array(
+                        'id' => $fee->id,
+                        'artNo' => $fee->id,
+                        'description' => $fee->name,
+                        'quantity' => 1,
+                        'unitMeasure' => 'st',
+                        'unitAmountWithoutVat' => $fee->amount,
+                        'vatPct' => !is_nan($rate) ? $rate : 0,
+                        'totalVatAmount' => $fee->tax,
+                        'totalAmount' => $fee->amount + $fee->tax,
+                    );
+                }
             }
         }
         if ($cart->coupons_enabled()) {
