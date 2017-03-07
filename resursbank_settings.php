@@ -133,6 +133,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             $curOption = "no";
                         } else {
                             $curOption = $this->getOptionByNamespace($fieldKey, $this->CONFIG_NAMESPACE);
+                            if ($curOption == 1) {
+                                $curOption = "yes";
+                            } else {
+                                $curOption = "no";
+                            }
                         }
                         $saveArray[$fieldKey] = $curOption;
                     } else {
@@ -350,6 +355,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         try {
             if (!preg_match("/^resurs_bank_nr/i", $section)) {
                 $this->paymentMethods = $this->flow->getPaymentMethods();
+                //set_transient('resurs_bank_payment_methods', $this->paymentMethods);
             } else {
                 $theMethod = preg_replace("/^resurs_bank_nr_(.*?)/", '$1', $section);
                 $this->paymentMethods = $this->flow->getPaymentMethodSpecific($theMethod);

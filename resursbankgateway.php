@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
@@ -816,8 +817,6 @@ function woocommerce_gateway_resurs_bank_init()
              */
             $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping, 2) * 100) ? @round($shipping_tax / $shipping, 2) * 100 : 0);
 
-            if (false === empty($shipping)) {
-            }
             $spec_lines[] = array(
                 'id' => 'frakt',
                 'artNo' => '00_frakt',
@@ -859,17 +858,19 @@ function woocommerce_gateway_resurs_bank_init()
                     } else {
                         $rate = 0;
                     }
-                    $spec_lines[] = array(
-                        'id' => $fee->id,
-                        'artNo' => $fee->id,
-                        'description' => $fee->name,
-                        'quantity' => 1,
-                        'unitMeasure' => 'st',
-                        'unitAmountWithoutVat' => $fee->amount,
-                        'vatPct' => !is_nan($rate) ? $rate : 0,
-                        'totalVatAmount' => $fee->tax,
-                        'totalAmount' => $fee->amount + $fee->tax,
-                    );
+                    if (!empty($fee->id)) {
+                        $spec_lines[] = array(
+                            'id' => $fee->id,
+                            'artNo' => $fee->id,
+                            'description' => $fee->name,
+                            'quantity' => 1,
+                            'unitMeasure' => 'st',
+                            'unitAmountWithoutVat' => $fee->amount,
+                            'vatPct' => !is_nan($rate) ? $rate : 0,
+                            'totalVatAmount' => $fee->tax,
+                            'totalAmount' => $fee->amount + $fee->tax,
+                        );
+                    }
                 }
             }
             if ($cart->coupons_enabled()) {
@@ -947,7 +948,8 @@ function woocommerce_gateway_resurs_bank_init()
             $cart = $woocommerce->cart;
             $paymentSpec = $this->get_payment_spec($cart);
             $totalAmount = $paymentSpec['totalAmount'];
-            $methodList = get_transient("resurs_bank_payment_methods");
+            //$methodList = get_transient('resurs_bank_payment_methods');
+            $methodList = $this->flow->getPaymentMethods();
             //$ecomMethodList = $this->get_payment_methods(false, true);
             //$ecomExtractedList = is_array($ecomMethodList['methods']) ? $ecomMethodList['methods'] : array();
             //if (is_array($ecomExtractedList)) { $methodList = $ecomExtractedList; }
@@ -1076,6 +1078,10 @@ function woocommerce_gateway_resurs_bank_init()
             $payment_settings = get_option('woocommerce_' . $className . '_settings');
             $this->flow = initializeResursFlow();
             $bookDataArray = array();
+
+            if (isset($_REQUEST['applicant-government-id']) && !empty($_REQUEST['applicant-government-id'])) {
+                $_REQUEST['applicant-government-id'] = trim($_REQUEST['applicant-government-id']);
+            }
 
             $bookDataArray['address'] = array(
                 'fullName' => $_REQUEST['billing_last_name'] . ' ' . $_REQUEST['billing_first_name'],
@@ -1291,7 +1297,8 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function getTransientMethod($methodId = '')
         {
-            $methodList = get_transient("resurs_bank_payment_methods");
+            //$methodList = get_transient('resurs_bank_payment_methods');
+            $methodList = $this->flow->getPaymentMethods();
             if (is_array($methodList)) {
                 foreach ($methodList as $methodArray) {
                     if (strtolower($methodArray->id) == strtolower($methodId)) {
@@ -2067,12 +2074,18 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public static function get_address_customertype()
         {
-            $paymentMethods = get_transient('resurs_bank_payment_methods');
+            //$paymentMethods = get_transient('resurs_bank_payment_methods');
+
+            // Ignore transient data and get it live!
+            $flow = initializeResursFlow();
+            $paymentMethods = $flow->getPaymentMethods();
             $requestedCustomerType = $_REQUEST['customerType'];
             $responseArray = array(
                 'natural' => array(),
                 'legal' => array()
             );
+
+
             if (is_array($paymentMethods)) {
                 foreach ($paymentMethods as $objId) {
                     if (isset($objId->id) && isset($objId->customerType)) {
@@ -2496,8 +2509,7 @@ function woocommerce_gateway_resurs_bank_init()
             'callbacks_registered' => __('callbacks has been registered', 'WC_Payment_Gateway'),
             'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
             'requestForCallbacks' => $requestForCallbacks,
-            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway'),
-            'annulCantBeAlone' => __('This setting requires waitForFraudControl to be active', 'WC_Payment_Gateway')
+            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway')
         );
         wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");
