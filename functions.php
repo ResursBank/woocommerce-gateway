@@ -202,7 +202,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'false',
                     'description' => __('Defines if a payment should be annulled immediately if Resurs Bank returns a FROZEN state', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
-                    'info' => __('If you can\'t wait for an eventual manual handling to finish this could be set to true and the order is then annuled in Resurs\' system if it gets status FROZEN at the control, common with tickets and alike. *If this is set to true then waitForFraudControl must be set to true', 'WC_Payment_Gateway'),
+                    'info' => __('If you don\'t want to wait for manual handling of orders that has been FROZEN during the payment, this feature enables the ability to immediately annul failing payments in the system. If this feature is enabled, you also need to have waitForFraudControl enabled. This behaviour is commonly used by shops that sells tickets and alike.', 'WC_Payment_Gateway'),
                 ),
                 'finalizeIfBooked' => array(
                     'title' => 'finalizeIfBooked',
@@ -211,7 +211,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'false',
                     'description' => __('Defines if a payment should be debited immediately on a booked payment (Not available for Resurs Checkout)', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
-                    'info' => __('You can only use "true" if you have goods that can be delivered immediately, like electronic tickets and downloads', 'WC_Payment_Gateway'),
+                    'info' => __('You can only activate this feature if you have goods that can be delivered immediately, like electronic tickets and downloads', 'WC_Payment_Gateway'),
                 ),
                 'adminRestoreGatewaysWhenMissing' => array(
                     'title' => __('Restoring Payment Method gateway files', 'woocommerce'),
