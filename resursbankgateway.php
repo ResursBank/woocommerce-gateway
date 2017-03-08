@@ -532,7 +532,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 } else {
                                     $responseArray['html'] = "";
                                 }
-                            } else if ($_REQUEST['run'] = 'cleanRbMethods') {
+                            } else if ($_REQUEST['run'] == 'cleanRbMethods') {
                                 $numDel = 0;
                                 $numConfirm = 0;
                                 foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
@@ -550,6 +550,19 @@ function woocommerce_gateway_resurs_bank_init()
                                     $myBool = true;
                                 } else {
                                     $responseArray['html'] = "";
+                                }
+                            } else if ($_REQUEST['run'] == 'setNewPaymentFee') {
+                                $responseArray['update'] = 0;
+                                if (isset($_REQUEST['data']) && count($_REQUEST['data'])) {
+                                    $paymentFeeData = $_REQUEST['data'];
+                                    if (isset($paymentFeeData['feeId']) && isset($paymentFeeData['feeValue'])) {
+                                        $feeId = preg_replace('/^[a-z0-9]$/i', '', $paymentFeeData['feeId']);
+                                        $feeValue = intval($paymentFeeData['feeValue']);
+                                        $methodNameSpace = "woocommerce_resurs_bank_nr_".$feeId."_settings";
+                                        $responseArray['feeId'] = $feeId;
+                                        $responseArray['oldValue'] = getResursOption("price", $methodNameSpace);
+                                        $responseArray['update'] = setResursOption("price", $feeValue, $methodNameSpace) === true ? 1 : 0;
+                                    }
                                 }
                             }
                             $myResponse = array(
@@ -2448,7 +2461,9 @@ function woocommerce_gateway_resurs_bank_init()
             'callbacks_registered' => __('callbacks has been registered', 'WC_Payment_Gateway'),
             'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
             'requestForCallbacks' => $requestForCallbacks,
-            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway')
+            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway'),
+            'couldNotSetNewFee' => __('Unable to set new fee', 'WC_Payment_Gateway'),
+            'newFeeHasBeenSet' => __('Fee has been saved', 'WC_Payment_Gateway')
         );
         wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");

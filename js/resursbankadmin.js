@@ -160,29 +160,36 @@ function resursProtectedFieldToggle(currentField) {
 }
 function runResursAdminCallback(callbackName) {
     var setArg;
+    var argData = {};
     var testProcElement;
+    if (typeof arguments[2] !== "undefined") {
+        argData = arguments[2];
+    }
     if (typeof arguments[1] !== "undefined") {
         setArg = arguments[1];
         if (typeof setArg !== "function") {
             testProcElement = $RB('#process_' + setArg);
-            if (typeof testProcElement === "object") {
+            if (testProcElement.length > 0 && typeof testProcElement === "object") {
                 testProcElement.html('<img src="' + adminJs.resursSpinner + '" border="0">');
             }
         }
     }
+
+    var dataObject = {
+        'run': callbackName,
+        'arg': typeof setArg !== "function" ? setArg : "",
+        'data': argData
+    };
     $RB.ajax({
         url: rbAjaxSetup.ran,
         type: "post",
-        data: {
-            'run': callbackName,
-            'arg': setArg
-        }
+        data: dataObject
     }).done(function (data) {
         if (typeof window[setArg] === "function") {
             window[setArg](data);
         } else {
             if (typeof setArg === "function") {
-                setArg();
+                setArg(data);
             }
         }
         if (typeof testProcElement === "object") {
@@ -302,22 +309,58 @@ function wfcComboControl(checkboxObject) {
     var wfc = $RB('#woocommerce_resurs-bank_waitForFraudControl');
     var aif = $RB('#woocommerce_resurs-bank_annulIfFrozen');
     var fib = $RB('#woocommerce_resurs-bank_finalizeIfBooked');
-
     if ($RB('#annulIfFrozenWarning').length == 0) {
         $RB('#columnRightannulIfFrozen').append('<br><div style="display:none;" id="annulIfFrozenWarning" class="labelBoot labelBoot-danger">' + adminJs.annulCantBeAlone + '</div>');
     }
-
     if (!wfc.prop("checked") && aif.prop("checked")) {
         wfc.attr("checked", true);
         $RB('#annulIfFrozenWarning').show("medium");
     } else if (!aif.prop("checked")) {
         $RB('#annulIfFrozenWarning').hide("medium");
     }
-
     if (!wfc.prop("checked") && !aif.prop("checked") && !fib.prop("checked")) {
         $RB('#shopwFlowRecommendedSettings').show('medium');
     } else {
         $RB('#shopwFlowRecommendedSettings').hide('medium');
     }
+}
+function changeResursFee(feeObject) {
+    var feeId = feeObject.id.substr(4);
+    var currentValue = feeObject.innerHTML;
+    if (!isNaN(currentValue) || currentValue == "") {
+        feeObject.innerHTML = '<input id="feeText_'+currentValue+'" type="text" size="8" value="' + currentValue + '" onblur="resetRbFeeValue(\'' + feeObject.id + '\', this)" onkeyup="feeValueTrigger(event, \''+feeObject.id+'\', this)">';
+        $RB('#feeText_' + currentValue).on("keypress", function(event) {
+            return event.keyCode != 13;
+        });
+        var feeTextObject = $RB('#feeText_' + currentValue)
+        feeTextObject.focus();
+        feeTextObject[0].setSelectionRange(feeTextObject.val().length, feeTextObject.val().length);
 
+    }
+}
+
+function feeValueTrigger(event, targetColumn, sourceField) {
+    if (event.keyCode == 13) {
+        resetRbFeeValue(targetColumn, sourceField);
+    }
+}
+function resetRbFeeValue(targetColumn, sourceField) {
+    $RB('#' + targetColumn).html(sourceField.value);
+    var feeId = targetColumn.substr(4);
+    $RB('#process_' + feeId).html('<img src="' + adminJs.resursSpinner + '" border="0">');
+
+    runResursAdminCallback("setNewPaymentFee", function(paymentFeeResult) {
+        if (typeof paymentFeeResult["response"] !== "undefined" && typeof paymentFeeResult["response"]["setNewPaymentFeeResponse"]) {
+            var feeResponse = paymentFeeResult["response"]["setNewPaymentFeeResponse"];
+            var feeId = feeResponse["feeId"];
+            var oldValue = feeResponse["oldValue"];
+            var updated = feeResponse["update"];
+            if (updated == 0) {
+                $RB('#fee_' + feeId).html(oldValue);
+                $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">'+adminJs.couldNotSetNewFee+'</div>');
+            } else {
+                $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-success">'+adminJs.newFeeHasBeenSet+'</div>');
+            }
+        }
+    }, {"feeId": feeId, "feeValue": sourceField.value});
 }
