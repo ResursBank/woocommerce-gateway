@@ -99,7 +99,7 @@
 
 .configSeparateTitle {
     font-size: 16px !important;
-    font-weight: bold;
+    /*font-weight: bold;*/
     background: #dddddd;
     text-align: left !important;
     padding: 5px !important;
