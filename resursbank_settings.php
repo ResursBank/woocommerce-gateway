@@ -592,7 +592,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 } else if ($section == "advanced") {
                     echo $this->setSeparator(__('Miscellaneous', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
-                    echo $this->setCheckBox('includeEmptyTaxClasses', $namespace);
+                    //echo $this->setCheckBox('includeEmptyTaxClasses', $namespace);
                     echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
