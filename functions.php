@@ -154,8 +154,8 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Server environment', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
-                        'live' => 'Live',
-                        'test' => 'Test',
+                        'live' => __('Production', 'WC_Payment_Gateway'),
+                        'test' => __('Test', 'WC_Payment_Gateway'),
                     ),
                     'default' => 'test',
                     'description' => __('Set which server environment you are working with (Test/production)'),
