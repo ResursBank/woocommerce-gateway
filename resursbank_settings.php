@@ -340,7 +340,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $url = add_query_arg('page', $_REQUEST['page'], $url);
         $url = add_query_arg('tab', $_REQUEST['tab'], $url);
         $url = add_query_arg('section', $_REQUEST['section'], $url);
-
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         $namespace = $this->CONFIG_NAMESPACE;
 
@@ -466,10 +465,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <th class="sort"></th>
                                 <th class="name"><?php echo __('Method', 'WC_Payment_Gateway') ?></th>
                                 <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
-                                <?php if (!isResursOmni(true)) { ?>
+                                <?php if (!isResursOmni(true)) {
+                                    ?>
                                     <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
+                                    <th class="fee"><?php echo __('Fee', 'WC_Payment_Gateway') ?></th>
                                     <th class="status"><?php echo __('Enable/Disable', 'WC_Payment_Gateway') ?></th>
-                                    <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
+                                    <th class="process">&nbsp;</th>
                                 <?php } ?>
                             </tr>
                             </thead>
@@ -516,7 +517,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     </td>
                                     <td class="title" width="300px"><?php echo $maTitle ?></td>
                                     <?php if (!isResursOmni(true)) { ?>
-                                        <td class="id"><?php echo $methodArray->id ?></td>
+                                        <td class="id"><?php echo $methodArray->id; ?></td>
+                                        <td class="fee" id="fee_<?php echo $methodArray->id; ?>" onclick="changeResursFee(this)"><?php
+                                            $priceValue = $this->getOptionByNamespace("price", "woocommerce_resurs_bank_nr_" . $curId);
+                                            echo $priceValue;
+                                            ?></td>
                                         <?php if (!$isEnabled) { ?>
                                             <td id="status_<?php echo $curId; ?>" class="status"
                                                 style="cursor: pointer;"
