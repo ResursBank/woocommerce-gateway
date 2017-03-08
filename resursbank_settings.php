@@ -71,7 +71,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      */
     public function resurs_settings_tab($settings_tabs)
     {
-        $settings_tabs[$this->id] = __('Resurs Bank Administration', 'WC_Payment_Gateway');
+        //$settings_tabs[$this->id] = __('Resurs Bank Administration', 'WC_Payment_Gateway');
+        $images = plugin_dir_url(__FILE__) . "img/";
+        $settings_tabs[$this->id] = '<img src="'.$images.'resurs-standard.png">';
         return $settings_tabs;
     }
 
