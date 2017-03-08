@@ -332,7 +332,7 @@ function changeResursFee(feeObject) {
         $RB('#feeText_' + currentValue).on("keypress", function(event) {
             return event.keyCode != 13;
         });
-        var feeTextObject = $RB('#feeText_' + currentValue)
+        var feeTextObject = $RB('#feeText_' + currentValue);
         feeTextObject.focus();
         feeTextObject[0].setSelectionRange(feeTextObject.val().length, feeTextObject.val().length);
 
@@ -347,20 +347,22 @@ function feeValueTrigger(event, targetColumn, sourceField) {
 function resetRbFeeValue(targetColumn, sourceField) {
     $RB('#' + targetColumn).html(sourceField.value);
     var feeId = targetColumn.substr(4);
-    $RB('#process_' + feeId).html('<img src="' + adminJs.resursSpinner + '" border="0">');
 
-    runResursAdminCallback("setNewPaymentFee", function(paymentFeeResult) {
-        if (typeof paymentFeeResult["response"] !== "undefined" && typeof paymentFeeResult["response"]["setNewPaymentFeeResponse"]) {
-            var feeResponse = paymentFeeResult["response"]["setNewPaymentFeeResponse"];
-            var feeId = feeResponse["feeId"];
-            var oldValue = feeResponse["oldValue"];
-            var updated = feeResponse["update"];
-            if (updated == 0) {
-                $RB('#fee_' + feeId).html(oldValue);
-                $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">'+adminJs.couldNotSetNewFee+'</div>');
-            } else {
-                $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-success">'+adminJs.newFeeHasBeenSet+'</div>');
+    if (!isNaN(sourceField.value) && sourceField.value >= 0 && sourceField.value !== "") {
+        $RB('#process_' + feeId).html('<img src="' + adminJs.resursSpinner + '" border="0">');
+        runResursAdminCallback("setNewPaymentFee", function (paymentFeeResult) {
+            if (typeof paymentFeeResult["response"] !== "undefined" && typeof paymentFeeResult["response"]["setNewPaymentFeeResponse"]) {
+                var feeResponse = paymentFeeResult["response"]["setNewPaymentFeeResponse"];
+                var feeId = feeResponse["feeId"];
+                var oldValue = feeResponse["oldValue"];
+                var updated = feeResponse["update"];
+                if (updated == 0) {
+                    $RB('#fee_' + feeId).html(oldValue);
+                    $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">' + adminJs.couldNotSetNewFee + '</div>');
+                } else {
+                    $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-success">' + adminJs.newFeeHasBeenSet + '</div>');
+                }
             }
-        }
-    }, {"feeId": feeId, "feeValue": sourceField.value});
+        }, {"feeId": feeId, "feeValue": sourceField.value});
+    }
 }
