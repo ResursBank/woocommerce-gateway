@@ -5,9 +5,8 @@
     margin: 5px;
     padding: 5px 20px;
     background: #ffEFEF;
-    border: 1px solid #990000;
+    border:1px solid #990000;
 }
-
 .resurswoo_upgrade_notice {
     font-weight: bold;
     font-size: 14px;
@@ -15,44 +14,38 @@
     margin: 5px;
     padding: 5px 20px;
     background: #ffEFEF;
-    border: 1px solid #990000;
+    border:1px solid #990000;
     display: inline-block;
     float: left;
 
 }
 
 .resursPaymentInfo {
-    margin-bottom: 10px;
+    margin-bottom:10px;
 }
-
 .resursPaymentInfo td.label {
     font-weight: bold;
-    border-top: 1px dotted grey;
+    border-top:1px dotted grey;
     vertical-align: top;
     color: #FFFFFF !important;
 }
-
 .resursPaymentInfo td.value {
-    border-top: 1px dotted grey;
+    border-top:1px dotted grey;
     vertical-align: top;
     color: #FFFFFF !important;
 }
-
 .resurs_orderinfo_container {
     background: #129fdc;
     border-top: 1px solid deepskyblue;
     color: #FFFFFF !important;
 }
-
 .resurs_orderinfo_text {
     color: #FFFFFF !important;
     font-weight: normal;
 }
-
 .resurs_orderinfo_text_label {
     font-weight: bold;
 }
-
 .resurs_orderinfo_text_value {
     font-weight: normal;
     display: block;
@@ -64,7 +57,6 @@
     position: relative;
     overflow: hidden;
 }
-
 .resurs-read-more-box .resurs-read-more {
     position: absolute;
     bottom: 0;
@@ -72,25 +64,21 @@
     /*top: 160px;*/
     width: 100%;
     text-align: center;
-    margin: 0;
-    padding: 30px 0;
+    margin: 0; padding: 30px 0;
 
     /* "transparent" only works here because == rgba(0,0,0,0) */
     background-image: linear-gradient(to bottom, transparent, white);
 }
-
 .paymentInfoWrapLogo {
     display: inline-block;
     width: 145px;
     float: right;
     right: 30px;
 }
-
 .paymentInfoWrapStatus {
     display: inline-block;
     vertical-align: top;
 }
-
 /* Cloned from woocommerce h2-css */
 .paymentInfoHead {
     margin: 0;
@@ -99,26 +87,25 @@
     padding: 0;
     font-weight: bold;
 }
-
 .resursBankLegalLink {
     color: #009900 !important;
     font-weight: bold;
 }
-
 .resursBankLegalLink:hover {
     font-weight: bold;
 }
+
+
 
 .configSeparateTitle {
     font-size: 16px !important;
     font-weight: bold;
     background: #dddddd;
-    text-align: center !important;
+    text-align: left !important;
     padding: 5px !important;
     border-top: 1px solid grey;
     border-bottom: 1px solid grey;
 }
-
 .resursConfigSeparator {
 }
 
@@ -135,8 +122,9 @@
     border-bottom: 1px dotted grey;
 }
 
+
 .uriTemplateLocation {
-    color: #990000 !important;
+    font-color: #990000 !important;
     font-style: italic !important;
     font-weight: bold !important;
     right: 10px;
@@ -147,20 +135,16 @@
 .labelBoot-big {
     font-size: 16px !important;
 }
-
 .labelBoot-border {
     border: 1px dashed;
 }
-
 .labelBoot-nofat {
     font-weight: normal !important;
 }
-
 .labelBoot-center {
     margin-left: auto !important;
     margin-right: auto !important;
 }
-
 .rbCallbackTableStatic {
     padding: 0px !important;
     margin: 0px !important;
@@ -168,46 +152,14 @@
     word-spacing: 0px !important;
     line-height: 0.4em !important;
 }
-
 .rbCallbackTableFont {
     font-size: 12px !important;
     text-wrap: normal !important;
 }
-
 #callbackContent {
     align-content: center;
 }
 
-#shopwFlowRecommendedSettings {
-    font-size: 15px !important;
-    color: #0099ff !important;
-    font-weight: bold;
-    font-style: italic;
-}
-
-.resurs-help-tip {
-    color: #666;
-    display: inline-block;
-    font-size: 1.1em;
-    font-style: normal;
-    height: 16px;
-    line-height: 16px;
-    position: relative;
-    float: right;
-    vertical-align: middle;
-    width: 16px;
-}
-
-.resurs-help-tip:before {
-    content: "\f223";
-}
-
-.rbAdminExtraInfo {
-    font-style: italic;
-    font-size: 14px;
-    font-weight: bold;
-    color: #000099;
-}
 
 /*!
  * Extraction from Bootstrap for getting designed labels for blocked content.
