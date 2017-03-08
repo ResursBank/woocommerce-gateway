@@ -187,10 +187,24 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     }
 
     private
-    function setCheckBox($settingKey = '', $namespace = '', $scriptLoader = "")
+    function setCheckBox($settingKey = '', $namespace = 'woocommerce_resurs-bank_settings', $scriptLoader = "")
     {
+        $properNamesSpace = $namespace;
+        if (!preg_match("/_settings$/", $namespace)) {
+            $properNamesSpace = $namespace . "_settings";
+        }
         $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
+
+        if (!issetResursOption($settingKey, $properNamesSpace)) {
+            if (isset($formSettings['default'])) {
+                if ($formSettings['default'] == "false") {
+                    $isChecked = false;
+                }
+            }
+        }
+
+
         $extraInfoMark = "";
         if (isset($formSettings['info']) && !empty($formSettings['info'])) {
             $extraInfoMark = '<span class="dashicons dashicons-visibility resurs-help-tip" onmouseover="$RB(\'#extraInfo'.$settingKey.'\').show(\'medium\')" onmouseout="$RB(\'#extraInfo'.$settingKey.'\').hide(\'medium\')"></span>';
@@ -578,6 +592,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 } else if ($section == "advanced") {
                     echo $this->setSeparator(__('Miscellaneous', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
+                    echo $this->setCheckBox('includeEmptyTaxClasses', $namespace);
                     echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
@@ -647,6 +662,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 				",
             1000
         ));
+
         foreach ($rates as $rate) {
             $rate_name = $rate->tax_rate_class;
             if ('' === $rate_name) {
@@ -655,6 +671,15 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $rate_name = str_replace('-', ' ', $rate_name);
             $rate_name = ucwords($rate_name);
             $rate_select[$rate->tax_rate_class] = $rate_name;
+        }
+
+        if (getResursOption('includeEmptyTaxClasses')) {
+            $validTaxClasses = WC_Tax::get_tax_classes();
+            foreach ($validTaxClasses as $className) {
+                if ($className != "standard" && $className != "") {
+                    $rate_select[$className] = $className;
+                }
+            }
         }
         return $rate_select;
     }

@@ -302,6 +302,13 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'default' => 'false'
                 ),
+                'includeEmptyTaxClasses' => array(
+                    'title' => __('Include empty tax classes in admin config', 'WC_Payment_Gateway'),
+                    'label' => __('Enabled', 'woocommerce'),
+                    'description' => __('If your needs requires all tax classes selectable in this administration panel, enable this option to reach them', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false'
+                ),
                 'devSimulateSuccessUrl' => array(
                     'title' => __('SuccessUrl-simulation', 'WC_Payment_Gateway'),
                     'description' => __('If you are in simulation mode, you can enter your own successurl here, for which Resurs Checkout is sending you to, during a purchase', 'WC_Payment_Gateway'),
