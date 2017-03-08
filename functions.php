@@ -104,11 +104,11 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Flow type', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
+                        'resurs_bank_omnicheckout' => __('Resurs Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)', 'WC_Payment_Gateway'),
                         'simplifiedshopflow' => __('Simplified Shop Flow: Payments goes through Resurs Bank API (Default)', 'WC_Payment_Gateway'),
                         'resurs_bank_hosted' => __('Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment', 'WC_Payment_Gateway'),
-                        'resurs_bank_omnicheckout' => __('Resurs Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)', 'WC_Payment_Gateway'),
                     ),
-                    'default' => 'simplifiedshopflow',
+                    'default' => 'resurs_bank_omnicheckout',
                     'description' => __('What kind of shop flow you want to use', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
