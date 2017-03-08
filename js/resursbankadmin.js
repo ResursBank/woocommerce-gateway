@@ -45,6 +45,7 @@ $RB(document).ready(function ($) {
 });
 var fullFlowCollection = [];
 var currentFlowCollection = [];
+var sessionWarnCount = 0;
 var flowRules = {
     "se": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
     "dk": ["resurs_bank_hosted"],
@@ -206,7 +207,18 @@ function runResursAdminCallback(callbackName) {
                     if (typeof testProcElement === "object") {
                         testProcElement.html('<div class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
                     } else {
-                        alert(data["errorMessage"]);
+                        if (typeof data["session"] !== "undefined") {
+                            if (data["session"] == "0") {
+                                sessionWarnCount++;
+                                if (sessionWarnCount < 2) {
+                                    alert(data["errorMessage"]);
+                                }
+                            } else {
+                                alert(data["errorMessage"]);
+                            }
+                        } else {
+                            alert(data["errorMessage"]);
+                        }
                     }
                 }
             }
@@ -215,7 +227,18 @@ function runResursAdminCallback(callbackName) {
                 if (typeof data["element"] !== "undefined") {
                     $RB('#' + data["element"]).html(data["errorMessage"]);
                 } else {
-                    alert(data["errorMessage"]);
+                    if (typeof data["session"] !== "undefined") {
+                        if (data["session"] == "0") {
+                            sessionWarnCount++;
+                            if (sessionWarnCount < 2) {
+                                alert(data["errorMessage"]);
+                            }
+                        } else {
+                            alert(data["errorMessage"]);
+                        }
+                    } else {
+                        alert(data["errorMessage"]);
+                    }
                 }
             }
         }

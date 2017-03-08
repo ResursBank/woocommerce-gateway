@@ -364,6 +364,7 @@ function woocommerce_gateway_resurs_bank_init()
         public function check_callback_response()
         {
             global $wpdb;
+            $mySession = false;
             $url_arr = parse_url($_SERVER["REQUEST_URI"]);
             $url_arr['query'] = str_replace('amp;', '', $url_arr['query']);
             parse_str($url_arr['query'], $request);
@@ -393,6 +394,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $newPaymentMethodsList = null;
                 if (!empty($reqType) || !empty($setType)) {
                     if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
+                        $mySession = true;
                         $reqType = str_replace($reqNamespace . "_", '', $reqType);
                         $myBool = true;
                         $myResponse = getResursOption($reqType);
@@ -401,6 +403,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $myResponse = '';
                         }
                     } else if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
+                        $mySession = true;
                         $failSetup = false;
                         $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
                         if ($setType == "woocommerce_resurs-bank_password") {
@@ -428,6 +431,7 @@ function woocommerce_gateway_resurs_bank_init()
                 } else {
                     if (isset($_REQUEST['run'])) {
                         if (wp_verify_nonce($reqNonce, "requestResursAdmin")) {
+                            $mySession = true;
                             $arg = null;
                             if (isset($_REQUEST['arg'])) {
                                 $arg = $_REQUEST['arg'];
@@ -577,6 +581,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $response = array(
                     'response' => $myResponse,
                     'success' => $myBool,
+                    'session' => $mySession === true ? 1 : 0,
                     'errorMessage' => $errorMessage
                 );
                 $this->returnJsonResponse($response);
