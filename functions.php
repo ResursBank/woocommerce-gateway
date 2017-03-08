@@ -658,7 +658,6 @@ if (is_admin()) {
 		public function admin_options()
 		{
 		    if (\$_REQUEST['tab'] !== "tab_resursbank") {
-    		    // The WOO-48 should expire this section.
                 \$_REQUEST['tab'] = "tab_resursbank";
                 \$url = admin_url('admin.php');
                 \$url = add_query_arg('page', \$_REQUEST['page'], \$url);
@@ -667,20 +666,6 @@ if (is_admin()) {
                 wp_safe_redirect(\$url);
                 die("Deprecated space");
 		    }
-
-		
-			?>
-			<h3><?php echo \$this->method_title; ?></h3>
-			<p>På denna sida kan du ändra inställningar för Resurs Bank {$method_name}</p>
-
-				<table class="form-table">
-
-                    <span id="paymentMethodName" style="display:none">{$class_name}</span>
-					<?php \$this->generate_settings_html(); ?>
-
-				</table>
-
-			<?php
 		}
 
 		public static function interfere_checkout()
