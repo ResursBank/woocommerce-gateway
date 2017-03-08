@@ -158,7 +158,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'test' => 'Test',
                     ),
                     'default' => 'test',
-                    'description' => __('Set which server environment you are working with (Test or production)'),
+                    'description' => __('Set which server environment you are working with (Test/production)'),
                 ),
                 // Replacement URL for callbacks if different from default homeurl settings
                 'customCallbackUri' => array(
