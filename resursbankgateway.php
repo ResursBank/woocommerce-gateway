@@ -1899,43 +1899,6 @@ function woocommerce_gateway_resurs_bank_init()
             $url = add_query_arg('section', $_REQUEST['section'], $url);
             wp_safe_redirect($url);
             die("Deprecated space");
-
-            // WOO-48 removal space begin
-            $url = admin_url('admin.php');
-            $url = add_query_arg('page', $_REQUEST['page'], $url);
-            $url = add_query_arg('tab', $_REQUEST['tab'], $url);
-            $url = add_query_arg('section', $_REQUEST['section'], $url);
-            if (isset($_REQUEST['woocommerce_resurs-bank_registerCallbacksButton'])) {
-                $salt = uniqid(mt_rand(), true);
-                set_transient('resurs_bank_digest_salt', $salt);
-
-                /* Make sure we do not use UPDATEs yet */
-                $this->flow->unSetCallback(ResursCallbackTypes::UPDATE);
-                foreach ($this->callback_types as $callback => $options) {
-                    $this->register_callback($callback, $options);
-                }
-            }
-            if (isset($_REQUEST['save'])) {
-                try {
-                    if (isset($this->login) && !empty($this->login)) {
-                        $this->get_payment_methods();
-                    }
-                } catch (Exception $e) {
-                }
-                wp_safe_redirect($url);
-            }
-            ?>
-            <h3><?php echo $this->method_title; ?></h3>
-            <?php
-            $currentVersion = rbWcGwVersionToDecimals();
-            echo "Version " . rbWcGwVersion() . (!empty($currentVersion) ? " (" . $currentVersion . ")" : "");
-            ?>
-            <p><?php echo __('Resurs Bank API Configuration', 'WC_Payment_Gateway'); ?></p><br>
-            <table class="form-table">
-                <?php $this->generate_settings_html(); ?>
-            </table>
-            <?php
-            // WOO-48 removal space begin
         }
 
         /**
@@ -2282,30 +2245,6 @@ function woocommerce_gateway_resurs_bank_init()
     }
 
     /**
-     * Add the Gateway to WooCommerce
-     *
-     * @param  array $methods The available payment methods
-     * @return array          The available payment methods
-     */
-    function woocommerce_add_resurs_bank_gateway($methods)
-    {
-        $methods[] = 'WC_Resurs_Bank';
-        return $methods;
-    }
-
-    /**
-     * Remove the gateway from the available payment options at checkout
-     *
-     * @param  array $gateways The array of payment gateways
-     * @return array           The array of payment gateways
-     */
-    function woocommerce_resurs_bank_available_payment_gateways($gateways)
-    {
-        unset($gateways['resurs-bank']);
-        return $gateways;
-    }
-
-    /**
      * Adds the SSN field to the checkout form for fetching a address
      *
      * @param  WC_Checkout $checkout The WooCommerce checkout object
@@ -2599,11 +2538,49 @@ function woocommerce_gateway_resurs_bank_init()
         return $settings;
     }
 
+
+    /* Payment gateway stuff */
+
+    /**
+     * Add the Gateway to WooCommerce
+     *
+     * @param  array $methods The available payment methods
+     * @return array          The available payment methods
+     */
+    function woocommerce_add_resurs_bank_gateway($methods)
+    {
+        $methods[] = 'WC_Resurs_Bank';
+        if (is_admin() && is_array($methods)) {
+            foreach ($methods as $id => $m) {
+                if (preg_match("/^resurs_bank_nr_/i", $m)) {
+                    unset($methods[$id]);
+                }
+            }
+            $methods = array_values($methods);
+        }
+
+        return $methods;
+    }
+
+    /**
+     * Remove the gateway from the available payment options at checkout
+     *
+     * @param  array $gateways The array of payment gateways
+     * @return array           The array of payment gateways
+     */
+    function woocommerce_resurs_bank_available_payment_gateways($gateways)
+    {
+        unset($gateways['resurs-bank']);
+        return $gateways;
+    }
+
+
     /* Load settings pages through this class */
     add_filter('woocommerce_get_settings_pages', 'rb_settings_pages');
-
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway');
     add_filter('woocommerce_available_payment_gateways', 'woocommerce_resurs_bank_available_payment_gateways', 1);
+
+
     add_filter('woocommerce_before_checkout_billing_form', 'add_ssn_checkout_field');
     add_action('woocommerce_order_status_changed', 'WC_Resurs_Bank::order_status_changed', 10, 3);
 
