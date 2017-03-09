@@ -73,7 +73,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     {
         //$settings_tabs[$this->id] = __('Resurs Bank Administration', 'WC_Payment_Gateway');
         $images = plugin_dir_url(__FILE__) . "img/";
-        $settings_tabs[$this->id] = '<img src="'.$images.'resurs-standard.png">';
+        $settings_tabs[$this->id] = '<img src="' . $images . 'resurs-standard.png">';
         return $settings_tabs;
     }
 
@@ -207,7 +207,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         $extraInfoMark = "";
         if (isset($formSettings['info']) && !empty($formSettings['info'])) {
-            $extraInfoMark = '<span class="dashicons resurs-help-tip" onmouseover="$RB(\'#extraInfo'.$settingKey.'\').show(\'medium\')" onmouseout="$RB(\'#extraInfo'.$settingKey.'\').hide(\'medium\')"></span>';
+            $extraInfoMark = '<span class="dashicons resurs-help-tip" onmouseover="$RB(\'#extraInfo' . $settingKey . '\').show(\'medium\')" onmouseout="$RB(\'#extraInfo' . $settingKey . '\').hide(\'medium\')"></span>';
         }
         $returnCheckbox = '
                 <tr>
@@ -223,9 +223,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         if (!empty($extraInfoMark)) {
             $returnCheckbox .= '
-            <tr id="extraInfo'.$settingKey.'" style="display: none;">
+            <tr id="extraInfo' . $settingKey . '" style="display: none;">
                 <td></td>
-                <td class="rbAdminExtraInfo">'.$formSettings['info'].'</td>
+                <td class="rbAdminExtraInfo">' . $formSettings['info'] . '</td>
             </tr>
             ';
         }
@@ -233,8 +233,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnCheckbox;
     }
 
-    private
-    function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
+    private function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
         $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
@@ -532,7 +531,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     <td class="title" width="300px"><?php echo $maTitle ?></td>
                                     <?php if (!isResursOmni(true)) { ?>
                                         <td class="id"><?php echo $methodArray->id; ?></td>
-                                        <td class="fee" id="fee_<?php echo $methodArray->id; ?>" onclick="changeResursFee(this)"><?php
+                                        <td class="fee" id="fee_<?php echo $methodArray->id; ?>"
+                                            onclick="changeResursFee(this)"><?php
                                             $priceValue = $this->getOptionByNamespace("price", "woocommerce_resurs_bank_nr_" . $curId);
                                             echo $priceValue;
                                             ?></td>
