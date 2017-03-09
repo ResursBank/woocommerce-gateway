@@ -2467,6 +2467,7 @@ function woocommerce_gateway_resurs_bank_init()
             'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
             'requestForCallbacks' => $requestForCallbacks,
             'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway'),
+            'annulCantBeAlone' => __('This setting requires waitForFraudControl to be active', 'WC_Payment_Gateway'),
             'couldNotSetNewFee' => __('Unable to set new fee', 'WC_Payment_Gateway'),
             'newFeeHasBeenSet' => __('Fee has been saved', 'WC_Payment_Gateway')
         );

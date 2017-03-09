@@ -207,7 +207,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         $extraInfoMark = "";
         if (isset($formSettings['info']) && !empty($formSettings['info'])) {
-            $extraInfoMark = '<span class="dashicons dashicons-visibility resurs-help-tip" onmouseover="$RB(\'#extraInfo'.$settingKey.'\').show(\'medium\')" onmouseout="$RB(\'#extraInfo'.$settingKey.'\').hide(\'medium\')"></span>';
+            $extraInfoMark = '<span class="dashicons resurs-help-tip" onmouseover="$RB(\'#extraInfo'.$settingKey.'\').show(\'medium\')" onmouseout="$RB(\'#extraInfo'.$settingKey.'\').hide(\'medium\')"></span>';
         }
         $returnCheckbox = '
                 <tr>

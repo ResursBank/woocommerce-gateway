@@ -342,9 +342,9 @@ function wfcComboControl(checkboxObject) {
         $RB('#annulIfFrozenWarning').hide("medium");
     }
     if (!wfc.prop("checked") && !aif.prop("checked") && !fib.prop("checked")) {
-        $RB('#shopwFlowRecommendedSettings').show('medium');
+        $RB('#shopFlowRecommendedSettings').show('medium');
     } else {
-        $RB('#shopwFlowRecommendedSettings').hide('medium');
+        $RB('#shopFlowRecommendedSettings').hide('medium');
     }
 }
 function changeResursFee(feeObject) {
