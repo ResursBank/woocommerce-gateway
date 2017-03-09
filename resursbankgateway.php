@@ -643,6 +643,7 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'ANNULMENT':
                     $order->update_status('cancelled');
+                    update_post_meta($order->id, 'hasAnnulment', 1);
                     $order->cancel_order(__('ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway'));
                     break;
                 case 'FINALIZATION':
@@ -651,8 +652,12 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->payment_complete();
                     break;
                 case 'BOOKED':
-                    $order->update_status('processing');
-                    $order->add_order_note(__('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
+                    $currentStatus = $order->get_status();
+                    // If the order has been cancelled, you can't book it (170309 - WOO-86)
+                    if ($currentStatus != "cancelled") {
+                        $order->update_status('processing');
+                        $order->add_order_note(__('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
+                    }
                     break;
                 /*
                  * The below code belongs to the BOOKED event.
@@ -1597,15 +1602,18 @@ function woocommerce_gateway_resurs_bank_init()
             $url_arr = parse_url($_SERVER["REQUEST_URI"]);
             $url_arr['query'] = str_replace('amp;', '', $url_arr['query']);
             parse_str($url_arr['query'], $request);
-
             $order_id = isset($request['order_id']) && !empty($request['order_id']) ? $request['order_id'] : null;
             $order = new WC_Order($order_id);
+            $getRedirectUrl = $this->get_return_url($order);
+            $currentStatus = $order->get_status();
+
             $paymentId = wc_get_payment_id_by_order_id($order_id);
             $isHostedFlow = false;
             $requestedPaymentId = $request['payment_id'];
             $hasBookedHostedPayment = false;
             $bookedPaymentId = 0;
             $bookStatus = null;
+
             if (isset($request['flow-type'])) {
                 if ($request['flow-type'] == "check_hosted_response") {
                     if (isResursHosted()) {
@@ -1656,8 +1664,8 @@ function woocommerce_gateway_resurs_bank_init()
                              */
                             $order->reduce_order_stock();
                         }
-                        $order->update_status('processing', __('The payment are signed and booked', 'WC_Payment_Gateway'));
                         $getRedirectUrl = $this->get_return_url($order);
+                        $order->update_status('processing', __('The payment are signed and booked', 'WC_Payment_Gateway'));
                         WC()->cart->empty_cart();
                     }
 
@@ -1671,7 +1679,6 @@ function woocommerce_gateway_resurs_bank_init()
                 wc_add_notice(__('The payment can not complete. Contact customer services for more information.', 'WC_Payment_Gateway'), 'error');
             }
 
-            $bookSigned = false;
             if (!$isHostedFlow) {
                 try {
                     /* try book a signed payment */
@@ -1691,10 +1698,12 @@ function woocommerce_gateway_resurs_bank_init()
                 /* Before leaving this process, we'll check if something went wrong and the booking is already there */
                 $hasGetPaymentErrors = false;
                 $exceptionMessage = null;
+                $getPaymentExceptionMessage = null;
                 try {
                     $paymentCheck = $this->flow->getPayment($paymentId);
                 } catch (Exception $getPaymentException) {
                     $hasGetPaymentErrors = true;
+                    $getPaymentExceptionMessage = $getPaymentException->getMessage();
                 }
                 $paymentIdCheck = $this->flow->getBookedPaymentId($paymentCheck);
                 /* If there is a payment, this order has been already got booked */
@@ -1713,7 +1722,8 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 }
                 /* We should however not return with a success */
-                wp_safe_redirect($this->get_return_url($order));
+                //wp_safe_redirect($this->get_return_url($order));
+                wp_safe_redirect($woocommerce->cart->get_cart_url());
             }
 
             try {
@@ -1734,17 +1744,23 @@ function woocommerce_gateway_resurs_bank_init()
                 } elseif ($bookStatus == 'DENIED') {
                     $order->update_status('failed');
                     wc_add_notice(__('The payment can not complete. Contact customer services for more information.', 'WC_Payment_Gateway'), 'error');
-                    return;
+                    $getRedirectUrl = $woocommerce->cart->get_cart_url();
                 } elseif ($bookStatus == 'FAILED') {
                     $order->update_status('failed', __('An error occured during the update of the booked payment. The payment id was never received properly in signing response', 'WC_Payment_Gateway'));
                     wc_add_notice(__('An unknown error occured. Please, try again later', 'WC_Payment_Gateway'), 'error');
-                    return;
+                    $getRedirectUrl = $woocommerce->cart->get_cart_url();
                 }
             } catch (Exception $e) {
                 wc_add_notice(__('Something went wrong during the signing process.', 'WC_Payment_Gateway'), 'error');
-                return;
+                $getRedirectUrl = $woocommerce->cart->get_cart_url();
             }
-            wp_safe_redirect($this->get_return_url($order));
+
+            $hasAnnulment = get_post_meta($order->id, "hasAnnulment", true);
+            if (!$getRedirectUrl || $hasAnnulment == "1") {
+                $getRedirectUrl = $woocommerce->cart->get_cart_url();
+            }
+
+            wp_safe_redirect($getRedirectUrl);
             return;
         }
 
@@ -2071,7 +2087,13 @@ function woocommerce_gateway_resurs_bank_init()
                 foreach ($paymentMethods as $objId) {
                     if (isset($objId->id) && isset($objId->customerType)) {
                         $nr = "resurs_bank_nr_" . $objId->id;
-                        $responseArray[strtolower($objId->customerType)][] = $nr;
+                        if (!is_array($objId->customerType)) {
+                            $responseArray[strtolower($objId->customerType)][] = $nr;
+                        } else {
+                            foreach ($objId->customerType as $customerType) {
+                                $responseArray[strtolower($customerType)][] = $nr;
+                            }
+                        }
                     }
                 }
             }
