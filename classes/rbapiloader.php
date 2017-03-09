@@ -2004,10 +2004,23 @@ class ResursBank
 
         if (!empty($countryCode) && isset($returnRegEx[strtoupper($countryCode)])) {
             $returnRegEx = $returnRegEx[strtoupper($countryCode)];
-            if (!empty($customerType) && isset($returnRegEx[strtoupper($customerType)])) {
-                $returnRegEx = $returnRegEx[strtoupper($customerType)];
-                if (isset($returnRegEx[strtolower($formFieldName)])) {
-                    $returnRegEx = $returnRegEx[strtolower($formFieldName)];
+            if (!empty($customerType)) {
+                if (!is_array($customerType)) {
+                    if (isset($returnRegEx[strtoupper($customerType)])) {
+                        $returnRegEx = $returnRegEx[strtoupper($customerType)];
+                        if (isset($returnRegEx[strtolower($formFieldName)])) {
+                            $returnRegEx = $returnRegEx[strtolower($formFieldName)];
+                        }
+                    }
+                } else {
+                    foreach ($customerType as $cType) {
+                        if (isset($returnRegEx[strtoupper($cType)])) {
+                            $returnRegEx = $returnRegEx[strtoupper($cType)];
+                            if (isset($returnRegEx[strtolower($formFieldName)])) {
+                                $returnRegEx = $returnRegEx[strtolower($formFieldName)];
+                            }
+                        }
+                    }
                 }
             }
         }
