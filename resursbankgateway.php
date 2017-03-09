@@ -3300,7 +3300,7 @@ function isResursHosted()
  * @param bool $ignoreActiveFlag Check this setting even though the plugin is not active
  * @return bool
  */
-function hasResursOmni($ignoreActiveFlag)
+function hasResursOmni($ignoreActiveFlag = false)
 {
     $resursEnabled = resursOption("enabled");
     $flowType = resursOption("flowtype");
