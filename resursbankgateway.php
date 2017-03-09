@@ -642,8 +642,8 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'TEST':
                     break;
                 case 'ANNULMENT':
-                    $order->update_status('cancelled');
                     update_post_meta($order->id, 'hasAnnulment', 1);
+                    $order->update_status('cancelled');
                     $order->cancel_order(__('ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway'));
                     break;
                 case 'FINALIZATION':
