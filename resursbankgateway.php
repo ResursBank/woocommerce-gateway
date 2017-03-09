@@ -645,6 +645,16 @@ function woocommerce_gateway_resurs_bank_init()
                     update_post_meta($order->id, 'hasAnnulment', 1);
                     $order->update_status('cancelled');
                     $order->cancel_order(__('ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway'));
+                    /*
+                     * Send hooks to thirdparties after handled self, in case of issues with the hook.
+                     */
+                    $annulledPayment = null;
+                    try {
+                        $annulledPayment = $this->flow->getPayment($request['paymentId']);
+                        if (is_object($annulledPayment)) {
+                            ThirdPartyHooks($event_type, $annulledPayment);
+                        }
+                    } catch (Exception $e) {}
                     break;
                 case 'FINALIZATION':
                     $order->update_status('completed');
@@ -2784,7 +2794,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : "";
                 $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : "") . " " . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : "") . "\n";
             }
-
+            ThirdPartyHooks('orderinfo', $resursPaymentInfo);
             $renderedResursData .= '
                 <br>
                 <fieldset>
@@ -2818,6 +2828,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . __('Delivery address', 'WC_Payment_Gateway') . ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . (!empty($addressInfo) ? nl2br($addressInfo) : "") . '</span>
             ';
+
         } else {
             $renderedResursData .= '<div>' . nl2br($hasErrorNonStack) . '</div>';
         }
@@ -2852,6 +2863,33 @@ function rbWcGwVersionToDecimals()
 function rbWcGwVersion()
 {
     return RB_WOO_VERSION;
+}
+
+/**
+ * Allows partial hooks from this plugin
+ *
+ * @param string $type
+ * @param string $content
+ */
+function ThirdPartyHooks($type = '', $content = '') {
+    $type = strtolower($type);
+    $allowedHooks = array('orderinfo', 'annulment');
+    $paymentInfoHooks = array('orderinfo', 'annulment');
+    $sendHookContent = array();
+    if (in_array(strtolower($type), $paymentInfoHooks)) {
+        $sendHookContent = array(
+            'id' => isset($content->id) ? $content->id : '',
+            'fraud' => isset($content->fraud) ? $content->fraud : '',
+            'frozen' => isset($content->frozen) ? $content->frozen : '',
+            'status' => isset($content->status) ? $content->status : '',
+            'booked' => isset($content->booked) ? strtotime($content->booked) : '',
+            'finalized' => isset($content->finalized) ? strtotime($content->finalized) : ''
+        );
+    }
+    if (in_array(strtolower($type), $allowedHooks)) {
+        do_action("resurs_hook_" . $type, $sendHookContent);
+    }
+    return;
 }
 
 
