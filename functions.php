@@ -158,7 +158,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'test' => __('Test', 'WC_Payment_Gateway'),
                     ),
                     'default' => 'test',
-                    'description' => __('Set which server environment you are working with (Test/production)'),
+                    'description' => __('Set which server environment you are working with (Test/production)', 'WC_Payment_Gateway'),
                 ),
                 // Replacement URL for callbacks if different from default homeurl settings
                 'customCallbackUri' => array(
@@ -174,7 +174,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'value' => __('Register Callbacks', 'WC_Payment_Gateway'),
                 ),
                 'priceTaxClass' => array(
-                    'title' => 'Moms',
+                    'title' => __('Tax', 'woocommerce'),
                     'type' => 'select',
                     'options' => $rate_select,
                     'description' => __('The tax rate that will be added to the payment methods', 'WC_Payment_Gateway'),
@@ -322,7 +322,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => '7'
                 ),
                 'callbackUpdateAutomation' => array(
-                    'title' => __('Enable automatic callback updates', 'woocommerce'),
+                    'title' => __('Enable automatic callback updates', 'WC_Payment_Gateway'),
                     'description' => __('Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time', 'WC_Payment_Gateway'),
                     'type' => 'checkbox',
                     'label' => __('Enable/Disable', 'WC_Payment_Gateway'),
@@ -339,7 +339,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'label' => __('Enable/Disable', 'woocommerce'),
                 ),
                 'title' => array(
-                    'title' => 'Title',
+                    'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => '',
                     'description' => __('If you are leaving this field empty, the default title will be used in the checkout', 'woocommerce'),
@@ -357,7 +357,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'label' => 'Enable displaying of logotype at payment method choice',
                 ),
                 'description' => array(
-                    'title' => 'Description',
+                    'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => '',
                     'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
