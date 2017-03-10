@@ -4,12 +4,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.0.0-alpha2
+ * Version: 2.0.0-RC1
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "2.0.0-alpha2");
+define('RB_WOO_VERSION', "2.0.0-RC1");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -562,7 +562,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     if (isset($paymentFeeData['feeId']) && isset($paymentFeeData['feeValue'])) {
                                         $feeId = preg_replace('/^[a-z0-9]$/i', '', $paymentFeeData['feeId']);
                                         $feeValue = intval($paymentFeeData['feeValue']);
-                                        $methodNameSpace = "woocommerce_resurs_bank_nr_".$feeId."_settings";
+                                        $methodNameSpace = "woocommerce_resurs_bank_nr_" . $feeId . "_settings";
                                         $responseArray['feeId'] = $feeId;
                                         $responseArray['oldValue'] = getResursOption("price", $methodNameSpace);
                                         $responseArray['update'] = setResursOption("price", $feeValue, $methodNameSpace) === true ? 1 : 0;
@@ -624,16 +624,19 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'UNFREEZE':
                     $order->update_status('processing');
                     $order->add_order_note(__('The Resurs Bank event UNFREEZE received', 'WC_Payment_Gateway'));
+                    ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
                     break;
                 case 'AUTOMATIC_FRAUD_CONTROL':
                     switch ($request['result']) {
                         case 'THAWED':
                             $order->update_status('processing');
                             $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED', 'WC_Payment_Gateway'));
+                            ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
                             break;
                         case 'FROZEN':
                             $order->update_status('on-hold');
                             $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN', 'WC_Payment_Gateway'));
+                            ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
                             break;
                         default:
                             break;
@@ -648,18 +651,13 @@ function woocommerce_gateway_resurs_bank_init()
                     /*
                      * Send hooks to thirdparties after handled self, in case of issues with the hook.
                      */
-                    $annulledPayment = null;
-                    try {
-                        $annulledPayment = $this->flow->getPayment($request['paymentId']);
-                        if (is_object($annulledPayment)) {
-                            ThirdPartyHooks($event_type, $annulledPayment);
-                        }
-                    } catch (Exception $e) {}
+                    ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
                     break;
                 case 'FINALIZATION':
                     $order->update_status('completed');
                     $order->add_order_note(__('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
                     $order->payment_complete();
+                    ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
                     break;
                 case 'BOOKED':
                     $currentStatus = $order->get_status();
@@ -667,6 +665,7 @@ function woocommerce_gateway_resurs_bank_init()
                     if ($currentStatus != "cancelled") {
                         $order->update_status('processing');
                         $order->add_order_note(__('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
+                        ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
                     }
                     break;
                 /*
@@ -2726,7 +2725,8 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             $hasError = $e->getMessage();
             $hasErrorNonStack = $hasError;
             if (preg_match("/soapfault/i", $hasError)) {
-                /* Trying to handle errors based on content, showing stack traces if errors could not be identified */
+                // Trying to handle errors based on content, showing stack traces if errors could not be identified
+                // It might not be necessary to handle this way if using the curl library!
                 if (preg_match("/Stack trace/is", $hasError) && preg_match("/Do you find this error strange\?/is", $hasError)) {
                     $hasErrorNonStack = preg_replace("/(.*?)Stack trace:(.*)/is", '$1', $hasError);
                     $soapFault = preg_replace("/(.*?)Do you find this error strange\?(.*)/is", "$1", $hasErrorNonStack);
@@ -2794,7 +2794,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : "";
                 $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : "") . " " . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : "") . "\n";
             }
-            ThirdPartyHooks('orderinfo', $resursPaymentInfo);
+            ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentInfo, $order->id);
             $renderedResursData .= '
                 <br>
                 <fieldset>
@@ -2871,25 +2871,60 @@ function rbWcGwVersion()
  * @param string $type
  * @param string $content
  */
-function ThirdPartyHooks($type = '', $content = '') {
+function ThirdPartyHooks($type = '', $content = '', $addonData = array())
+{
     $type = strtolower($type);
     $allowedHooks = array('orderinfo', 'annulment');
     $paymentInfoHooks = array('orderinfo', 'annulment');
+    // Start with an empty content array
     $sendHookContent = array();
+
+    // Put on any extra that the hook wishes to add
+    if (is_array($addonData) && count($addonData)) {
+        foreach ($addonData as $addonKey => $addonValue) {
+            $sendHookContent[$addonKey] = $addonValue;
+        }
+    }
+
+    // If the hook is basedon sending payment data info ...
     if (in_array(strtolower($type), $paymentInfoHooks)) {
-        $sendHookContent = array(
-            'id' => isset($content->id) ? $content->id : '',
-            'fraud' => isset($content->fraud) ? $content->fraud : '',
-            'frozen' => isset($content->frozen) ? $content->frozen : '',
-            'status' => isset($content->status) ? $content->status : '',
-            'booked' => isset($content->booked) ? strtotime($content->booked) : '',
-            'finalized' => isset($content->finalized) ? strtotime($content->finalized) : ''
-        );
+        /*
+         * ... then prepare the necessary data without revealing the full getPayment()-object.
+         *
+         * This is for making data available for any payment bridging needed for external systems to synchronize payment statuses if needed.
+         */
+        $sendHookContent['id'] = isset($content->id) ? $content->id : '';
+        $sendHookContent['fraud'] = isset($content->fraud) ? $content->fraud : '';
+        $sendHookContent['frozen'] = isset($content->frozen) ? $content->frozen : '';
+        $sendHookContent['status'] = isset($content->status) ? $content->status : '';
+        $sendHookContent['booked'] = isset($content->booked) ? strtotime($content->booked) : '';
+        $sendHookContent['finalized'] = isset($content->finalized) ? strtotime($content->finalized) : '';
     }
     if (in_array(strtolower($type), $allowedHooks)) {
-        do_action("resurs_hook_" . $type, $sendHookContent);
+        return do_action("resurs_hook_" . $type, $sendHookContent);
     }
     return;
+}
+
+/**
+ * Hooks that should initiate payment controlling, may be runned through the same function - making sure that we only call for that hook if everything went nicely.
+ *
+ * @param string $type
+ * @param string $paymentId
+ */
+function ThirdPartyHooksSetPaymentTrigger($type = '', $paymentId = '', $internalOrderId = null)
+{
+    $paymentDataIn = null;
+    try {
+        $paymentDataIn = $this->flow->getPayment($paymentId);
+        if (!is_null($internalOrderId)) {
+            $paymentDataIn['internalOrderId'] = $internalOrderId;
+        }
+        if (is_object($paymentDataIn)) {
+            return ThirdPartyHooks($type, $paymentDataIn);
+        }
+    } catch (Exception $e) {
+    }
 }
 
 
