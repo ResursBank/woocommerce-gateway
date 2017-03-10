@@ -115,7 +115,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'title' => array(
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
-                    'default' => '',
+                    'default' => 'Resurs Bank',
                     'description' => __('This controls the payment method title, which the user sees during checkout.', 'woocommerce'),
                     'desc_tip' => true,
                 ),
@@ -384,14 +384,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'label' => 'Aktivera Resurs Checkout',
                 ),
                 'title' => array(
-                    'title' => 'Title',
+                    'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => 'Resurs Checkout',
                     'description' => __('This controls the title of Resurs Checkout as a payment method in the checkout', 'woocommerce'),
                     'desc_tip' => true,
                 ),
                 'description' => array(
-                    'title' => 'Description',
+                    'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => 'Betala med Resurs Checkout',
                     'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),

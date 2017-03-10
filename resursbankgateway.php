@@ -97,6 +97,7 @@ function woocommerce_gateway_resurs_bank_init()
             isResursSimulation(); // Make sure settings are properly set each round
 
             $this->id = "resurs-bank";
+            $this->title = "Resurs Bank";
             $this->method_title = "Resurs Bank Administration";
             $this->has_fields = false;
             $this->callback_types = array(
@@ -573,7 +574,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 $_REQUEST['run'] . "Response" => $responseArray
                             );
                         } else {
-                            $errorMessage = __('Session expired of permission denied', 'WC_Payment_Gateway');
+                            // Disturbing messages
+                            //$errorMessage = __('Session expired of permission denied', 'WC_Payment_Gateway');
                         }
                     }
                 }
@@ -2622,7 +2624,8 @@ function woocommerce_gateway_resurs_bank_init()
         $methods[] = 'WC_Resurs_Bank';
         if (is_admin() && is_array($methods)) {
             foreach ($methods as $id => $m) {
-                if (preg_match("/^resurs_bank_nr_/i", $m)) {
+                //if (preg_match("/^resurs_bank_nr_/i", $m) || $m == "WC_Resurs_Bank") {
+                if (preg_match("/^resurs_bank_/i", $m)) {
                     unset($methods[$id]);
                 }
             }

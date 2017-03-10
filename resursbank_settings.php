@@ -400,6 +400,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 if (empty($section)) {
                     echo $this->setSeparator(__('Plugin and checkout', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('enabled', $namespace);
+                    echo $this->setTextBox('title', $namespace);
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
                     echo $this->setSeparator(__('API Settings', 'WC_Payment_Gateway'));
                     echo $this->setDropDown('serverEnv', $namespace);
