@@ -116,14 +116,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => 'Resurs Bank',
-                    'description' => __('This controls the payment method title, which the user sees during checkout.', 'woocommerce'),
+                    'description' => __('This controls the payment method title, which the user sees during checkout.', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'description' => array(
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => '',
-                    'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
+                    'description' => __('This controls the payment method description which the user sees during checkout.', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'login' => array(
@@ -214,7 +214,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'info' => __('You can only activate this feature if you have goods that can be delivered immediately, like electronic tickets and downloads', 'WC_Payment_Gateway'),
                 ),
                 'adminRestoreGatewaysWhenMissing' => array(
-                    'title' => __('Restoring Payment Method gateway files', 'woocommerce'),
+                    'title' => __('Restoring Payment Method gateway files', 'WC_Payment_Gateway'),
                     'description' => __('If a payment gateway file (in the includes folder) is missing, they will be restored automatically if they disappear (e.g. when upgrading the plugin). Checking this box limits automatic restorations, so they only gets activates when administrators are logged in', 'WC_Payment_Gateway'),
                     'type' => 'checkbox',
                     'label' => __('Only administrators may restore gateway files'),
@@ -342,7 +342,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => '',
-                    'description' => __('If you are leaving this field empty, the default title will be used in the checkout', 'woocommerce'),
+                    'description' => __('If you are leaving this field empty, the default title will be used in the checkout', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'icon' => array(
@@ -352,7 +352,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.', 'WC_Payment_Gateway'),
                 ),
                 'enableMethodIcon' => array(
-                    'title' => __('Enable/Disable payment method icon', 'woocommerce'),
+                    'title' => __('Enable/Disable payment method icon', 'WC_Payment_Gateway'),
                     'type' => 'checkbox',
                     'label' => 'Enable displaying of logotype at payment method choice',
                 ),
@@ -360,7 +360,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => '',
-                    'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
+                    'description' => __('This controls the payment method description which the user sees during checkout.', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'price' => array(
@@ -387,14 +387,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => 'Resurs Checkout',
-                    'description' => __('This controls the title of Resurs Checkout as a payment method in the checkout', 'woocommerce'),
+                    'description' => __('This controls the title of Resurs Checkout as a payment method in the checkout', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'description' => array(
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => 'Betala med Resurs Checkout',
-                    'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
+                    'description' => __('This controls the payment method description which the user sees during checkout.', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
                 'iFrameLocation' => array(
@@ -527,7 +527,7 @@ if (is_admin()) {
 						'title'       => 'Title',
 						'type'        => 'text',
 						'default'     => 'Resurs Bank {$method_name}',
-						'description' => __( 'This controls the payment method title which the user sees during checkout.', 'woocommerce' ),
+						'description' => __( 'This controls the payment method title which the user sees during checkout.', 'WC_Payment_Gateway' ),
 						'desc_tip'    => true,
 					),
 				'icon' => array(
@@ -545,7 +545,7 @@ if (is_admin()) {
 						'title'       => 'Description',
 						'type'        => 'textarea',
 						'default'     => 'Betala med Resurs Bank {$method_name}',
-						'description' => __( 'This controls the payment method description which the user sees during checkout.', 'woocommerce' ),
+						'description' => __( 'This controls the payment method description which the user sees during checkout.', 'WC_Payment_Gateway' ),
 						'desc_tip'    => true,
 					),
 				'price' => array(
