@@ -75,6 +75,16 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     function admin_options()
     {
+        // The WOO-48 should expire this section.
+        $_REQUEST['tab'] = "tab_resursbank";
+        $_REQUEST['section'] = "resurs_bank_omnicheckout";
+        $url = admin_url('admin.php');
+        $url = add_query_arg('page', $_REQUEST['page'], $url);
+        $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+        $url = add_query_arg('section', $_REQUEST['section'], $url);
+        wp_safe_redirect($url);
+        die("Deprecated space");
+
         ?>
         <table class="form-table">
             <h2>Custom shopFlow - <?php echo $this->method_title; ?></h2>
@@ -88,72 +98,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     function init_form_fields()
     {
-        $this->form_fields = array(
-            'enabled' => array(
-                'title' => __('Enable/Disable', 'woocommerce'),
-                'type' => 'checkbox',
-                'label' => 'Aktivera Resurs Bank Faktura privat',
-            ),
-            'title' => array(
-                'title' => 'Title',
-                'type' => 'text',
-                'default' => 'Resurs Bank Omnicheckout',
-                'description' => __('This controls the payment method title which the user sees during checkout.', 'woocommerce'),
-                'desc_tip' => true,
-            ),
-            'description' => array(
-                'title' => 'Description',
-                'type' => 'textarea',
-                'default' => 'Betala med OmniCheckout (Resurs Bank)',
-                'description' => __('This controls the payment method description which the user sees during checkout.', 'woocommerce'),
-                'desc_tip' => true,
-            ),
-            'iFrameLocation' => array(
-                'title' => __('iFrame location', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
-                    'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
-                    'inMethods' => __('In payment method list', 'WC_Payment_Gateway'),
-                ),
-                'default' => 'afterCheckoutForm',
-                'description' => __('The country for which the payment services should be used', 'WC_Payment_Gateway'),
-                'desc_tip' => true,
-            ),
-            'omniFrameNotReloading' => array(
-                'title' => __('Reload checkout on cart changes', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'true' => 'true',
-                    'false' => 'false',
-                ),
-                'default' => 'false',
-                'description' => __('If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe', 'WC_Payment_Gateway'),
-                'desc_tip' => false,
-            ),
-            'iFrameResizeDelay' => array(
-                'title' => __('Delay iframe resizing', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'true' => 'true',
-                    'false' => 'false',
-                ),
-                'default' => 'false',
-                'description' => __('If you experience errors during resizing the iframe which maybe affects the site in some matter, Resurs Bank ECommerce Library (EComPHP) can try compensate the errors by delaying the resizer by a second', 'WC_Payment_Gateway'),
-                'desc_tip' => false,
-            ),
-            'cleanOmniCustomerFields' => array(
-                'title' => __('Remove all default customer fields when loading Omni Checkout iframe', 'WC_Payment_Gateway'),
-                'type' => 'select',
-                'options' => array(
-                    'true' => 'true',
-                    'false' => 'false',
-                ),
-                'default' => 'false',
-                'description' => __('Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected.', 'WC_Payment_Gateway'),
-                'desc_tip' => true,
-            ),
-        );
+        $this->form_fields = getResursWooFormFields(null, 'resurs_bank_omnicheckout');
     }
 
     public function calculate_totals($totals)
@@ -169,9 +114,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     public function payment_fields()
     {
         if ($this->iFrameLocation == "inMethods") {
-            echo '<div id="omni-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
+            echo '<div id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
         } else {
-            echo '<div id="omni-checkout-loader" onchange="alert(\'s\')">' . $this->description . '</div>';
+            echo '<div id="resurs-checkout-loader" onchange="alert(\'s\')">' . $this->description . '</div>';
         }
     }
 
@@ -207,38 +152,21 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     protected function resurs_omnicheckout_create_frame()
     {
-        global $woocommerce;
         $this->flow->setPreferredPaymentService(ResursMethodTypes::METHOD_OMNI);
         $this->flow->Include = array();
         $bookDataOmni = self::createResursOmniOrder();
         $shopUrl = home_url('');
-        //$bookDataOmni['shopUrl'] = $shopUrl;
         $omniRef = WC()->session->get('omniRef');
-        $omniBook = $this->flow->bookPayment($omniRef, $bookDataOmni);
-        $flowFrame = "";
-        $flowFrame .= '<noscript><b>' . __('OmniCheckout will not work properly without Javascript functions enabled', 'WC_Payment_Gateway') . '</b></noscript>';
-        if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
-            $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL', 'WC_Payment_Gateway') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
-        }
-        if (!resursOption('iFrameResizeDelay')) {
-            $flowFrame .= $this->flow->getOmniFrame($omniBook);
-        } else {
-            $flowFrame .= $this->flow->getOmniFrame($omniBook, true);
-        }
-        if (resursOption('iFrameResizeDelay')) {
-            $delayFrameScript = $this->flow->getIframeResizerUrl();
-            $flowFrame .= '
-            <script>
-                window.onload = function() {
-                    setTimeout(function() {
-                        var ocElement = document.createElement("script");
-                        ocElement.type = "text/javascript";
-                        ocElement.src = "' . $delayFrameScript . '";
-                        jQuery("head").append(ocElement);
-                    }, 500)
-                }
-            </script>
-        ';
+        try {
+            $flowBook = $this->flow->bookPayment($omniRef, $bookDataOmni);
+            $flowFrame = is_string($flowBook) ? $flowBook : "";
+            $flowFrame .= '<noscript><b>' . __('OmniCheckout will not work properly without Javascript functions enabled', 'WC_Payment_Gateway') . '</b></noscript>';
+            if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
+                $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL', 'WC_Payment_Gateway') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
+            }
+        } catch (Exception $e) {
+            $errorUnable = __('We are unable to load Resurs Checkout for the moment. Please try again later.', 'WC_Payment_Gateway');
+            $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="omni-checkout-container">' . $errorUnable . "<!-- \n".$e->getMessage()." --></div>";
         }
         return $flowFrame;
     }
@@ -284,6 +212,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     private function createResursOmniSuccessUrl($isFailing = false)
     {
         $this->omniSuccessUrl = home_url('/');
+        if (isResursSimulation()) {
+            $this->omniSuccessUrl = getResursOption("devSimulateSuccessUrl");
+        }
         $omniRef = WC()->session->get('omniRef');
         $this->omniSuccessUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $this->omniSuccessUrl);
         $this->omniSuccessUrl = add_query_arg('utm_nooverride', '1', $this->omniSuccessUrl);
@@ -344,12 +275,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $currentOmniRef = WC()->session->get('omniRef');
         }
         if ($_REQUEST['payment_method'] === 'resurs_bank_omnicheckout' && !empty($currentOmniRef)) {
-            //$cart = $woocommerce->session->cart;
-            //$currentCartTotal = $woocommerce->cart->total;
             $paymentSpec = self::get_payment_spec($woocommerce->cart);
             if (isset($paymentSpec['totalAmount'])) {
-                //$paymentSpecAmount = $paymentSpec['totalAmount'];
-                //$OmniUrl = $flow->getOmniUrl();
                 $flow = initializeResursFlow();
                 $updateSpec = array(
                     'orderLines' => $paymentSpec['specLines']
@@ -407,7 +334,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         return $array;
     }
 
-/**
+    /**
      * Get specLines for startPaymentSession
      *
      * @param  array $cart WooCommerce cart containing order items
@@ -505,17 +432,19 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 } else {
                     $rate = 0;
                 }
-                $spec_lines[] = array(
-                    'id' => $fee->id,
-                    'artNo' => $fee->id,
-                    'description' => $fee->name,
-                    'quantity' => 1,
-                    'unitMeasure' => 'st',
-                    'unitAmountWithoutVat' => $fee->amount,
-                    'vatPct' => !is_nan($rate) ? $rate: 0,
-                    'totalVatAmount' => $fee->tax,
-                    'totalAmount' => $fee->amount + $fee->tax,
-                );
+                if (!empty($fee->id)) {
+                    $spec_lines[] = array(
+                        'id' => $fee->id,
+                        'artNo' => $fee->id,
+                        'description' => $fee->name,
+                        'quantity' => 1,
+                        'unitMeasure' => 'st',
+                        'unitAmountWithoutVat' => $fee->amount,
+                        'vatPct' => !is_nan($rate) ? $rate : 0,
+                        'totalVatAmount' => $fee->tax,
+                        'totalAmount' => $fee->amount + $fee->tax,
+                    );
+                }
             }
         }
         if ($cart->coupons_enabled()) {

@@ -2,8 +2,8 @@
 Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 4.7.2
-Stable tag: 1.2.7.19
+Tested up to: 4.7.3
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,38 +47,104 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.0.0 (alpha1+RC1) =
+
+    * [WOO-3] - Administration Control Panel UI - Refactored (RB #70342)
+    * [WOO-29] - Generate payment method configuration on fly while running getPaymentMethods()
+    * [WOO-52] - Save changes-button-clarification
+    * [WOO-53] - Message at callbacks section
+    * [WOO-55] - When callbacks are updating, check that they are really working and is not blocked
+    * [WOO-59] - Fix the combination of waitForFraudControl=F and annulIfFrozen=T
+    * [WOO-60] - Settings for the Resurs Checkout shopflow
+    * [WOO-61] - Can not save changes for settings/shopflow
+    * [WOO-62] - Taxrates in configuration
+    * [WOO-63] - Fully support at least english and swedish in the adminui
+    * [WOO-64] - Admin nonce awareness (visual)
+    * [WOO-67] - Hjälptext vid "Inställningar för RB Shopflöde"
+    * [WOO-68] - Helptext at default settings
+    * [WOO-72] - Extend payment methods list with editable fee information
+    * [WOO-75] - Resurs Checkout should be default when installing the plugin
+    * [WOO-76] - Resurs Bank logotype instead of text at tab
+    * [WOO-81] - Remove deprecated configuration views
+    * [WOO-89] - Upgrade test to 2.x from a prior 1.x version
+    * [WOO-90] - Update changelog (readme.txt)
+    * [WOO-42] - Initial titles looks wrong
+    * [WOO-51] - Drop down vid moms
+    * [WOO-54] - Activate/Deactivate is just spinning
+    * [WOO-56] - Title details are missing
+    * [WOO-57] - Fees are not saved from payment method editor
+    * [WOO-58] - All payment methods gets the same title
+    * [WOO-65] - Callbacks are reloading from webservices each page refresh
+    * [WOO-66] - Helptext at settings shopflow
+    * [WOO-71] - Dual messages are shown in the list of methods when using Resurs Checkout
+    * [WOO-77] - As advanced settings are changing, there might be a mixed behaviour in the store
+    * [WOO-79] - Descriptions and information are not shown in the checkout
+    * [WOO-80] - Extra specrow in bookPayemnt
+    * [WOO-82] - When cleaning up cookies, the session warning alert shows each reload (related to callback updates)
+    * [WOO-84] - Minor issues in the shopflow settings section
+    * [WOO-86] - Landing page are failing when paying with annulmentCustomerGovId
+    * [WOO-88] - Translations needs to be adjustified (SE/EN)
+    * [WOO-69] - Spinner is not showing at reload
+    * [WOO-70] - When configuring Resrs Checkout, it is possible to also click and edit the payment methods via the listview
+    * [WOO-73] - When configuring Resurs Checkout, it is possible to also click and edit the payment methods via the listview
+    * [WOO-74] - Fix tax selection view
+    * [WOO-78] - Adjust texts
+    * [WOO-83] - Fees are saving in the ajax editor even if it's not filled in
+    * [WOO-14] - Simplified flow/AdminPanel, get payment methods live
+    * [WOO-20] - Payment methods list, light editor, live viewing in checkout (RB #72057/WOO-20)
+    * [WOO-21] - Changing order reference names (RB #71949)
+    * [WOO-22] - Transform password fields to hidden data content (RB #68625)
+    * [WOO-28] - Payment method activation panel issues (RB #72703)
+    * [WOO-33] - "Tool tips" (labels - or descriptions) are missing as extra descriptions
+    * [WOO-34] - Checkboxes missing the "Active" text
+    * [WOO-35] - Setting credential password should render automatic listing of payment methods
+    * [WOO-36] - Credential checking while updating merchant account
+    * [WOO-37] - Column for customized method titles
+    * [WOO-38] - Clarify the title in the method editor
+    * [WOO-39] - Processing spinner while updating adminUI data
+    * [WOO-40] - Resurs Checkout Configuration Tab
+    * [WOO-41] - Make sure the config covers all requirements
+    * [WOO-43] - AdminUI callback setter
+    * [WOO-47] - resursbankadmin.js 1.x-deprecation
+    * [WOO-48] - AdminUI 1.x deprecation (redirect to new interface)
+    * [WOO-50] - Support multiple element updates via adminui-js
+    * [WOO-30] - ')[' restricts PHP 5.3 usage
+    * [WOO-44] - Demoshop vs getaddress
+    * [WOO-45] - Realtime fetching of payment methods might fail if credentials are wrong
+    * [WOO-46] - Nested onloads (resursbankadmin.js) found
+    * [WOO-49] - Order view statuses looks bad after the use of internal AdminUI-labels
+
 = 1.2.7.19 =
 
- * WOO-32: Some parts of the system still needs the transent configuration to set output values properly (RB #72692)
+ * [WOO-32] - Some parts of the system still needs the transent configuration to set output values properly (RB #72692)
 
 = 1.2.7.18 =
 
- * WOO-27 (RB #72243) - As we create the list of methods, we also loop the includes path to see if there are unused files there and removes them. Index.php has been replaced with a .htaccess file to keep the path unviewable in Apache environments (how about IIS?). We will however only look for resurs*.php-based files, so if there are index.php left in the space, it won't harm anyone.
- * WOO-27 RB #72243 - Now using "Save"-button only instead of all other strange turns, that the legacies plugin had implemented.
+ * [WOO-27] - Updating payment methods keeps deprecated methods listed in admin (RB #72243)
 
 = 1.2.7.17 =
 
- * WOO-26: Payment methods are not showing up in admin (RB #72208)
+ * [WOO-26] - Payment methods are not showing up in admin (RB #72208)
 
 = 1.2.7.16 =
 
- * WOO-23: Division by zero on line 939 (RB #72149)
- * WOO-24: Undefined indexes and properties (RB #71250)
+ * [WOO-23] - Division by zero on line 939
+ * [WOO-24] - Undefined indexes and properties
 
 = 1.2.7.15 =
 
- * WOO-2: Set up better error messages for local bookings / BookByAjaxError (RB #71514)
- * WOO-10: Support callback event BOOKED (RB #71526)
- * WOO-11: Clear old session on "not returning to thank you"Clear old session on "not returning to thank you" / avoid omniRef on empty cart (RB #71608)
- * WOO-12: Log DENY from Resurs Checkout (RB #71619)
- * WOO-15: Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
- * WOO-16: Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
- * WOO-18: Do not set completed if finalization is unavailable (RB #71905)
+ * [WOO-2] - Set up better error messages for local bookings / BookByAjaxError (RB #71514)
+ * [WOO-10] - Support callback event BOOKED (RB #71526)
+ * [WOO-11] - Clear old session on "not returning to thank you"Clear old session on "not returning to thank you" / avoid omniRef on empty cart (RB #71608)
+ * [WOO-12] - Log DENY from Resurs Checkout (RB #71619)
+ * [WOO-15] - Callbacks: Order notes are not set for each callback received if status is already set (RB #70226)
+ * [WOO-16] - Streamlined flow of behaviour: Fail/Backurls always cancels an order (RB #71877)
+ * [WOO-18] - Do not set completed if finalization is unavailable (RB #71905)
 
 = 1.2.7.14 =
 
- * WOO-9: E-Mail confirmations are sent before booking completed (RB #70191)
- * WOO-8: Zero/null values are not properly encoded, using PHP >= 7 (RB #70321)
+ * [WOO-9] - E-Mail confirmations are sent before booking completed (RB #70191)
+ * [WOO-8] - Zero/null values are not properly encoded, using PHP >= 7 (RB #70321)
 
 = 1.2.7.13 =
 
@@ -96,13 +162,13 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
  * Delivery address- and shipping address form fields are not properly removed as Resurs Checkout is active in some themes
 
-= 1.2.7.9 =
+ = 1.2.7.9 =
 
  * Use SKU instead of postid for setting article (optional)
- 
-= 1.2.7.8 =
 
- * Hosted flow url parsing error fix
+= 1.2.8 =
+
+ * Compatibility issues discovered with PHP 7
 
 = 1.2.7.7 =
 

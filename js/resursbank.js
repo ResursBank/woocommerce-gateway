@@ -4,13 +4,7 @@
 
 var $RB = jQuery.noConflict();
 
-$RB(document).ready(function( $ ) {
-    /*
-    var currentOmniFrame = document.getElementsByTagName("iframe")[0];
-    var omniHostPosition = currentOmniFrame.src.substr(currentOmniFrame.src.indexOf("//")+2);
-    var omnicheckoutDomain = omniHostPosition.indexOf("/") > -1 ? "https://" + omniHostPosition.substr(0, omniHostPosition.indexOf("/")) : currentOmniFrame.src;
-    */
-
+$RB(document).ready(function ($) {
         if ($RB('#ssnCustomerType').length && $RB('#ssnCustomerType:checked').length > 0) {
             getMethodType($RB('#ssnCustomerType:checked').val());
         }
@@ -25,14 +19,13 @@ $RB(document).ready(function( $ ) {
                 });
             }
         });
-
         woocommerce_resurs_bank = {
             init: function () {
                 var that = this;
                 that.register_payment_update();
                 that.register_ssn_address_fetch();
                 that.shipping_address = $('.shipping_address');
-                that.sign_notice = $('<p></p>').addClass('sign_notice').text('Ändring av leveransadress kräver e-signering.');
+                that.sign_notice = $('<p></p>').addClass('sign_notice').text(getResursPhrase('deliveryRequiresSigning'));
 
                 if ($('.resurs-bank-payment-method').length !== 0) {
                     that.shipping_address.prepend(that.sign_notice);
@@ -57,7 +50,6 @@ $RB(document).ready(function( $ ) {
                         }
                     }
                 });
-
                 $('#billing_email').on('keyup', function () {
                     if ($('#applicant-email-address').length > 0) {
                         $('#applicant-email-address').val($(this).val());
@@ -71,7 +63,6 @@ $RB(document).ready(function( $ ) {
                         $('#applicant-mobile-number').val($(this).val());
                     }
                 });
-
                 $('#ssn_field').on('keyup', function () {
                     $('#applicant-government-id').val($(this).val());
                 });
@@ -167,7 +158,7 @@ $RB(document).ready(function( $ ) {
                     }
                     this.ssnInput = this.ssnP.find('input');
                     if (typeof this.ssnP === "undefined") {
-                        console.log("I can not show errors since the element is missing");
+                        console.log(getResursPhrase("ssnElementMissing"));
                     }
 
                     if (typeof data.error !== 'undefined') {
@@ -263,19 +254,6 @@ function getMethodType(customerType) {
     var enterNumberPhrase = "";
     var labelNumberPhrase = "";
 
-    /*
-     var methodCountry = $RB('#resursSelectedCountry');
-     if (methodCountry.val() != "SE") {
-     $RB('#ssn_field_field').hide();
-     } else {
-     $RB('#ssn_field_field').show();
-     }
-     */
-
-    if ($RB('.nm-checkout-login-coupon') > 0) {
-        console.log("here");
-    }
-
     if ($RB('#resursSelectedCountry').length > 0 && $RB('#ssn_field').length > 0) {
         currentResursCountry = $RB('#resursSelectedCountry').val();
         currentCustomerType = customerType.toLowerCase();
@@ -301,7 +279,7 @@ function getMethodType(customerType) {
             }
         }
         $RB('input[id^="payment_method_resurs_bank"]').each(
-            function(id, obj) {
+            function (id, obj) {
                 hasResursMethods = true;
                 if ($RB('#' + obj.id).is(':checked')) {
                     checkedPaymentMethod = obj.value;
@@ -330,14 +308,25 @@ function preSetResursMethods(customerType, returnedObjects) {
     var hideElm;
     var showElm;
 
+    if (typeof returnedObjects["errorstring"] !== "undefined") {
+        console.log(returnedObjects["errorstring"]);
+        return;
+    }
+
     // Only invoke if there are multiple customer types
-    if (customerType.toLowerCase() == "natural") {var hideCustomerType = "legal";} else {var hideCustomerType = "natural";}
-    if (typeof customerType === "undefined") {return;}
+    if (customerType.toLowerCase() == "natural") {
+        var hideCustomerType = "legal";
+    } else {
+        var hideCustomerType = "natural";
+    }
+    if (typeof customerType === "undefined") {
+        return;
+    }
     customerType = customerType.toLowerCase();
 
     if ($RB('#ssnCustomerType:checked').length === 0 && ($RB('#billing_company').length > 0 && $RB('#billing_company').val() == "")) {
-        /* The moment when we cannot predict the method of choice, we'll show both methods */
-        $RB('li[class*=payment_method_resurs]').each(function() {
+        // The moment when we cannot predict the method of choice, we'll show both methods
+        $RB('li[class*=payment_method_resurs]').each(function () {
             showElm = document.getElementsByClassName(this.className);
             if (showElm.length > 0) {
                 for (var showElmCount = 0; showElmCount < showElm.length; showElmCount++) {
@@ -348,15 +337,14 @@ function preSetResursMethods(customerType, returnedObjects) {
             }
         });
     }
-    else
-    {
+    else {
         if (typeof returnedObjects['natural'] !== "undefined" && typeof returnedObjects['legal'] !== "undefined" && typeof returnedObjects[hideCustomerType] !== "undefined") {
             for (var cType = 0; cType < returnedObjects[hideCustomerType].length; cType++) {
                 hideElm = document.getElementsByClassName('payment_method_' + returnedObjects[hideCustomerType][cType]);
                 if (hideElm.length > 0) {
                     for (var hideElmCount = 0; hideElmCount < hideElm.length; hideElmCount++) {
                         if (hideElm[hideElmCount].tagName.toLowerCase() === "li") {
-                            for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length ; getChild ++) {
+                            for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length; getChild++) {
                                 if (typeof hideElm[hideElmCount].childNodes[getChild].type !== "undefined" && hideElm[hideElmCount].childNodes[getChild].type === "radio") {
                                     // Unselect this radio buttons if found, just to make sure no method are chosen in a moment like this
                                     hideElm[hideElmCount].childNodes[getChild].checked = false;
@@ -398,20 +386,24 @@ function methodChangers(currentSelectionObject) {
  * Things below wants to be loaded first and not wait for readiness
  */
 if (null !== omnivars) {
-    var OMNICHECKOUT_IFRAME_URL = omnivars.OMNICHECKOUT_IFRAME_URL;
-    //var OMNICHECKOUT = omnivars.OMNICHECKOUT;
+    var RESURSCHECKOUT_IFRAME_URL = omnivars.RESURSCHECKOUT_IFRAME_URL;
 }
-if (typeof ResursOmni !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
+
+if (typeof ResursCheckout !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
     jQuery(document).ready(function ($) {
         jQuery('div').remove('.woocommerce-billing-fields');
         jQuery('div').remove('.woocommerce-shipping-fields');
     });
-    var ResursOmni = new ResursOmni();
+    var resursCheckout = ResursCheckout('#resurs-checkout-container');
+    /*
+     * Automatically raise debugging if in test mode (= Disabled for production)
+     *
+     */
     if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest !== null && omnivars.isResursTest == "1") {
-        ResursOmni.setDebug(1);
+        resursCheckout.setDebug(1);
     }
-    ResursOmni.init();
-    ResursOmni.setPurchaseFailCallback(function () {
+    resursCheckout.init();
+    resursCheckout.setPurchaseFailCallback(function () {
         // OmniRef.
         var omniRef;
         if (typeof omnivars.OmniRef !== "undefined") {
@@ -434,11 +426,78 @@ if (typeof ResursOmni !== "undefined" && typeof omnivars !== "undefined" && omni
         }
         handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
     });
+    resursCheckout.setBookingCallback(function (omniJsObject) {
+        var omniRef = omnivars.OmniRef;
+        var currentResursCheckoutFrame = document.getElementsByTagName("iframe")[0];
+        var postData = {};
+        /*
+         * Merge the rest
+         */
+        $RB('[name*="checkout"] input').each(
+            function (i, e) {
+                if (typeof e.name !== "undefined") {
+                    if (e.type == "checkbox") {
+                        if (e.checked === true) {
+                            omniJsObject[e.name] = e.value;
+                        } else {
+                            omniJsObject[e.name] = 0;
+                        }
+                    } else if (e.type == "radio") {
+                        omniJsObject[e.name] = $RB('[name="' + e.name + '"]:checked').val();
+                    } else {
+                        omniJsObject[e.name] = e.value;
+                    }
+                }
+            }
+        );
+        if (typeof currentResursCheckoutFrame !== "undefined" && typeof currentResursCheckoutFrame.src !== "undefined") {
+            if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
+                var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
+                $RB.ajax(
+                    {
+                        url: preBookUrl,
+                        type: "POST",
+                        data: omniJsObject
+                    }
+                ).success(
+                    function (successData) {
+                        var errorString = "";
+                        var isSuccess = false;
+                        if (typeof successData.success !== "undefined") {
+                            if (successData.success === true) {
+                                isSuccess = true;
+                                resursCheckout.confirmOrder(true);
+                                return true;
+                            }
+                        }
+                        errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
+                        if (!isSuccess) {
+                            if (errorString === "" || errorString === null) {
+                                errorString = getResursPhrase("theAjaxWasNotAccepted");
+                            }
+                            handleResursCheckoutError(errorString);
+                        }
+                        resursCheckout.confirmOrder(false);
+                        return false;
+                    }
+                ).fail(
+                    function (x, y) {
+                        resursCheckout.confirmOrder(false);
+                        var errorString = getResursPhrase("theAjaxWentWrong");
+                        if (typeof x.statusText !== "undefined") {
+                            errorString = x.statusText;
+                        }
+                        var partialError = getResursPhrase("theAjaxWentWrongWithThisMessage");
+                        var contactUs = getResursPhrase("contactSupport");
+                        handleResursCheckoutError(partialError + errorString + " - " + contactUs);
+                        return false;
+                    }
+                );
+            }
+        }
+    });
 }
 
-function handleOmniError(omniErrorMessage) {
-    handleResursCheckoutError(omniErrorMessage);
-}
 function handleResursCheckoutError(resursErrorMessage) {
     var checkoutForm = $RB('form.checkout');
     if (checkoutForm.length > 0) {
@@ -452,82 +511,5 @@ function handleResursCheckoutError(resursErrorMessage) {
          * Fall back on an alert if something went wrong with the page
          */
         alert(resursErrorMessage);
-    }
-}
-
-
-/**
- * Handle booking event from OmniCheckout frame
- * @param omniJsObject
- */
-function omniBookEvent(omniJsObject) {
-    //var omniRef = ($RB('#omniRef').length > 0 ? $RB('#omniRef').html() : "");
-    var omniRef = omnivars.OmniRef;
-    var currentOmniFrame = document.getElementsByTagName("iframe")[0];
-
-    var postData = {};
-    /*
-     * Merge the rest
-     */
-    $RB('[name*="checkout"] input').each(
-        function (i, e) {
-            // typeof omniJsObject[e.name] === "undefined"
-            if (typeof e.name !== "undefined") {
-                if (e.type == "checkbox") {
-                    if (e.checked === true) {
-                        omniJsObject[e.name] = e.value;
-                    } else {
-                        omniJsObject[e.name] = 0;
-                    }
-                } else if (e.type == "radio") {
-                    omniJsObject[e.name] = $RB('[name="'+e.name+'"]:checked').val();
-                } else {
-                    omniJsObject[e.name] = e.value;
-                }
-            }
-        }
-    );
-    if (typeof currentOmniFrame !== "undefined" && typeof currentOmniFrame.src !== "undefined") {
-        if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
-            var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
-            $RB.ajax(
-                {
-                    url: preBookUrl,
-                    type: "POST",
-                    data: omniJsObject
-                }
-            ).success(
-                function (successData) {
-                    var errorString = "";
-                    var isSuccess = false;
-                    if (typeof successData.success !== "undefined") {
-                        if (successData.success === true) {
-                            isSuccess = true;
-                            ResursOmni.confirmOrder(true);
-                            return true;
-                        }
-                    }
-                    errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
-                    if (!isSuccess) {
-                        if (errorString === "" || errorString === null) {
-                            errorString = "Something went wrong when we tried to book your order. Please contact customer support for more information.";
-                        }
-                        handleOmniError(errorString);
-                    }
-                    ResursOmni.confirmOrder(false);
-                    return false;
-                }
-            ).fail(
-                function (x, y) {
-                    ResursOmni.confirmOrder(false);
-                    var errorString = "Something went wrong. Please contact customer support for more information.";
-                    if (typeof x.statusText !== "undefined") {
-                        errorString = x.statusText;
-                    }
-                    handleOmniError("BookByAJAXError: " + errorString);
-                    return false;
-                }
-            );
-        }
     }
 }
