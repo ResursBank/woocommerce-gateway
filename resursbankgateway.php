@@ -624,19 +624,19 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'UNFREEZE':
                     $order->update_status('processing');
                     $order->add_order_note(__('The Resurs Bank event UNFREEZE received', 'WC_Payment_Gateway'));
-                    ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
+                    ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'AUTOMATIC_FRAUD_CONTROL':
                     switch ($request['result']) {
                         case 'THAWED':
                             $order->update_status('processing');
                             $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED', 'WC_Payment_Gateway'));
-                            ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
+                            ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                             break;
                         case 'FROZEN':
                             $order->update_status('on-hold');
                             $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN', 'WC_Payment_Gateway'));
-                            ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
+                            ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                             break;
                         default:
                             break;
@@ -651,13 +651,13 @@ function woocommerce_gateway_resurs_bank_init()
                     /*
                      * Send hooks to thirdparties after handled self, in case of issues with the hook.
                      */
-                    ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
+                    ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'FINALIZATION':
                     $order->update_status('completed');
                     $order->add_order_note(__('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
                     $order->payment_complete();
-                    ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
+                    ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'BOOKED':
                     $currentStatus = $order->get_status();
@@ -665,7 +665,7 @@ function woocommerce_gateway_resurs_bank_init()
                     if ($currentStatus != "cancelled") {
                         $order->update_status('processing');
                         $order->add_order_note(__('BOOKED event received from Resurs Bank', 'WC_Payment_Gateway'));
-                        ThirdPartyHooksSetPaymentTrigger($event_type, $request['paymentId'], $orderId);
+                        ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     }
                     break;
                 /*
@@ -981,102 +981,106 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentSpec = $this->get_payment_spec($cart);
             $totalAmount = $paymentSpec['totalAmount'];
             //$methodList = get_transient('resurs_bank_payment_methods');
-            $methodList = $this->flow->getPaymentMethods();
-            //$ecomMethodList = $this->get_payment_methods(false, true);
-            //$ecomExtractedList = is_array($ecomMethodList['methods']) ? $ecomMethodList['methods'] : array();
-            //if (is_array($ecomExtractedList)) { $methodList = $ecomExtractedList; }
-
             $fieldGenHtml = "";
-            foreach ($methodList as $methodIndex => $method) {
-                $id = $method->id;
-                $min = $method->minLimit;
-                $max = $method->maxLimit;
-                $customerType = $method->customerType;
-                $specificType = $method->specificType;
-                //$description = $method->description;
+            $sessionHasErrors = false;
+            try {
+                $methodList = $this->flow->getPaymentMethods();
+            } catch (Exception $e) {
+                $sessionHasErrors = true;
+                $sessionErrorMessage = $e->getMessage();
+            }
+            if (!$sessionHasErrors) {
+                foreach ($methodList as $methodIndex => $method) {
+                    $id = $method->id;
+                    $min = $method->minLimit;
+                    $max = $method->maxLimit;
+                    $customerType = $method->customerType;
+                    $specificType = $method->specificType;
+                    //$description = $method->description;
 
-                $inheritFields = array(
-                    'applicant-email-address' => 'billing_email',
-                    'applicant-mobile-number' => 'billing_phone_field',
-                    'applicant-telephone-number' => 'billing_phone_field'
-                );
-                $labels = array(
-                    'contact-government-id' => __('Contact government id', 'WC_Payment_Gateway'),
-                    'applicant-government-id' => __('Applicant government ID', 'WC_Payment_Gateway'),
-                    'applicant-full-name' => __('Applicant full name', 'WC_Payment_Gateway'),
-                    'applicant-email-address' => __('Applicant email address', 'WC_Payment_Gateway'),
-                    'applicant-telephone-number' => __('Applicant telephone number', 'WC_Payment_Gateway'),
-                    'applicant-mobile-number' => __('Applicant mobile number', 'WC_Payment_Gateway'),
-                    'card-number' => __('Card number', 'WC_Payment_Gateway'),
-                );
-                $minMaxError = false;
-                if ($totalAmount >= $min && $totalAmount <= $max) {
-                    try {
-                        $regExRules = $this->flow->getRegEx('', $currentCountry, $customerType);
-                    } catch (Exception $e) {
-                        echo $e->getMessage();
-                    }
-                    if (strtolower($id) == strtolower($payment_id)) {
-                        $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType, $specificType);
-                        $buttonCssClasses = "btn btn-info active";
-                        $ajaxUrl = admin_url('admin-ajax.php');
-                        if (!isResursHosted()) {
-                            $fieldGenHtml .= '<div>' . $method_class->description . '</div>';
-                            foreach ($requiredFormFields['fields'] as $fieldName) {
-                                $doDisplay = "block";
-                                if (resursOption("streamlineBehaviour")) {
-                                    if ($this->flow->canHideFormField($fieldName)) {
-                                        $doDisplay = "none";
-                                    }
-                                    /*
-                                     * As we do get the applicant government id from the getaddress field, we don't have to show that here.
-                                     */
-                                    if ($fieldName == "applicant-government-id") {
-                                        /*
-                                         * But only if it is enabled
-                                         */
-                                        if (resursOption("getAddress")) {
+                    $inheritFields = array(
+                        'applicant-email-address' => 'billing_email',
+                        'applicant-mobile-number' => 'billing_phone_field',
+                        'applicant-telephone-number' => 'billing_phone_field'
+                    );
+                    $labels = array(
+                        'contact-government-id' => __('Contact government id', 'WC_Payment_Gateway'),
+                        'applicant-government-id' => __('Applicant government ID', 'WC_Payment_Gateway'),
+                        'applicant-full-name' => __('Applicant full name', 'WC_Payment_Gateway'),
+                        'applicant-email-address' => __('Applicant email address', 'WC_Payment_Gateway'),
+                        'applicant-telephone-number' => __('Applicant telephone number', 'WC_Payment_Gateway'),
+                        'applicant-mobile-number' => __('Applicant mobile number', 'WC_Payment_Gateway'),
+                        'card-number' => __('Card number', 'WC_Payment_Gateway'),
+                    );
+                    $minMaxError = false;
+                    if ($totalAmount >= $min && $totalAmount <= $max) {
+                        try {
+                            $regExRules = $this->flow->getRegEx('', $currentCountry, $customerType);
+                        } catch (Exception $e) {
+                            echo $e->getMessage();
+                        }
+                        if (strtolower($id) == strtolower($payment_id)) {
+                            $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType, $specificType);
+                            $buttonCssClasses = "btn btn-info active";
+                            $ajaxUrl = admin_url('admin-ajax.php');
+                            if (!isResursHosted()) {
+                                $fieldGenHtml .= '<div>' . $method_class->description . '</div>';
+                                foreach ($requiredFormFields['fields'] as $fieldName) {
+                                    $doDisplay = "block";
+                                    if (resursOption("streamlineBehaviour")) {
+                                        if ($this->flow->canHideFormField($fieldName)) {
                                             $doDisplay = "none";
                                         }
+                                        /*
+                                         * As we do get the applicant government id from the getaddress field, we don't have to show that here.
+                                         */
+                                        if ($fieldName == "applicant-government-id") {
+                                            /*
+                                             * But only if it is enabled
+                                             */
+                                            if (resursOption("getAddress")) {
+                                                $doDisplay = "none";
+                                            }
+                                        }
                                     }
+                                    $fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
+                                    $fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $labels[$fieldName] . '</label>';
+                                    $fieldGenHtml .= '<input id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
+                                    $fieldGenHtml .= '</div>';
                                 }
-                                $fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
-                                $fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $labels[$fieldName] . '</label>';
-                                $fieldGenHtml .= '<input id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
-                                $fieldGenHtml .= '</div>';
-                            }
 
-                            /*
-                             * MarGul Change
-                             * Use translations for the Read More Button. Also added a fixed width and height on the onClick button.
-                             */
-                            if (class_exists("CountryHandler")) {
-                                $translation = CountryHandler::getDictionary();
+                                /*
+                                 * MarGul Change
+                                 * Use translations for the Read More Button. Also added a fixed width and height on the onClick button.
+                                 */
+                                if (class_exists("CountryHandler")) {
+                                    $translation = CountryHandler::getDictionary();
+                                } else {
+                                    $translation = array();
+                                }
+                                $read_more = (!empty($translation)) ? $translation['read_more'] : 'Read More';
+
+                                $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+                                if ($specificType != "CARD") {
+                                    $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __($read_more, 'WC_Payment_Gateway') . '</button>';
+                                }
+                                // Fix: There has been an echo here, instead of a fieldGenHtml
+                                $fieldGenHtml .= '<input type="hidden" value="' . $id . '" class="resurs-bank-payment-method">';
                             } else {
-                                $translation = array();
-                            }
-                            $read_more = (!empty($translation)) ? $translation['read_more'] : 'Read More';
-
-                            $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-                            if ($specificType != "CARD") {
-                                $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __($read_more, 'WC_Payment_Gateway') . '</button>';
-                            }
-                            // Fix: There has been an echo here, instead of a fieldGenHtml
-                            $fieldGenHtml .= '<input type="hidden" value="' . $id . '" class="resurs-bank-payment-method">';
-                        } else {
-                            $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-                            $fieldGenHtml = $this->description . "<br><br>";
-                            if ($specificType != "CARD") {
-                                $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __($read_more, 'WC_Payment_Gateway') . '</button>';
+                                $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+                                $fieldGenHtml = $this->description . "<br><br>";
+                                if ($specificType != "CARD") {
+                                    $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __($read_more, 'WC_Payment_Gateway') . '</button>';
+                                }
                             }
                         }
+                    } else {
+                        $minMaxError = true;
                     }
-                } else {
-                    $minMaxError = true;
                 }
+            } else {
+                $fieldGenHtml = __('Something went wrong during communication with Resurs Bank', 'WC_Payment_Gateway') . "<br><br>\n<i>" . $sessionErrorMessage . "</i>";
             }
-
-
             if (!empty($fieldGenHtml)) {
                 echo $fieldGenHtml;
             } else {
@@ -2084,7 +2088,14 @@ function woocommerce_gateway_resurs_bank_init()
 
             // Ignore transient data and get it live!
             $flow = initializeResursFlow();
-            $paymentMethods = $flow->getPaymentMethods();
+            $methodsHasErrors = false;
+            $methodsErrorMessage = null;
+            try {
+                $paymentMethods = $flow->getPaymentMethods();
+            } catch (Exception $e) {
+                $methodsHasErrors = true;
+                $methodsErrorMessage = $e->getMessage();
+            }
             $requestedCustomerType = $_REQUEST['customerType'];
             $responseArray = array(
                 'natural' => array(),
@@ -2106,6 +2117,13 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 }
             }
+
+            if ($methodsHasErrors) {
+                $responseArray = array(
+                    'errorstring' => $methodsErrorMessage
+                );
+            }
+
             header('Content-Type: application/json');
             print(json_encode($responseArray));
             die();
@@ -2794,7 +2812,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : "";
                 $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : "") . " " . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : "") . "\n";
             }
-            ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentInfo, $order->id);
+            ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentId, $order->id);
             $renderedResursData .= '
                 <br>
                 <fieldset>
@@ -2874,8 +2892,8 @@ function rbWcGwVersion()
 function ThirdPartyHooks($type = '', $content = '', $addonData = array())
 {
     $type = strtolower($type);
-    $allowedHooks = array('orderinfo', 'annulment');
-    $paymentInfoHooks = array('orderinfo', 'annulment');
+    $allowedHooks = array('orderinfo', 'callback');
+    $paymentInfoHooks = array('orderinfo', 'callback');
     // Start with an empty content array
     $sendHookContent = array();
 
@@ -2893,17 +2911,18 @@ function ThirdPartyHooks($type = '', $content = '', $addonData = array())
          *
          * This is for making data available for any payment bridging needed for external systems to synchronize payment statuses if needed.
          */
+
         $sendHookContent['id'] = isset($content->id) ? $content->id : '';
         $sendHookContent['fraud'] = isset($content->fraud) ? $content->fraud : '';
         $sendHookContent['frozen'] = isset($content->frozen) ? $content->frozen : '';
         $sendHookContent['status'] = isset($content->status) ? $content->status : '';
         $sendHookContent['booked'] = isset($content->booked) ? strtotime($content->booked) : '';
         $sendHookContent['finalized'] = isset($content->finalized) ? strtotime($content->finalized) : '';
+        $sendHookContent['iscallback'] = isset($content->iscallback) ? $content->iscallback : '';
     }
     if (in_array(strtolower($type), $allowedHooks)) {
-        return do_action("resurs_hook_" . $type, $sendHookContent);
+        do_action("resurs_hook_" . $type, $sendHookContent);
     }
-    return;
 }
 
 /**
@@ -2912,13 +2931,19 @@ function ThirdPartyHooks($type = '', $content = '', $addonData = array())
  * @param string $type
  * @param string $paymentId
  */
-function ThirdPartyHooksSetPaymentTrigger($type = '', $paymentId = '', $internalOrderId = null)
+function ThirdPartyHooksSetPaymentTrigger($type = '', $paymentId = '', $internalOrderId = null, $callbackType = null)
 {
-    $paymentDataIn = null;
+    $flow = initializeResursFlow();
+    $paymentDataIn = array();
     try {
-        $paymentDataIn = $this->flow->getPayment($paymentId);
+        $paymentDataIn = $flow->getPayment($paymentId);
+        if ($type == "callback" && !is_null($callbackType)) {
+            $paymentDataIn->iscallback = $callbackType;
+        } else {
+            $paymentDataIn->iscallback = null;
+        }
         if (!is_null($internalOrderId)) {
-            $paymentDataIn['internalOrderId'] = $internalOrderId;
+            $paymentDataIn->internalOrderId = $internalOrderId;
         }
         if (is_object($paymentDataIn)) {
             return ThirdPartyHooks($type, $paymentDataIn);

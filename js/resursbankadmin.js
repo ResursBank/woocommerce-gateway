@@ -137,7 +137,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
             } else {
                 if (typeof data["errorMessage"] !== "undefined" && data["errorMessage"] != "") {
                     if (processId.length > 0) {
-                        processId.html('<div class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                        processId.html('<div id="errSaveField'+currentFieldId+'" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
                     } else {
                         alert("Not successful: " + data["errorMessage"]);
                     }
@@ -205,7 +205,7 @@ function runResursAdminCallback(callbackName) {
             if (typeof data["success"] !== "undefined" && typeof data["errorMessage"] !== "undefined") {
                 if (data["success"] === false && data["errorMessage"] !== "") {
                     if (typeof testProcElement === "object") {
-                        testProcElement.html('<div class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                        testProcElement.html('<div id="cbError'+callbackName+'" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
                     } else {
                         if (typeof data["session"] !== "undefined") {
                             if (data["session"] == "0") {

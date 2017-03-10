@@ -308,6 +308,11 @@ function preSetResursMethods(customerType, returnedObjects) {
     var hideElm;
     var showElm;
 
+    if (typeof returnedObjects["errorstring"] !== "undefined") {
+        console.log(returnedObjects["errorstring"]);
+        return;
+    }
+
     // Only invoke if there are multiple customer types
     if (customerType.toLowerCase() == "natural") {
         var hideCustomerType = "legal";

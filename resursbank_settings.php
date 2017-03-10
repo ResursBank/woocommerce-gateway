@@ -365,6 +365,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $longOmni = __('Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)', 'WC_Payment_Gateway');
 
         $methodDescription = "";
+        $paymentMethodsError = null;
 
         try {
             if (!preg_match("/^resurs_bank_nr/i", $section)) {
@@ -376,6 +377,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 $methodDescription = $this->paymentMethods->description;
             }
         } catch (Exception $e) {
+            $paymentMethodsError = $e->getMessage();
         }
 
         ?>
@@ -453,12 +455,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     </th>
                     <td id="currentResursPaymentMethods">
                     ';
-                    if (!count($this->paymentMethods)) {
-                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered', 'WC_Payment_Gateway') . '</div><br><br>';
-                    } else {
-                        if (isResursOmni(true)) {
-                            echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Payment methods are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
+                    if (empty($paymentMethodsError)) {
+                        if (!count($this->paymentMethods)) {
+                            echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered', 'WC_Payment_Gateway') . '</div><br><br>';
+                        } else {
+                            if (isResursOmni(true)) {
+                                echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Payment methods are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway') . '</div><br><br>';
+                            }
                         }
+                    } else {
+                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.', 'WC_Payment_Gateway') . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">'. nl2br($paymentMethodsError) . '</div>';
                     }
 
                     if (count($this->paymentMethods)) {
@@ -638,7 +644,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo $this->setTextBox('icon', $namespace);
                     } else {
                         echo "<br>";
-                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The payment method editor is not availabe while Resurs Checkout is active', 'WC_Payment_Gateway') . '</div>';
+                        echo '<div id="listUnavailable" class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The payment method editor is not availabe while Resurs Checkout is active', 'WC_Payment_Gateway') . '</div>';
                     }
                 }
                 echo $this->setSeparator(__('Save above configuration with the button below', 'WC_Payment_Gateway'));
