@@ -211,13 +211,19 @@ function runResursAdminCallback(callbackName) {
                             if (data["session"] == "0") {
                                 sessionWarnCount++;
                                 if (sessionWarnCount < 2) {
-                                    alert(data["errorMessage"]);
+                                    if (data["errorMessage"] != "") {
+                                        alert(data["errorMessage"]);
+                                    }
                                 }
                             } else {
-                                alert(data["errorMessage"]);
+                                if (data["errorMessage"] != "") {
+                                    alert(data["errorMessage"]);
+                                }
                             }
                         } else {
-                            alert(data["errorMessage"]);
+                            if (data["errorMessage"] != "") {
+                                alert(data["errorMessage"]);
+                            }
                         }
                     }
                 }
@@ -231,13 +237,19 @@ function runResursAdminCallback(callbackName) {
                         if (data["session"] == "0") {
                             sessionWarnCount++;
                             if (sessionWarnCount < 2) {
-                                alert(data["errorMessage"]);
+                                if (data["errorMessage"] != "") {
+                                    alert(data["errorMessage"]);
+                                }
                             }
                         } else {
-                            alert(data["errorMessage"]);
+                            if (data["errorMessage"] != "") {
+                                alert(data["errorMessage"]);
+                            }
                         }
                     } else {
-                        alert(data["errorMessage"]);
+                        if (data["errorMessage"] != "") {
+                            alert(data["errorMessage"]);
+                        }
                     }
                 }
             }
