@@ -2,8 +2,8 @@
 Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 4.7.2
-Stable tag: 2.0.0-alpha2
+Tested up to: 4.7.3
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Resurs Bank Payment Gateway for WooCommerce.
 == Description ==
 
 Resurs Bank payment gateway for WooCommerce.
-Tested with WooCommerce up to version 2.6.13
+Tested with WooCommerce up to version 2.6.14
 Requires PHP 5.4 or later.
 For the use of OmniCheckout you also need cURL (EComPHP).
 
@@ -47,32 +47,72 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-= 2.0.0/alpha2 =
+= 2.0.0 (alpha1+RC1) =
 
-
-= 2.0.0/alpha1 =
-
- * [WOO-14] - Simplified flow/AdminPanel, get payment methods live
- * [WOO-20] - Payment methods list, light editor, live viewing in checkout (RB #72057)
- * [WOO-28] - Payment method activation panel issues (RB #72703)
- * [WOO-33] - "Tool tips" (labels - or descriptions) are missing as extra descriptions
- * [WOO-34] - Checkboxes missing the "Active" text
- * [WOO-35] - Setting credential password should render automatic listing of payment methods
- * [WOO-36] - Credential checking while updating merchant account
- * [WOO-37] - Column for customized method titles
- * [WOO-38] - Clarify the title in the method editor
- * [WOO-39] - Processing spinner while updating adminUI data
- * [WOO-40] - Resurs Checkout Configuration Tab
- * [WOO-41] - Make sure the config covers all requirements
- * [WOO-43] - AdminUI callback setter
- * [WOO-47] - resursbankadmin.js 1.x-deprecation
- * [WOO-48] - AdminUI 1.x deprecation (redirect to new interface)
- * [WOO-50] - Support multiple element updates via adminui-js
- * [WOO-44] - Demoshop vs getaddress
- * [WOO-45] - Realtime fetching of payment methods might fail if credentials are wrong
- * [WOO-46] - Nested onloads (resursbankadmin.js) found
- * [WOO-49] - Order view statuses looks bad after the use of internal AdminUI-labels
-
+    * [WOO-3] - Administration Control Panel UI - Refactored (RB #70342)
+    * [WOO-29] - Generate payment method configuration on fly while running getPaymentMethods()
+    * [WOO-52] - Save changes-button-clarification
+    * [WOO-53] - Message at callbacks section
+    * [WOO-55] - When callbacks are updating, check that they are really working and is not blocked
+    * [WOO-59] - Fix the combination of waitForFraudControl=F and annulIfFrozen=T
+    * [WOO-60] - Settings for the Resurs Checkout shopflow
+    * [WOO-61] - Can not save changes for settings/shopflow
+    * [WOO-62] - Taxrates in configuration
+    * [WOO-63] - Fully support at least english and swedish in the adminui
+    * [WOO-64] - Admin nonce awareness (visual)
+    * [WOO-67] - Hjälptext vid "Inställningar för RB Shopflöde"
+    * [WOO-68] - Helptext at default settings
+    * [WOO-72] - Extend payment methods list with editable fee information
+    * [WOO-75] - Resurs Checkout should be default when installing the plugin
+    * [WOO-76] - Resurs Bank logotype instead of text at tab
+    * [WOO-81] - Remove deprecated configuration views
+    * [WOO-89] - Upgrade test to 2.x from a prior 1.x version
+    * [WOO-90] - Update changelog (readme.txt)
+    * [WOO-42] - Initial titles looks wrong
+    * [WOO-51] - Drop down vid moms
+    * [WOO-54] - Activate/Deactivate is just spinning
+    * [WOO-56] - Title details are missing
+    * [WOO-57] - Fees are not saved from payment method editor
+    * [WOO-58] - All payment methods gets the same title
+    * [WOO-65] - Callbacks are reloading from webservices each page refresh
+    * [WOO-66] - Helptext at settings shopflow
+    * [WOO-71] - Dual messages are shown in the list of methods when using Resurs Checkout
+    * [WOO-77] - As advanced settings are changing, there might be a mixed behaviour in the store
+    * [WOO-79] - Descriptions and information are not shown in the checkout
+    * [WOO-80] - Extra specrow in bookPayemnt
+    * [WOO-82] - When cleaning up cookies, the session warning alert shows each reload (related to callback updates)
+    * [WOO-84] - Minor issues in the shopflow settings section
+    * [WOO-86] - Landing page are failing when paying with annulmentCustomerGovId
+    * [WOO-88] - Translations needs to be adjustified (SE/EN)
+    * [WOO-69] - Spinner is not showing at reload
+    * [WOO-70] - When configuring Resrs Checkout, it is possible to also click and edit the payment methods via the listview
+    * [WOO-73] - When configuring Resurs Checkout, it is possible to also click and edit the payment methods via the listview
+    * [WOO-74] - Fix tax selection view
+    * [WOO-78] - Adjust texts
+    * [WOO-83] - Fees are saving in the ajax editor even if it's not filled in
+    * [WOO-14] - Simplified flow/AdminPanel, get payment methods live
+    * [WOO-20] - Payment methods list, light editor, live viewing in checkout (RB #72057/WOO-20)
+    * [WOO-21] - Changing order reference names (RB #71949)
+    * [WOO-22] - Transform password fields to hidden data content (RB #68625)
+    * [WOO-28] - Payment method activation panel issues (RB #72703)
+    * [WOO-33] - "Tool tips" (labels - or descriptions) are missing as extra descriptions
+    * [WOO-34] - Checkboxes missing the "Active" text
+    * [WOO-35] - Setting credential password should render automatic listing of payment methods
+    * [WOO-36] - Credential checking while updating merchant account
+    * [WOO-37] - Column for customized method titles
+    * [WOO-38] - Clarify the title in the method editor
+    * [WOO-39] - Processing spinner while updating adminUI data
+    * [WOO-40] - Resurs Checkout Configuration Tab
+    * [WOO-41] - Make sure the config covers all requirements
+    * [WOO-43] - AdminUI callback setter
+    * [WOO-47] - resursbankadmin.js 1.x-deprecation
+    * [WOO-48] - AdminUI 1.x deprecation (redirect to new interface)
+    * [WOO-50] - Support multiple element updates via adminui-js
+    * [WOO-30] - ')[' restricts PHP 5.3 usage
+    * [WOO-44] - Demoshop vs getaddress
+    * [WOO-45] - Realtime fetching of payment methods might fail if credentials are wrong
+    * [WOO-46] - Nested onloads (resursbankadmin.js) found
+    * [WOO-49] - Order view statuses looks bad after the use of internal AdminUI-labels
 
 = 1.2.7.19 =
 
