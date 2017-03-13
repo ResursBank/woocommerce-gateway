@@ -313,11 +313,15 @@ function showResursCallbackArray(cbArrayResponse) {
 
 var startResursCallbacks = 0;
 var callbacksNotReceivedCheck = false;
-var receivedCallbacks = false;
 var runningCbTest = null;
 var lastRecvContent = "";
 function doUpdateResursCallbacks() {
     startResursCallbacks = Math.round(new Date()/1000);
+    if ($RB('#receivedCallbackConfirm').length > 0) {
+        $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
+        $RB('#receivedCallbackConfirm').remove();
+    }
+    noCallbacksReceived();
     runningCbTest = window.setInterval("noCallbacksReceived()", 1000);
     lastRecvContent = $RB('#lastCbRec').html();
     $RB('#callbackContent').html('<img src="' + adminJs.resursSpinner + '" border="0">');
@@ -332,7 +336,6 @@ function noCallbacksReceived() {
     if ($RB('#receivedCallbackConfirm').length > 0) {
         window.clearInterval(runningCbTest);
     } else {
-        if (!receivedCallbacks) {
             if (resursCallbacksTimeDiff < timeBeforeSlowCallbacks) {
                 if (lastRecvContent == curRecvContent) {
                     $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
@@ -341,7 +344,6 @@ function noCallbacksReceived() {
                 $RB('#lastCbRec').html('<div style="margin-bottom: 10px;"><span class="labelBoot labelBoot-danger">' + adminJs["callbacks_not_received"] + '</span></div>' +
                     adminJs["callbacks_slow"]);
             }
-        }
     }
 }
 
