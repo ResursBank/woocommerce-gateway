@@ -526,7 +526,12 @@ function woocommerce_gateway_resurs_bank_init()
                                 $lastRecv = get_transient('resurs_callbacks_received');
                                 $myBool = true;
                                 $responseArray['element'] = "lastCbRec";
-                                $responseArray['html'] = ($lastRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $lastRecv) : __('Never', 'WC_Payment_Gateway'));
+                                if ($lastRecv > 0) {
+                                    $responseArray['html'] = '<div style="margin-bottom:5px; margin-top: 5px;"><span id="receivedCallbackConfirm" class="labelBoot labelBoot-success">'.__('Test callback received', 'WC_Payment_Gateway').'</span></div>';
+                                    // strftime('%Y-%m-%d (%H:%M:%S)', $lastRecv)
+                                } else {
+                                    $responseArray['html'] = __('Never', 'WC_Payment_Gateway');
+                                }
                             } else if ($_REQUEST['run'] == 'cleanRbSettings') {
                                 $numDel = $wpdb->query("DELETE FROM " . $wpdb->options . " WHERE option_name LIKE '%resurs%bank%'");
                                 $responseArray['deleteOptions'] = $numDel;
@@ -2520,7 +2525,10 @@ function woocommerce_gateway_resurs_bank_init()
             'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway'),
             'annulCantBeAlone' => __('This setting requires waitForFraudControl to be active', 'WC_Payment_Gateway'),
             'couldNotSetNewFee' => __('Unable to set new fee', 'WC_Payment_Gateway'),
-            'newFeeHasBeenSet' => __('Fee has been saved', 'WC_Payment_Gateway')
+            'newFeeHasBeenSet' => __('Fee has been saved', 'WC_Payment_Gateway'),
+            'callbacks_pending' => __('Waiting for callback', 'WC_Payment_Gateway'),
+            'callbacks_not_received' => __('Callback not yes received', 'WC_Payment_Gateway'),
+            'callbacks_slow' => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.', 'WC_Payment_Gateway'))
         );
         wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");

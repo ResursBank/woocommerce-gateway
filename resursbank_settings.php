@@ -448,13 +448,15 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '
 
                     </div>
-                    <b>' . __('Callback Tests', 'WC_Payment_Gateway') . '</b><br>
-                    <table cellpadding="0" cellpadding="0" style="margin-bottom: 5px;" width="500px;">
+                    <b>' . __('Callback health', 'WC_Payment_Gateway') . '</b><br>
+                    <table cellpadding="0" cellpadding="0" style="margin-bottom: 5px;" width="100%">
                     <tr>
-                    <td style="padding: 0px;">' . __('Last test run', 'WC_Payment_Gateway') . '</td><td style="padding: 0px;" id="lastCbRun">' . ($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callSent) : __('Never', 'WC_Payment_Gateway')) . '</td>
+                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test run', 'WC_Payment_Gateway') . '</td>
+                        <td style="padding: 0px;" id="lastCbRun" width="80%" valign="top">' . ($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callSent) : __('Never', 'WC_Payment_Gateway')) . '</td>
                     </tr>
                     <tr>
-                    <td style="padding: 0px;">' . __('Last test received', 'WC_Payment_Gateway') . '</td><td style="padding: 0px;" id="lastCbRec">' . ($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callRecv) : __('Never', 'WC_Payment_Gateway')) . '</td>
+                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test received', 'WC_Payment_Gateway') . '</td>
+                        <td style="padding: 0px;" id="lastCbRec" width="80%" valign="top">' . ($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)', $callRecv) : __('Never', 'WC_Payment_Gateway')) . '</td>
                     </tr>
                     </table>
                     <br>
