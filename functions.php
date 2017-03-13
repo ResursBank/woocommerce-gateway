@@ -86,6 +86,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
+                    'description' => __('This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.', 'WC_Payment_Gateway')
                 ),
                 'country' => array(
                     'title' => __('Country', 'WC_Payment_Gateway'),

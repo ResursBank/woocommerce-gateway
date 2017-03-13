@@ -233,6 +233,20 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnCheckbox;
     }
 
+    private function setHidden($settingKey = '', $namespace = '', $scriptLoader = "") {
+        $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
+        $formSettings = $this->getFormSettings($settingKey);
+        if (empty($UseValue) && isset($formSettings['default'])) {
+            $UseValue = $formSettings['default'];
+        }
+        $returnHiddenValue = '<input type="hidden"
+                            name="' . $namespace . '_' . $settingKey . '"
+                            id="' . $namespace . '_' . $settingKey . '"
+                            ' . $scriptLoader . '
+                            value="' . $UseValue . '">';
+        return $returnHiddenValue;
+    }
+
     private function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
         $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
@@ -290,8 +304,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnTextBox;
     }
 
-    private
-    function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
+    private function setDropDown($settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1)
     {
         $formSettings = $this->getFormSettings($settingKey);
         if (is_null($optionsList)) {
@@ -400,7 +413,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 if (empty($section)) {
                     echo $this->setSeparator(__('Plugin and checkout', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('enabled', $namespace);
-                    echo $this->setTextBox('title', $namespace);
+                    echo $this->setHidden('title', $namespace);
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
                     echo $this->setSeparator(__('API Settings', 'WC_Payment_Gateway'));
                     echo $this->setDropDown('serverEnv', $namespace);
