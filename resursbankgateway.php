@@ -4,12 +4,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define('RB_WOO_VERSION', "2.0.0");
+define('RB_WOO_VERSION', "2.0.1");
 define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
@@ -393,6 +393,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $reqNonce = isset($_REQUEST['ran']) ? $_REQUEST['ran'] : "";
 
                 $newPaymentMethodsList = null;
+                $envVal = null;
                 if (!empty($reqType) || !empty($setType)) {
                     if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
                         $mySession = true;
@@ -407,10 +408,23 @@ function woocommerce_gateway_resurs_bank_init()
                         $mySession = true;
                         $failSetup = false;
                         $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
+                        $envVal = isset($_REQUEST['e']) ? $_REQUEST['e'] : "";
                         if ($setType == "woocommerce_resurs-bank_password") {
                             $testUser = $subVal;
                             $testPass = $setValue;
-                            $newFlow = initializeResursFlow($testUser, $testPass);
+                            $flowEnv = getServerEnv();
+                            if (!empty($envVal)) {
+                                if ($envVal == "test") {
+                                    $flowEnv = ResursEnvironments::ENVIRONMENT_TEST;
+                                } else if ($envVal == "live") {
+                                    $flowEnv = ResursEnvironments::ENVIRONMENT_PRODUCTION;
+                                } else if ($envVal == "production") {
+                                    $flowEnv = ResursEnvironments::ENVIRONMENT_PRODUCTION;
+                                }
+                                $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv);
+                            } else {
+                                $newFlow = initializeResursFlow($testUser, $testPass);
+                            }
                             try {
                                 $newPaymentMethodsList = $newFlow->getPaymentMethods();
                                 $myBool = true;
@@ -420,11 +434,19 @@ function woocommerce_gateway_resurs_bank_init()
                                 $errorMessage = $e->getMessage();
                             }
                         }
+                        if (isset($newPaymentMethodsList['error']) && !empty($newPaymentMethodsList['error'])) {
+                            $failSetup = true;
+                            $errorMessage = $newPaymentMethodsList['error'];
+                            $myBool = false;
+                        }
                         $setType = str_replace($reqNamespace . "_", '', $setType);
                         if (!$failSetup) {
                             $myBool = true;
                             setResursOption($setType, $setValue);
                             setResursOption("login", $subVal);
+                            if (!empty($envVal)) {
+                                setResursOption("serverEnv", $envVal);
+                            }
                             $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
                             $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated', 'WC_Payment_Gateway') . '</div><br><br>';
                         }
@@ -3238,14 +3260,19 @@ function wc_get_order_item_type_by_item_id($item_id, $getItemName = false)
  *
  * @param string $overrideUser
  * @param string $overridePassword
+ * @param int $setEnvironment
  * @return ResursBank
  */
-function initializeResursFlow($overrideUser = "", $overridePassword = "")
+function initializeResursFlow($overrideUser = "", $overridePassword = "", $setEnvironment = ResursEnvironments::ENVIRONMENT_NOT_SET)
 {
     global $current_user;
     $username = resursOption("login");
     $password = resursOption("password");
     $useEnvironment = getServerEnv();
+
+    if ($setEnvironment !== ResursEnvironments::ENVIRONMENT_NOT_SET) {
+        $useEnvironment = $setEnvironment;
+    }
 
     if (!empty($overrideUser)) {
         $username = $overrideUser;

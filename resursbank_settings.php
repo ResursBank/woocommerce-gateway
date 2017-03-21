@@ -483,6 +483,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.', 'WC_Payment_Gateway') . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">'. nl2br($paymentMethodsError) . '</div>';
                     }
 
+                    if (isset($this->paymentMethods['error']) && !empty($this->paymentMethods['error'])) {
+                        $this->paymentMethods = array();
+                    }
                     if (count($this->paymentMethods)) {
                         foreach ($this->paymentMethods as $methodArray) {
                             $curId = isset($methodArray->id) ? $methodArray->id : "";
@@ -521,6 +524,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             $url = admin_url('admin.php');
                             $url = add_query_arg('page', $_REQUEST['page'], $url);
                             $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+
                             foreach ($sortByDescription as $methodArray) {
                                 $curId = isset($methodArray->id) ? $methodArray->id : "";
                                 $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
@@ -535,10 +539,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                         $isEnabled = true;
                                     }
                                 }
+
                                 $maTitle = $methodArray->description;
+                                // Unacceptable title set (WOO-96)
+                                if (isset($settingsControl['title']) && strtolower($settingsControl['title']) == "resurs bank") {
+                                    // Make sure this will be unset as it's detected
+                                    setResursOption("title", '', $optionNamespace);
+                                    $settingsControl['title'] = "";
+                                }
                                 if (isset($settingsControl['title']) && !empty($settingsControl['title']) && !isResursOmni(true)) {
                                     $maTitle = $settingsControl['title'];
                                 }
+
                                 ?>
                                 <tr>
                                     <td width="1%">&nbsp;</td>
@@ -652,6 +664,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo $this->setCheckBox('enabled', $namespace);
 
                         $this->methodLabel = '<br>' . __('Default title set by Resurs Bank is ', 'WC_Payment_Gateway') . '<b> ' . $methodDescription . '</b>';
+                        $curSet = getResursOption('title', $namespace);
+                        echo "Cur TItle $curSet<br>\n";
                         echo $this->setTextBox('title', $namespace);
                         echo $this->setTextBox('description', $namespace);
                         echo $this->setTextBox('price', $namespace);

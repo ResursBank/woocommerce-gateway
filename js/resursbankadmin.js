@@ -101,9 +101,15 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
     }
     var setVal = $RB('#' + currentFieldId + "_value").val();
     var subVal;
+    var envVal;
 
     if (currentFieldId == "woocommerce_resurs-bank_password") {
         subVal = $RB("#woocommerce_resurs-bank_login").val();
+        $RB("#woocommerce_resurs-bank_serverEnv option").each(function(i, d) {
+            if (d.selected) {
+                envVal = d.value;
+            }
+        });
     }
 
     $RB.ajax({
@@ -113,7 +119,8 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
             'puts': currentFieldId,
             'value': setVal,
             'ns': ns,
-            's': subVal
+            's': subVal,
+            'e': envVal
         }
     }).done(function (data) {
         processId.html("");
