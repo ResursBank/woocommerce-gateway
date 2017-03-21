@@ -442,6 +442,10 @@ if (is_admin()) {
 
         function write_resurs_class_to_file($payment_method)
         {
+            // No id - no file.
+            if (!isset($payment_method->id) || (isset($payment_method->id) && empty($payment_method->id))) {
+                return;
+            }
             $class_name = 'resurs_bank_nr_' . $payment_method->id;
             if (!file_exists(plugin_dir_path(__FILE__) . '/includes/' . $class_name)) {
             } else {
@@ -493,7 +497,7 @@ if (is_admin()) {
             \$this->maxLimit = '{$maxLimit}';
 			\$this->title       = \$this->get_option( 'title' );
 
-			if (empty(\$this->title)) {
+			if (empty(\$this->title) || strtolower(\$this->title) == "resurs bank") {
     			\$this->flow = initializeResursFlow();
     			try {
     			    // Fetch this data if there is no errors during controls (this could for example, if credentials are wrong, generate errors that makes the site unreachable)
