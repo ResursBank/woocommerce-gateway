@@ -105,7 +105,11 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
 
     if (currentFieldId == "woocommerce_resurs-bank_password") {
         subVal = $RB("#woocommerce_resurs-bank_login").val();
-        envVal = $RB("#woocommerce_resurs-bank_serverEnv").val();
+        $RB("#woocommerce_resurs-bank_serverEnv option").each(function(i, d) {
+            if (d.selected) {
+                envVal = d.value;
+            }
+        });
     }
 
     $RB.ajax({
