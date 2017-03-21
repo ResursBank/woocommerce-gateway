@@ -434,6 +434,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 $errorMessage = $e->getMessage();
                             }
                         }
+                        if (isset($newPaymentMethodsList['error']) && !empty($newPaymentMethodsList['error'])) {
+                            $failSetup = true;
+                            $errorMessage = $newPaymentMethodsList['error'];
+                            $myBool = false;
+                        }
                         $setType = str_replace($reqNamespace . "_", '', $setType);
                         if (!$failSetup) {
                             $myBool = true;
