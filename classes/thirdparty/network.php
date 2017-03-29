@@ -203,7 +203,7 @@ if (function_exists('curl_init')) {
         private $TorneCurlVersion = "5.0.0";
 
         /** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-        private $TorneCurlRelease = "20170210";
+        private $TorneCurlRelease = "20170322";
 
         /**
          * Target environment (if target is production some debugging values will be skipped)
@@ -285,7 +285,7 @@ if (function_exists('curl_init')) {
         private $SaveCookies = false;
         private $CookieFile = null;
         private $CookiePathCreated = false;
-        private $UseCookieExceptions = false;
+	    private $UseCookieExceptions = false;
         public $AllowTempAsCookiePath = false;
 
         /** @var null Sets a HTTP_REFERER to the http call */
@@ -631,7 +631,7 @@ if (function_exists('curl_init')) {
          *
          * The default configuration of this method is to run tests, but only for PHP 5.6.0 or higher.
          * If you know that you're running something older you may want to consider enabling testssldeprecated.
-         *
+         * 
          * At first, the variable $testssl is used to automatically try to find out if there is valid certificate bundle installed on the running system. In PHP 5.6.0 and higher
          * this procedure is simplified with the help of openssl_get_cert_locations(), which gives us a default path to installed certificates. In this case we will first look there
          * for the certificate bundle. If we do fail there, or if your system is running something older, the testing are running in guessing mode.
@@ -917,7 +917,7 @@ if (function_exists('curl_init')) {
             $parsedContent = null;
             $testSerialization = null;
             $testJson = @json_decode($content);
-            if (gettype($testJson) === "object") {
+            if (gettype($testJson) === "object" || (!empty($testJson) && is_array($testJson))) {
                 $parsedContent = $testJson;
             } else {
                 if (is_string($content)) {
@@ -1625,9 +1625,9 @@ abstract class CURL_AUTH_TYPES {
 
 /**
  * Class TORNELIB_CURL_ENVIRONMENT
- *
+ * 
  * The unit testing helper. To not collide with production environments, somet settings should only be available while unit testing.
- *
+ * 
  * @package TorneLIB
  */
 abstract class TORNELIB_CURL_ENVIRONMENT {

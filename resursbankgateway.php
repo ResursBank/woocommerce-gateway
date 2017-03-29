@@ -10,7 +10,7 @@
  */
 
 define('RB_WOO_VERSION', "2.0.1");
-define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
+//define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
 define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
 include('functions.php');

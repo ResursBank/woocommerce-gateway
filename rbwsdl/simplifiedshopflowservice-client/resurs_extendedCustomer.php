@@ -38,16 +38,14 @@ class resurs_extendedCustomer extends resurs_customer
     public $additionalData = null;
 
     /**
-     * @param nonEmptyString $governmentId
      * @param address $address
      * @param string $phone
      * @param nonEmptyString $email
-     * @param customerType $type
      * @access public
      */
-    public function __construct($governmentId, $address, $phone, $email, $type)
+    public function __construct($address, $phone, $email)
     {
-      parent::__construct($governmentId, $address, $phone, $email, $type);
+      parent::__construct($address, $phone, $email);
     }
 
 }

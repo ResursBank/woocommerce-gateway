@@ -36,20 +36,16 @@ class resurs_customer
     public $type = null;
 
     /**
-     * @param nonEmptyString $governmentId
      * @param address $address
      * @param string $phone
      * @param nonEmptyString $email
-     * @param customerType $type
      * @access public
      */
-    public function __construct($governmentId, $address, $phone, $email, $type)
+    public function __construct($address, $phone, $email)
     {
-      $this->governmentId = $governmentId;
       $this->address = $address;
       $this->phone = $phone;
       $this->email = $email;
-      $this->type = $type;
     }
 
 }
