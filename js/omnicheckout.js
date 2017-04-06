@@ -1,4 +1,4 @@
-/*! ResursCheckoutJS v0.05 - Generic Reurs Bank iFrame-driver for Resurs Checkout, for catching events in the Resurs Checkout iFrame */
+/*! ResursCheckoutJS v0.06 - Generic Reurs Bank iFrame-driver for Resurs Checkout, for catching events in the Resurs Checkout iFrame */
 
 /*
  * CHANGELOG
@@ -11,7 +11,7 @@
  *
  * Requirements:
  *
- *      - RESURSCHECKOUT_IFRAME_URL needs to be set from your store, to define where events are sent from.
+ *      - RESURSCHECKOUT_IFRAME_URL (OMNICHECKOUT_IFRAME_URL) needs to be set from your store, to define where events are sent from.
  *      - Make sure that shopUrl is sent and matches with the target iFrame URL, when creating the iFrame at API level.
  *      - A html element that holds the iframe
  *
@@ -22,12 +22,12 @@
  * The script is written so that you can put it on a webpage without having it primarily activated (to avoid colliding with other scripts).
  * It utilizes the message handler in the Resurs Checkout iframe, so that you can push an order into the store in the background, as the checkout is completed at Resurs Bank.
  *
- * Events to catch from Resurs Checkout:
+ * Events that this module catches from Resurs Checkout:
  *
- *      omnicheckout:loaded                 - Handled by this script when the iFrame has loaded and is ready
- *      omnicheckout:user-info-change       - Stored until checkout is finished
- *      omnicheckout:payment-method-change  - Stored until checkout is finished
- *      omnicheckout:booking-order          - Passed with necessary customer data to a callback, or dropped if no callback is set
+ *      checkout:loaded                 - Handled by this script when the iFrame has loaded and is ready
+ *      checkout:user-info-change       - Stored until checkout is finished (Data passed to function resursCheckoutCustomerChange if set)
+ *      checkout:payment-method-change  - Stored until checkout is finished
+ *      checkout:booking-order          - Passed with necessary customer data to a callback, or dropped if no callback is set
  *
  *      As Resurs Checkout will rename events in short, please take a look at the variable currentResursEventNamePrefix, if you need to make a quickfix.
  *
@@ -50,15 +50,16 @@
  */
 
 if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined") {
-    var currentResursEventNamePrefix = "omnicheckout";
+    var currentResursEventNamePrefix = "checkout";
     function ResursCheckout() {
         var resursCheckoutElement = "";
         var resursCheckoutFrame = "";
-        var resursCheckoutVersion = "0.05";
+        var resursCheckoutVersion = "0.06";
         var resursCheckoutData = {"paymentMethod": "", "customerData": {}};
         var resursCheckoutDebug = false;
         var resursCheckoutBookingCallback = null;
         var resursCheckoutPurchaseFail = null;
+        var resursCheckoutCustomerChange = null;
         /*
          * If there is an argument, there is something else implemented as the Resurs Checkout-container than the default.
          */
@@ -74,8 +75,8 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
         if (typeof RESURSCHECKOUT_IFRAME_URL !== "undefined") {
             resursCheckoutDomain = RESURSCHECKOUT_IFRAME_URL;
         }
-        if (typeof RESURSCHECKOUT_IFRAME_URL !== "undefined") {
-            resursCheckoutDomain = RESURSCHECKOUT_IFRAME_URL;
+        if (typeof OMNICHECKOUT_IFRAME_URL !== "undefined") {
+            resursCheckoutDomain = OMNICHECKOUT_IFRAME_URL;
         }
         var function_exists = function (functionName) {
             if (typeof functionName === "function") {
@@ -103,6 +104,9 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
             },
             setPurchaseFailCallback: function (eventCallbackSet) {
                 resursCheckoutPurchaseFail = eventCallbackSet;
+            },
+            setCustomerChangedEventCallback: function(eventCallbackSet) {
+                resursCheckoutCustomerChange = eventCallbackSet;
             },
             setDebug: function (activateDebug) {
                 if (activateDebug == 1) {
@@ -175,6 +179,9 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                                             "ssn": eventDataObject.ssn,
                                             "paymentMethod": (typeof resursCheckoutData.paymentMethod !== "undefined" ? resursCheckoutData.paymentMethod : "")
                                         };
+                                        if (typeof resursCheckoutCustomerChange === "function") {
+                                            resursCheckoutCustomerChange(resursCheckoutData);
+                                        }
                                     } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":purchase-failed") {
                                         if (typeof resursCheckoutPurchaseFail === "function") {
                                             resursCheckoutPurchaseFail();
