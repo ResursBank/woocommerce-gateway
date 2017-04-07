@@ -153,12 +153,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         }
-        //woocommerce_update_options($this->oldFormFields);
         update_option($section . "_settings", $saveArray);
     }
 
-    private
-    function getOptionByNamespace($optionKey, $namespace)
+    private function getOptionByNamespace($optionKey, $namespace)
     {
         $useNamespace = $namespace;
         if (!preg_match("/_settings$/i", $namespace)) {
@@ -177,32 +175,29 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnedOption;
     }
 
-    private
-    function getFormSettings($settingKey = '')
+    private function getFormSettings($settingKey = '')
     {
         if (isset($this->oldFormFields[$settingKey])) {
             return $this->oldFormFields[$settingKey];
         }
     }
 
-    private
-    function setCheckBox($settingKey = '', $namespace = 'woocommerce_resurs-bank_settings', $scriptLoader = "")
+    private function setCheckBox($settingKey = '', $namespace = 'woocommerce_resurs-bank_settings', $scriptLoader = "")
     {
-        $properNamesSpace = $namespace;
+        $properNameSpace = $namespace;
         if (!preg_match("/_settings$/", $namespace)) {
-            $properNamesSpace = $namespace . "_settings";
+            $properNameSpace = $namespace . "_settings";
         }
         $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
 
-        if (!issetResursOption($settingKey, $properNamesSpace)) {
+        if (!issetResursOption($settingKey, $properNameSpace)) {
             if (isset($formSettings['default'])) {
                 if ($formSettings['default'] == "false") {
                     $isChecked = false;
                 }
             }
         }
-
 
         $extraInfoMark = "";
         if (isset($formSettings['info']) && !empty($formSettings['info'])) {
@@ -232,7 +227,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnCheckbox;
     }
 
-    private function setHidden($settingKey = '', $namespace = '', $scriptLoader = "") {
+    private function setHidden($settingKey = '', $namespace = '', $scriptLoader = "")
+    {
         $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
         if (empty($UseValue) && isset($formSettings['default'])) {
@@ -327,7 +323,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         name="' . $namespace . '_' . $settingKey . '"
                         id="' . $namespace . '_' . $settingKey . '">
                     ';
-            $savedValue = getResursOption($settingKey);
+            $savedValue = $this->getOptionByNamespace($settingKey, $namespace);
             foreach ($optionsList as $optionKey => $optionValue) {
                 $returnDropDown .= '<option value="' . $optionKey . '" ' . ($optionKey == $savedValue ? "selected" : "") . '>' . $optionValue . '</option>';
             }
@@ -348,8 +344,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $returnDropDown;
     }
 
-    private
-    function setSeparator($separatorTitle = "", $setClass = "configSeparateTitle")
+    private function setSeparator($separatorTitle = "", $setClass = "configSeparateTitle")
     {
         return '<tr><th colspan="2" class="resursConfigSeparator"><div class=" ' . $setClass . '">' . $separatorTitle . '</div></th></tr>';
     }
@@ -358,8 +353,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     /**
      * Primary configuration tab
      */
-    public
-    function resursbank_settings_show()
+    public function resursbank_settings_show()
     {
         $url = admin_url('admin.php');
         $url = add_query_arg('page', $_REQUEST['page'], $url);
@@ -479,7 +473,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             }
                         }
                     } else {
-                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.', 'WC_Payment_Gateway') . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">'. nl2br($paymentMethodsError) . '</div>';
+                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.', 'WC_Payment_Gateway') . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
                     }
 
                     if (isset($this->paymentMethods['error']) && !empty($this->paymentMethods['error'])) {
