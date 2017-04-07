@@ -2425,7 +2425,9 @@ function woocommerce_gateway_resurs_bank_init()
                 'OmniRef' => isset($omniRef) && !empty($omniRef) ? $omniRef : null,
                 'OmniRefCreated' => isset($omniRefCreated) && !empty($omniRefCreated) ? $omniRefCreated : null,
                 'OmniRefAge' => $omniRefAge,
-                'isResursTest' => isResursTest()
+                'isResursTest' => isResursTest(),
+                'useStandardFieldsForShipping' => getResursOption("useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings"),
+                'showResursCheckoutStandardFieldsTest' => getResursOption("showResursCheckoutStandardFieldsTest")
             );
             $setSessionEnable = true;
             $setSession = isset($_REQUEST['set-no-session']) ? $_REQUEST['set-no-session'] : null;
@@ -3376,7 +3378,7 @@ function isResursTest()
  * Only enabled in very specific environments.
  *
  * @return bool
- */
+  */
 function isResursSimulation()
 {
     if (!isResursTest()) {

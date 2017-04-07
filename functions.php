@@ -328,7 +328,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'label' => __('Enable/Disable', 'WC_Payment_Gateway'),
                     'default' => 'false'
-                )
+                ),
+                'showResursCheckoutStandardFieldsTest' => array(
+                    'title' => __('Keep standard customer fields open for Resurs Checkout in test', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('Resurs Checkout Feature: If your plugin is running in test mode, you might want to study the behaviour of the standard customer form fields when communicating with the iframe', 'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
             );
         } else if ($formSectionName == "paymentmethods") {
             //$icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
@@ -412,24 +419,30 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'omniFrameNotReloading' => array(
                     'title' => __('Reload checkout on cart changes', 'WC_Payment_Gateway'),
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __('If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe', 'WC_Payment_Gateway'),
                     'desc_tip' => false,
                 ),
                 'cleanOmniCustomerFields' => array(
                     'title' => __('Remove all default customer fields when loading Omni Checkout iframe', 'WC_Payment_Gateway'),
-                    'type' => 'select',
-                    'options' => array(
-                        'true' => 'true',
-                        'false' => 'false',
-                    ),
+                    'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __('Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected.', 'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'useStandardFieldsForShipping' => array(
+                    'title' => __('Use standard customer fields to update shipping methods when postal code changes (Experimental)', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function.', 'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'showResursCheckoutStandardFieldsTest' => array(
+                    'title' => __('Keep standard customer fields open for Resurs Checkout in test', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('If your plugin is running in test, enable this settings, to not hide the standard form fields', 'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
             );

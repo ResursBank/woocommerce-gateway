@@ -239,14 +239,17 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     public function resurs_omnicheckout_fields($fields)
     {
+        $keepFieldsHidden = getResursOption("useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings");
         //$this->resetOmniCustomerFields = $fields;
         if (isResursOmni() && hasResursOmni()) {
             if (!defined('OMNICHECKOUT_PROCESSPAYMENT')) {
-                if (isset($fields['billing'])) {
-                    $fields['billing'] = array();
-                }
-                if (isset($fields['shipping'])) {
-                    $fields['shipping'] = array();
+                if (!$keepFieldsHidden) {
+                    if (isset($fields['billing'])) {
+                        $fields['billing'] = array();
+                    }
+                    if (isset($fields['shipping'])) {
+                        $fields['shipping'] = array();
+                    }
                 }
                 /*
                  * For omni, to handle shipping, we need to remove all fields, including the "create account"-part
@@ -255,7 +258,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                  * since the behaviour from the themes may act different.
                  */
                 $cleanOmniCustomerFields = ($this->get_option('cleanOmniCustomerFields') == "true" ? 1 : 0);
-                if ($cleanOmniCustomerFields) {
+                if ($cleanOmniCustomerFields && !$keepFieldsHidden) {
                     $fields = array();
                 }
             }

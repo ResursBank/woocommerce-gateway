@@ -153,7 +153,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         }
-
         //woocommerce_update_options($this->oldFormFields);
         update_option($section . "_settings", $saveArray);
     }
@@ -620,9 +619,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setTextBox('description', $namespace);
                     echo $this->setSeparator(__('Checkout', 'WC_Payment_Gateway'));
                     echo $this->setDropDown('iFrameLocation', $namespace);
+                    echo $this->setCheckBox('useStandardFieldsForShipping', $namespace);
                     echo $this->setSeparator(__('Advanced', 'WC_Payment_Gateway'));
-                    echo $this->setDropDown('omniFrameNotReloading', $namespace);
-                    echo $this->setDropDown('cleanOmniCustomerFields', $namespace);
+                    echo $this->setCheckBox('omniFrameNotReloading', $namespace);
+                    echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
                 } else if ($section == "advanced") {
                     echo $this->setSeparator(__('Miscellaneous', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
@@ -638,10 +638,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Testing and development', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('devResursSimulation', $namespace);
                     echo $this->setTextBox('devSimulateSuccessUrl', $namespace);
+                    echo $this->setCheckBox('showResursCheckoutStandardFieldsTest', $namespace);
                     echo $this->setSeparator(__('Special test occasions', 'WC_Payment_Gateway'), 'configSeparateTitleSmall');
                     echo $this->setCheckBox('demoshopMode', $namespace);
 
-                    // TODO: WOO-44
                     /*
                     echo $this->setCheckBox('getAddressUseProduction', $namespace);
                     echo $this->setTextBox('ga_login', $namespace);
@@ -665,7 +665,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                         $this->methodLabel = '<br>' . __('Default title set by Resurs Bank is ', 'WC_Payment_Gateway') . '<b> ' . $methodDescription . '</b>';
                         $curSet = getResursOption('title', $namespace);
-                        echo "Cur TItle $curSet<br>\n";
                         echo $this->setTextBox('title', $namespace);
                         echo $this->setTextBox('description', $namespace);
                         echo $this->setTextBox('price', $namespace);
@@ -686,8 +685,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         <?php
     }
 
-    private
-    function getTaxRatesArray()
+    private function getTaxRatesArray()
     {
         global $wpdb;
         $rate_select = array();
