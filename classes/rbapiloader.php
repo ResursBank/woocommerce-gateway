@@ -255,6 +255,8 @@ class ResursBank
     private $useCertFile = "";
     private $hasDefaultCertFile = false;
     private $openSslGuessed = false;
+    private $obsoletePHP = false;
+    private $allowObsoletePHP = false;
 
     /** @var bool During tests this will be set to true if certificate directory is found */
     private $hasCertDir = false;
@@ -294,6 +296,15 @@ class ResursBank
      */
     private $templateFieldsByMethodResponse = array();
 
+    /**
+     * Allow older/obsolete PHP Versions (Follows the obsolete php versions rules - see the link for more information).
+     *
+     * @param bool $activate
+     * @link https://test.resurs.com/docs/x/TYNM#ECommercePHPLibrary-ObsoletePHPversions
+     */
+    public function setObsoletePhp($activate = false) {
+        $this->allowObsoletePHP = $activate;
+    }
 
     //private $_paymentCart = null;
 
@@ -312,7 +323,6 @@ class ResursBank
         if (defined('RB_API_PATH')) {
             $this->classPath = RB_API_PATH;
         }
-
         if (!class_exists('ReflectionClass')) {
             throw new ResursException("ReflectionClass can not be found", ResursExceptions::CLASS_REFLECTION_MISSING, __FUNCTION__);
         }
@@ -650,9 +660,16 @@ class ResursBank
     /**
      * Find out if we have internal configuration enabled. The config file supports serialized (php) data and json-encoded content, but saves all data serialized.
      * @return bool
+     * @throws ResursException
      */
     private function hasConfiguration()
     {
+        if (version_compare(PHP_VERSION, '5.3.0', "<")) {
+            if (!$this->allowObsoletePHP) {
+                throw new ResursException("PHP 5.3 or later are required for this module to work. If you feel safe with running this with an older version, please see ");
+            }
+        }
+
         /* Internally stored configuration - has to be activated on use */
         if ($this->configurationInternal) {
             if (defined('RB_API_CONFIG') && file_exists(RB_API_CONFIG . "/" . $this->configurationSystem)) {
@@ -2116,45 +2133,35 @@ class ResursBank
         return $canHideSet;
     }
 
-    /**
-     * Get field set rules for web-forms
-     *
-     * $paymentMethodType can be both a string or a object. If it is a object, the function will handle the incoming data as it is the complete payment method
-     * configuration (meaning, data may be cached). In this case, it will take care of the types in the method itself. If it is a string, it will handle the data
-     * as the configuration has already been solved out.
-     *
-     * When building forms for a webshop, a specific number of fields are required to show on screen. This function brings the right fields automatically.
-     * The deprecated flow generates form fields and returns them to the shop owner platform, with the form fields that is required for the placing an order.
-     * It also returns a bunch of regular expressions that is used to validate that the fields is correctly filled in. This function partially emulates that flow,
-     * so the only thing a integrating developer needs to take care of is the html code itself.
-     * @link https://test.resurs.com/docs/x/s4A0 Regular expressions
-     *
-     * @param string|array $paymentMethodName
-     * @param string $customerType
-     * @param string $specificType
-     * @return array
-     */
     public function getTemplateFieldsByMethodType($paymentMethodName = "", $customerType = "", $specificType = "")
     {
         $templateRules = $this->getFormTemplateRules();
         $returnedRules = array();
         $returnedRuleArray = array();
-
-        /* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead */
+        /* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
         if (is_object($paymentMethodName) || is_array($paymentMethodName)) {
-            /** @noinspection PhpUndefinedFieldInspection */
-            if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)])) {
-                //$returnedRuleArray = $templateRules[strtoupper($paymentMethodType->customerType)]['fields'][strtoupper($paymentMethodType->specificType)];
+            if (is_object($paymentMethodName)) {
                 /** @noinspection PhpUndefinedFieldInspection */
-                $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
+                if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)])) {
+                    /** @noinspection PhpUndefinedFieldInspection */
+                    $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
+                }
+            } else if (is_array($paymentMethodName)) {
+                /*
+                 * This should probably not happen and the developers should probably also stick to objects as above.
+                 */
+                if (count($paymentMethodName)) {
+                    if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])])) {
+                        /** @noinspection PhpUndefinedFieldInspection */
+                        $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])];
+                    }
+                }
             }
         } else {
             if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName)])) {
-                //$returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodType)];
                 $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($specificType)];
             }
         }
-
         $returnedRules = array(
             'fields' => $returnedRuleArray,
             'display' => $templateRules['display'],
