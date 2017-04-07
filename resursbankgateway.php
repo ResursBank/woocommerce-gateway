@@ -1381,6 +1381,9 @@ function woocommerce_gateway_resurs_bank_init()
 
         public function prepare_omni_order()
         {
+            /** @var $resursOrder What will be created if successful, and what will report undefined variable if unsuccessful */
+            $resursOrder = null;
+
             /*
              * Get incoming request.
              */

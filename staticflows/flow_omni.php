@@ -58,15 +58,26 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     public function resurs_omnicheckout_form_location()
     {
+        global $resursIframeCount;
+        if (!isset($resursIframeCount)) {
+            $resursIframeCount = 1;
+        }
+        /*
+         * Prevent this iframe to load twice.
+         */
+        if ($resursIframeCount > 1) {
+            return;
+        }
         echo '<div id="omniActions" style="display: none;"></div>';
         echo '<div id="omniInfo"></div>';
         try {
             $frameContent = $this->resurs_omnicheckout_create_frame();
-            echo '<div class="col2-set" id="omni-checkout-container">' . $frameContent . "</div>";
+            echo '<div class="col2-set" id="resurs-checkout-container">' . $frameContent . "</div>";
         } catch (Exception $e) {
             $frameContent = __('We are unable to load Resurs Checkout for the moment. Please try again later.', 'WC_Payment_Gateway');
-            echo '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="omni-checkout-container">' . $frameContent . "<!-- \n".$e->getMessage()." --></div>";
+            echo '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $frameContent . "<!-- \n" . $e->getMessage() . " --></div>";
         }
+        $resursIframeCount++;
     }
 
     /**
@@ -116,7 +127,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         if ($this->iFrameLocation == "inMethods") {
             echo '<div id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
         } else {
-            echo '<div id="resurs-checkout-loader" onchange="alert(\'s\')">' . $this->description . '</div>';
+            echo '<div id="resurs-checkout-loader">' . $this->description . '</div>';
         }
     }
 
@@ -166,7 +177,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             }
         } catch (Exception $e) {
             $errorUnable = __('We are unable to load Resurs Checkout for the moment. Please try again later.', 'WC_Payment_Gateway');
-            $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="omni-checkout-container">' . $errorUnable . "<!-- \n".$e->getMessage()." --></div>";
+            $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $errorUnable . "<!-- \n" . $e->getMessage() . " --></div>";
         }
         return $flowFrame;
     }
@@ -287,7 +298,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 $omniJson = $flow->toJsonByType($updateSpec, ResursMethodTypes::METHOD_OMNI, true);
                 $omniUpdateResponse = $flow->omniUpdateOrder($omniJson, $currentOmniRef);
                 if (isset($omniUpdateResponse['code'])) {
-                    if ($omniUpdateResponse['code'] == 200) {}
+                    if ($omniUpdateResponse['code'] == 200) {
+                    }
                 }
                 return $omniUpdateResponse;
             }
@@ -349,8 +361,16 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         foreach ($cart as $item) {
             $data = $item['data'];
             $_tax = new WC_Tax();//looking for appropriate vat for specific product
-            $rates = array_shift($_tax->get_rates($data->get_tax_class()));
-            $vatPct = (double)$rates['rate'];
+            $rates = array();
+            $taxClass = $data->get_tax_class();
+            if (!empty($taxClass)) {
+                $rates = array_shift($_tax->get_rates($data->get_tax_class()));
+            }
+            if (isset($rates['rate'])) {
+                $vatPct = (double)$rates['rate'];
+            } else {
+                $vatPct = 0;
+            }
             $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
             $setSku = $data->get_sku();
             $bookArtId = $data->id;
@@ -407,7 +427,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         );
         $payment_method = $woocommerce->session->chosen_payment_method;
         $payment_options = get_option('woocommerce_' . $payment_method . '_settings');
-        $payment_fee = get_option('woocommerce_' . $payment_method . '_settings')['price'];
+        //$payment_fee = get_option('woocommerce_' . $payment_method . '_settings')['price'];
+        $payment_fee = getResursOption('price', 'woocommerce_' . $payment_method . '_settings');
         $payment_fee = (float)(isset($payment_fee) ? $payment_fee : '0');
         $payment_fee_tax_class = get_option('woocommerce_resurs-bank_settings')['priceTaxClass'];
         $payment_fee_tax_class_rates = $cart->tax->get_rates($payment_fee_tax_class);
@@ -492,7 +513,13 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected static function calculateSpecLineAmount($specLine = array())
     {
-        $setPaymentSpec = array();
+        /*
+         * Defaults
+         */
+        $setPaymentSpec = array(
+            'totalAmount' => 0,
+            'totalVatAmount' => 0
+        );
         if (is_array($specLine) && count($specLine)) {
             foreach ($specLine as $row) {
                 $setPaymentSpec['totalAmount'] += $row['totalAmount'];

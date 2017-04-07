@@ -68,6 +68,14 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
         } else {
             resursCheckoutElement = "#resurs-checkout-container";
         }
+        if ($RB(resursCheckoutElement).length == 0 && $RB('#omni-checkout-container')) {
+            /*
+             * Fail over to an element that was present in v0.04 but not in v0.05
+             */
+            resursCheckoutElement = "#omni-checkout-container";
+            console.log("Former element of Resurs Checkout is present");
+        }
+
         var resursCheckoutDomain = "";
         /*
          * If RESURSCHECKOUT_IFRAME_URL (RESURSCHECKOUT_IFRAME_URL for compatibility) is set, the script will know where the communication will be. Without this, there may be problems.
