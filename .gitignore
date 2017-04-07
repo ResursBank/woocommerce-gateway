@@ -1,3 +1,4 @@
 .idea
 includes/resurs*
 Makefile
+node_modules
