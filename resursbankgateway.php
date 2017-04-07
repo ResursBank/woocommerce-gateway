@@ -83,7 +83,7 @@ function woocommerce_gateway_resurs_bank_init()
         public function __construct()
         {
             global $current_user, $wpdb, $woocommerce;
-            get_currentuserinfo();
+            wp_get_current_user();
 
             $rates = $wpdb->get_results($wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates
@@ -3303,7 +3303,7 @@ function initializeResursFlow($overrideUser = "", $overridePassword = "", $setEn
         $_SESSION['customTestUrl'] = $initFlow->setTestUrl($_SESSION['customTestUrl']);
     }
     try {
-        get_currentuserinfo();
+        wp_get_current_user();
         if (isset($current_user->user_login)) {
             $initFlow->setLoggedInUser($current_user->user_login);
         }
