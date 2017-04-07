@@ -208,9 +208,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <th scope="row" id="columnLeft' . $settingKey . '">' . $this->oldFormFields[$settingKey]['title'] . " " . $extraInfoMark . '</th>
                     <td id="columnRight' . $settingKey . '">
                     <input type="hidden" name="has_' . $settingKey . '">
-                    <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes" ' . $scriptLoader . '>' . $this->oldFormFields[$settingKey]['label'] . '<br>
+                    <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes" ' . $scriptLoader . '>' . (isset($this->oldFormFields[$settingKey]['label']) ? $this->oldFormFields[$settingKey]['label']: "") . '<br>
                     <br>
-                       <i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
+                       <i>' . (isset($this->oldFormFields[$settingKey]['description']) && !empty($this->oldFormFields[$settingKey]['description']) ? $this->oldFormFields[$settingKey]['description'] : "") . '</i>
                     </td>
                 </tr>
         ';
@@ -257,7 +257,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <th scope="row" ' . $scriptLoader . '>' . $this->oldFormFields[$settingKey]['title'] . '</th>
         ';
 
-        $setLabel = $this->oldFormFields[$settingKey]['label'];
+        $setLabel = isset($this->oldFormFields[$settingKey]['label']) ? $this->oldFormFields[$settingKey]['label'] : "";
         if (!empty($this->methodLabel)) {
             $setLabel = $this->methodLabel;
             $this->methodLabel = null;
@@ -284,7 +284,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 <td style="cursor: pointer;">
                     <span onclick="resursEditProtectedField(this, \'' . $namespace . '\')" id="' . $namespace . '_' . $settingKey . '">' . __('Click to edit', 'WC_Payment_Gateway') . '</span>
                     <span id="' . $namespace . '_' . $settingKey . '_hidden" style="display:none;">
-                        <input ' . $scriptLoader . ' type="text" id="' . $namespace . '_' . $settingKey . '_value" size="64" value=""> ' . $this->oldFormFields[$settingKey]['label'] . '
+                        <input ' . $scriptLoader . ' type="text" id="' . $namespace . '_' . $settingKey . '_value" size="64" value=""> ' . $setLabel . '
                         <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \'' . $namespace . '\', \'' . $scriptLoader . '\')" value="' . __("Save") . '">
                         <br><i>' . $this->oldFormFields[$settingKey]['description'] . '</i>
                     </span><br>

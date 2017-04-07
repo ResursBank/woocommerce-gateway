@@ -2404,7 +2404,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
         $OmniVars = array();
         if (isResursOmni()) {
-            wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js');
+            wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js', array(), RB_WOO_VERSION);
             $omniBookUrl = home_url('/');
             $omniBookUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $omniBookUrl);
             $omniBookUrl = add_query_arg('event-type', 'prepare-omni-order', $omniBookUrl);
@@ -2505,8 +2505,8 @@ function woocommerce_gateway_resurs_bank_init()
             $oneRandomValue = "?randomizeMe=" . rand(1024, 65535);
         }
         $ajaxObject = array('ajax_url' => admin_url('admin-ajax.php'));
-        wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css');
-        wp_enqueue_script('resursbankmain', plugin_dir_url(__FILE__) . 'js/resursbank.js' . $oneRandomValue, array('jquery'));
+        wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css', array(), RB_WOO_VERSION);
+        wp_enqueue_script('resursbankmain', plugin_dir_url(__FILE__) . 'js/resursbank.js' . $oneRandomValue, array('jquery'), RB_WOO_VERSION);
         wp_localize_script('resursbankmain', 'rb_getaddress_fields', $resursLanguageLocalization);
         wp_localize_script('resursbankmain', 'rb_general_translations', $generalJsTranslations);
         wp_localize_script('resursbankmain', 'ajax_object', $ajaxObject);
@@ -2521,16 +2521,17 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function admin_enqueue_script($hook)
     {
-        wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css');
-        wp_enqueue_script('resursBankAdminScript', plugin_dir_url(__FILE__) . 'js/resursbankadmin.js');
+        wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css', array(), RB_WOO_VERSION);
+        wp_enqueue_script('resursBankAdminScript', plugin_dir_url(__FILE__) . 'js/resursbankadmin.js', array(), RB_WOO_VERSION);
 
         if (isset($_REQUEST['section']) && preg_match("/resurs-bank|resurs_bank/i", $_REQUEST['section'])) {
+            // Deprecation of uglification
             /*
              * Let's not use bootstrap on this page
              */
-            if (resursOption("uglifyResursAdmin")) {
+/*            if (resursOption("uglifyResursAdmin")) {
                 wp_enqueue_style("resursAdminBootstrap", "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css");
-            }
+            }*/
         }
 
         $requestForCallbacks = callbackUpdateRequest();
@@ -3146,7 +3147,8 @@ function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings"
         }
     }
 
-    $response = get_option($namespace)[$key];
+    $getResponse = get_option($namespace);
+    $response = isset($getResponse[$key]) ? $getResponse[$key] : "";
 
     if (empty($response)) {
         $response = get_option($key);
@@ -3423,12 +3425,13 @@ function repairResursSimulation($returnRepairState = false)
 function isResursOmni($ignoreActiveFlag = false)
 {
     global $woocommerce;
+    $currentMethod = "";
     if (isset($woocommerce->session)) {
         $currentMethod = $woocommerce->session->get('chosen_payment_method');
     }
     $flowType = resursOption("flowtype");
     $hasOmni = hasResursOmni($ignoreActiveFlag);
-    if (($hasOmni == 1 || $hasOmni === true) && $flowType === $currentMethod) {
+    if (($hasOmni == 1 || $hasOmni === true) && (!empty($currentMethod) && $flowType === $currentMethod)) {
         return true;
     }
     /*
