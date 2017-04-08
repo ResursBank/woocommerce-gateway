@@ -10,8 +10,6 @@
  */
 
 define('RB_WOO_VERSION', "2.0.2");
-//define('RB_API_PATH', dirname(__FILE__) . "/rbwsdl");
-define('INCLUDE_RESURS_OMNI', true);    /* Enable Resurs Bank OmniCheckout as static flow */
 require_once('classes/rbapiloader.php');
 include('functions.php');
 //include('resursbank_settings.php');
@@ -312,7 +310,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             add_action('woocommerce_api_wc_resurs_bank', array($this, 'check_callback_response'));
-            if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
+            if (hasWooCommerce("2.0.0", ">=")) {
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
             } else {
                 add_action('woocommerce_update_options_payment_gateways', array($this, 'process_admin_options'));
@@ -354,7 +352,7 @@ function woocommerce_gateway_resurs_bank_init()
                 unset($this->form_fields['getAddressUseProduction'], $this->form_fields['ga_login'], $this->form_fields['ga_password']);
             }
 
-            if (defined('INCLUDE_RESURS_OMNI') && INCLUDE_RESURS_OMNI !== true && isset($this->form_fields['flowtype']) && isset($this->form_fields['flowtype']['options']) && is_array($this->form_fields['flowtype']['options']) && isset($this->form_fields['flowtype']['options']['resurs_bank_omnicheckout'])) {
+            if (isset($this->form_fields['flowtype']) && isset($this->form_fields['flowtype']['options']) && is_array($this->form_fields['flowtype']['options']) && isset($this->form_fields['flowtype']['options']['resurs_bank_omnicheckout'])) {
                 unset($this->form_fields['flowtype']['options']['resurs_bank_omnicheckout']);
             }
         }
@@ -3021,13 +3019,13 @@ function resurs_remove_order_item($item_id)
     if (null !== $resursFlow) {
         $productId = wc_get_order_item_meta($item_id, '_product_id');
         $productQty = wc_get_order_item_meta($item_id, '_qty');
-        $orderId = wc_get_order_id_by_order_item_id($item_id);
+        $orderId = r_wc_get_order_id_by_order_item_id($item_id);
 
         $resursPaymentId = get_post_meta($orderId, 'paymentId', true);
 
         if (empty($productId)) {
-            $testItemType = wc_get_order_item_type_by_item_id($item_id);
-            $testItemName = wc_get_order_item_type_by_item_id($item_id);
+            $testItemType = r_wc_get_order_item_type_by_item_id($item_id);
+            $testItemName = r_wc_get_order_item_type_by_item_id($item_id);
             if ($testItemType === "shipping") {
                 $clientPaymentSpec[] = array(
                     'artNo' => "00_frakt",
@@ -3234,34 +3232,41 @@ function setResursOption($key = "", $value = "", $configurationSpace = "woocomme
     return false;
 }
 
-/**
- * Get the order id from where a specific item resides
- * @param $item_id
- * @return null|string
- */
-function wc_get_order_id_by_order_item_id($item_id)
-{
-    global $wpdb;
-    $item_id = absint($item_id);
-    $order_id = $wpdb->get_var($wpdb->prepare("SELECT order_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = '%d'", $item_id));
-    return $order_id;
+if (!function_exists('r_wc_get_order_id_by_order_item_id')) {
+    /**
+     * Get the order id from where a specific item resides
+     *
+     * @param $item_id
+     * @return null|string
+     * @since 2.0.2
+     */
+    function r_wc_get_order_id_by_order_item_id($item_id)
+    {
+        global $wpdb;
+        $item_id = absint($item_id);
+        $order_id = $wpdb->get_var($wpdb->prepare("SELECT order_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = '%d'", $item_id));
+        return $order_id;
+    }
 }
-
-/**
- * Get the order item type (or name) by item id
- * @param $item_id
- * @return null|string
- */
-function wc_get_order_item_type_by_item_id($item_id, $getItemName = false)
-{
-    global $wpdb;
-    $item_id = absint($item_id);
-    if (!$getItemName) {
-        $order_item_type = $wpdb->get_var($wpdb->prepare("SELECT order_item_type FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = '%d'", $item_id));
-        return $order_item_type;
-    } else {
-        $order_item_name = $wpdb->get_var($wpdb->prepare("SELECT order_item_name FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = '%d'", $item_id));
-        return $order_item_name;
+if (!function_exists('r_wc_get_order_item_type_by_item_id')) {
+    /**
+     * Get the order item type (or name) by item id
+     *
+     * @param $item_id
+     * @return null|string
+     * @since 2.0.2
+     */
+    function r_wc_get_order_item_type_by_item_id($item_id, $getItemName = false)
+    {
+        global $wpdb;
+        $item_id = absint($item_id);
+        if (!$getItemName) {
+            $order_item_type = $wpdb->get_var($wpdb->prepare("SELECT order_item_type FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = '%d'", $item_id));
+            return $order_item_type;
+        } else {
+            $order_item_name = $wpdb->get_var($wpdb->prepare("SELECT order_item_name FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = '%d'", $item_id));
+            return $order_item_name;
+        }
     }
 }
 
@@ -3579,6 +3584,10 @@ function isResursDemo()
     }
     return false;
 }
-
+function hasWooCommerce($versionRequest = "2.0.0", $operator = ">=") {
+    if (version_compare(WOOCOMMERCE_VERSION, $versionRequest, $operator)) {
+        return true;
+    }
+}
 
 isResursSimulation();

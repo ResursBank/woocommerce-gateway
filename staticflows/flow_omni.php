@@ -371,7 +371,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             } else {
                 $vatPct = 0;
             }
-            $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
+            if (hasWooCommerce("3.0.0", ">=")) {
+                $totalVatAmount = wc_get_price_excluding_tax($data) * ($vatPct / 100);
+            } else {
+                $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
+            }
             $setSku = $data->get_sku();
             $bookArtId = $data->id;
             if (resursOption("useSku") && !empty($setSku)) {
@@ -545,9 +549,7 @@ if (hasResursOmni()) {
             return $methods;
         }
         global $woocommerce;
-        if (defined('INCLUDE_RESURS_OMNI') && INCLUDE_RESURS_OMNI) {
-            $methods[] = "WC_Gateway_ResursBank_Omni";
-        }
+        $methods[] = "WC_Gateway_ResursBank_Omni";
         return $methods;
     }
 
