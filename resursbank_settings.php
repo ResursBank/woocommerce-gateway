@@ -356,9 +356,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public function resursbank_settings_show()
     {
         $url = admin_url('admin.php');
-        $url = add_query_arg('page', $_REQUEST['page'], $url);
-        $url = add_query_arg('tab', $_REQUEST['tab'], $url);
-        $url = add_query_arg('section', $_REQUEST['section'], $url);
+        $url = add_query_arg('page', isset($_REQUEST['page']) ? $_REQUEST['page'] : "", $url);
+        $url = add_query_arg('tab', isset($_REQUEST['tab']) ? $_REQUEST['tab'] : "", $url);
+        $url = add_query_arg('section', isset($_REQUEST['section']) ? $_REQUEST['section'] : "", $url);
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         $namespace = $this->CONFIG_NAMESPACE;
 
