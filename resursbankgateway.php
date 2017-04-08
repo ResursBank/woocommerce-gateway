@@ -2575,6 +2575,9 @@ function woocommerce_gateway_resurs_bank_init()
             $_SESSION['resurs_bank_admin_notice']['type'] = 'resurswoo_phpversion_deprecated';
         }
 
+        if (!isset($_REQUEST['section'])) {
+            return;
+        }
         if ('wc_resurs_bank' !== $_REQUEST['section']) {
             return;
         }
