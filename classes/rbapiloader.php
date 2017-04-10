@@ -1619,7 +1619,17 @@ class ResursBank
                 /* Start collect the parameters needed for the callback (manually if necessary - otherwise, we'll catch the parameters from our defaults as described at https://test.resurs.com/docs/x/LAAF) */
                 $parameterArray = array();
 
-                if (isset($callbackDigest['digestParameters']) && ((is_array($callbackDigest['digestParameters']) && !count($callbackDigest['digestParameters'])) || empty($callbackDigest['digestParameters']))) {
+                /*
+                 * Make sure the digest parameters exists, and fill them in if the array exists but is empty
+                 */
+                if (isset($callbackDigest['digestParameters'])) {
+                    if (((is_array($callbackDigest['digestParameters']) && !count($callbackDigest['digestParameters'])) || empty($callbackDigest['digestParameters']))) {
+                        $callbackDigest['digestParameters'] = $this->getCallbackTypeParameters($callbackType);
+                    }
+                } else {
+                    /*
+                     * Make sure that the parameter array is set if it does not exist at all
+                     */
                     $callbackDigest['digestParameters'] = $this->getCallbackTypeParameters($callbackType);
                 }
 
