@@ -446,6 +446,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 setResursOption("serverEnv", $envVal);
                             }
                             $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
+                            set_transient('resurs_bank_last_callback_setup', 0);
                             $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated', 'WC_Payment_Gateway') . '</div><br><br>';
                         }
                     }
@@ -769,6 +770,7 @@ function woocommerce_gateway_resurs_bank_init()
                 } else {
                     $uriTemplate .= '&digest={digest}';
                 }
+                $uriTemplate .= '&ts=' . strftime("%y%m%d%H%M", time());
 
                 //$uriTemplate = str_replace('/&/', '&', $uriTemplate);
 
