@@ -409,9 +409,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setHidden('title', $namespace);
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
                     echo $this->setSeparator(__('API Settings', 'WC_Payment_Gateway'));
-                    echo $this->setDropDown('serverEnv', $namespace);
                     echo $this->setDropDown('flowtype', $namespace);
                     echo $this->setDropDown('country', $namespace, null, "onchange=adminResursChangeFlowByCountry(this)");
+                    echo $this->setDropDown('serverEnv', $namespace);
                     echo $this->setTextBox('login', $namespace, 'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
                     echo $this->setSeparator(__('Callbacks', 'WC_Payment_Gateway')); // , "configSeparateTitleSmall"
