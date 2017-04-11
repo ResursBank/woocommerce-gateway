@@ -62,22 +62,24 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         if (!isset($resursIframeCount)) {
             $resursIframeCount = 1;
         }
-        /*
-         * Prevent this iframe to load twice.
-         */
+        $frameDisplay = "";
+        // Prevent this iframe to load twice (cheat mode for some templates)
         if ($resursIframeCount > 1) {
             return;
         }
+        // Actions and info for Resurs Checkout that invokes on last-resorts (legacy)
         echo '<div id="omniActions" style="display: none;"></div>';
         echo '<div id="omniInfo"></div>';
+
+        // Prepare the frame
         try {
-            $frameContent = $this->resurs_omnicheckout_create_frame();
-            echo '<div class="col2-set" id="resurs-checkout-container">' . $frameContent . "</div>";
+            $frameDisplay .= '<div class="col2-set" id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
         } catch (Exception $e) {
             $frameContent = __('We are unable to load Resurs Checkout for the moment. Please try again later.', 'WC_Payment_Gateway');
-            echo '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $frameContent . "<!-- \n" . $e->getMessage() . " --></div>";
+            $frameDisplay .= '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $frameContent . "<!-- \n" . $e->getMessage() . " --></div>";
         }
         $resursIframeCount++;
+        echo $frameDisplay;
     }
 
     /**
