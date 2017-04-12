@@ -88,7 +88,7 @@ function resursEditProtectedField(currentField, ns) {
                     $RB('#' + currentField.id + "_value").val(data["response"]);
                 }
             }
-            resursProtectedFieldToggle(currentField.id);
+            resursProtectedFieldToggle(currentField.id, "show");
         }
     ).fail(function (x, y) {
         alert("Fail (" + x + ", " + y + ")");
@@ -163,8 +163,19 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
     });
 }
 function resursProtectedFieldToggle(currentField) {
-    $RB('#' + currentField).toggle("medium");
-    $RB('#' + currentField + "_hidden").toggle("medium");
+    if (typeof arguments[1] !== "undefined") {
+        if (arguments[1] === "show") {
+            $RB('#' + currentField).hide("medium");
+            $RB('#' + currentField + "_hidden").show("medium");
+        }
+        if (arguments[1] === "hide") {
+            $RB('#' + currentField).show("medium");
+            $RB('#' + currentField + "_hidden").hide("medium");
+        }
+    } else {
+        $RB('#' + currentField).toggle("medium");
+        $RB('#' + currentField + "_hidden").toggle("medium");
+    }
 }
 function runResursAdminCallback(callbackName) {
     var setArg;
