@@ -366,8 +366,12 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $rates = array();
             $taxClass = $data->get_tax_class();
             if (!empty($taxClass)) {
-                $rates = array_shift($_tax->get_rates($data->get_tax_class()));
+                $rates = array_shift($_tax->get_rates($taxClass));
+            } else {
+                // When rates is not returning anything in the primary tax class
+                //$rates = array_shift($_tax->get_rates());
             }
+
             if (isset($rates['rate'])) {
                 $vatPct = (double)$rates['rate'];
             } else {

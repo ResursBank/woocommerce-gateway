@@ -32,6 +32,7 @@ if (!function_exists('getResursWooFormFields')) {
     {
         global $wpdb, $woocommerce;
 
+        $returnArray = array();
         $hasForcedSection = false;
         $forcedSection = "";
         /*
