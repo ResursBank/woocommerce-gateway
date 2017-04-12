@@ -365,22 +365,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $_tax = new WC_Tax();//looking for appropriate vat for specific product
             $rates = array();
             $taxClass = $data->get_tax_class();
-            if (!empty($taxClass)) {
-                $rates = array_shift($_tax->get_rates($taxClass));
-            } else {
-                // When rates is not returning anything in the primary tax class
-                //$rates = array_shift($_tax->get_rates());
-            }
-
+            $rates = @array_shift($_tax->get_rates($taxClass));
             if (isset($rates['rate'])) {
                 $vatPct = (double)$rates['rate'];
             } else {
                 $vatPct = 0;
-            }
-            if (hasWooCommerce("3.0.0", ">=")) {
-                $totalVatAmount = wc_get_price_excluding_tax($data) * ($vatPct / 100);
-            } else {
-                $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
             }
             $setSku = $data->get_sku();
             $bookArtId = $data->id;
