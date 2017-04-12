@@ -371,6 +371,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             } else {
                 $vatPct = 0;
             }
+            $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
             $setSku = $data->get_sku();
             $bookArtId = $data->id;
             if (resursOption("useSku") && !empty($setSku)) {

@@ -835,8 +835,14 @@ function woocommerce_gateway_resurs_bank_init()
             foreach ($cart as $item) {
                 $data = $item['data'];
                 $_tax = new WC_Tax();//looking for appropriate vat for specific product
-                $rates = array_shift($_tax->get_rates($data->get_tax_class()));
-                $vatPct = (double)$rates['rate'];
+                $rates = array();
+                $taxClass = $data->get_tax_class();
+                $rates = @array_shift($_tax->get_rates($taxClass));
+                if (isset($rates['rate'])) {
+                    $vatPct = (double)$rates['rate'];
+                } else {
+                    $vatPct = 0;
+                }
                 $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
                 $setSku = $data->get_sku();
                 $bookArtId = $data->id;
@@ -890,8 +896,7 @@ function woocommerce_gateway_resurs_bank_init()
                 'totalAmount' => $shipping_total,
             );
             $payment_method = $woocommerce->session->chosen_payment_method;
-            $payment_options = get_option('woocommerce_' . $payment_method . '_settings');
-            $payment_fee = get_option('woocommerce_' . $payment_method . '_settings')['price'];
+            $payment_fee = getResursOption('price', 'woocommerce_' . $payment_method . '_settings');
             $payment_fee = (float)(isset($payment_fee) ? $payment_fee : '0');
             $payment_fee_tax_class = get_option('woocommerce_resurs-bank_settings')['priceTaxClass'];
             $payment_fee_tax_class_rates = $cart->tax->get_rates($payment_fee_tax_class);
@@ -908,7 +913,6 @@ function woocommerce_gateway_resurs_bank_init()
             $ResursFeeName = "";
             $fees = $cart->get_fees();
             if (is_array($fees)) {
-                //$resursPriceDescription = sanitize_title($payment_options['priceDescription']);
                 foreach ($fees as $fee) {
                     /*
                      * Ignore this fee if it matches the Resurs description.
@@ -974,7 +978,7 @@ function woocommerce_gateway_resurs_bank_init()
          */
         protected static function calculateSpecLineAmount($specLine = array())
         {
-            $setPaymentSpec = array();
+            $setPaymentSpec = array('totalAmount' => 0, 'totalVatAmount' => 0); // defaults
             if (is_array($specLine) && count($specLine)) {
                 foreach ($specLine as $row) {
                     $setPaymentSpec['totalAmount'] += $row['totalAmount'];
