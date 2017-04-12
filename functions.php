@@ -494,6 +494,7 @@ if (is_admin()) {
 		public function __construct()
 		{
 		    \$this->hasErrors = false;
+		    \$this->forceDisable = false;
 			\$this->id           = '{$class_name}';
 			\$this->id_short           = '{$payment_method->id}';
 			\$this->has_icon();
@@ -519,7 +520,13 @@ if (is_admin()) {
     			} catch (Exception \$realTimeException) {
     			    \$this->hasErrors = true;
     			}
-			    \$this->title = \$realTimePaymentMethod->description;
+    			if (!isset(\$realTimePaymentMethod->id)) {
+    			    \$this->hasErrors = true;
+    			    \$this->forceDisable = true;
+    			}
+    			if (isset(\$realTimePaymentMethod->description)) {
+                    \$this->title = \$realTimePaymentMethod->description;
+                }
 			}
 
 			\$this->description = \$this->get_option( 'description' );
@@ -799,7 +806,7 @@ EOT;
             $path = plugin_dir_path(__FILE__) . '/includes/' . $class_name . '.php';
             $path = str_replace('//', '/', $path);
 
-            file_put_contents($path, $class);
+            @file_put_contents($path, $class);
         }
     }
 

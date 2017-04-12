@@ -167,7 +167,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         if (hasResursOptionValue($optionKey, $useNamespace)) {
             $returnedOption = getResursOption($optionKey, $useNamespace);
         } else {
-            $fetchOption = $this->oldFormFields[$optionKey];
+            $fetchOption = isset($this->oldFormFields[$optionKey]) ? $this->oldFormFields[$optionKey] : null;
             if (isset($fetchOption['default'])) {
                 $returnedOption = $fetchOption['default'];
             }
@@ -351,10 +351,49 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
 
     /**
+     * @param $temp_class_files
+     */
+    private function UnusedPaymentClassesCleanup($temp_class_files)
+    {
+        $allIncludes = array();
+        $path = plugin_dir_path(__FILE__) . 'includes/';
+        foreach (glob(plugin_dir_path(__FILE__) . 'includes/*.php') as $filename) {
+            $allIncludes[] = str_replace($path, '', $filename);
+        }
+        if (is_array($temp_class_files)) {
+            foreach ($allIncludes as $exclude) {
+                if (!in_array($exclude, $temp_class_files)) {
+                    @unlink($path . $exclude);
+                }
+            }
+        }
+    }
+
+    /**
+     * Make sure our settings can be written in the file system
+     * @return bool
+     */
+    private function canWrite() {
+        $path = plugin_dir_path(__FILE__) . 'includes/';
+        $filename = $path . "this" . rand(1000,9999);
+
+        @file_put_contents($filename, null);
+        if (file_exists($filename)) {
+            @unlink($filename);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Primary configuration tab
      */
     public function resursbank_settings_show()
     {
+        if (!$this->canWrite()) {
+            echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('This plugin needs read/write access to the includes directory located in the path of the plugin or it will not be able to save the payment method configuration.', 'WC_Payment_Gateway') . '</div>';
+            return;
+        }
         $url = admin_url('admin.php');
         $url = add_query_arg('page', isset($_REQUEST['page']) ? $_REQUEST['page'] : "", $url);
         $url = add_query_arg('tab', isset($_REQUEST['tab']) ? $_REQUEST['tab'] : "", $url);
@@ -372,11 +411,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         $methodDescription = "";
         $paymentMethodsError = null;
-
+        $class_files = array();
         try {
             if (!preg_match("/^resurs_bank_nr/i", $section)) {
                 $this->paymentMethods = $this->flow->getPaymentMethods();
-                //set_transient('resurs_bank_payment_methods', $this->paymentMethods);
+
+                if (is_array($this->paymentMethods)) {
+                    foreach ($this->paymentMethods as $methodLoop) {
+                        $class_files[] = $methodLoop->id;
+                    }
+                }
+                $this->UnusedPaymentClassesCleanup($class_files);
+
             } else {
                 $theMethod = preg_replace("/^resurs_bank_nr_(.*?)/", '$1', $section);
                 $this->paymentMethods = $this->flow->getPaymentMethodSpecific($theMethod);
