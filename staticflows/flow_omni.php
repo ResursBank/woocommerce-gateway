@@ -417,7 +417,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $spec_lines[] = array(
             'id' => 'frakt',
             'artNo' => '00_frakt',
-            'description' => 'Frakt',
+            'description' => __('Shipping', 'WC_Payment_Gateway'),
             'quantity' => '1',
             'unitMeasure' => 'st',
             'unitAmountWithoutVat' => $shipping,

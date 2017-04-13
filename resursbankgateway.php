@@ -887,7 +887,7 @@ function woocommerce_gateway_resurs_bank_init()
             $spec_lines[] = array(
                 'id' => 'frakt',
                 'artNo' => '00_frakt',
-                'description' => 'Frakt',
+                'description' => __('Shipping', 'WC_Payment_Gateway'),
                 'quantity' => '1',
                 'unitMeasure' => 'st',
                 'unitAmountWithoutVat' => $shipping,
