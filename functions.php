@@ -744,7 +744,7 @@ if (is_admin()) {
 			if (isset(\$_REQUEST)) {
 				if (\$_REQUEST['payment_method'] === '{$class_name}') {
 					\$payment_method = \$_REQUEST['payment_method'];
-					\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
+					\$payment_fee = getResursOption('price', 'woocommerce_' . \$payment_method . '_settings');
 					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
 					//\$payment_fee_tax_pct = (float)get_option( 'woocommerce_resurs-bank_settings' )['pricePct'];
 					\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
