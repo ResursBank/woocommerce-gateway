@@ -874,7 +874,7 @@ function woocommerce_gateway_resurs_bank_init()
         {
             global $woocommerce;
 
-            //$payment_fee_tax_pct = 0;   // TODO: Figure out this legacy variable, that was never initialized.
+	        $payment_fee_tax_pct = (float)getResursOption('pricePct');
             $spec_lines = self::get_spec_lines($cart->get_cart());
             $shipping = (float)$cart->shipping_total;
             $shipping_tax = (float)$cart->shipping_tax_total;

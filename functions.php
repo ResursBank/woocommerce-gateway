@@ -719,8 +719,8 @@ if (is_admin()) {
 					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
 
 					//\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
-					//\$payment_fee_tax_pct = (float)get_option( 'woocommerce_resurs-bank_settings' )['pricePct'];
-					//\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
+					\$payment_fee_tax_pct = (float)getResursOption('pricePct');
+					\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
 
 					\$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
 
@@ -746,9 +746,9 @@ if (is_admin()) {
 					\$payment_method = \$_REQUEST['payment_method'];
 					\$payment_fee = getResursOption('price', 'woocommerce_' . \$payment_method . '_settings');
 					\$payment_fee = (float)( isset( \$payment_fee ) ? \$payment_fee : '0' );
-					//\$payment_fee_tax_pct = (float)get_option( 'woocommerce_resurs-bank_settings' )['pricePct'];
-					//\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
-					//\$payment_fee_tax = (float)\$payment_fee * ( \$payment_fee_tax_pct / 100 );
+					\$payment_fee_tax_pct = (float)getResursOption('pricePct');
+					\$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
+					\$payment_fee_tax = (float)\$payment_fee * ( \$payment_fee_tax_pct / 100 );
 
 					\$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
 
