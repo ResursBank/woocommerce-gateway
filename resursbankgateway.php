@@ -1367,7 +1367,10 @@ function woocommerce_gateway_resurs_bank_init()
         public function getTransientMethod($methodId = '')
         {
             //$methodList = get_transient('resurs_bank_payment_methods');
-            $methodList = $this->flow->getPaymentMethods();
+	        if (empty($this->flow)) {
+		        $this->flow = initializeResursFlow();
+	        }
+	        $methodList = $this->flow->getPaymentMethods();
             if (is_array($methodList)) {
                 foreach ($methodList as $methodArray) {
                     if (strtolower($methodArray->id) == strtolower($methodId)) {
@@ -2530,16 +2533,6 @@ function woocommerce_gateway_resurs_bank_init()
     {
         wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css', array(), RB_WOO_VERSION);
         wp_enqueue_script('resursBankAdminScript', plugin_dir_url(__FILE__) . 'js/resursbankadmin.js', array(), RB_WOO_VERSION);
-
-        if (isset($_REQUEST['section']) && preg_match("/resurs-bank|resurs_bank/i", $_REQUEST['section'])) {
-            // Deprecation of uglification
-            /*
-             * Let's not use bootstrap on this page
-             */
-/*            if (resursOption("uglifyResursAdmin")) {
-                wp_enqueue_style("resursAdminBootstrap", "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css");
-            }*/
-        }
 
         $requestForCallbacks = callbackUpdateRequest();
 

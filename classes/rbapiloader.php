@@ -1596,6 +1596,8 @@ class ResursBank
         }
         $confirmCallbackResult = false;
 
+        if (isset($callbackDigest) && !is_array($callbackDigest)) { $callbackDigest = array(); }
+
         if (count($renderCallback) && $renderCallback['eventType'] != "" && !empty($callbackUriTemplate)) {
             /** @noinspection PhpParamsInspection */
             $registerCallbackClass = new resurs_registerEventCallback($renderCallback['eventType'], $callbackUriTemplate);
