@@ -530,6 +530,9 @@ if (is_admin()) {
 			}
 
 			\$this->description = \$this->get_option( 'description' );
+			if (empty(\$this->description)) {
+			    \$this->description = \$this->title;
+			}
 
 			if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
 				add_action( 'woocommerce_update_options_payment_gateways_' . \$this->id, array( \$this, 'process_admin_options' ) );
