@@ -681,9 +681,11 @@ function woocommerce_gateway_resurs_bank_init()
 			    case 'TEST':
 				    break;
 			    case 'ANNULMENT':
-				    update_post_meta($order->id, 'hasAnnulment', 1);
+				    update_post_meta((!isWooCommerce3()?$order->id:$order->get_id()), 'hasAnnulment', 1);
 				    $order->update_status('cancelled');
-				    $order->cancel_order(__('ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway'));
+				    if (!isWooCommerce3()) {
+					    $order->cancel_order( __( 'ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway' ) );
+				    }
 				    /*
 					 * Send hooks to thirdparties after handled self, in case of issues with the hook.
 					 */
@@ -1825,7 +1827,12 @@ function woocommerce_gateway_resurs_bank_init()
                 $getRedirectUrl = $woocommerce->cart->get_cart_url();
             }
 
-            $hasAnnulment = get_post_meta($order->id, "hasAnnulment", true);
+            if (!isWooCommerce3()) {
+	            $hasAnnulment = get_post_meta( $order->id, "hasAnnulment", true );
+            } else {
+	            $hasAnnulment = get_post_meta( $order->get_id(), "hasAnnulment", true );
+
+            }
             if (!$getRedirectUrl || $hasAnnulment == "1") {
                 $getRedirectUrl = $woocommerce->cart->get_cart_url();
             }
@@ -2221,7 +2228,11 @@ function woocommerce_gateway_resurs_bank_init()
             $order = new WC_Order($order_id);
             $payment_method = $order->payment_method;
 
-            $payment_id = get_post_meta($order->id, 'paymentId', true);
+            if (!isWooCommerce3()) {
+	            $payment_id = get_post_meta( $order->id, 'paymentId', true );
+            } else {
+	            $payment_id = get_post_meta( $order->get_id(), 'paymentId', true );
+            }
             if (false === (boolean)preg_match('/resurs_bank/', $payment_method)) {
                 return;
             }
@@ -2786,7 +2797,11 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
 
     $orderInfoShown = true;
     $renderedResursData = '';
-    $resursPaymentId = get_post_meta($order->id, 'paymentId', true);
+    if (!isWooCommerce3()) {
+	    $resursPaymentId = get_post_meta( $order->id, 'paymentId', true );
+    } else {
+	    $resursPaymentId = get_post_meta( $order->get_id(), 'paymentId', true );
+    }
     //if (is_object($order) && preg_match("/^resurs_bank/i", $order->payment_method)) {
     if (!empty($resursPaymentId)) {
         $hasError = "";
@@ -2866,7 +2881,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : "";
                 $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : "") . " " . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : "") . "\n";
             }
-            ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentId, $order->id);
+            ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentId, !isWooCommerce3() ? $order->id : $order->get_id());
             $renderedResursData .= '
                 <br>
                 <fieldset>
