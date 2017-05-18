@@ -371,22 +371,25 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             } else {
                 $vatPct = 0;
             }
-            $totalVatAmount = ($data->get_price_excluding_tax() * ($vatPct / 100));
+
+            $priceExTax = (!isWooCommerce3() ? $data->get_price_excluding_tax() : wc_get_price_excluding_tax($data));
+            $totalVatAmount = ( $priceExTax * ( $vatPct / 100 ) );
             $setSku = $data->get_sku();
-            $bookArtId = $data->id;
-            if (resursOption("useSku") && !empty($setSku)) {
-                $bookArtId = $setSku;
-            }
+            $bookArtId = !isWooCommerce3() ? $data->id : $data->get_id();
+	        $postTitle = !isWooCommerce3() ? $data->post->post_title : $data->get_title();
+	        if (resursOption("useSku") && !empty($setSku)) {
+		        $bookArtId = $setSku;
+	        }
             $spec_lines[] = array(
-                'id' => $data->id,
+                'id' => $bookArtId,
                 'artNo' => $bookArtId,
-                'description' => (empty($data->post->post_title) ? 'Beskrivning' : $data->post->post_title),
+                'description' => (empty($postTitle) ? __('Article description missing', 'WC_Payment_Gateway') : $postTitle),
                 'quantity' => $item['quantity'],
                 'unitMeasure' => 'st',
-                'unitAmountWithoutVat' => $data->get_price_excluding_tax(),
+                'unitAmountWithoutVat' => $priceExTax,
                 'vatPct' => $vatPct,
-                'totalVatAmount' => ($data->get_price_excluding_tax() * ($vatPct / 100)),
-                'totalAmount' => (($data->get_price_excluding_tax() * $item['quantity']) + ($totalVatAmount * $item['quantity'])),
+                'totalVatAmount' => ($priceExTax * ($vatPct / 100)),
+                'totalAmount' => (($priceExTax * $item['quantity']) + ($totalVatAmount * $item['quantity'])),
             );
         }
         return $spec_lines;
@@ -431,8 +434,15 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $payment_fee = getResursOption('price', 'woocommerce_' . $payment_method . '_settings');
         $payment_fee = (float)(isset($payment_fee) ? $payment_fee : '0');
         $payment_fee_tax_class = get_option('woocommerce_resurs-bank_settings')['priceTaxClass'];
-        $payment_fee_tax_class_rates = $cart->tax->get_rates($payment_fee_tax_class);
-        $payment_fee_tax = $cart->tax->calc_tax($payment_fee, $payment_fee_tax_class_rates, false, true);
+        if (!hasWooCommerce("2.3", ">=")) {
+	        $payment_fee_tax_class_rates = $cart->tax->get_rates( $payment_fee_tax_class );
+	        $payment_fee_tax = $cart->tax->calc_tax($payment_fee, $payment_fee_tax_class_rates, false, true);
+        } else {
+            // ->tax has been deprecated since WC 2.3
+	        $payment_fee_tax_class_rates = WC_Tax::get_rates($payment_fee_tax_class);
+	        $payment_fee_tax = WC_Tax::calc_tax($payment_fee, $payment_fee_tax_class_rates, false, true);
+        }
+
         $payment_fee_total_tax = 0;
         foreach ($payment_fee_tax as $value) {
             $payment_fee_total_tax = $payment_fee_total_tax + $value;
