@@ -1771,10 +1771,9 @@ class Tornevall_cURL {
 				curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 0 );
 				curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
 			} else {
-				/*
-                 * Keeping compatibility by running with 1 before curl 7.28.1 as we don't know when this option was really changed.
-                 */
-				if ( version_compare( $this->CurlVersion, '7.28.1', '>=' ) ) {
+                                // Keeping compatibility by running with 1 before curl 7.28.1 as we don't know when this option was really changed.
+                                // This warning occurs in libcurl 7.22.0, wo we can without any risk lower the version check to 7.22.0
+				if ( version_compare( $this->CurlVersion, '7.22.0', '>=' ) ) {
 					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 2 );
 				} else {
 					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 1 );

@@ -367,14 +367,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	private function canWrite() {
 		$path     = plugin_dir_path( __FILE__ ) . 'includes/';
 		$filename = $path . "this" . rand( 1000, 9999 );
-
 		@file_put_contents( $filename, null );
 		if ( file_exists( $filename ) ) {
 			@unlink( $filename );
 
 			return true;
 		}
-
 		return false;
 	}
 
@@ -384,7 +382,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	public function resursbank_settings_show() {
 		if ( ! $this->canWrite() ) {
 			echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __( 'This plugin needs read/write access to the includes directory located in the path of the plugin or it will not be able to save the payment method configuration.', 'WC_Payment_Gateway' ) . '</div>';
-
 			return;
 		}
 		$url       = admin_url( 'admin.php' );
@@ -652,7 +649,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					echo $this->setTextBox( 'description', $namespace );
 					echo $this->setSeparator( __( 'Checkout', 'WC_Payment_Gateway' ) );
 					echo $this->setDropDown( 'iFrameLocation', $namespace );
-					echo $this->setCheckBox( 'useStandardFieldsForShipping', $namespace );
+					// This is reserved for future use, so we won't touch this for now
+					//echo $this->setCheckBox( 'useStandardFieldsForShipping', $namespace );
 					echo $this->setSeparator( __( 'Advanced', 'WC_Payment_Gateway' ) );
 					echo $this->setCheckBox( 'omniFrameNotReloading', $namespace );
 					echo $this->setCheckBox( 'cleanOmniCustomerFields', $namespace );

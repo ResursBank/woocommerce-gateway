@@ -629,10 +629,12 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			if ( $event_type === 'check_signing_response' ) {
 				$this->check_signing_response();
+
 				return;
 			}
 			if ( $event_type === "prepare-omni-order" ) {
 				$this->prepare_omni_order();
+
 				return;
 			}
 
@@ -758,6 +760,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 *
 		 * @param  string $type The callback type to be registered
 		 * @param  array $options The parameters for the SOAP request
+		 *
 		 * @return bool|mixed|string|void
 		 * @throws Exception
 		 */
@@ -795,6 +798,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			} catch ( Exception $e ) {
 				throw new Exception( $e );
 			}
+
 			return $uriTemplate;
 		}
 
@@ -2464,13 +2468,15 @@ function woocommerce_gateway_resurs_bank_init() {
 			$omniRefAge     = intval( WC()->session->get( 'omniRefAge' ) );
 
 			$OmniVars         = array(
-				'RESURSCHECKOUT_IFRAME_URL' => $OmniUrl,
-				'RESURSCHECKOUT'            => home_url(),
-				'OmniPreBookUrl'            => $omniBookNonce,
-				'OmniRef'                   => isset( $omniRef ) && ! empty( $omniRef ) ? $omniRef : null,
-				'OmniRefCreated'            => isset( $omniRefCreated ) && ! empty( $omniRefCreated ) ? $omniRefCreated : null,
-				'OmniRefAge'                => $omniRefAge,
-				'isResursTest'              => isResursTest()
+				'RESURSCHECKOUT_IFRAME_URL'            => $OmniUrl,
+				'RESURSCHECKOUT'                       => home_url(),
+				'OmniPreBookUrl'                       => $omniBookNonce,
+				'OmniRef'                              => isset( $omniRef ) && ! empty( $omniRef ) ? $omniRef : null,
+				'OmniRefCreated'                       => isset( $omniRefCreated ) && ! empty( $omniRefCreated ) ? $omniRefCreated : null,
+				'OmniRefAge'                           => $omniRefAge,
+				'isResursTest'                         => isResursTest(),
+				'useStandardFieldsForShipping'         => getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" ),
+				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" )
 			);
 			$setSessionEnable = true;
 			$setSession       = isset( $_REQUEST['set-no-session'] ) ? $_REQUEST['set-no-session'] : null;
