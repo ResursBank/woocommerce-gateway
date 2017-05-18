@@ -86,7 +86,8 @@ function woocommerce_gateway_resurs_bank_init()
             if (function_exists('wp_get_current_user')) {
 	            wp_get_current_user();
             } else {
-            	get_currentuserinfo();
+	            /** @noinspection PhpDeprecationInspection */
+	            get_currentuserinfo();
             }
 
             /*
@@ -681,7 +682,9 @@ function woocommerce_gateway_resurs_bank_init()
 			    case 'TEST':
 				    break;
 			    case 'ANNULMENT':
-				    update_post_meta((!isWooCommerce3()?$order->id:$order->get_id()), 'hasAnnulment', 1);
+			    	/** @noinspection annotation */
+				    //update_post_meta((!isWooCommerce3()?$order->id:$order->get_id()), 'hasAnnulment', 1);
+				    update_post_meta($order->get_id(), 'hasAnnulment', 1);
 				    $order->update_status('cancelled');
 				    if (!isWooCommerce3()) {
 					    $order->cancel_order( __( 'ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway' ) );
@@ -1827,12 +1830,8 @@ function woocommerce_gateway_resurs_bank_init()
                 $getRedirectUrl = $woocommerce->cart->get_cart_url();
             }
 
-            if (!isWooCommerce3()) {
-	            $hasAnnulment = get_post_meta( $order->id, "hasAnnulment", true );
-            } else {
-	            $hasAnnulment = get_post_meta( $order->get_id(), "hasAnnulment", true );
-
-            }
+	        //$hasAnnulment = get_post_meta( $order->id, "hasAnnulment", true );
+	        $hasAnnulment = get_post_meta( $order->get_id(), "hasAnnulment", true );
             if (!$getRedirectUrl || $hasAnnulment == "1") {
                 $getRedirectUrl = $woocommerce->cart->get_cart_url();
             }
@@ -2228,11 +2227,8 @@ function woocommerce_gateway_resurs_bank_init()
             $order = new WC_Order($order_id);
             $payment_method = $order->payment_method;
 
-            if (!isWooCommerce3()) {
-	            $payment_id = get_post_meta( $order->id, 'paymentId', true );
-            } else {
-	            $payment_id = get_post_meta( $order->get_id(), 'paymentId', true );
-            }
+            //$payment_id = get_post_meta( $order->id, 'paymentId', true );
+	        $payment_id = get_post_meta( $order->get_id(), 'paymentId', true );
             if (false === (boolean)preg_match('/resurs_bank/', $payment_method)) {
                 return;
             }
