@@ -353,7 +353,7 @@ abstract class TorneLIB_Network_IP {
  * Versioning are based on TorneLIB v5, but follows its own standards in the chain.
  *
  * @package TorneLIB
- * @version 5.0.0/2017.4
+ * @version 5.0.0/2017.1
  * @link https://phpdoc.tornevall.net/TorneLIBv5/source-class-TorneLIB.Tornevall_cURL.html PHPDoc/Staging - Tornevall_cURL
  * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
  * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
@@ -369,11 +369,11 @@ class Tornevall_cURL {
 	private $NETWORK;
 
 	/** @var string Internal version that is being used to find out if we are running the latest version of this library */
-	private $TorneCurlVersion = "5.0.0/2017.4";
+	private $TorneCurlVersion = "5.0.0/2017.1";
 	private $CurlVersion = null;
 
 	/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-	private $TorneCurlRelease = "20170503";
+	private $TorneCurlRelease = "20170518";
 
 	/**
 	 * Target environment (if target is production some debugging values will be skipped)
@@ -1771,9 +1771,13 @@ class Tornevall_cURL {
 				curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 0 );
 				curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
 			} else {
-                                // Keeping compatibility by running with 1 before curl 7.28.1 as we don't know when this option was really changed.
-                                // This warning occurs in libcurl 7.22.0, wo we can without any risk lower the version check to 7.22.0
-				if ( version_compare( $this->CurlVersion, '7.22.0', '>=' ) ) {
+                                // From libcurl 7.28.1 CURLOPT_SSL_VERIFYHOST is deprecated. However, using the value 1 can be used
+                                // as of PHP 5.4.11, where the deprecation notices was added. The deprecation has started before libcurl
+                                // 7.28.1 (this was discovered on a server that was running PHP 5.5 and libcurl-7.22). In full debug
+                                // even libcurl-7.22 was generating this message, so from PHP 5.4.11 we are now enforcing the value 2
+                                // for CURLOPT_SSL_VERIFYHOST instead. The reason of why we are using the value 1 before this version
+                                // is actually a lazy thing, as we don't want to break anything that might be unsupported before this version.
+                                if (version_compare( PHP_VERSION, '5.4.11', ">=" )) {
 					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 2 );
 				} else {
 					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 1 );
