@@ -4,12 +4,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.0.2.4
+ * Version: 2.0.2.5
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define( 'RB_WOO_VERSION', "2.0.2.4" );
+define( 'RB_WOO_VERSION', "2.0.2.5" );
 define( 'RB_API_PATH', dirname( __FILE__ ) . "/rbwsdl" );
 require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
@@ -687,8 +687,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 				case 'ANNULMENT':
 					/** @noinspection annotation */
-					//update_post_meta((!isWooCommerce3()?$order->id:$order->get_id()), 'hasAnnulment', 1);
-					update_post_meta( $order->get_id(), 'hasAnnulment', 1 );
+					update_post_meta( ! isWooCommerce3() ? $order->id : $order->get_id(), 'hasAnnulment', 1 );
 					$order->update_status( 'cancelled' );
 					if ( ! isWooCommerce3() ) {
 						$order->cancel_order( __( 'ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway' ) );
@@ -2240,8 +2239,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$order          = new WC_Order( $order_id );
 			$payment_method = $order->payment_method;
 
-			//$payment_id = get_post_meta( $order->id, 'paymentId', true );
-			$payment_id = get_post_meta( $order->get_id(), 'paymentId', true );
+			$payment_id = get_post_meta( ! isWooCommerce3() ? $order->id : $order->get_id(), 'paymentId', true );
 			if ( false === (boolean) preg_match( '/resurs_bank/', $payment_method ) ) {
 				return;
 			}
