@@ -1528,57 +1528,55 @@ class ResursBank
             $registerCallbackClass = new resurs_registerEventCallback($renderCallback['eventType'], $callbackUriTemplate);
             $digestAlgorithm = resurs_digestAlgorithm::SHA1;
 
-            /*
-             * Look for parameters in the request. Algorithms are set to SHA1 by default.
-             * If no digestsalts are set, we will throw you an exception, since empty salts is normally not a good idea
-             */
-            if (is_array($callbackDigest)) {
-                if (isset($callbackDigest['digestAlgorithm']) && strtolower($callbackDigest['digestAlgorithm']) != "sha1" && strtolower($callbackDigest['digestAlgorithm']) != "md5") {
-                    $callbackDigest['digestAlgorithm'] = "sha1";
-                } elseif (!isset($callbackDigest['digestAlgorithm'])) {
-                    $callbackDigest['digestAlgorithm'] = "sha1";
-                }
-                /* If requested algorithm is not sha1, use md5 as the other option. */
-                if ($callbackDigest['digestAlgorithm'] != "sha1") {
-                    $digestAlgorithm = digestAlgorithm::MD5;
-                }
-
-                /* Start collect the parameters needed for the callback (manually if necessary - otherwise, we'll catch the parameters from our defaults as described at https://test.resurs.com/docs/x/LAAF) */
-                $parameterArray = array();
-
-                if ((is_array($callbackDigest['digestParameters']) && !count($callbackDigest['digestParameters'])) || empty($callbackDigest['digestParameters'])) {
-                    $callbackDigest['digestParameters'] = $this->getCallbackTypeParameters($callbackType);
-                }
-
-                if (isset($callbackDigest['digestParameters']) && is_array($callbackDigest['digestParameters'])) {
-                    if (count($callbackDigest['digestParameters'])) {
-                        foreach ($callbackDigest['digestParameters'] as $parameter) {
-                            array_push($parameterArray, $parameter);
-                        }
-                    }
-                }
-
-                /*
-                 * Check if the helper received a salt key. To now interfere with the array of digestKey, we are preparing with globalDigestKey.
-                 */
-                if (!count($this->digestKey) && !empty($this->globalDigestKey)) {
-                    /* Only set up the digesSalt if not already set */
-                    if (empty($callbackDigest['digestSalt'])) {
-                        $callbackDigest['digestSalt'] = $this->globalDigestKey;
-                    }
-                } else {
-                    if (isset($this->digestKey[$renderCallback['eventType']])) {
-                        $callbackDigest['digestSalt'] = $this->digestKey['eventType'];
-                    }
-                }
-                /* Make sure there is a saltkey or throw */
-                if (isset($callbackDigest['digestSalt']) && !empty($callbackDigest['digestSalt'])) {
-                    $digestParameters['digestSalt'] = $callbackDigest['digestSalt'];
-                } else {
-                    throw new ResursException("No salt key for digest found", ResursExceptions::CALLBACK_SALTDIGEST_MISSING, __FUNCTION__);
-                }
-                $digestParameters['digestParameters'] = (is_array($parameterArray) ? $parameterArray : array());
-            }
+	        // Look for parameters in the request. Algorithms are set to SHA1 by default.
+	        // If no digestsalts are set, we will throw you an exception, since empty salts is normally not a good idea
+	        if (is_array($callbackDigest)) {
+		        if (isset($callbackDigest['digestAlgorithm']) && strtolower($callbackDigest['digestAlgorithm']) != "sha1" && strtolower($callbackDigest['digestAlgorithm']) != "md5") {
+			        $callbackDigest['digestAlgorithm'] = "sha1";
+		        } elseif (!isset($callbackDigest['digestAlgorithm'])) {
+			        $callbackDigest['digestAlgorithm'] = "sha1";
+		        }
+		        // If requested algorithm is not sha1, use md5 as the other option.
+		        if ($callbackDigest['digestAlgorithm'] != "sha1") {
+			        $digestAlgorithm = digestAlgorithm::MD5;
+		        }
+		        // Start collect the parameters needed for the callback (manually if necessary - otherwise, we'll catch the parameters from our defaults as described at https://test.resurs.com/docs/x/LAAF)
+		        $parameterArray = array();
+		        // Make sure the digest parameters exists, and fill them in if the array exists but is empty
+		        if (isset($callbackDigest['digestParameters'])) {
+			        if (((is_array($callbackDigest['digestParameters']) && !count($callbackDigest['digestParameters'])) || empty($callbackDigest['digestParameters']))) {
+				        $callbackDigest['digestParameters'] = $this->getCallbackTypeParameters($callbackType);
+			        }
+		        } else {
+			        // Make sure that the parameter array is set if it does not exist at all
+			        $callbackDigest['digestParameters'] = $this->getCallbackTypeParameters($callbackType);
+		        }
+		        if (isset($callbackDigest['digestParameters']) && is_array($callbackDigest['digestParameters'])) {
+			        if (count($callbackDigest['digestParameters'])) {
+				        foreach ($callbackDigest['digestParameters'] as $parameter) {
+					        array_push($parameterArray, $parameter);
+				        }
+			        }
+		        }
+		        // Check if the helper received a salt key. To now interfere with the array of digestKey, we are preparing with globalDigestKey.
+		        if (!count($this->digestKey) && !empty($this->globalDigestKey)) {
+			        // Only set up the digesSalt if not already set
+			        if (empty($callbackDigest['digestSalt'])) {
+				        $callbackDigest['digestSalt'] = $this->globalDigestKey;
+			        }
+		        } else {
+			        if (isset($this->digestKey[$renderCallback['eventType']])) {
+				        $callbackDigest['digestSalt'] = $this->digestKey['eventType'];
+			        }
+		        }
+		        // Make sure there is a saltkey or throw
+		        if (isset($callbackDigest['digestSalt']) && !empty($callbackDigest['digestSalt'])) {
+			        $digestParameters['digestSalt'] = $callbackDigest['digestSalt'];
+		        } else {
+			        throw new ResursException("No salt key for digest found", ResursExceptions::CALLBACK_SALTDIGEST_MISSING, __FUNCTION__);
+		        }
+		        $digestParameters['digestParameters'] = (is_array($parameterArray) ? $parameterArray : array());
+	        }
             /* Generate a digest configuration for the services. */
             /** @noinspection PhpParamsInspection */
             $digestConfiguration = new resurs_digestConfiguration($digestAlgorithm, $digestParameters['digestParameters']);
@@ -2061,53 +2059,63 @@ class ResursBank
         return $canHideSet;
     }
 
-    /**
-     * Get field set rules for web-forms
-     *
-     * $paymentMethodType can be both a string or a object. If it is a object, the function will handle the incoming data as it is the complete payment method
-     * configuration (meaning, data may be cached). In this case, it will take care of the types in the method itself. If it is a string, it will handle the data
-     * as the configuration has already been solved out.
-     *
-     * When building forms for a webshop, a specific number of fields are required to show on screen. This function brings the right fields automatically.
-     * The deprecated flow generates form fields and returns them to the shop owner platform, with the form fields that is required for the placing an order.
-     * It also returns a bunch of regular expressions that is used to validate that the fields is correctly filled in. This function partially emulates that flow,
-     * so the only thing a integrating developer needs to take care of is the html code itself.
-     * @link https://test.resurs.com/docs/x/s4A0 Regular expressions
-     *
-     * @param string|array $paymentMethodName
-     * @param string $customerType
-     * @param string $specificType
-     * @return array
-     */
-    public function getTemplateFieldsByMethodType($paymentMethodName = "", $customerType = "", $specificType = "")
-    {
-        $templateRules = $this->getFormTemplateRules();
-        $returnedRules = array();
-        $returnedRuleArray = array();
-
-        /* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead */
-        if (is_object($paymentMethodName) || is_array($paymentMethodName)) {
-            /** @noinspection PhpUndefinedFieldInspection */
-            if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)])) {
-                //$returnedRuleArray = $templateRules[strtoupper($paymentMethodType->customerType)]['fields'][strtoupper($paymentMethodType->specificType)];
-                /** @noinspection PhpUndefinedFieldInspection */
-                $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
-            }
-        } else {
-            if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName)])) {
-                //$returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodType)];
-                $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($specificType)];
-            }
-        }
-
-        $returnedRules = array(
-            'fields' => $returnedRuleArray,
-            'display' => $templateRules['display'],
-            'regexp' => $templateRules['regexp']
-        );
-        $this->templateFieldsByMethodResponse = $returnedRules;
-        return $returnedRules;
-    }
+	/**
+	 * Get field set rules for web-forms
+	 *
+	 * $paymentMethodType can be both a string or a object. If it is a object, the function will handle the incoming data as it is the complete payment method
+	 * configuration (meaning, data may be cached). In this case, it will take care of the types in the method itself. If it is a string, it will handle the data
+	 * as the configuration has already been solved out.
+	 *
+	 * When building forms for a webshop, a specific number of fields are required to show on screen. This function brings the right fields automatically.
+	 * The deprecated flow generates form fields and returns them to the shop owner platform, with the form fields that is required for the placing an order.
+	 * It also returns a bunch of regular expressions that is used to validate that the fields is correctly filled in. This function partially emulates that flow,
+	 * so the only thing a integrating developer needs to take care of is the html code itself.
+	 * @link https://test.resurs.com/docs/x/s4A0 Regular expressions
+	 *
+	 * @param string|array $paymentMethodName
+	 * @param string $customerType
+	 * @param string $specificType
+	 * @return array
+	 * @deprecated 1.0.1 It is strongly recommended that you are generating all this by yourself in an integration
+	 * @deprecated 1.1.1 It is strongly recommended that you are generating all this by yourself in an integration
+	 */
+	public function getTemplateFieldsByMethodType($paymentMethodName = "", $customerType = "", $specificType = "")
+	{
+		$templateRules = $this->getFormTemplateRules();
+		$returnedRules = array();
+		$returnedRuleArray = array();
+		/* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
+		if (is_object($paymentMethodName) || is_array($paymentMethodName)) {
+			if (is_object($paymentMethodName)) {
+				/** @noinspection PhpUndefinedFieldInspection */
+				if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)])) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
+				}
+			} else if (is_array($paymentMethodName)) {
+				/*
+				 * This should probably not happen and the developers should probably also stick to objects as above.
+				 */
+				if (count($paymentMethodName)) {
+					if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])])) {
+						/** @noinspection PhpUndefinedFieldInspection */
+						$returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])];
+					}
+				}
+			}
+		} else {
+			if (isset($templateRules[strtoupper($customerType)]) && isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName)])) {
+				$returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($specificType)];
+			}
+		}
+		$returnedRules = array(
+			'fields' => $returnedRuleArray,
+			'display' => $templateRules['display'],
+			'regexp' => $templateRules['regexp']
+		);
+		$this->templateFieldsByMethodResponse = $returnedRules;
+		return $returnedRules;
+	}
 
     /**
      * Get template fields by a specific payment method. This function retrieves the payment method in real time.

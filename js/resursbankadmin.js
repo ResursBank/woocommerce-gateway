@@ -88,7 +88,7 @@ function resursEditProtectedField(currentField, ns) {
                     $RB('#' + currentField.id + "_value").val(data["response"]);
                 }
             }
-            resursProtectedFieldToggle(currentField.id);
+            resursProtectedFieldToggle(currentField.id, "show");
         }
     ).fail(function (x, y) {
         alert("Fail (" + x + ", " + y + ")");
@@ -105,7 +105,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
 
     if (currentFieldId == "woocommerce_resurs-bank_password") {
         subVal = $RB("#woocommerce_resurs-bank_login").val();
-        $RB("#woocommerce_resurs-bank_serverEnv option").each(function(i, d) {
+        $RB("#woocommerce_resurs-bank_serverEnv option").each(function (i, d) {
             if (d.selected) {
                 envVal = d.value;
             }
@@ -144,7 +144,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
             } else {
                 if (typeof data["errorMessage"] !== "undefined" && data["errorMessage"] != "") {
                     if (processId.length > 0) {
-                        processId.html('<div id="errSaveField'+currentFieldId+'" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                        processId.html('<div id="errSaveField' + currentFieldId + '" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
                     } else {
                         alert("Not successful: " + data["errorMessage"]);
                     }
@@ -163,8 +163,19 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
     });
 }
 function resursProtectedFieldToggle(currentField) {
-    $RB('#' + currentField).toggle("medium");
-    $RB('#' + currentField + "_hidden").toggle("medium");
+    if (typeof arguments[1] !== "undefined") {
+        if (arguments[1] === "show") {
+            $RB('#' + currentField).hide("medium");
+            $RB('#' + currentField + "_hidden").show("medium");
+        }
+        if (arguments[1] === "hide") {
+            $RB('#' + currentField).show("medium");
+            $RB('#' + currentField + "_hidden").hide("medium");
+        }
+    } else {
+        $RB('#' + currentField).toggle("medium");
+        $RB('#' + currentField + "_hidden").toggle("medium");
+    }
 }
 function runResursAdminCallback(callbackName) {
     var setArg;
@@ -212,7 +223,7 @@ function runResursAdminCallback(callbackName) {
             if (typeof data["success"] !== "undefined" && typeof data["errorMessage"] !== "undefined") {
                 if (data["success"] === false && data["errorMessage"] !== "") {
                     if (typeof testProcElement === "object") {
-                        testProcElement.html('<div id="cbError'+callbackName+'" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                        testProcElement.html('<div id="cbError' + callbackName + '" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
                     } else {
                         if (typeof data["session"] !== "undefined") {
                             if (data["session"] == "0") {
@@ -290,7 +301,7 @@ function showResursCallbackArray(cbArrayResponse) {
                 var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
                 callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
                 if (useCacheNote && isCached) {
-                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">'+adminJs["callbackUrisCache"]+ (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" :"") + '</td></tr>';
+                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td></tr>';
                 }
                 $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                     if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
@@ -323,7 +334,7 @@ var callbacksNotReceivedCheck = false;
 var runningCbTest = null;
 var lastRecvContent = "";
 function doUpdateResursCallbacks() {
-    startResursCallbacks = Math.round(new Date()/1000);
+    startResursCallbacks = Math.round(new Date() / 1000);
     if ($RB('#receivedCallbackConfirm').length > 0) {
         $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
         $RB('#receivedCallbackConfirm').remove();
@@ -337,20 +348,20 @@ function doUpdateResursCallbacks() {
 
 var timeBeforeSlowCallbacks = 15;
 function noCallbacksReceived() {
-    var stopResursCallbacks = Math.round(new Date()/1000);
-    var resursCallbacksTimeDiff = stopResursCallbacks-startResursCallbacks;
+    var stopResursCallbacks = Math.round(new Date() / 1000);
+    var resursCallbacksTimeDiff = stopResursCallbacks - startResursCallbacks;
     var curRecvContent = $RB('#lastCbRec').html();
     if ($RB('#receivedCallbackConfirm').length > 0) {
         window.clearInterval(runningCbTest);
     } else {
-            if (resursCallbacksTimeDiff < timeBeforeSlowCallbacks) {
-                if (lastRecvContent == curRecvContent) {
-                    $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
-                }
-            } else {
-                $RB('#lastCbRec').html('<div style="margin-bottom: 10px;"><span class="labelBoot labelBoot-danger">' + adminJs["callbacks_not_received"] + '</span></div>' +
-                    adminJs["callbacks_slow"]);
+        if (resursCallbacksTimeDiff < timeBeforeSlowCallbacks) {
+            if (lastRecvContent == curRecvContent) {
+                $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
             }
+        } else {
+            $RB('#lastCbRec').html('<div style="margin-bottom: 10px;"><span class="labelBoot labelBoot-danger">' + adminJs["callbacks_not_received"] + '</span></div>' +
+                adminJs["callbacks_slow"]);
+        }
     }
 }
 
@@ -402,8 +413,8 @@ function changeResursFee(feeObject) {
     var feeId = feeObject.id.substr(4);
     var currentValue = feeObject.innerHTML;
     if (!isNaN(currentValue) || currentValue == "") {
-        feeObject.innerHTML = '<input id="feeText_'+currentValue+'" type="text" size="8" value="' + currentValue + '" onblur="resetRbFeeValue(\'' + feeObject.id + '\', this)" onkeyup="feeValueTrigger(event, \''+feeObject.id+'\', this)">';
-        $RB('#feeText_' + currentValue).on("keypress", function(event) {
+        feeObject.innerHTML = '<input id="feeText_' + currentValue + '" type="text" size="8" value="' + currentValue + '" onblur="resetRbFeeValue(\'' + feeObject.id + '\', this)" onkeyup="feeValueTrigger(event, \'' + feeObject.id + '\', this)">';
+        $RB('#feeText_' + currentValue).on("keypress", function (event) {
             return event.keyCode != 13;
         });
         var feeTextObject = $RB('#feeText_' + currentValue);
