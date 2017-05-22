@@ -47,6 +47,34 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.0.2.4 =
+
+    * [WOO-101] - WooCommerce Compatibility Check (3.x)
+    * [WOO-103] - Update shipping methods on postal change (Experimental mode)
+    * [WOO-104] - Debug mode for useStandardFieldsForShipping
+    * [WOO-105] - Upgrade to ResursCheckoutJS 0.08
+    * [WOO-112] - get_currentuserinfo() is deprecated sinced WP 4.5.0
+    * [WOO-117] - Obsolete definitions: INCLUDE_RESURS_OMNI
+    * [WOO-119] - simplify AdminUI
+    * [WOO-122] - Support multiple iframe-elements on page
+    * [WOO-124] - Each credential update should render a callback reload
+    * [WOO-127] - Require R/W check for local includes folder
+    * [WOO-99] - Shipping specrow set static shipping as "Frakt"
+    * [WOO-102] - Boolean dropdowns should be checkboxes (wrong field type)
+    * [WOO-106] - Prevent usage of exshop
+    * [WOO-107] - Undefined index within a resursOption-dev*
+    * [WOO-114] - Find undefined variables
+    * [WOO-116] - Callbacks are registered but not returned
+    * [WOO-118] - Callbacks not registered
+    * [WOO-120] - Pwd input field, open and close, open and close, open and close...
+    * [WOO-123] - resursbank.js has checkout code outside docReady
+    * [WOO-126] - Switching credentials won't remove old payment methods
+    * [WOO-129] - No "read more" with the hosted flow
+    * [WOO-132] - getTransientMethod does not always initialize the resursflow
+    * [WOO-133] - Legacy of $payment_fee_tax_pct
+    * [WOO-134] - Button (read more) and descriptive text at the choice of method not showing (hosted flow)
+    * [WOO-135] - One warning text (for payment methods viewing in shop) is not shown during test
+
 = 2.0.2.3 =
 
     * [WOO-136] Safari browsers might fail trigging on checkout events
