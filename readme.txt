@@ -47,9 +47,13 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.0.2.6 =
+
+    * [WOO-140] Continued.
+
 = 2.0.2.5 =
 
-    * Code inspections lied.
+    * [WOO-140] Code inspections lied.
 
 = 2.0.2.4 =
 
