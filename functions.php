@@ -923,18 +923,22 @@ if ( ! function_exists( "callbackUpdateRequest" ) ) {
 		 */
 		$requestForCallbacks    = false;
 		$callbackUpdateInterval = "";
-		if ( ! empty( getResursOption( "login" ) ) && ! empty( getResursOption( "password" ) ) && is_admin() ) {
+		$login = getResursOption( "login" );
+		$password = getResursOption( "password" );
+		if ( ! empty( $login ) && ! empty( $password ) && is_admin() ) {
 			/*
 			 * Make sure callbacks are up to date with an interval
 			 */
-			$callbackUpdateInterval = ! empty( getResursOption( "callbackUpdateInterval" ) ) ? intval( getResursOption( "callbackUpdateInterval" ) ) : 7;
+			$cbuInterval = getResursOption( "callbackUpdateInterval" );
+			$callbackUpdateInterval = ! empty( $cbuInterval ) ? intval( $cbuInterval ) : 7;
 			if ( $callbackUpdateInterval > 7 || $callbackUpdateInterval < 0 ) {
 				$callbackUpdateInterval = 7;
 			}
 			$lastCallbackRequest     = get_transient( 'resurs_bank_last_callback_setup' );
 			$lastCallbackRequestDiff = time() - $lastCallbackRequest;
 			$dayInterval             = $callbackUpdateInterval * 86400;
-			if ( ( getResursOption( "callbackUpdateAutomation" ) && $lastCallbackRequestDiff >= $dayInterval ) || empty( $lastCallbackRequest ) ) {
+			$cbuAutomation = getResursOption( "callbackUpdateAutomation" );
+			if ( ( $cbuAutomation && $lastCallbackRequestDiff >= $dayInterval ) || empty( $lastCallbackRequest ) ) {
 				$requestForCallbacks = true;
 			}
 		}

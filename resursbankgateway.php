@@ -502,7 +502,9 @@ function woocommerce_gateway_resurs_bank_init() {
 								$responseArray = array(
 									'callbacks' => array()
 								);
-								if ( ! empty( getResursOption( "login" ) ) && ! empty( getResursOption( "password" ) ) ) {
+								$login = getResursOption( "login" );
+								$password = getResursOption( "password" );
+								if ( ! empty( $login ) && ! empty( $password ) ) {
 									$lastFetchedCacheTime = time() - get_transient( "resurs_callback_templates_cache_last" );
 									$lastFetchedCache     = get_transient( "resurs_callback_templates_cache" );
 
@@ -526,7 +528,9 @@ function woocommerce_gateway_resurs_bank_init() {
 								}
 							} else if ( $_REQUEST['run'] == "setMyCallbacks" ) {
 								$responseArray = array();
-								if ( ! empty( getResursOption( "login" ) ) && ! empty( getResursOption( "password" ) ) ) {
+								$login = getResursOption( "login" );
+								$password = getResursOption( "password" );
+								if ( ! empty( $login ) && ! empty( $password ) ) {
 									set_transient( 'resurs_bank_last_callback_setup', time() );
 									try {
 										$salt = uniqid( mt_rand(), true );
@@ -867,7 +871,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				$setSku         = $data->get_sku();
 				$bookArtId      = ! isWooCommerce3() ? $data->id : $data->get_id();
 				$postTitle      = ! isWooCommerce3() ? $data->post->post_title : $data->get_title();
-				if ( resursOption( "useSku" ) && ! empty( $setSku ) ) {
+				$optionUseSku = getResursOption( "useSku" );
+				if ( $optionUseSku && ! empty( $setSku ) ) {
 					$bookArtId = $setSku;
 				}
 				$spec_lines[] = array(
@@ -1037,7 +1042,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		public function start_payment_session( $payment_id, $method_class = null ) {
 			global $woocommerce;
 			$this->flow     = initializeResursFlow();
-			$currentCountry = resursOption( 'country' );
+			$currentCountry = getResursOption( 'country' );
 			$regExRules     = array();
 
 			$cart        = $woocommerce->cart;
@@ -1094,7 +1099,8 @@ function woocommerce_gateway_resurs_bank_init() {
 								$fieldGenHtml .= '<div>' . $method_class->description . '</div>';
 								foreach ( $requiredFormFields['fields'] as $fieldName ) {
 									$doDisplay = "block";
-									if ( resursOption( "streamlineBehaviour" ) ) {
+									$streamLineBehaviour = getResursOption( "streamlineBehaviour" );
+									if ($streamLineBehaviour  ) {
 										if ( $this->flow->canHideFormField( $fieldName ) ) {
 											$doDisplay = "none";
 										}
@@ -1105,7 +1111,8 @@ function woocommerce_gateway_resurs_bank_init() {
 											/*
 											 * But only if it is enabled
 											 */
-											if ( resursOption( "getAddress" ) ) {
+											$optionGetAddress = getResursOption( "getAddress" );
+											if ( $optionGetAddress ) {
 												$doDisplay = "none";
 											}
 										}
@@ -1351,7 +1358,8 @@ function woocommerce_gateway_resurs_bank_init() {
 			switch ( $bookedStatus ) {
 				case 'FINALIZED':
 					$order->update_status( 'completed' );
-					if ( resursOption( 'reduceOrderStock' ) ) {
+					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
+					if ( $optionReduceOrderStock ) {
 						$order->reduce_order_stock();
 					}
 					WC()->cart->empty_cart();
@@ -1360,7 +1368,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 				case 'BOOKED':
 					$order->update_status( 'processing' );
-					if ( resursOption( 'reduceOrderStock' ) ) {
+					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
+					if ( $optionReduceOrderStock ) {
 						$order->reduce_order_stock();
 					}
 					WC()->cart->empty_cart();
@@ -1369,7 +1378,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 				case 'FROZEN':
 					$order->update_status( 'on-hold' );
-					if ( resursOption( 'reduceOrderStock' ) ) {
+					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
+					if ( $optionReduceOrderStock ) {
 						$order->reduce_order_stock();
 					}
 					WC()->cart->empty_cart();
@@ -1751,7 +1761,8 @@ function woocommerce_gateway_resurs_bank_init() {
 						WC()->session->set( "order_awaiting_payment" );
 						$getRedirectUrl = $woocommerce->cart->get_cart_url();
 					} else {
-						if ( resursOption( 'reduceOrderStock' ) ) {
+						$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
+						if ( $optionReduceOrderStock ) {
 							/*
                              * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
                              */
@@ -1952,7 +1963,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * Therefore, we're not accepting headers that could be manipulated by default.
 		 */
 		public static function get_ip_address() {
-			$handleNatConnections = resursOption( 'handleNatConnections' );
+			$handleNatConnections = getResursOption( 'handleNatConnections' );
 			if ( $handleNatConnections ) {
 				// check for shared internet/ISP IP
 				if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) && self::validate_ip( $_SERVER['HTTP_CLIENT_IP'] ) ) {
@@ -2094,7 +2105,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				$userProd          = resursOption( "ga_login" );
 				$passProd          = resursOption( "ga_password" );
 				$disabledProdTests = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
-				if ( resursOption( "getAddressUseProduction" ) && isResursDemo() && $serverEnv == "test" && ! empty( $userProd ) && ! empty( $passProd ) && ! $disabledProdTests ) {
+				$getAddressUseProduction = getResursOption( "getAddressUseProduction" );
+				if ($getAddressUseProduction  && isResursDemo() && $serverEnv == "test" && ! empty( $userProd ) && ! empty( $passProd ) && ! $disabledProdTests ) {
 					$results = getAddressProd( $_REQUEST['ssn'], $customerType, self::get_ip_address() );
 				} else {
 					$flow = initializeResursFlow();
@@ -2120,7 +2132,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$wooCommerceStyle = realpath( get_stylesheet_directory() ) . "/css/woocommerce.css";
 			$styles           = array();
 
-			$costOfPurchaseCss = resursOption( 'costOfPurchaseCss' );
+			$costOfPurchaseCss = getResursOption( 'costOfPurchaseCss' );
 			if ( empty( $costOfPurchaseCss ) ) {
 				if ( file_exists( $wooCommerceStyle ) ) {
 					$styles[] = get_stylesheet_directory_uri() . "/css/woocommerce.css";
@@ -2320,7 +2332,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'processing':
 					break;
 				case 'completed':
-					if (getResursOption("disableAftershopFunctions")) {break;}
+					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
+					if ($optionDisableAftershop) {break;}
 					$flowCode         = 0;
 					$flowErrorMessage = "";
 					if ( $resursFlow->canDebit( $payment ) ) {
@@ -2350,7 +2363,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'on-hold':
 					break;
 				case 'cancelled':
-					if (getResursOption("disableAftershopFunctions")) {break;}
+					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
+					if ($optionDisableAftershop) {break;}
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
@@ -2366,7 +2380,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 					break;
 				case 'refunded':
-					if (getResursOption("disableAftershopFunctions")) {break;}
+					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
+					if ($optionDisableAftershop) {break;}
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
@@ -2401,8 +2416,9 @@ function woocommerce_gateway_resurs_bank_init() {
 			return $checkout;
 		}
 
-		$selectedCountry = resursOption( "country" );
-		if ( resursOption( "getAddress" ) && ! isResursOmni() ) {
+		$selectedCountry = getResursOption( "country" );
+		$optionGetAddress = getResursOption( "getAddress" );
+		if ($optionGetAddress  && ! isResursOmni() ) {
 			/*
              * MarGul change
              * If it's demoshop get the translation.
@@ -2551,7 +2567,8 @@ function woocommerce_gateway_resurs_bank_init() {
 		);
 
 		$oneRandomValue = null;
-		if ( getResursOption( "randomizeJsLoaders" ) ) {
+		$randomizeJsLoaders = getResursOption( "randomizeJsLoaders" );
+		if ( $randomizeJsLoaders ) {
 			$oneRandomValue = "?randomizeMe=" . rand( 1024, 65535 );
 		}
 		$ajaxObject = array( 'ajax_url' => admin_url( 'admin-ajax.php' ) );
@@ -3449,7 +3466,8 @@ function isResursSimulation() {
 	if ( ! isResursTest() ) {
 		return repairResursSimulation();
 	}
-	if ( getResursOption( "devResursSimulation" ) ) {
+	$devResursSimulation = getResursOption( "devResursSimulation" );
+	if ( $devResursSimulation ) {
 		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
 			$mustContain            = array( '.loc$', '.local$', '^localhost$', '.localhost$' );
 			$hasRequiredEnvironment = false;

@@ -47,6 +47,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.0.2.7 =
+
+    * [WOO-142] Can not run if (getResursOption($theKey)) for some PHP-releases. Variables must be set before iffing them.
+
 = 2.0.2.6 =
 
     * [WOO-140] Continued.
