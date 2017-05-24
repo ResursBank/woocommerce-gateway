@@ -187,6 +187,14 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'description' => __( 'Defines whether the plugin should wait for the fraud control when booking payments, or not', 'WC_Payment_Gateway' ),
 					'desc_tip'    => true,
 				),
+				'disableAftershopFunctions'                     => array(
+					'title'       => __( 'Disable Aftershop', 'WC_Payment_Gateway' ),
+					'label'       => __( 'Disable aftershop capabilities', 'woocommerce' ),
+					'type'        => 'checkbox',
+					'default'     => 'false',
+					'description' => __( 'Defines whether the plugin should use aftershop functions or not. Adds the ability to disable aftershop completely if you want to implement your own aftershop flow. Default: Aftershop capabilities are enabled.', 'WC_Payment_Gateway' ),
+					'desc_tip'    => true,
+				),
 				'waitForFraudControl'                  => array(
 					'title'       => 'waitForFraudControl',
 					'type'        => 'checkbox',

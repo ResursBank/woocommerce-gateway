@@ -4,12 +4,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.0.2.7
+ * Version: 2.0.3
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define( 'RB_WOO_VERSION', "2.0.2.7" );
+define( 'RB_WOO_VERSION', "2.0.3" );
 define( 'RB_API_PATH', dirname( __FILE__ ) . "/rbwsdl" );
 require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
@@ -2332,6 +2332,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'processing':
 					break;
 				case 'completed':
+					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
+					if ($optionDisableAftershop) {break;}
 					$flowCode         = 0;
 					$flowErrorMessage = "";
 					if ( $resursFlow->canDebit( $payment ) ) {
@@ -2361,6 +2363,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'on-hold':
 					break;
 				case 'cancelled':
+					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
+					if ($optionDisableAftershop) {break;}
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
@@ -2376,6 +2380,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 					break;
 				case 'refunded':
+					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
+					if ($optionDisableAftershop) {break;}
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
@@ -3358,7 +3364,7 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	$initFlow                      = new ResursBank( $username, $password );
 	$initFlow->convertObjects      = true;
 	$initFlow->convertObjectsOnGet = true;
-	$initFlow->setClientName( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
+	$initFlow->setUserAgent("ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION);
 	$initFlow->setEnvironment( $useEnvironment );
 
 	if ( isset( $_REQUEST['testurl'] ) ) {
