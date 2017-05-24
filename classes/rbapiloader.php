@@ -33,7 +33,7 @@ class ResursBank
     /** @var string The version of this gateway */
     private $version = "1.0.0";
     /** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-    private $lastUpdate = "20170116";
+    private $lastUpdate = "Maintenance/Obsolete-May2017";
     private $preferredId = null;
     private $ocShopScript = null;
     private $formTemplateRuleArray = array();
@@ -136,6 +136,7 @@ class ResursBank
 
     /** @var null When we know what to use from beginning */
     private $enforceService = null;
+	private $myUserAgent = null;
 
     private $paymentMethodNames = array();
     /** @var bool Always append amount data and ending urls (cost examples) */
@@ -357,6 +358,14 @@ class ResursBank
         }
         return $newUrl;
     }
+
+	public function setUserAgent($MyUserAgent='') {
+		if (!empty($MyUserAgent)) {
+			$this->myUserAgent = $MyUserAgent . " +" . $this->getVersionFull();
+		} else {
+			$this->myUserAgent = $this->getVersionFull();
+		}
+	}
 
     /**
      * base64_encode
@@ -584,7 +593,7 @@ class ResursBank
         $CurlLibResponse = null;
         $CURL = new \TorneLIB\Tornevall_cURL();
         $CURL->setAuthentication($this->username, $this->password);
-        $CURL->setUserAgent("EComPHP " . $this->version);
+        $CURL->setUserAgent($this->myUserAgent);
         if ($curlMethod == ResursCurlMethods::METHOD_POST) {
             $CurlLibResponse = $CURL->doPost($url, $jsonData, \TorneLIB\CURL_POST_AS::POST_AS_JSON);
         } else if ($curlMethod == ResursCurlMethods::METHOD_PUT) {
@@ -881,10 +890,11 @@ class ResursBank
     /**
      * Adds your client name to the current client name string which is used as User-Agent when communicating with ecommerce.
      * @param string $clientNameString
+     * @deprecated
      */
     public function setClientName($clientNameString = "")
     {
-        $this->clientName = $clientNameString . "/" . $this->realClientName;
+	    $this->setUserAgent();
     }
 
     /**
@@ -958,7 +968,7 @@ class ResursBank
         }
         $this->hasCertFile = false;
 
-        $this->soapOptions = $this->sslGetOptionsStream($this->soapOptions, array('http' => array("user_agent" => $this->getVersionFull())));
+	    $this->soapOptions = $this->sslGetOptionsStream($this->soapOptions, array('http' => array("user_agent" => $this->myUserAgent)));
         try {
             if (class_exists('Resurs_SimplifiedShopFlowService')) {
                 $currentService = "simplifiedShopFlowService";
@@ -1656,7 +1666,7 @@ class ResursBank
         $serviceUrl = $this->env_test . "DeveloperWebService?wsdl";
         $CURL = new \TorneLIB\Tornevall_cURL();
         $CURL->setAuthentication($this->username, $this->password);
-        $CURL->setUserAgent("EComPHP " . $this->version);
+        $CURL->setUserAgent($this->myUserAgent);
         $eventRequest = $CURL->doGet($serviceUrl);
         $eventParameters = array(
             'eventType' => 'TEST',
