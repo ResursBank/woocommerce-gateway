@@ -4,12 +4,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.0.2.6
+ * Version: 2.0.2.7
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define( 'RB_WOO_VERSION', "2.0.2.6" );
+define( 'RB_WOO_VERSION', "2.0.2.7" );
 define( 'RB_API_PATH', dirname( __FILE__ ) . "/rbwsdl" );
 require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
@@ -502,7 +502,9 @@ function woocommerce_gateway_resurs_bank_init() {
 								$responseArray = array(
 									'callbacks' => array()
 								);
-								if ( ! empty( getResursOption( "login" ) ) && ! empty( getResursOption( "password" ) ) ) {
+								$login = getResursOption( "login" );
+								$password = getResursOption( "password" );
+								if ( ! empty( $login ) && ! empty( $password ) ) {
 									$lastFetchedCacheTime = time() - get_transient( "resurs_callback_templates_cache_last" );
 									$lastFetchedCache     = get_transient( "resurs_callback_templates_cache" );
 
@@ -526,7 +528,9 @@ function woocommerce_gateway_resurs_bank_init() {
 								}
 							} else if ( $_REQUEST['run'] == "setMyCallbacks" ) {
 								$responseArray = array();
-								if ( ! empty( getResursOption( "login" ) ) && ! empty( getResursOption( "password" ) ) ) {
+								$login = getResursOption( "login" );
+								$password = getResursOption( "password" );
+								if ( ! empty( $login ) && ! empty( $password ) ) {
 									set_transient( 'resurs_bank_last_callback_setup', time() );
 									try {
 										$salt = uniqid( mt_rand(), true );
@@ -3446,7 +3450,8 @@ function isResursSimulation() {
 	if ( ! isResursTest() ) {
 		return repairResursSimulation();
 	}
-	if ( getResursOption( "devResursSimulation" ) ) {
+	$devResursSimulation = getResursOption( "devResursSimulation" );
+	if ( $devResursSimulation ) {
 		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
 			$mustContain            = array( '.loc$', '.local$', '^localhost$', '.localhost$' );
 			$hasRequiredEnvironment = false;
