@@ -3,7 +3,7 @@ Contributors: RB-Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.7.3
-Stable tag: 2.0.2.6
+Stable tag: 2.0.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 
 == Changelog ==
+
+= 2.0.2.7 =
+
+    * [WOO-142] Can not run if (getResursOption($theKey)) for some PHP-releases. Variables must be set before iffing them.
 
 = 2.0.2.6 =
 
