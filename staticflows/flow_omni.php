@@ -377,7 +377,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $setSku = $data->get_sku();
             $bookArtId = !isWooCommerce3() ? $data->id : $data->get_id();
 	        $postTitle = !isWooCommerce3() ? $data->post->post_title : $data->get_title();
-	        if (resursOption("useSku") && !empty($setSku)) {
+	        $optionUseSku = getResursOption("useSku");
+	        if ($optionUseSku && !empty($setSku)) {
 		        $bookArtId = $setSku;
 	        }
             $spec_lines[] = array(
@@ -551,7 +552,8 @@ function omni_terms_page($page_id)
 if (hasResursOmni()) {
     function woocommerce_add_resurs_bank_omnicheckout($methods)
     {
-        if (!resursOption('enabled')) {
+        $optionEnabled = getResursOption('enabled');
+        if (!$optionEnabled) {
             return $methods;
         }
         global $woocommerce;
