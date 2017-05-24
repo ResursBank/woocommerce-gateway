@@ -185,7 +185,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		$isChecked    = $this->getOptionByNamespace( $settingKey, $namespace );
 		$formSettings = $this->getFormSettings( $settingKey );
 
-		if ( ! issetResursOption( $settingKey, $properNameSpace ) ) {
+		$issetResursOption = issetResursOption( $settingKey, $properNameSpace );
+		if ( ! $issetResursOption ) {
 			if ( isset( $formSettings['default'] ) ) {
 				if ( $formSettings['default'] == "false" ) {
 					$isChecked = false;
@@ -466,7 +467,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                             <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' . __( 'Callback URLs registered at Resurs Bank', 'WC_Payment_Gateway' ) . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
-					if ( ! empty( getResursOption( "login" ) ) && ! empty( getResursOption( "password" ) ) ) {
+					$login = getResursOption( "login" );
+					$password = getResursOption( "password" );
+					if ( ! empty( $login ) && ! empty( $password ) ) {
 						$callbackUriCacheTime = time() - get_transient( "resurs_callback_templates_cache_last" );
 						if ( $callbackUriCacheTime >= 86400 ) {
 							echo '<img src="' . $this->spinner . '" border="0">';
@@ -632,7 +635,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 						echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __( 'Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway' ) . '</div><br><br>';
 					} else {
 						$styleRecommended = "display: none";
-						if ( ! getResursOption( "waitForFraudControl" ) && ! getResursOption( "annulIfFrozen" && ! getResursOption( "finalizeIfBooked" ) ) ) {
+						$waitForFraud = getResursOption( "waitForFraudControl" );
+						$annulIfFrozen = getResursOption( "annulIfFrozen");
+						$finalizeIfBooked = getResursOption( "finalizeIfBooked" );
+						if ( !$waitForFraud  && ! $annulIfFrozen && ! $finalizeIfBooked ) {
 							$styleRecommended = "";
 						}
 						echo '<div id="shopwFlowRecommendedSettings" style="' . $styleRecommended . '">' . __( 'When all the below settings are unchecked, you are running the plugin with a Resurs Bank preferred configuration', 'WC_Payment_Gateway' ) . '</div>';
@@ -737,7 +743,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 			$rate_select[ $rate->tax_rate_class ] = $rate_name;
 		}
 
-		if ( getResursOption( 'includeEmptyTaxClasses' ) ) {
+		$includeEmptyTaxClasses = getResursOption( 'includeEmptyTaxClasses' );
+		if ( $includeEmptyTaxClasses ) {
 			$validTaxClasses = WC_Tax::get_tax_classes();
 			foreach ( $validTaxClasses as $className ) {
 				if ( $className != "standard" && $className != "" ) {
