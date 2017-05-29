@@ -4,13 +4,12 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.0.3
+ * Version: 2.1.0
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  */
 
-define( 'RB_WOO_VERSION', "2.0.3" );
-define( 'RB_API_PATH', dirname( __FILE__ ) . "/rbwsdl" );
+define( 'RB_WOO_VERSION', "2.1.0" );
 require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
 //include('resursbank_settings.php');
@@ -73,7 +72,9 @@ function woocommerce_gateway_resurs_bank_init() {
 	 * Resurs Bank Gateway class
 	 */
 	class WC_Resurs_Bank extends WC_Payment_Gateway {
-		protected $flow = null;
+
+		/** @var ResursBank */
+		protected $flow;
 		protected $rates;
 
 		/**
@@ -250,7 +251,8 @@ function woocommerce_gateway_resurs_bank_init() {
 			/**
 			 * Load the workflow client
 			 */
-			if ( class_exists( 'ResursBank' ) ) {
+
+			if ( hasEcomPHP() ) {
 				if ( ! empty( $this->login ) && ! empty( $this->password ) ) {
 					$this->flow = initializeResursFlow();
 
@@ -269,7 +271,7 @@ function woocommerce_gateway_resurs_bank_init() {
                      * the session instead.
                      */
 					if ( isset( WC()->session ) && $setSessionEnable ) {
-						$omniRef        = $this->flow->generatePreferredId( 25, "RC" );
+						$omniRef        = $this->flow->getPreferredId( 25, "RC" );
 						$newOmniRef     = $omniRef;
 						$currentOmniRef = WC()->session->get( 'omniRef' );
 						$omniId         = WC()->session->get( "omniid" );
@@ -421,11 +423,11 @@ function woocommerce_gateway_resurs_bank_init() {
 							$flowEnv  = getServerEnv();
 							if ( ! empty( $envVal ) ) {
 								if ( $envVal == "test" ) {
-									$flowEnv = ResursEnvironments::ENVIRONMENT_TEST;
+									$flowEnv = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST;
 								} else if ( $envVal == "live" ) {
-									$flowEnv = ResursEnvironments::ENVIRONMENT_PRODUCTION;
+									$flowEnv = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION;
 								} else if ( $envVal == "production" ) {
-									$flowEnv = ResursEnvironments::ENVIRONMENT_PRODUCTION;
+									$flowEnv = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION;
 								}
 								$newFlow = initializeResursFlow( $testUser, $testPass, $flowEnv );
 							} else {
@@ -502,8 +504,8 @@ function woocommerce_gateway_resurs_bank_init() {
 								$responseArray = array(
 									'callbacks' => array()
 								);
-								$login = getResursOption( "login" );
-								$password = getResursOption( "password" );
+								$login         = getResursOption( "login" );
+								$password      = getResursOption( "password" );
 								if ( ! empty( $login ) && ! empty( $password ) ) {
 									$lastFetchedCacheTime = time() - get_transient( "resurs_callback_templates_cache_last" );
 									$lastFetchedCache     = get_transient( "resurs_callback_templates_cache" );
@@ -528,14 +530,14 @@ function woocommerce_gateway_resurs_bank_init() {
 								}
 							} else if ( $_REQUEST['run'] == "setMyCallbacks" ) {
 								$responseArray = array();
-								$login = getResursOption( "login" );
-								$password = getResursOption( "password" );
+								$login         = getResursOption( "login" );
+								$password      = getResursOption( "password" );
 								if ( ! empty( $login ) && ! empty( $password ) ) {
 									set_transient( 'resurs_bank_last_callback_setup', time() );
 									try {
 										$salt = uniqid( mt_rand(), true );
 										set_transient( 'resurs_bank_digest_salt', $salt );
-										$this->flow->unSetCallback( ResursCallbackTypes::UPDATE );
+										$this->flow->unSetCallback( \Resursbank\RBEcomPHP\ResursCallbackTypes::UPDATE );
 										$regCount                             = 0;
 										$responseArray['registeredCallbacks'] = 0;
 										$rList                                = array();
@@ -620,7 +622,6 @@ function woocommerce_gateway_resurs_bank_init() {
 						}
 					}
 				}
-
 				$response = array(
 					'response'     => $myResponse,
 					'success'      => $myBool,
@@ -630,7 +631,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				$this->returnJsonResponse( $response );
 				exit;
 			}
-
 			if ( $event_type === 'check_signing_response' ) {
 				$this->check_signing_response();
 
@@ -641,7 +641,6 @@ function woocommerce_gateway_resurs_bank_init() {
 
 				return;
 			}
-
 			$currentSalt = get_transient( 'resurs_bank_digest_salt' );
 			if ( $event_type == 'AUTOMATIC_FRAUD_CONTROL' ) {
 				$check_digest = $request['paymentId'] . $request['result'] . $currentSalt;
@@ -659,9 +658,10 @@ function woocommerce_gateway_resurs_bank_init() {
 				'meta_key'   => 'paymentId',
 				'meta_value' => $request['paymentId'],
 			);
+			// Trying to fetch the correct order id first, via WP_Query, and then jumping over to our own function if that fails.
 			$my_query = new WP_Query( $args );
-			$orderId  = $my_query->posts[0]->ID;
-			if ( ! $orderId ) {
+			$orderId  = isset($my_query->posts[0]->ID)? $my_query->posts[0]->ID : "";
+			if (empty($orderId) ) {
 				$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
 			}
 			$order = new WC_Order( $orderId );
@@ -871,20 +871,22 @@ function woocommerce_gateway_resurs_bank_init() {
 				$setSku         = $data->get_sku();
 				$bookArtId      = ! isWooCommerce3() ? $data->id : $data->get_id();
 				$postTitle      = ! isWooCommerce3() ? $data->post->post_title : $data->get_title();
-				$optionUseSku = getResursOption( "useSku" );
+				$optionUseSku   = getResursOption( "useSku" );
 				if ( $optionUseSku && ! empty( $setSku ) ) {
 					$bookArtId = $setSku;
 				}
-				$spec_lines[] = array(
+				$artDescription = ( empty( $postTitle ) ? __( 'Article description missing', 'WC_Payment_Gateway' ) : $postTitle );
+				$spec_lines[]   = array(
 					'id'                   => $bookArtId,
 					'artNo'                => $bookArtId,
-					'description'          => ( empty( $postTitle ) ? __( 'Article description missing', 'WC_Payment_Gateway' ) : $postTitle ),
+					'description'          => $artDescription,
 					'quantity'             => $item['quantity'],
-					'unitMeasure'          => 'st',
+					'unitMeasure'          => '',
 					'unitAmountWithoutVat' => $priceExTax,
 					'vatPct'               => $vatPct,
 					'totalVatAmount'       => ( $priceExTax * ( $vatPct / 100 ) ),
 					'totalAmount'          => ( ( $priceExTax * $item['quantity'] ) + ( $totalVatAmount * $item['quantity'] ) ),
+					'type'                 => 'ORDER_LINE'
 				);
 			}
 
@@ -917,11 +919,12 @@ function woocommerce_gateway_resurs_bank_init() {
 				'artNo'                => '00_frakt',
 				'description'          => __( 'Shipping', 'WC_Payment_Gateway' ),
 				'quantity'             => '1',
-				'unitMeasure'          => 'st',
+				'unitMeasure'          => '',
 				'unitAmountWithoutVat' => $shipping,
 				'vatPct'               => $shipping_tax_pct,
 				'totalVatAmount'       => $shipping_tax,
 				'totalAmount'          => $shipping_total,
+				'type'                 => 'SHIPPING_FEE',
 			);
 			$payment_method        = $woocommerce->session->chosen_payment_method;
 			$payment_fee           = getResursOption( 'price', 'woocommerce_' . $payment_method . '_settings' );
@@ -952,7 +955,6 @@ function woocommerce_gateway_resurs_bank_init() {
 					/*
 					 * Ignore this fee if it matches the Resurs description.
 					 */
-					//if ($fee == $resursPriceDescription) { continue; }
 					if ( $fee->tax > 0 ) {
 						$rate = ( $fee->tax / $fee->amount ) * 100;
 					} else {
@@ -964,7 +966,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							'artNo'                => $fee->id,
 							'description'          => $fee->name,
 							'quantity'             => 1,
-							'unitMeasure'          => 'st',
+							'unitMeasure'          => '',
 							'unitAmountWithoutVat' => $fee->amount,
 							'vatPct'               => ! is_nan( $rate ) ? $rate : 0,
 							'totalVatAmount'       => $fee->tax,
@@ -985,11 +987,12 @@ function woocommerce_gateway_resurs_bank_init() {
 							'artNo'                => $coupon->code . '_' . 'kupong',
 							'description'          => $post->post_excerpt,
 							'quantity'             => 1,
-							'unitMeasure'          => 'st',
+							'unitMeasure'          => '',
 							'unitAmountWithoutVat' => ( 0 - (float) $coupon_values[ $code ] ) + ( 0 - (float) $coupon_tax_values[ $code ] ),
 							'vatPct'               => 0,
 							'totalVatAmount'       => 0,
 							'totalAmount'          => ( 0 - (float) $coupon_values[ $code ] ) + ( 0 - (float) $coupon_tax_values[ $code ] ),
+							'type'                 => 'DISCOUNT',
 						);
 					}
 				}
@@ -1028,7 +1031,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		protected static function resurs_hostedflow_create_payment() {
 			global $woocommerce;
 			$flow = initializeResursFlow();
-			$flow->setPreferredPaymentService( ResursMethodTypes::METHOD_HOSTED );
+			$flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 			$flow->Include = array();
 		}
 
@@ -1098,9 +1101,9 @@ function woocommerce_gateway_resurs_bank_init() {
 							if ( ! isResursHosted() ) {
 								$fieldGenHtml .= '<div>' . $method_class->description . '</div>';
 								foreach ( $requiredFormFields['fields'] as $fieldName ) {
-									$doDisplay = "block";
+									$doDisplay           = "block";
 									$streamLineBehaviour = getResursOption( "streamlineBehaviour" );
-									if ($streamLineBehaviour  ) {
+									if ( $streamLineBehaviour ) {
 										if ( $this->flow->canHideFormField( $fieldName ) ) {
 											$doDisplay = "none";
 										}
@@ -1180,7 +1183,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			$order     = new WC_Order( $order_id );
 			$customer  = $woocommerce->customer;
-			$className = $_REQUEST['payment_method'];
+			$className = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] : null;
 
 			$payment_settings = get_option( 'woocommerce_' . $className . '_settings' );
 			$this->flow       = initializeResursFlow();
@@ -1301,7 +1304,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						$bookDataArray['customer']['type'] = $_REQUEST['ssnCustomerType'];
 					}
 					$bookDataArray['paymentData']['preferredId'] = $preferredId;
-					$this->flow->setPreferredPaymentService( ResursMethodTypes::METHOD_HOSTED );
+					$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 					$failBooking   = false;
 					$hostedFlowUrl = null;
 					try {
@@ -1310,7 +1313,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					} catch ( ResursException $hostedException ) {
 						$failBooking = true;
 					}
-					$jsonObject = $this->flow->getBookedJsonObject( ResursMethodTypes::METHOD_HOSTED );
+					$jsonObject = $this->flow->getBookedJsonObject( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 					$successUrl = null;
 					$failUrl    = null;
 					if ( isset( $jsonObject->successUrl ) ) {
@@ -1739,7 +1742,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$bookStatus = 'FROZEN';
 						}
 					}
-				} else if ( ( $_REQUEST['flow-type'] == "check_omni_response" || $request['flow-type'] == "check_omni_response" ) ) {
+				} else if ( ( ( isset( $_REQUEST['flow-type'] ) && $_REQUEST['flow-type'] == "check_omni_response" ) || ( isset( $request['flow-type'] ) && $request['flow-type'] == "check_omni_response" ) ) ) {
 					/*
                      * This part will from now take care of successful orders - the stuff that has been left below is however needed to "finalize"
                      * the payment when the customer is redirected back to the landing page.
@@ -1772,7 +1775,6 @@ function woocommerce_gateway_resurs_bank_init() {
 						$order->update_status( 'processing', __( 'The payment are signed and booked', 'WC_Payment_Gateway' ) );
 						WC()->cart->empty_cart();
 					}
-
 					wp_safe_redirect( $getRedirectUrl );
 
 					return;
@@ -2102,11 +2104,11 @@ function woocommerce_gateway_resurs_bank_init() {
                  * Overriding settings here, if we want getAddress picked from production instead of test.
                  * The only requirement for this to work is that we are running in test and credentials for production is set.
                  */
-				$userProd          = resursOption( "ga_login" );
-				$passProd          = resursOption( "ga_password" );
-				$disabledProdTests = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
+				$userProd                = resursOption( "ga_login" );
+				$passProd                = resursOption( "ga_password" );
+				$disabledProdTests       = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
 				$getAddressUseProduction = getResursOption( "getAddressUseProduction" );
-				if ($getAddressUseProduction  && isResursDemo() && $serverEnv == "test" && ! empty( $userProd ) && ! empty( $passProd ) && ! $disabledProdTests ) {
+				if ( $getAddressUseProduction && isResursDemo() && $serverEnv == "test" && ! empty( $userProd ) && ! empty( $passProd ) && ! $disabledProdTests ) {
 					$results = getAddressProd( $_REQUEST['ssn'], $customerType, self::get_ip_address() );
 				} else {
 					$flow = initializeResursFlow();
@@ -2248,7 +2250,11 @@ function woocommerce_gateway_resurs_bank_init() {
 			global $woocommerce, $current_user;
 
 			$order          = new WC_Order( $order_id );
-			$payment_method = $order->payment_method;
+			if (!isWooCommerce3()) {
+				$payment_method = $order->payment_method;
+			} else {
+				$payment_method = $order->get_payment_method();
+			}
 
 			$payment_id = get_post_meta( ! isWooCommerce3() ? $order->id : $order->get_id(), 'paymentId', true );
 			if ( false === (boolean) preg_match( '/resurs_bank/', $payment_method ) ) {
@@ -2332,8 +2338,10 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'processing':
 					break;
 				case 'completed':
-					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
-					if ($optionDisableAftershop) {break;}
+					$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
+					if ( $optionDisableAftershop ) {
+						break;
+					}
 					$flowCode         = 0;
 					$flowErrorMessage = "";
 					if ( $resursFlow->canDebit( $payment ) ) {
@@ -2363,8 +2371,10 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'on-hold':
 					break;
 				case 'cancelled':
-					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
-					if ($optionDisableAftershop) {break;}
+					$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
+					if ( $optionDisableAftershop ) {
+						break;
+					}
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
@@ -2380,8 +2390,10 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 					break;
 				case 'refunded':
-					$optionDisableAftershop = getResursOption("disableAftershopFunctions");
-					if ($optionDisableAftershop) {break;}
+					$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
+					if ( $optionDisableAftershop ) {
+						break;
+					}
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
@@ -2416,9 +2428,9 @@ function woocommerce_gateway_resurs_bank_init() {
 			return $checkout;
 		}
 
-		$selectedCountry = getResursOption( "country" );
+		$selectedCountry  = getResursOption( "country" );
 		$optionGetAddress = getResursOption( "getAddress" );
-		if ($optionGetAddress  && ! isResursOmni() ) {
+		if ( $optionGetAddress && ! isResursOmni() ) {
 			/*
              * MarGul change
              * If it's demoshop get the translation.
@@ -2566,7 +2578,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			'contactSupport'                  => __( "Please contact customer support for more information.", 'WC_Payment_Gateway' )
 		);
 
-		$oneRandomValue = null;
+		$oneRandomValue     = null;
 		$randomizeJsLoaders = getResursOption( "randomizeJsLoaders" );
 		if ( $randomizeJsLoaders ) {
 			$oneRandomValue = "?randomizeMe=" . rand( 1024, 65535 );
@@ -2808,8 +2820,8 @@ function resurs_order_data_info_after_shipping( $order = null ) {
  */
 function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 	global $orderInfoShown;
-
-	$showOrderInfoAfter = ( get_option( 'woocommerce_resurs-bank_settings' )['showOrderInfoAfter'] ? get_option( 'woocommerce_resurs-bank_settings' )['showOrderInfoAfter'] : "AO" );
+	$showOrderInfoAfterOption = getResursOption("showOrderInfoAfter", "woocommerce_resurs-bank_settings");
+	$showOrderInfoAfter = !empty($showOrderInfoAfterOption) ? $showOrderInfoAfterOption : "AO";
 	if ( $showOrderInfoAfter != $orderDataInfoAfter ) {
 		return;
 	}
@@ -3060,7 +3072,7 @@ function resurs_remove_order_item( $item_id ) {
 	}
 
 	$resursFlow = null;
-	if ( class_exists( 'ResursBank' ) ) {
+	if ( hasEcomPHP() ) {
 		$resursFlow = initializeResursFlow();
 	}
 	$clientPaymentSpec = array();
@@ -3344,13 +3356,13 @@ if ( ! function_exists( 'r_wc_get_order_item_type_by_item_id' ) ) {
  *
  * @return ResursBank
  */
-function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setEnvironment = ResursEnvironments::ENVIRONMENT_NOT_SET ) {
+function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_NOT_SET ) {
 	global $current_user;
 	$username       = resursOption( "login" );
 	$password       = resursOption( "password" );
 	$useEnvironment = getServerEnv();
 
-	if ( $setEnvironment !== ResursEnvironments::ENVIRONMENT_NOT_SET ) {
+	if ( $setEnvironment !== \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_NOT_SET ) {
 		$useEnvironment = $setEnvironment;
 	}
 
@@ -3361,10 +3373,10 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 		$password = $overridePassword;
 	}
 
-	$initFlow                      = new ResursBank( $username, $password );
+	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
 	$initFlow->convertObjects      = true;
 	$initFlow->convertObjectsOnGet = true;
-	$initFlow->setUserAgent("ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION);
+	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
 
 	if ( isset( $_REQUEST['testurl'] ) ) {
@@ -3404,7 +3416,7 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
 		$initFlow->convertObjects      = true;
 		$initFlow->convertObjectsOnGet = true;
 		$initFlow->setClientName( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
-		$initFlow->setEnvironment( ResursEnvironments::ENVIRONMENT_PRODUCTION );
+		$initFlow->setEnvironment( \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION );
 		try {
 			$getResponse = $initFlow->getAddress( $ssn, $customerType, $ip );
 
@@ -3424,19 +3436,19 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
  * @return int
  */
 function getServerEnv() {
-	$useEnvironment = ResursEnvironments::ENVIRONMENT_TEST;
+	$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST;
 
 	$serverEnv    = get_option( 'woocommerce_resurs-bank_settings' )['serverEnv'];
 	$demoshopMode = get_option( 'woocommerce_resurs-bank_settings' )['demoshopMode'];
 
 	if ( $serverEnv == 'live' ) {
-		$useEnvironment = ResursEnvironments::ENVIRONMENT_PRODUCTION;
+		$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION;
 	}
 	/*
      * Prohibit production mode if this is a demoshop
      */
 	if ( $serverEnv == 'test' || $demoshopMode == "true" ) {
-		$useEnvironment = ResursEnvironments::ENVIRONMENT_TEST;
+		$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST;
 	}
 
 	return $useEnvironment;
@@ -3448,7 +3460,7 @@ function getServerEnv() {
  */
 function isResursTest() {
 	$currentEnv = getServerEnv();
-	if ( $currentEnv === ResursEnvironments::ENVIRONMENT_TEST ) {
+	if ( $currentEnv === \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST ) {
 		return true;
 	}
 
@@ -3534,6 +3546,17 @@ function isResursOmni( $ignoreActiveFlag = false ) {
 function isResursHosted() {
 	$hasHosted = hasResursHosted();
 	if ( $hasHosted == 1 || $hasHosted === true ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * @return bool
+ */
+function hasEcomPHP() {
+	if ( class_exists( 'ResursBank' ) || class_exists( 'Resursbank\RBEcomPHP\ResursBank' ) ) {
 		return true;
 	}
 
