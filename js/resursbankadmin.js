@@ -282,7 +282,7 @@ function runResursAdminCallback(callbackName) {
         if (typeof testProcElement === "object") {
             testProcElement.html("Administration callback not successful");
         } else {
-            alert("Administration callback not successful");
+            //alert("Administration callback not successful");
         }
     });
 }
