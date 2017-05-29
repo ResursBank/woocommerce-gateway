@@ -2364,7 +2364,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							'message' => $flowErrorMessage
 						);
 					} else {
-						wp_set_object_terms( $order_id, array( $old_status->slug ), 'shop_order_status', false );
+						wp_set_object_terms( $order_id, array( $old_status_slug ), 'shop_order_status', false );
 						wp_safe_redirect( $url );
 					}
 					break;
@@ -2385,7 +2385,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							'type'    => 'error',
 							'message' => $flowErrorMessage
 						);
-						wp_set_object_terms( $order_id, array( $old_status->slug ), 'shop_order_status', false );
+						wp_set_object_terms( $order_id, array( $old_status_slug ), 'shop_order_status', false );
 						wp_safe_redirect( $url );
 					}
 					break;
@@ -2404,7 +2404,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							'type'    => 'error',
 							'message' => $flowErrorMessage
 						);
-						wp_set_object_terms( $order_id, array( $old_status->slug ), 'shop_order_status', false );
+						wp_set_object_terms( $order_id, array( $old_status_slug ), 'shop_order_status', false );
 						wp_safe_redirect( $url );
 					}
 					break;
