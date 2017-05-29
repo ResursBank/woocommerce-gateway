@@ -193,7 +193,6 @@ function runResursAdminCallback(callbackName) {
             }
         }
     }
-
     var dataObject = {
         'run': callbackName,
         'arg': typeof setArg !== "function" ? setArg : "",
@@ -274,10 +273,10 @@ function runResursAdminCallback(callbackName) {
         }
 
     }).fail(function (x, y) {
+        console.log("Failed in runResursAdminCallback(): " + y);
+	console.dir(x);
         if (typeof window[setArg] === "function") {
             window[setArg]([]);
-        } else {
-            setArg();
         }
         if (typeof testProcElement === "object") {
             testProcElement.html("Administration callback not successful");
@@ -304,8 +303,9 @@ function showResursCallbackArray(cbArrayResponse) {
                     callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td></tr>';
                 }
                 $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
-                    if (cbName !== "" && typeof cbObj["uriTemplate"] !== "undefined") {
-                        callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" ' + (isCached ? 'style="font-style:italic !important;"' : "") + ' width="75%">' + cbObj["uriTemplate"] + "</td></tr>";
+                    // uriTemplates must not be null
+                    if (cbName !== "" && typeof cbObj !== "undefined") {
+                        callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" ' + (isCached ? 'style="font-style:italic !important;"' : "") + ' width="75%">' + cbObj + "</td></tr>";
                     }
                 });
                 callbackContent += "</table><br>";
