@@ -388,7 +388,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				header( 'HTTP/1.0 204 CallbackWihtoutDigestTriggerOK' );
 				die();
 			}
-
 			if ( $event_type == "noevent" ) {
 				$myResponse   = null;
 				$myBool       = false;
@@ -630,7 +629,6 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			if ( $event_type === 'check_signing_response' ) {
 				$this->check_signing_response();
-
 				return;
 			}
 			if ( $event_type === "prepare-omni-order" ) {
@@ -1721,6 +1719,14 @@ function woocommerce_gateway_resurs_bank_init() {
 			$bookedPaymentId        = 0;
 			$bookStatus             = null;
 
+			$flowType = isset($request['flow-type']) ? $request['flow-type'] : "";
+			if (isset($_REQUEST['flow-type']) && empty($flowType)) {
+				$flowType = $_REQUEST['flow-type'];
+			}
+			$eventType = isset($request['event-type']) ? $request['event-type'] : "";
+			if (isset($_REQUEST['event-type']) && empty($eventType)) {
+				$eventType = $_REQUEST['event-type'];
+			}
 			if ( isset( $request['flow-type'] ) ) {
 				if ( $request['flow-type'] == "check_hosted_response" ) {
 					if ( isResursHosted() ) {
@@ -1743,7 +1749,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$bookStatus = 'FROZEN';
 						}
 					}
-				} else if ( ( ( isset( $_REQUEST['flow-type'] ) && $_REQUEST['flow-type'] == "check_omni_response" ) || ( isset( $request['flow-type'] ) && $request['flow-type'] == "check_omni_response" ) ) ) {
+				} else if ( $flowType == "check_omni_response" ) {
 					/*
                      * This part will from now take care of successful orders - the stuff that has been left below is however needed to "finalize"
                      * the payment when the customer is redirected back to the landing page.
@@ -1781,6 +1787,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					return;
 				}
 			}
+
 
 			if ( $paymentId != $requestedPaymentId && ! $isHostedFlow ) {
 				$order->update_status( 'failed' );

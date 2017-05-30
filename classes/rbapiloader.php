@@ -10,7 +10,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.1
- * @version 1.1.4
+ * @version 1.1.5
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -201,9 +201,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.4";
+	private $version = "1.1.5";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20170529";
+	private $lastUpdate = "20170530";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -2086,11 +2086,22 @@ class ResursBank {
 		return false;
 	}
 
+	/**
+	 * Set store id for the payload
+	 *
+	 * @param null $storeId
+	 */
 	public function setStoreId($storeId = null) {
 		if (!empty($storeId)) {
 			$this->storeId = $storeId;
 		}
 	}
+
+	/**
+	 * Get the configured store id
+	 *
+	 * @return mixed
+	 */
 	public function getStoreId() {
 		return $this->storeId;
 	}
@@ -2995,6 +3006,11 @@ class ResursBank {
 		return $foundArt;
 	}
 
+	/**
+	 * @param array $specLines
+	 *
+	 * @return array
+	 */
 	private function stripPaymentSpec( $specLines = array() ) {
 		$newSpec = array();
 		if ( is_array( $specLines ) && count( $specLines ) ) {
@@ -4250,8 +4266,11 @@ class ResursBank {
 		$error  = array();
 		$myFlow = $this->getPreferredPaymentService();
 		// Using this function to validate that card data info is properly set up during the deprecation state in >= 1.0.2/1.1.1
-		$this->validateCardData();
 		if ( $myFlow == ResursMethodTypes::METHOD_SIMPLIFIED ) {
+			$paymentMethodInfo = $this->getPaymentMethodSpecific($payment_id_or_method);
+			if ($paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo == "NEWCARD") {
+				$this->validateCardData();
+			}
 			$myFlowResponse  = $this->postService( 'bookPayment', $this->Payload );
 			$this->SpecLines = array();
 			return $myFlowResponse;
@@ -4298,10 +4317,32 @@ class ResursBank {
 		}
 	}
 
+	/**
+	 * Book signed payment
+	 *
+	 * @param string $paymentId
+	 *
+	 * @return array|mixed|null
+	 * @since 1.0.5
+	 * @since 1.1.5
+	 */
+	public function bookSignedPayment($paymentId = '') {
+		return $this->postService( "bookSignedPayment", array( 'paymentId' => $paymentId ) );
+	}
+
+	/**
+	 * @return mixed
+	 */
 	public function getPaymentSessionId() {
 		return $this->paymentSessionId;
 	}
 
+	/**
+	 * @return array|mixed
+	 * @throws \Exception
+	 * @since 1.0.3
+	 * @since 1.1.3
+	 */
 	public function Execute() {
 		if ( ! empty( $this->createPaymentExecuteCommand ) ) {
 			return $this->createPaymentExecute( $this->createPaymentExecuteCommand, $this->Payload );
@@ -4342,6 +4383,8 @@ class ResursBank {
 	 * @param array $payload
 	 *
 	 * @throws \Exception
+	 * @since 1.0.1
+	 * @since 1.1.1
 	 */
 	private function preparePayload( $payment_id_or_method = '', $payload = array() ) {
 		$this->InitializeServices();
@@ -4439,6 +4482,13 @@ class ResursBank {
 		}
 	}
 
+	/**
+	 * Return correct data on https-detection
+	 *
+	 * @param bool $returnProtocol
+	 *
+	 * @return bool|string
+	 */
 	private function hasHttps($returnProtocol = false) {
 		if (isset($_SERVER['HTTPS'])) {
 			if ($_SERVER['HTTPS'] == "on") {
@@ -4808,6 +4858,7 @@ class ResursBank {
 
 		return $returnBulk;
 	}
+
 
 	/**
 	 * Booking payments as a bulk (bookPaymentBuilder)
