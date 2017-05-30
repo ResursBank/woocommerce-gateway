@@ -143,7 +143,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 						if ( ! empty( $curOption ) ) {
 							$saveArray[ $fieldKey ] = $curOption;
 						} else {
-							$saveArray[ $fieldKey ] = $fieldData['default'];
+							$saveArray[ $fieldKey ] = isset($fieldData['default'])? $fieldData['default']:"";
 						}
 					}
 				}

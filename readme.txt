@@ -47,6 +47,14 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.1.0 =
+
+    * [WOO-143] EComPHP 1.1.x patch
+
+= 2.0.3 =
+
+    * [WOO-141] Ability to disable aftershop flow added
+
 = 2.0.2.7 =
 
     * [WOO-142] Can not run if (getResursOption($theKey)) for some PHP-releases. Variables must be set before iffing them.
