@@ -194,7 +194,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		);
 		$storeId = apply_filters("resursbank_set_storeid");
 		if (!empty($storeId)) {
-			// When PSE delivered the complete function, insert storeId in the payload for Resurs Checkout here
+		    $bookDataOmni['storeId'] = $storeId;
 		}
 
 		return $bookDataOmni;

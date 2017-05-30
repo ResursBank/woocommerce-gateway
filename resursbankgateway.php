@@ -1340,13 +1340,12 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					$storeId = apply_filters("resursbank_set_storeid");
 					if (!empty($storeId)) {
-						// When PSE delivered the complete function, insert storeId in the payload for simplified flow here
+						$bookDataArray['storeId'] = $storeId;
 					}
 					$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
-
 				return;
 			}
 
