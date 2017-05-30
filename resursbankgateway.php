@@ -1250,6 +1250,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				'finalizeIfBooked'    => resursOption( 'finalizeIfBooked' ),
 				'preferredId'         => $preferredId
 			);
+
 			$shortMethodName              = str_replace( 'resurs_bank_nr_', '', $className );
 			$cart                         = $woocommerce->cart;
 			$paymentSpec                  = $this->get_payment_spec( $cart, true );
@@ -1337,11 +1338,14 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					}
 				} else {
+					$storeId = apply_filters("resursbank_set_storeid");
+					if (!empty($storeId)) {
+						$bookDataArray['storeId'] = $storeId;
+					}
 					$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
-
 				return;
 			}
 

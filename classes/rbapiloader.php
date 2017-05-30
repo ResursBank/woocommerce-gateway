@@ -216,7 +216,7 @@ class ResursBank {
 	private $hasWsdl = false;
 	/** @var bool Internal "handshake" control that defines if the module has been initiated or not */
 	private $hasServicesInitialization = false;
-
+	/** @var bool Future functionality to backtrace customer ip address to something else than REMOTE_ADDR (if proxified) */
 	private $preferCustomerProxy = false;
 
 	///// Communication
@@ -296,6 +296,8 @@ class ResursBank {
 	private $jsonOmni = "";
 	/** @var int Default current environment. Always set to test (security reasons) */
 	private $current_environment_updated = false;
+
+	private $storeId;
 
 	/** @var string How EcomPHP should identify with the web services */
 	private $myUserAgent = null;
@@ -2082,6 +2084,15 @@ class ResursBank {
 		}
 
 		return false;
+	}
+
+	public function setStoreId($storeId = null) {
+		if (!empty($storeId)) {
+			$this->storeId = $storeId;
+		}
+	}
+	public function getStoreId() {
+		return $this->storeId;
 	}
 
 	/**
@@ -4373,6 +4384,11 @@ class ResursBank {
 				'preferredId'       => $this->getPreferredPaymentId(),
 				'customerIpAddress' => $this->getCustomerIp()
 			);
+			if ($this->enforceService === ResursMethodTypes::METHOD_SIMPLIFIED) {
+				if (!isset($this->Payload['storeId']) && !empty($this->storeId)) {
+					$this->Payload['storeId'] = $this->storeId;
+				}
+			}
 			$this->handlePayload( $paymentDataPayload );
 		}
 		if ( ( $this->enforceService == ResursMethodTypes::METHOD_CHECKOUT || $this->enforceService == ResursMethodTypes::METHOD_HOSTED ) ) {
@@ -4400,7 +4416,9 @@ class ResursBank {
 			}
 			// Rules for customer only applies to checkout. As this also involves the hosted flow (see above) this must only specifically occur on the checkout
 			if ( $this->enforceService == ResursMethodTypes::METHOD_CHECKOUT ) {
-
+				if (!isset($this->Payload['storeId']) && !empty($this->storeId)) {
+					$this->Payload['storeId'] = $this->storeId;
+				}
 				if ( isset( $this->Payload['paymentData'] ) ) {
 					unset( $this->Payload['paymentData'] );
 				}
