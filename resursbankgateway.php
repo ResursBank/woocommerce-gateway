@@ -511,11 +511,7 @@ function woocommerce_gateway_resurs_bank_init() {
 									$lastFetchedCache     = get_transient( "resurs_callback_templates_cache" );
 									if ( $lastFetchedCacheTime >= 86400 || empty( $lastFetchedCache ) || isset( $_REQUEST['force'] ) ) {
 										try {
-                                                                                        /*
-											foreach ( $this->callback_types as $callType => $ignoreContent ) {
-												$responseArray['callbacks'][ $callType ] = $this->flow->getRegisteredEventCallback( $callType );
-											}*/
-                                                                                        $responseArray['callbacks'] = $this->flow->getCallBacksByRest(true);
+											$responseArray['callbacks'] = $this->flow->getCallBacksByRest( true );
 											set_transient( "resurs_callback_templates_cache_last", time() );
 											$myBool = true;
 										} catch ( Exception $e ) {
@@ -654,15 +650,15 @@ function woocommerce_gateway_resurs_bank_init() {
 				header( 'HTTP/1.1 406 Digest not accepted', true, 406 );
 				exit;
 			}
-			$args     = array(
+			$args = array(
 				'post_type'  => 'shop_order',
 				'meta_key'   => 'paymentId',
 				'meta_value' => $request['paymentId'],
 			);
 			// Trying to fetch the correct order id first, via WP_Query, and then jumping over to our own function if that fails.
 			$my_query = new WP_Query( $args );
-			$orderId  = isset($my_query->posts[0]->ID)? $my_query->posts[0]->ID : "";
-			if (empty($orderId) ) {
+			$orderId  = isset( $my_query->posts[0]->ID ) ? $my_query->posts[0]->ID : "";
+			if ( empty( $orderId ) ) {
 				$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
 			}
 			$order = new WC_Order( $orderId );
@@ -1184,7 +1180,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			$order     = new WC_Order( $order_id );
 			$customer  = $woocommerce->customer;
-			$className = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] : null;
+			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
 
 			$payment_settings = get_option( 'woocommerce_' . $className . '_settings' );
 			$this->flow       = initializeResursFlow();
@@ -2250,8 +2246,8 @@ function woocommerce_gateway_resurs_bank_init() {
 		public static function order_status_changed( $order_id, $old_status_slug, $new_status_slug ) {
 			global $woocommerce, $current_user;
 
-			$order          = new WC_Order( $order_id );
-			if (!isWooCommerce3()) {
+			$order = new WC_Order( $order_id );
+			if ( ! isWooCommerce3() ) {
 				$payment_method = $order->payment_method;
 			} else {
 				$payment_method = $order->get_payment_method();
@@ -2821,8 +2817,8 @@ function resurs_order_data_info_after_shipping( $order = null ) {
  */
 function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 	global $orderInfoShown;
-	$showOrderInfoAfterOption = getResursOption("showOrderInfoAfter", "woocommerce_resurs-bank_settings");
-	$showOrderInfoAfter = !empty($showOrderInfoAfterOption) ? $showOrderInfoAfterOption : "AO";
+	$showOrderInfoAfterOption = getResursOption( "showOrderInfoAfter", "woocommerce_resurs-bank_settings" );
+	$showOrderInfoAfter       = ! empty( $showOrderInfoAfterOption ) ? $showOrderInfoAfterOption : "AO";
 	if ( $showOrderInfoAfter != $orderDataInfoAfter ) {
 		return;
 	}
