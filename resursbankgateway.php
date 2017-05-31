@@ -644,22 +644,21 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			$check_digest = sha1( $check_digest );
 			$check_digest = strtoupper( $check_digest );
-			if ( $request['digest'] !== $check_digest ) {
-				header( 'HTTP/1.1 406 Digest not accepted', true, 406 );
-				exit;
-			}
-			$args = array(
+			// Trying to fetch the correct order id first, via WP_Query, and then jumping over to our own function if that fails.
+			/*$args = array(
 				'post_type'  => 'shop_order',
 				'meta_key'   => 'paymentId',
 				'meta_value' => $request['paymentId'],
 			);
-			// Trying to fetch the correct order id first, via WP_Query, and then jumping over to our own function if that fails.
 			$my_query = new WP_Query( $args );
-			$orderId  = isset( $my_query->posts[0]->ID ) ? $my_query->posts[0]->ID : "";
-			if ( empty( $orderId ) ) {
-				$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
-			}
+			$orderId  = isset( $my_query->posts[0]->ID ) ? $my_query->posts[0]->ID : "";*/
+			$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
 			$order = new WC_Order( $orderId );
+			if ( $request['digest'] !== $check_digest ) {
+				$order->add_order_note( __( 'The Resurs Bank event '.$event_type.' was received but not accepted (digest fault)', 'WC_Payment_Gateway' ) );
+				header( 'HTTP/1.1 406 Digest not accepted', true, 406 );
+				exit;
+			}
 			switch ( $event_type ) {
 				case 'UNFREEZE':
 					$order->update_status( 'processing' );
