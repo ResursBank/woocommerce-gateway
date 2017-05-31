@@ -749,7 +749,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				default:
 					break;
 			}
-			header( 'HTTP/1.0 204 No Response' );
+			header( 'HTTP/1.1 204 Accepted' );
 			die();
 		}
 
