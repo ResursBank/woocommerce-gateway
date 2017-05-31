@@ -167,8 +167,9 @@ $RB(document).ready(function ($) {
                             function (successData) {
                                 var errorString = "";
                                 var isSuccess = false;
-                                if (typeof successData.success !== "undefined") {
-                                    if (successData.success === true) {
+                                console.dir(successData);
+                                if (typeof successData["success"] !== "undefined") {
+                                    if (successData["success"] === true) {
                                         isSuccess = true;
                                         resursCheckout.confirmOrder(true);
                                         return true;

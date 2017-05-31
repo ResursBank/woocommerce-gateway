@@ -750,6 +750,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 			}
 			header( 'HTTP/1.0 204 No Response' );
+			die();
 		}
 
 		/**
@@ -1335,10 +1336,10 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					}
 				} else {
-					$storeId = apply_filters("resursbank_set_storeid");
+					/*$storeId = apply_filters("resursbank_set_storeid");
 					if (!empty($storeId)) {
 						$bookDataArray['storeId'] = $storeId;
-					}
+					}*/
 					$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
 				}
 			} catch ( Exception $bookPaymentException ) {
