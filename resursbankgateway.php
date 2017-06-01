@@ -3717,8 +3717,5 @@ if (isset($_REQUEST['wc-api']) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && iss
 			die();
 		}
 	}
-
 }
 isResursSimulation();
-
-
