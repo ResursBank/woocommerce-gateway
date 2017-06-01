@@ -390,7 +390,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			if ( $event_type == "TEST" ) {
 				set_transient( 'resurs_callbacks_received', time() );
 				set_transient( 'resurs_callbacks_content', $_REQUEST );
-				header( 'HTTP/1.0 204 CallbackWihtoutDigestTriggerOK' );
+				header( 'HTTP/1.0 204 CallbackWithoutDigestTriggerOK' );
 				die();
 			}
 			if ( $event_type == "noevent" ) {
@@ -666,11 +666,13 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			switch ( $event_type ) {
 				case 'UNFREEZE':
+					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
 					$order->update_status( 'processing' );
 					$order->add_order_note( __( 'The Resurs Bank event UNFREEZE received', 'WC_Payment_Gateway' ) );
 					ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 					break;
 				case 'AUTOMATIC_FRAUD_CONTROL':
+					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
 					switch ( $request['result'] ) {
 						case 'THAWED':
 							$order->update_status( 'processing' );
@@ -690,6 +692,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 				case 'ANNULMENT':
 					/** @noinspection annotation */
+					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
 					update_post_meta( ! isWooCommerce3() ? $order->id : $order->get_id(), 'hasAnnulment', 1 );
 					$order->update_status( 'cancelled' );
 					if ( ! isWooCommerce3() ) {
@@ -701,6 +704,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 					break;
 				case 'FINALIZATION':
+					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
 					$order->update_status( 'completed' );
 					$order->add_order_note( __( 'FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway' ) );
 					$order->payment_complete();
@@ -708,6 +712,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 				case 'BOOKED':
 					$currentStatus = $order->get_status();
+					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
 					// If the order has been cancelled, you can't book it (170309 - WOO-86)
 					if ( $currentStatus != "cancelled" ) {
 						$order->update_status( 'processing' );
@@ -3702,6 +3707,18 @@ function isWooCommerce3() {
 	return hasWooCommerce( "3.0.0" );
 }
 
+if (isset($_REQUEST['wc-api']) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && isset($_REQUEST['paymentId'])) {
+	if (isset($_REQUEST['paymentId']) && isset($_REQUEST['event-type'])) {
+		$cbPaymentId = $_REQUEST['paymentId'];
+		$orderIdFast = wc_get_order_id_by_payment_id($cbPaymentId);
+		$hasCallbackCached = get_post_meta( $order->get_id(), 'hasCallback' . $_REQUEST['event-type'], true );
+		if (!empty($hasCallbackCached) && is_numeric($hasCallbackCached)) {
+			header( 'HTTP/1.1 204 CachedCallbackOK ' . $hasCallbackCached );
+			die();
+		}
+	}
+
+}
 isResursSimulation();
 
 
