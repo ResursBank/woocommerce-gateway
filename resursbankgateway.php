@@ -3710,10 +3710,11 @@ function isWooCommerce3() {
 if (isset($_REQUEST['wc-api']) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && isset($_REQUEST['paymentId'])) {
 	if (isset($_REQUEST['paymentId']) && isset($_REQUEST['event-type'])) {
 		$cbPaymentId = $_REQUEST['paymentId'];
+		$eventType = $_REQUEST['event-type'];
 		$orderIdFast = wc_get_order_id_by_payment_id($cbPaymentId);
-		$hasCallbackCached = get_post_meta( $orderIdFast, 'hasCallback' . $_REQUEST['event-type'], true );
+		$hasCallbackCached = get_post_meta( $orderIdFast, 'hasCallback' . $eventType, true );
 		if (!empty($hasCallbackCached) && is_numeric($hasCallbackCached)) {
-			header( 'HTTP/1.1 204 CachedCallbackOK ' . $hasCallbackCached );
+			header( 'HTTP/1.1 204 CachedCallback '.$eventType.' OK ' . $hasCallbackCached );
 			die();
 		}
 	}
