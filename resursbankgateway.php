@@ -1346,10 +1346,10 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					}
 				} else {
-					/*$storeId = apply_filters("resursbank_set_storeid");
+					$storeId = apply_filters("resursbank_set_storeid", null);
 					if (!empty($storeId)) {
 						$bookDataArray['storeId'] = $storeId;
-					}*/
+					}
 					$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
 				}
 			} catch ( Exception $bookPaymentException ) {
@@ -2509,9 +2509,15 @@ function woocommerce_gateway_resurs_bank_init() {
 			$flow           = initializeResursFlow();
 			$sEnv           = getServerEnv();
 			$OmniUrl        = $flow->getOmniUrl( $sEnv );
-			$omniRef        = WC()->session->get( 'omniRef' );
-			$omniRefCreated = WC()->session->get( 'omniRefCreated' );
-			$omniRefAge     = intval( WC()->session->get( 'omniRefAge' ) );
+			$isWooSession = false;
+			if (isset(WC()->session)) {
+				$isWooSession = true;
+			}
+			if ($isWooSession) {
+				$omniRef        = WC()->session->get( 'omniRef' );
+				$omniRefCreated = WC()->session->get( 'omniRefCreated' );
+				$omniRefAge     = intval( WC()->session->get( 'omniRefAge' ) );
+			}
 
 			$OmniVars         = array(
 				'RESURSCHECKOUT_IFRAME_URL'            => $OmniUrl,
@@ -2535,7 +2541,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			/*
              * During the creation of new omnivars, make sure they are not duplicates from older orders.
              */
-			if ( $setSessionEnable && function_exists( 'WC' ) && isset( WC()->session ) ) {
+			if ( $setSessionEnable && function_exists( 'WC' ) && $isWooSession ) {
 				$currentOmniRef = WC()->session->get( 'omniRef' );
 				// The resursCreatePass variable is only set when everything was successful.
 				$resursCreatePass = WC()->session->get( 'resursCreatePass' );

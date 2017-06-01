@@ -501,7 +501,8 @@ function getMethodType(customerType) {
     }
 }
 
-function ResursRegexMatch(objectBound, regEx) {}
+function ResursRegexMatch(objectBound, regEx) {
+}
 
 function preSetResursMethods(customerType, returnedObjects) {
     var hideElm;
@@ -596,3 +597,4 @@ function handleResursCheckoutError(resursErrorMessage) {
         alert(resursErrorMessage);
     }
 }
+
