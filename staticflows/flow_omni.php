@@ -160,7 +160,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	}
 
 	protected function resurs_omnicheckout_create_frame() {
-		$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_OMNI );
+		$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_CHECKOUT );
 		$this->flow->Include = array();
 		$bookDataOmni        = self::createResursOmniOrder();
 		//$shopUrl = home_url('');

@@ -62,7 +62,6 @@ function woocommerce_gateway_resurs_bank_init() {
 		exit;
 	}
 
-
 	/**
 	 * Localization
 	 */
@@ -85,6 +84,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 */
 		public function __construct() {
 			global $current_user, $wpdb, $woocommerce;
+			add_action( 'woocommerce_api_wc_resurs_bank', array( $this, 'check_callback_response' ) );
 			if ( function_exists( 'wp_get_current_user' ) ) {
 				wp_get_current_user();
 			} else {
@@ -321,7 +321,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 			}
 
-			add_action( 'woocommerce_api_wc_resurs_bank', array( $this, 'check_callback_response' ) );
 			if ( hasWooCommerce( "2.0.0", ">=" ) ) {
 				add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
 					$this,
@@ -373,6 +372,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 */
 		public function check_callback_response() {
 			global $wpdb;
+
 			$mySession        = false;
 			$url_arr          = parse_url( $_SERVER["REQUEST_URI"] );
 			$url_arr['query'] = str_replace( 'amp;', '', $url_arr['query'] );
@@ -381,6 +381,11 @@ function woocommerce_gateway_resurs_bank_init() {
 				$request = $_GET;
 			}
 			$event_type = $request['event-type'];
+
+			/*if ($event_type == 'BOOKED' && $_SERVER['REQUEST_METHOD'] == "GET") {
+				header( 'HTTP/1.1 407 Event BOOKED only accepting POST', true, 407 );
+				die("Event BOOKED only accepting POST");
+			}*/
 
 			if ( $event_type == "TEST" ) {
 				set_transient( 'resurs_callbacks_received', time() );
@@ -2761,7 +2766,6 @@ function woocommerce_gateway_resurs_bank_init() {
 	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway' );
 	add_filter( 'woocommerce_available_payment_gateways', 'woocommerce_resurs_bank_available_payment_gateways' ); // Had prio 1
 
-
 	add_filter( 'woocommerce_before_checkout_billing_form', 'add_ssn_checkout_field' );
 	add_action( 'woocommerce_order_status_changed', 'WC_Resurs_Bank::order_status_changed', 10, 3 );
 
@@ -3158,7 +3162,6 @@ function resurs_remove_order_item( $item_id ) {
 function wc_get_order_id_by_payment_id( $paymentId = '' ) {
 	global $wpdb;
 	$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and meta_value = '%s'", $paymentId ) );
-
 	return $order_id;
 }
 
@@ -3512,7 +3515,6 @@ function isResursSimulation() {
 
 function repairResursSimulation( $returnRepairState = false ) {
 	setResursOption( "devSimulateErrors", $returnRepairState );
-
 	return $returnRepairState;
 }
 
@@ -3701,3 +3703,5 @@ function isWooCommerce3() {
 }
 
 isResursSimulation();
+
+
