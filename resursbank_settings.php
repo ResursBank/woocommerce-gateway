@@ -277,6 +277,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 			$returnTextBox .= '
                 <td style="cursor: pointer;">
                     <span onclick="resursEditProtectedField(this, \'' . $namespace . '\')" id="' . $namespace . '_' . $settingKey . '">' . __( 'Click to edit', 'WC_Payment_Gateway' ) . '</span>
+                    <span id="' . $namespace . '_' . $settingKey . '_spinner" style="display:none;"></span>
                     <span id="' . $namespace . '_' . $settingKey . '_hidden" style="display:none;">
                         <input ' . $scriptLoader . ' type="text" id="' . $namespace . '_' . $settingKey . '_value" size="64" value=""> ' . $setLabel . '
                         <input type="button" onclick="resursSaveProtectedField(\'' . $namespace . '_' . $settingKey . '\', \'' . $namespace . '\', \'' . $scriptLoader . '\')" value="' . __( "Save" ) . '">
