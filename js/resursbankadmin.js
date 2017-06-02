@@ -283,7 +283,6 @@ function runResursAdminCallback(callbackName) {
 
     }).fail(function (x, y) {
         console.log("Failed in runResursAdminCallback(): " + y);
-	console.dir(x);
         if (typeof window[setArg] === "function") {
             window[setArg]([]);
         }
