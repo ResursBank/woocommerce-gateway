@@ -2527,6 +2527,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				'OmniRefCreated'                       => isset( $omniRefCreated ) && ! empty( $omniRefCreated ) ? $omniRefCreated : null,
 				'OmniRefAge'                           => $omniRefAge,
 				'isResursTest'                         => isResursTest(),
+				'iframeShape'                         => getResursOption("iframeShape", "woocommerce_resurs_bank_omnicheckout_settings"),
 				'useStandardFieldsForShipping'         => getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" )
 			);

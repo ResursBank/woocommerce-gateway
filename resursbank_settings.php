@@ -655,6 +655,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					echo $this->setTextBox( 'description', $namespace );
 					echo $this->setSeparator( __( 'Checkout', 'WC_Payment_Gateway' ) );
 					echo $this->setDropDown( 'iFrameLocation', $namespace );
+					echo $this->setTextBox( 'iframeShape', $namespace );
 					// This is reserved for future use, so we won't touch this for now
 					//echo $this->setCheckBox( 'useStandardFieldsForShipping', $namespace );
 					echo $this->setSeparator( __( 'Advanced', 'WC_Payment_Gateway' ) );

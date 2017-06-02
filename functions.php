@@ -187,7 +187,7 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'description' => __( 'Defines whether the plugin should wait for the fraud control when booking payments, or not', 'WC_Payment_Gateway' ),
 					'desc_tip'    => true,
 				),
-				'disableAftershopFunctions'                     => array(
+				'disableAftershopFunctions'            => array(
 					'title'       => __( 'Disable Aftershop', 'WC_Payment_Gateway' ),
 					'label'       => __( 'Disable aftershop capabilities', 'woocommerce' ),
 					'type'        => 'checkbox',
@@ -410,6 +410,13 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'type'        => 'textarea',
 					'default'     => 'Betala med Resurs Checkout',
 					'description' => __( 'This controls the payment method description which the user sees during checkout.', 'WC_Payment_Gateway' ),
+					'desc_tip'    => true,
+				),
+				'iframeShape'                          => array(
+					'title'       => __( 'Change the (CSS)-shape of the iframe', 'woocommerce' ),
+					'type'        => 'text',
+					'default'     => '',
+					'description' => __( 'This controls the shape of the iframe CSS (meaning you may use CSS code here to change the background and shape of the iframe)', 'WC_Payment_Gateway' ),
 					'desc_tip'    => true,
 				),
 				'iFrameLocation'                       => array(
@@ -923,13 +930,13 @@ if ( ! function_exists( "callbackUpdateRequest" ) ) {
 		 */
 		$requestForCallbacks    = false;
 		$callbackUpdateInterval = "";
-		$login = getResursOption( "login" );
-		$password = getResursOption( "password" );
+		$login                  = getResursOption( "login" );
+		$password               = getResursOption( "password" );
 		if ( ! empty( $login ) && ! empty( $password ) && is_admin() ) {
 			/*
 			 * Make sure callbacks are up to date with an interval
 			 */
-			$cbuInterval = getResursOption( "callbackUpdateInterval" );
+			$cbuInterval            = getResursOption( "callbackUpdateInterval" );
 			$callbackUpdateInterval = ! empty( $cbuInterval ) ? intval( $cbuInterval ) : 7;
 			if ( $callbackUpdateInterval > 7 || $callbackUpdateInterval < 0 ) {
 				$callbackUpdateInterval = 7;
@@ -937,7 +944,7 @@ if ( ! function_exists( "callbackUpdateRequest" ) ) {
 			$lastCallbackRequest     = get_transient( 'resurs_bank_last_callback_setup' );
 			$lastCallbackRequestDiff = time() - $lastCallbackRequest;
 			$dayInterval             = $callbackUpdateInterval * 86400;
-			$cbuAutomation = getResursOption( "callbackUpdateAutomation" );
+			$cbuAutomation           = getResursOption( "callbackUpdateAutomation" );
 			if ( ( $cbuAutomation && $lastCallbackRequestDiff >= $dayInterval ) || empty( $lastCallbackRequest ) ) {
 				$requestForCallbacks = true;
 			}

@@ -11,6 +11,7 @@ if (null !== omnivars) {
 
 
 $RB(document).ready(function ($) {
+        //$RB('#resurs-checkout-container iframe').css('background-color', '#9900FF');
         if (typeof ResursCheckout !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
             if (omnivars["useStandardFieldsForShipping"] == "1") {
                 console.log("ResursCheckout: useStandardFieldsForShipping (Experimental) is active, so customer fields are hidden rather than removed");
@@ -37,6 +38,11 @@ $RB(document).ready(function ($) {
                 resursCheckout.setDebug(1);
             }
             resursCheckout.init();
+            if (typeof omnivars["iframeShape"] != "undefined" && omnivars["iframeShape"] != "") {
+                resursCheckout.setOnIframeReady(function (iframeElement) {
+                    iframeElement.setAttribute('style', omnivars["iframeShape"]);
+                });
+            }
             resursCheckout.setPurchaseFailCallback(function () {
                 // OmniRef.
                 var omniRef;
