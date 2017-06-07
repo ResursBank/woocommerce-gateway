@@ -201,9 +201,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.5";
+	private $version = "1.1.7";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20170601";
+	private $lastUpdate = "20170607";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -1904,11 +1904,17 @@ class ResursBank {
 	public function getPaymentMethods( $parameters = array() ) {
 		$this->InitializeServices();
 
-		return $this->postService( "getPaymentMethods", array(
+		$paymentMethods = $this->postService( "getPaymentMethods", array(
 			'customerType'   => isset( $parameters['customerType'] ) ? $parameters['customerType'] : null,
 			'language'       => isset( $parameters['language'] ) ? $parameters['language'] : null,
 			'purchaseAmount' => isset( $parameters['purchaseAmount'] ) ? $parameters['purchaseAmount'] : null
 		) );
+		// Make sure this method always returns an array even if it is only one method. Ecommerce will, in case of only one available method
+		// return an object instead of an array.
+		if (is_object($paymentMethods)) {
+			$paymentMethods = array($paymentMethods);
+		}
+		return $paymentMethods;
 	}
 
 	/**
