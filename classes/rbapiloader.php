@@ -10,7 +10,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.1
- * @version 1.1.5
+ * @version 1.1.7
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -24,10 +24,10 @@ namespace Resursbank\RBEcomPHP;
 if ( ! defined( 'RB_API_PATH' ) ) {
 	define( 'RB_API_PATH', __DIR__ );
 }
-require_once( RB_API_PATH . '/thirdparty/network.php' );
-require_once( RB_API_PATH . '/rbapiloader/ResursTypeClasses.php' );
-require_once( RB_API_PATH . '/rbapiloader/ResursEnvironments.php' );
-require_once( RB_API_PATH . '/rbapiloader/ResursException.php' );
+require_once(RB_API_PATH . '/thirdparty/network.php');
+require_once(RB_API_PATH . '/rbapiloader/ResursTypeClasses.php');
+require_once(RB_API_PATH . '/rbapiloader/ResursEnvironments.php');
+require_once(RB_API_PATH . '/rbapiloader/ResursException.php');
 
 /**
  * Class ResursBank Primary class for EComPHP
