@@ -681,6 +681,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					echo $this->setCheckBox( 'showResursCheckoutStandardFieldsTest', $namespace );
 					echo $this->setSeparator( __( 'Miscellaneous', 'WC_Payment_Gateway' ) );
 					echo $this->setCheckBox( 'streamlineBehaviour', $namespace );
+					echo $this->setCheckBox( 'showPaymentIdInOrderList', $namespace );
 					echo $this->setSeparator( __( 'Special test occasions', 'WC_Payment_Gateway' ), 'configSeparateTitleSmall' );
 					echo $this->setCheckBox( 'demoshopMode', $namespace );
 
