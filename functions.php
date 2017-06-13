@@ -262,6 +262,17 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'label'       => __( 'Enabled', 'woocommerce' ),
 					'default'     => 'true'
 				),
+				'showPaymentIdInOrderList'                  => array(
+					'title'       => __( 'Show Resurs Bank payment ids in order view', 'WC_Payment_Gateway' ),
+					'description' => __( 'Do you need to show order references in the order list view? This makes it happen!', 'WC_Payment_Gateway' ),
+					'type'        => 'checkbox',
+					'options'     => array(
+						'true'  => 'true',
+						'false' => 'false',
+					),
+					'label'       => __( 'Enabled', 'woocommerce' ),
+					'default'     => 'false'
+				),
 				'demoshopMode'                         => array(
 					'title'       => __( 'Demoshopläge', 'WC_Payment_Gateway' ),
 					'description' => __( 'Define if this shop is a demo store or not, which opens for more functionality (This option also forces the use of test environment)', 'WC_Payment_Gateway' ),

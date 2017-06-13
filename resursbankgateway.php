@@ -1179,6 +1179,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				return;
 			}
 			$order     = new WC_Order( $order_id );
+			$preferredId = $this->flow->getPreferredId( 25 );
+			update_post_meta( $order_id, 'paymentId', $preferredId );
 			$customer  = $woocommerce->customer;
 			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
 
@@ -1219,8 +1221,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				unset( $bookDataArray['address']['addressRow2'] );
 			};
 
-			$preferredId = $this->flow->getPreferredId( 25 );
-
 			/* Generate successUrl for the signing (Legacy) */
 			$success_url = home_url( '/' );
 			$success_url = add_query_arg( 'wc-api', 'WC_Resurs_Bank', $success_url );
@@ -1250,6 +1250,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				'finalizeIfBooked'    => resursOption( 'finalizeIfBooked' ),
 				'preferredId'         => $preferredId
 			);
+
 			$shortMethodName              = str_replace( 'resurs_bank_nr_', '', $className );
 			$cart                         = $woocommerce->cart;
 			$paymentSpec                  = $this->get_payment_spec( $cart, true );
@@ -1322,8 +1323,6 @@ function woocommerce_gateway_resurs_bank_init() {
 					if ( ! $failBooking && ! empty( $hostedFlowUrl ) ) {
 						$order->update_status( 'pending' );
 						$bookedStatus = 'FROZEN';
-						update_post_meta( $order_id, 'paymentId', $preferredId );
-
 						return array(
 							'result'   => 'success',
 							'redirect' => $hostedFlowUrl
@@ -1337,23 +1336,26 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					}
 				} else {
+					$storeId = apply_filters("resursbank_set_storeid", null);
+					if (!empty($storeId)) {
+						$bookDataArray['storeId'] = $storeId;
+					}
 					$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
-
 				return;
 			}
 
 			$bookedStatus    = $this->flow->getBookedStatus( $bookPaymentResult );
 			$bookedPaymentId = $this->flow->getBookedPaymentId( $bookPaymentResult );
-			/* Make sure that we have a confirmed paymentId-link to the booked payment */
-			if ( $bookedPaymentId ) {
-				update_post_meta( $order_id, 'paymentId', $bookedPaymentId );
-			} else {
-				/* When things fail */
+			if ( empty($bookedPaymentId )) {
 				$bookedStatus = "FAILED";
+			} else {
+				update_post_meta( $order_id, 'paymentId', $bookedPaymentId );
 			}
+
+			//echo "$order_id = " . $bookedPaymentId . "/" . $preferredId;die();
 			/* Simplified responses */
 			switch ( $bookedStatus ) {
 				case 'FINALIZED':
@@ -2459,8 +2461,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					$translation = array();
 				}
-				$get_address = ( ! empty( $translation ) ) ? $translation['get_address'] : 'Get address';
-				echo '<a href="#" class="button" id="fetch_address">' . __( $get_address, 'WC_Payment_Gateway' ) . '</a><br>';
+				$get_address = ( ! empty( $translation ) ) ? $translation['get_address'] : __('Get address', 'WC_Payment_Gateway');
+				echo '<a href="#" class="button" id="fetch_address">' . $get_address . '</a><br>';
 			}
 		}
 
@@ -2741,8 +2743,24 @@ function woocommerce_gateway_resurs_bank_init() {
 	 */
 	function woocommerce_resurs_bank_available_payment_gateways( $gateways ) {
 		unset( $gateways['resurs-bank'] );
-
 		return $gateways;
+	}
+	function resurs_order_column_header($columns) {
+		$new_columns = array();
+		foreach ($columns as $column_name => $column_info) {
+			$new_columns[$column_name] = $column_info;
+			if ($column_name == "order_title") {
+				$new_columns['resurs_order_id'] = __( 'Resurs Reference', 'WC_Payment_Gateway' );
+			}
+		}
+		return $new_columns;
+	}
+	function resurs_order_column_info($column) {
+		global $post;
+		if ($column == "resurs_order_id") {
+			$resursId = wc_get_payment_id_by_order_id($post->ID);
+			echo $resursId;
+		}
 	}
 
 	/* Load settings pages through this class */
@@ -2785,6 +2803,10 @@ function woocommerce_gateway_resurs_bank_init() {
 	//add_action( 'woocommerce_after_checkout_form' , 'resurs_omnicheckout_after_checkout_form' );
 	add_filter( 'woocommerce_order_button_html', 'resurs_omnicheckout_order_button_html' );
 	add_filter( 'woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check' );
+	if (getResursOption("showPaymentIdInOrderList")) {
+		add_filter( 'manage_edit-shop_order_columns', 'resurs_order_column_header' );
+		add_action( 'manage_shop_order_posts_custom_column', 'resurs_order_column_info' );
+	}
 }
 
 /**
