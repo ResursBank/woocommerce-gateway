@@ -4991,8 +4991,6 @@ class ResursBank {
 	 * @param null $object
 	 *
 	 * @return object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
 	 */
 	private function getBookedParameter( $parameter = '', $object = null ) {
 		if ( is_null( $object ) && is_object( $this->lastBookPayment ) ) {
@@ -5016,8 +5014,6 @@ class ResursBank {
 	 * @param null $lastBookPayment
 	 *
 	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
 	 */
 	public function getBookedStatus( $lastBookPayment = null ) {
 		$bookStatus = $this->getBookedParameter( 'bookPaymentStatus', $lastBookPayment );
@@ -5034,8 +5030,6 @@ class ResursBank {
 	 * @param null $lastBookPayment
 	 *
 	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
 	 */
 	public function getBookedPaymentId( $lastBookPayment = null ) {
 		$paymentId = $this->getBookedParameter( 'paymentId', $lastBookPayment );
