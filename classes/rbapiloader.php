@@ -21,6 +21,8 @@ namespace Resursbank\RBEcomPHP;
 /**
  * Location of RBEcomPHP class files.
  */
+use TorneLIB\CURL_POST_AS;
+
 if ( ! defined( 'RB_API_PATH' ) ) {
 	define( 'RB_API_PATH', __DIR__ );
 }
@@ -203,7 +205,7 @@ class ResursBank {
 	/** @var string The version of this gateway */
 	private $version = "1.1.8";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20170607";
+	private $lastUpdate = "20170615";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -2579,8 +2581,6 @@ class ResursBank {
 	 * @param array $arrSkipIndices
 	 *
 	 * @return array
-	 * @deprecated 1.0.8 Can be removed when the aftershop flow and payment specs are fixed
-	 * @deprecated 1.1.8 Can be removed when the aftershop flow and payment specs are fixed
 	 */
 	private function objectsIntoArray( $arrObjData, $arrSkipIndices = array() ) {
 		$arrData = array();
@@ -5508,11 +5508,11 @@ class ResursBank {
 	 *
 	 * @return mixed
 	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
+	 * @deprecated 1.0.8
+	 * @deprecated 1.1.8
 	 */
 	public function omniUpdateOrder( $jsonData, $paymentId = '' ) {
-		// TODO: MUST BE FIXED!!
+		return $this->setCheckoutFrameOrderLines($paymentId, $jsonData);
 		if ( empty( $paymentId ) ) {
 			throw new \Exception( "Payment id not set" );
 		}
@@ -5523,6 +5523,37 @@ class ResursBank {
 		return $engineResponse;
 	}
 
+	/**
+	 * Update the Checkout iframe
+	 *
+	 * Backwards compatible so the formatting of the orderLines will be accepted in folllowing formats:
+	 *  - $orderLines is accepted as a json string
+	 *  - $orderLines can be sent in as array('orderLines' => $yourOrderlines)
+	 *  - $orderLines can be sent in as array($yourOrderlines)
+	 *
+	 * @param string $paymentId
+	 * @param array $orderLines
+	 * @return array
+	 * @throws \Exception
+	 * @since 1.0.8
+	 * @since 1.1.8
+	 */
+	public function setCheckoutFrameOrderLines($paymentId = '', $orderLines = array()) {
+		if ( empty( $paymentId ) ) {
+			throw new \Exception( "Payment id not set" );
+		}
+		if ( ! $this->hasServicesInitialization ) {
+			$this->InitializeServices();
+		}
+		$defaultOrderLines = $orderLines;
+		if (is_string($orderLines)) {
+			// If this is a string, it might be an json string from older systems. We need, in that case make sure it is returned as an array.
+			// This will destroy the content going to the PUT call, if it is not the case. However, sending a string to this point has no effect in the flow whatsoever.
+			$orderLines = $this->objectsIntoArray(json_decode($orderLines));
+			$defaultOrderLines = isset($orderLines['orderLines']) ? array('orderLines'=>$orderLines['orderLines']) : $orderLines;
+		}
+		return $this->CURL->doPut($this->getCheckoutUrl() . "/checkout/payments/" . $paymentId, $defaultOrderLines, CURL_POST_AS::POST_AS_JSON);
+	}
 
 	////// HOSTED FLOW
 
