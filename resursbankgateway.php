@@ -1048,11 +1048,16 @@ function woocommerce_gateway_resurs_bank_init() {
 			$cart        = $woocommerce->cart;
 			$paymentSpec = $this->get_payment_spec( $cart );
 			$totalAmount = $paymentSpec['totalAmount'];
-			//$methodList = get_transient('resurs_bank_payment_methods');
 			$fieldGenHtml     = "";
 			$sessionHasErrors = false;
 			try {
-				$methodList = $this->flow->getPaymentMethods();
+				$cacheMethods = get_transient('resurs_bank_methods_checkout_cache');
+				if (empty($cacheMethods)) {
+					$methodList = $this->flow->getPaymentMethods();
+					set_transient("resurs_bank_methods_checkout_cache", $methodList, 3600);
+				} else {
+					$methodList = $cacheMethods;
+				}
 			} catch ( Exception $e ) {
 				$sessionHasErrors    = true;
 				$sessionErrorMessage = $e->getMessage();
@@ -1119,7 +1124,7 @@ function woocommerce_gateway_resurs_bank_init() {
 									}
 									$fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
 									$fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $labels[ $fieldName ] . '</label>';
-									$fieldGenHtml .= '<input id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
+									$fieldGenHtml .= '<input onkeyup="rbFormChange(\''.$fieldName.'\', this)" id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
 									$fieldGenHtml .= '</div>';
 								}
 
@@ -1278,7 +1283,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 			}
 			if ( $methodSpecification->customerType == "LEGAL" ) {
-				$bookDataArray['customer']['contactGovernmentId'] = $_REQUEST['contactGovernmentId'];
+				$bookDataArray['customer']['contactGovernmentId'] = (isset($_REQUEST['contact-government-id']) ? $_REQUEST['contact-government-id'] :  null);
 			}
 			if ( isset( $_REQUEST['applicant-mobile-number'] ) && ! empty( $_REQUEST['applicant-mobile-number'] ) ) {
 				$bookDataArray['customer']['cellPhone'] = $_REQUEST['applicant-mobile-number'];
@@ -1305,12 +1310,18 @@ function woocommerce_gateway_resurs_bank_init() {
 					$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 					$failBooking   = false;
 					$hostedFlowUrl = null;
-					try {
-						$hostedBookPayment = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, false );
-						$hostedFlowUrl     = $hostedBookPayment;
-					} catch ( ResursException $hostedException ) {
-						$failBooking = true;
+					if ($methodSpecification->type == "PAYMENT_PROVIDER") {
+						wc_add_notice(__('The payment method is not available for the selected payment flow', 'WC_Payment_Gateway'), 'error');
+						return;
+					} else {
+						try {
+							$hostedBookPayment = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, false );
+							$hostedFlowUrl     = $hostedBookPayment;
+						} catch ( ResursException $hostedException ) {
+							$failBooking = true;
+						}
 					}
+
 					$jsonObject = $this->flow->getBookedJsonObject( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 					$successUrl = null;
 					$failUrl    = null;
@@ -1329,18 +1340,23 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					} else {
 						$order->update_status( 'failed', __( 'An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly', 'WC_Payment_Gateway' ) );
-
 						return array(
 							'result'   => 'failure',
 							'redirect' => $failUrl
 						);
 					}
 				} else {
-					$storeId = apply_filters("resursbank_set_storeid", null);
-					if (!empty($storeId)) {
-						$bookDataArray['storeId'] = $storeId;
+					if ($methodSpecification->type == "PAYMENT_PROVIDER") {
+						wc_add_notice(__('The payment method is not available for the selected payment flow', 'WC_Payment_Gateway'), 'error');
+						return;
+					} else {
+						$storeId = apply_filters( "resursbank_set_storeid", null );
+						if ( ! empty( $storeId ) ) {
+							$bookDataArray['storeId'] = $storeId;
+							update_post_meta( $order_id, 'resursStoreId', $storeId );
+						}
+						$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
 					}
-					$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
@@ -1756,6 +1772,11 @@ function woocommerce_gateway_resurs_bank_init() {
 					$paymentId = isset( $request['payment_id'] ) && ! empty( $request['payment_id'] ) ? $request['payment_id'] : null;
 					$order_id  = wc_get_order_id_by_payment_id( $paymentId );
 					$order     = new WC_Order( $order_id );
+
+					$storeId = apply_filters("resursbank_set_storeid", null);
+					if (!empty($storeId)) {
+						update_post_meta( $order_id, 'resursStoreId', $storeId );
+					}
 
 					if ( $request['failInProgress'] == "1" || isset( $_REQUEST['failInProgress'] ) && $_REQUEST['failInProgress'] == "1" ) {
 						$order->update_status( 'cancelled', __( 'The payment failed during purchase', 'WC_Payment_Gateway' ) );
@@ -2434,8 +2455,8 @@ function woocommerce_gateway_resurs_bank_init() {
              * MarGul change
              * If it's demoshop get the translation.
              */
-			$private = 'Private';
-			$company = 'Company';
+			$private = __('Private', 'WC_Payment_Gateway');
+			$company = __('Company', 'WC_Payment_Gateway');
 			if ( isResursDemo() && class_exists( 'CountryHandler' ) ) {
 				$translation = CountryHandler::getDictionary();
 				$private     = $translation['private'];
@@ -2943,6 +2964,9 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . __( 'Payment method ID', 'WC_Payment_Gateway' ) . ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( isset( $resursPaymentInfo->paymentMethodId ) && ! empty( $resursPaymentInfo->paymentMethodId ) ? $resursPaymentInfo->paymentMethodId : "" ) . '</span>
+
+                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . __( 'Store ID', 'WC_Payment_Gateway' ) . ':</span>
+                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( isset( $resursPaymentInfo->storeId ) && ! empty( $resursPaymentInfo->storeId ) ? $resursPaymentInfo->storeId : "" ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . __( 'Payment method name', 'WC_Payment_Gateway' ) . ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( isset( $resursPaymentInfo->paymentMethodName ) && ! empty( $resursPaymentInfo->paymentMethodName ) ? $resursPaymentInfo->paymentMethodName : "" ) . '</span>
