@@ -344,6 +344,7 @@ class TorneLIB_Network
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class TorneLIB_Network_IP IP Address Types class
  * @package TorneLIB
@@ -357,6 +358,7 @@ abstract class TorneLIB_Network_IP
 
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class Tornevall_cURL
  *
@@ -388,7 +390,7 @@ class Tornevall_cURL
     private $CurlVersion = null;
 
     /** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-    private $TorneCurlRelease = "20170518";
+    private $TorneCurlRelease = "20170603";
 
     /**
      * Target environment (if target is production some debugging values will be skipped)
@@ -543,6 +545,8 @@ class Tornevall_cURL
     private $CurlHeaders = array();
     private $CurlHeadersSystem = array();
     private $CurlHeadersUserDefined = array();
+    private $allowCdata = false;
+    private $useXmlSerializer = false;
 
     /**
      * Set up if this library can throw exceptions, whenever it needs to do that.
@@ -645,6 +649,26 @@ class Tornevall_cURL
         if (!count(glob($this->CookiePath . "/*")) && $this->CookiePathCreated) {
             @rmdir($this->CookiePath);
         }
+    }
+
+    /**
+     * When using soap/xml fields returned as CDATA will be returned as text nodes if this is disabled (default: diabled)
+     *
+     * @param bool $enabled
+     */
+    public function setCdata($enabled = true)
+    {
+        $this->allowCdata = $enabled;
+    }
+
+    /**
+     * Get current state of the setCdata
+     *
+     * @return bool
+     */
+    public function getCdata()
+    {
+        return $this->allowCdata;
     }
 
     /**
@@ -795,9 +819,24 @@ class Tornevall_cURL
         }
     }
 
+    /**
+     * Returns the current set user agent
+     *
+     * @return string
+     */
     public function getUserAgent()
     {
         return $this->CurlUserAgent;
+    }
+
+    /**
+     * If XML/Serializer exists in system, use that parser instead of SimpleXML
+     *
+     * @param bool $useIfExists
+     */
+    public function setXmlSerializer($useIfExists = true)
+    {
+        $this->useXmlSerializer = $useIfExists;
     }
 
     /**
@@ -1276,10 +1315,24 @@ class Tornevall_cURL
         }
         if (is_null($parsedContent) && (preg_match("/xml version/", $content) || preg_match("/rss version/", $content) || preg_match("/xml/i", $contentType))) {
             $trimmedContent = trim($content); // PHP 5.3: Can't use function return value in write context
-            if (class_exists('SimpleXMLElement')) {
+
+            $overrideXmlSerializer = false;
+            if ($this->useXmlSerializer) {
+                $serializerPath = stream_resolve_include_path('XML/Unserializer.php');
+                if (!empty($serializerPath)) {
+                    $overrideXmlSerializer = true;
+                    require_once('XML/Unserializer.php');
+                }
+            }
+
+            if (class_exists('SimpleXMLElement') && !$overrideXmlSerializer) {
                 if (!empty($trimmedContent)) {
-                    $simpleXML = new \SimpleXMLElement($content);
-                    if (isset($simpleXML) && is_object($simpleXML)) {
+                    if (!$this->allowCdata) {
+                        $simpleXML = new \SimpleXMLElement($content, LIBXML_NOCDATA);
+                    } else {
+                        $simpleXML = new \SimpleXMLElement($content);
+                    }
+                    if (isset($simpleXML) && (is_object($simpleXML) || is_array($simpleXML))) {
                         return $simpleXML;
                     }
                 } else {
@@ -1289,6 +1342,11 @@ class Tornevall_cURL
                 /*
                  * Returns empty class if the SimpleXMLElement is missing.
                  */
+                if ($overrideXmlSerializer) {
+                    $xmlSerializer = new \XML_Unserializer();
+                    $xmlSerializer->unserialize($content);
+                    return $xmlSerializer->getUnserializedData();
+                }
                 return new \stdClass();
             }
         }
@@ -1320,7 +1378,6 @@ class Tornevall_cURL
                 throw new \Exception("Can not parse DOMDocuments without the DOMDocuments class");
             }
         }
-
         return $parsedContent;
     }
 
@@ -1981,6 +2038,7 @@ class Tornevall_cURL
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class TorneLIB_SimpleSoap Simple SOAP client.
  *
@@ -2176,6 +2234,7 @@ class Tornevall_SimpleSoap extends Tornevall_cURL
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class CURL_METHODS List of methods available in this library
  *
@@ -2190,6 +2249,7 @@ abstract class CURL_METHODS
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class CURL_RESOLVER Resolver methods that is available when trying to connect
  *
@@ -2203,6 +2263,7 @@ abstract class CURL_RESOLVER
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class CURL_POST_AS Prepared formatting for POST-content in this library (Also available from for example PUT)
  *
@@ -2216,6 +2277,7 @@ abstract class CURL_POST_AS
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class CURL_AUTH_TYPES Available authentication types for use with password protected sites
  *
@@ -2230,6 +2292,7 @@ abstract class CURL_AUTH_TYPES
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class TORNELIB_CURL_ENVIRONMENT
  *
@@ -2244,6 +2307,7 @@ abstract class TORNELIB_CURL_ENVIRONMENT
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class TORNELIB_CURL_RESPONSETYPE
  * @package TorneLIB
@@ -2255,6 +2319,7 @@ abstract class TORNELIB_CURL_RESPONSETYPE
 }
 
 /** @noinspection PhpUndefinedClassInspection */
+
 /**
  * Class TORNELIB_CURLOBJECT
  * @package TorneLIB
