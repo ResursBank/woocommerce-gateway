@@ -9,9 +9,17 @@ if (null !== omnivars) {
     var RESURSCHECKOUT_IFRAME_URL = omnivars.RESURSCHECKOUT_IFRAME_URL;
 }
 
-
+var customerTypes = null;
 $RB(document).ready(function ($) {
-        //$RB('#resurs-checkout-container iframe').css('background-color', '#9900FF');
+    $RB.ajax({
+        type: 'GET',
+        url: ajax_object.ajax_url,
+        data: {
+            'action': 'get_address_customertype'
+        }
+    }).done(function (data) {
+        customerTypes = data;
+    });
         if (typeof ResursCheckout !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
             if (omnivars["useStandardFieldsForShipping"] == "1") {
                 console.log("ResursCheckout: useStandardFieldsForShipping (Experimental) is active, so customer fields are hidden rather than removed");
@@ -173,9 +181,8 @@ $RB(document).ready(function ($) {
                             function (successData) {
                                 var errorString = "";
                                 var isSuccess = false;
-                                console.dir(successData);
-                                if (typeof successData["success"] !== "undefined") {
-                                    if (successData["success"] === true) {
+                            if (typeof successData.success !== "undefined") {
+                                if (successData.success === true) {
                                         isSuccess = true;
                                         resursCheckout.confirmOrder(true);
                                         return true;
@@ -270,6 +277,16 @@ $RB(document).ready(function ($) {
                 });
                 $('#ssn_field').on('keyup', function () {
                     $('#applicant-government-id').val($(this).val());
+                });
+                $('#billing_first_name').on('keyup', function () {
+                    if ($('#applicant-full-name').length > 0) {
+                        $('#applicant-full-name').val($("#billing_first_name").val() + " " + $("#billing_last_name").val());
+                    }
+                });
+                $('#billing_last_name').on('keyup', function () {
+                    if ($('#applicant-full-name').length > 0) {
+                        $('#applicant-full-name').val($("#billing_first_name").val() + " " + $("#billing_last_name").val());
+                    }
                 });
             },
 
@@ -389,9 +406,16 @@ $RB(document).ready(function ($) {
                         if ($RB('#ssnCustomerType').length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
                             var selectedType = $RB('#ssnCustomerType:checked');
                             customerType = selectedType.val();
-                            /* Put up as much as possible as default */
-                            $("#billing_first_name").val(typeof info.firstName !== "undefined" ? info.firstName : "");
-                            $("#billing_last_name").val(typeof info.lastName !== "undefined" ? info.lastName : "");
+                            // Put up as much as possible as default
+                            if (typeof info.firstName !== "undefined") {
+                                $("#billing_first_name").val(info.firstName);
+                            }
+                            if (typeof info.lastName !== "undefined") {
+                                $("#billing_last_name").val(info.lastName);
+                            }
+                            if ($('#applicant-full-name').length > 0) {
+                                $('#applicant-full-name').val($("#billing_first_name").val() + " " + $("#billing_last_name").val());
+                            }
                             $("#billing_address_1").val(typeof info.addressRow1 !== "undefined" ? info.addressRow1 : "");
                             $("#billing_address_2").val(typeof info.addressRow1 !== "undefined" ? info.addressRow2 : "");
                             $("#billing_postcode").val(typeof info.postalCode !== "undefined" ? info.postalCode : "");
@@ -400,14 +424,9 @@ $RB(document).ready(function ($) {
                             $("#applicant-government-id").val($('#ssn_field').val());
 
                             if (customerType !== "NATURAL") {
-                                /* If this is a company, add available content to right location field */
-                                if (typeof info.lastName === "undefined") {
-                                    $("#billing_company").val(info.firstName);
-                                } else {
-                                    $("#billing_company").val(info.firstName + " " + info.lastName);
-                                }
+                                $("#billing_company").val(info["fullName"]);
                             } else {
-                                /* Naturals has lastnames, normally - add the rest here */
+                                // Naturals has lastnames, normally - add the rest here
                                 $("#billing_last_name").val(typeof info.lastName !== "undefined" ? info.lastName : "");
                             }
                         }
@@ -428,10 +447,7 @@ $RB(document).ready(function ($) {
             }
         };
         woocommerce_resurs_bank.init();
-
-    }
-);
-
+});
 /**
  * Handle translation tables from WordPress localizer
  *
@@ -449,7 +465,6 @@ function getResursPhrase(phraseName, countryId) {
         return "Lost in translation on phrase '" + phraseName + "'";
     }
 }
-
 function getMethodType(customerType) {
     var checkedPaymentMethod = null;
     var hasResursMethods = false;
@@ -492,17 +507,22 @@ function getMethodType(customerType) {
             }
         );
         if (customerType != "" && hasResursMethods) {
-            $RB.ajax({
-                type: 'GET',
-                url: ajax_object.ajax_url,
-                data: {
-                    'action': 'get_address_customertype',
-                    'customerType': customerType,
-                    'paymentMethod': checkedPaymentMethod
-                }
-            }).done(function (data) {
-                preSetResursMethods(customerType, data);
-            });
+            if (typeof customerTypes !== "undefined" && null !== customerTypes) {
+                preSetResursMethods(customerType, customerTypes);
+            } else {
+                $RB.ajax({
+                    type: 'GET',
+                    url: ajax_object.ajax_url,
+                    data: {
+                        'action': 'get_address_customertype',
+                        'customerType': customerType,
+                        'paymentMethod': checkedPaymentMethod
+                    }
+                }).done(function (data) {
+                    customerTypes = data;
+                    preSetResursMethods(customerType, data);
+                });
+            }
         }
     }
 }
@@ -583,7 +603,6 @@ function preSetResursMethods(customerType, returnedObjects) {
         }
     }
 }
-
 function methodChangers(currentSelectionObject) {
     getMethodType($RB('#ssnCustomerType:checked').val());
 }
@@ -603,4 +622,18 @@ function handleResursCheckoutError(resursErrorMessage) {
         alert(resursErrorMessage);
     }
 }
-
+function rbFormChange(formFieldName, o) {
+    if (formFieldName == "applicant-full-name") {
+        // ReInheritage of contact data
+        var customerFieldData = o.value.split(" ");
+        if (customerFieldData.length > 0) {
+            var lastName = customerFieldData[customerFieldData.length - 1];
+            customerFieldData.splice(customerFieldData.length - 1, 1);
+            var firstName = customerFieldData.join(" ");
+            if (firstName != "" && lastName != "") {
+                $RB("#billing_first_name").val(firstName);
+                $RB("#billing_last_name").val(lastName);
+            }
+        }
+    }
+}

@@ -59,12 +59,14 @@ class TorneLIB_Network
      */
     public function getUrlDomain($urlIn = '', $validateHost = false)
     {
+        // If the scheme is forgotten, add it to keep normal hosts validatable too.
+        if (!preg_match("/\:\/\//", $urlIn)) {
+            $urlIn = "http://" . $urlIn;
+        }
         $urlParsed = parse_url($urlIn);
-
         if (!isset($urlParsed['host']) || !$urlParsed['scheme']) {
             return array(null, null, null);
         }
-
         // Make sure that the host is not invalid
         if ($validateHost) {
             $hostRecord = dns_get_record($urlParsed['host'], DNS_ANY);
@@ -72,7 +74,6 @@ class TorneLIB_Network
                 return array(null, null, null);
             }
         }
-
         return array(
             isset($urlParsed['host']) ? $urlParsed['host'] : null,
             isset($urlParsed['scheme']) ? $urlParsed['scheme'] : null,
@@ -1353,6 +1354,7 @@ class Tornevall_cURL
         if ($this->allowParseHtml && empty($parsedContent)) {
             if (class_exists('DOMDocument')) {
                 $DOM = new \DOMDocument();
+                libxml_use_internal_errors(true);
                 $DOM->loadHTML($content);
                 if (isset($DOM->childNodes->length) && $DOM->childNodes->length > 0) {
                     $elementsByTagName = $DOM->getElementsByTagName('*');
@@ -1832,7 +1834,7 @@ class Tornevall_cURL
         $this->handleIpList();
         curl_setopt($this->CurlSession, CURLOPT_URL, $this->CurlURL);
 
-        if (is_array($postData)) {
+        if (is_array($postData) || is_object($postData)) {
             $postDataContainer = http_build_query($postData);
         } else {
             $postDataContainer = $postData;
