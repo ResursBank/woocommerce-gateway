@@ -182,9 +182,8 @@ $RB(document).ready(function ($) {
                             function (successData) {
                                 var errorString = "";
                                 var isSuccess = false;
-                                console.dir(successData);
-                                if (typeof successData["success"] !== "undefined") {
-                                    if (successData["success"] === true) {
+                            if (typeof successData.success !== "undefined") {
+                                if (successData.success === true) {
                                         isSuccess = true;
                                         resursCheckout.confirmOrder(true);
                                         return true;
@@ -449,10 +448,7 @@ $RB(document).ready(function ($) {
             }
         };
         woocommerce_resurs_bank.init();
-
-    }
-);
-
+});
 /**
  * Handle translation tables from WordPress localizer
  *
@@ -470,7 +466,6 @@ function getResursPhrase(phraseName, countryId) {
         return "Lost in translation on phrase '" + phraseName + "'";
     }
 }
-
 function getMethodType(customerType) {
     var checkedPaymentMethod = null;
     var hasResursMethods = false;
@@ -609,7 +604,6 @@ function preSetResursMethods(customerType, returnedObjects) {
         }
     }
 }
-
 function methodChangers(currentSelectionObject) {
     getMethodType($RB('#ssnCustomerType:checked').val());
 }
