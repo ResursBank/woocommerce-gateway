@@ -10,7 +10,7 @@
  */
 
 define( 'RB_WOO_VERSION', "2.1.0" );
-define('RB_ALWAYS_RELOAD_JS', true);
+define( 'RB_ALWAYS_RELOAD_JS', true );
 require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
 //include('resursbank_settings.php');
@@ -635,6 +635,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			if ( $event_type === 'check_signing_response' ) {
 				$this->check_signing_response();
+
 				return;
 			}
 			if ( $event_type === "prepare-omni-order" ) {
@@ -659,9 +660,9 @@ function woocommerce_gateway_resurs_bank_init() {
 			$my_query = new WP_Query( $args );
 			$orderId  = isset( $my_query->posts[0]->ID ) ? $my_query->posts[0]->ID : "";*/
 			$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
-			$order = new WC_Order( $orderId );
+			$order   = new WC_Order( $orderId );
 			if ( $request['digest'] !== $check_digest ) {
-				$order->add_order_note( __( 'The Resurs Bank event '.$event_type.' was received but not accepted (digest fault)', 'WC_Payment_Gateway' ) );
+				$order->add_order_note( __( 'The Resurs Bank event ' . $event_type . ' was received but not accepted (digest fault)', 'WC_Payment_Gateway' ) );
 				header( 'HTTP/1.1 406 Digest not accepted', true, 406 );
 				exit;
 			}
@@ -874,8 +875,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				$priceExTax     = ( ! isWooCommerce3() ? $data->get_price_excluding_tax() : wc_get_price_excluding_tax( $data ) );
 				$totalVatAmount = ( $priceExTax * ( $vatPct / 100 ) );
 				$setSku         = $data->get_sku();
-				$bookArtId      = ! isWooCommerce3() ? $data->id : $data->get_id();
-				$postTitle      = ! isWooCommerce3() ? $data->post->post_title : $data->get_title();
+				$bookArtId      = ( ! isWooCommerce3() ? $data->id : $data->get_id() );
+				$postTitle      = ( ! isWooCommerce3() ? $data->post->post_title : $data->get_title() );
 				$optionUseSku   = getResursOption( "useSku" );
 				if ( $optionUseSku && ! empty( $setSku ) ) {
 					$bookArtId = $setSku;
@@ -986,10 +987,12 @@ function woocommerce_gateway_resurs_bank_init() {
 					$coupon_values     = $cart->coupon_discount_amounts;
 					$coupon_tax_values = $cart->coupon_discount_tax_amounts;
 					foreach ( $coupons as $code => $coupon ) {
-						$post         = get_post( $coupon->id );
+						$post         = get_post( ( ! isWooCommerce3() ? $coupon->id : $coupon->get_id() ) );
+						$couponId     = ( ! isWooCommerce3() ? $coupon->id : $coupon->get_id() );
+						$couponCode   = ( ! isWooCommerce3() ? $coupon->id : $coupon->get_code() );
 						$spec_lines[] = array(
-							'id'                   => $coupon->id,
-							'artNo'                => $coupon->code . '_' . 'kupong',
+							'id'                   => $couponId,
+							'artNo'                => $couponCode . '_' . 'kupong',
 							'description'          => $post->post_excerpt,
 							'quantity'             => 1,
 							'unitMeasure'          => '',
@@ -1053,16 +1056,16 @@ function woocommerce_gateway_resurs_bank_init() {
 			$currentCountry = getResursOption( 'country' );
 			$regExRules     = array();
 
-			$cart        = $woocommerce->cart;
-			$paymentSpec = $this->get_payment_spec( $cart );
-			$totalAmount = $paymentSpec['totalAmount'];
+			$cart             = $woocommerce->cart;
+			$paymentSpec      = $this->get_payment_spec( $cart );
+			$totalAmount      = $paymentSpec['totalAmount'];
 			$fieldGenHtml     = "";
 			$sessionHasErrors = false;
 			try {
-				$cacheMethods = get_transient('resurs_bank_methods_checkout_cache');
-				if (empty($cacheMethods)) {
+				$cacheMethods = get_transient( 'resurs_bank_methods_checkout_cache' );
+				if ( empty( $cacheMethods ) ) {
 					$methodList = $this->flow->getPaymentMethods();
-					set_transient("resurs_bank_methods_checkout_cache", $methodList, 3600);
+					set_transient( "resurs_bank_methods_checkout_cache", $methodList, 3600 );
 				} else {
 					$methodList = $cacheMethods;
 				}
@@ -1132,7 +1135,7 @@ function woocommerce_gateway_resurs_bank_init() {
 									}
 									$fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
 									$fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $labels[ $fieldName ] . '</label>';
-									$fieldGenHtml .= '<input onkeyup="rbFormChange(\''.$fieldName.'\', this)" id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
+									$fieldGenHtml .= '<input onkeyup="rbFormChange(\'' . $fieldName . '\', this)" id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
 									$fieldGenHtml .= '</div>';
 								}
 
@@ -1191,7 +1194,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			if ( defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
 				return;
 			}
-			$order     = new WC_Order( $order_id );
+			$order       = new WC_Order( $order_id );
 			$preferredId = $this->flow->getPreferredId( 25 );
 			update_post_meta( $order_id, 'paymentId', $preferredId );
 			$customer  = $woocommerce->customer;
@@ -1317,8 +1320,9 @@ function woocommerce_gateway_resurs_bank_init() {
 					$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 					$failBooking   = false;
 					$hostedFlowUrl = null;
-					if ($methodSpecification->type == "PAYMENT_PROVIDER") {
-						wc_add_notice(__('The payment method is not available for the selected payment flow', 'WC_Payment_Gateway'), 'error');
+					if ( $methodSpecification->type == "PAYMENT_PROVIDER" ) {
+						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+
 						return;
 					} else {
 						try {
@@ -1340,20 +1344,23 @@ function woocommerce_gateway_resurs_bank_init() {
 					if ( ! $failBooking && ! empty( $hostedFlowUrl ) ) {
 						$order->update_status( 'pending' );
 						$bookedStatus = 'FROZEN';
+
 						return array(
 							'result'   => 'success',
 							'redirect' => $hostedFlowUrl
 						);
 					} else {
 						$order->update_status( 'failed', __( 'An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly', 'WC_Payment_Gateway' ) );
+
 						return array(
 							'result'   => 'failure',
 							'redirect' => $failUrl
 						);
 					}
 				} else {
-					if ($methodSpecification->type == "PAYMENT_PROVIDER") {
-						wc_add_notice(__('The payment method is not available for the selected payment flow', 'WC_Payment_Gateway'), 'error');
+					if ( $methodSpecification->type == "PAYMENT_PROVIDER" ) {
+						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+
 						return;
 					} else {
 						$storeId = apply_filters( "resursbank_set_storeid", null );
@@ -1366,12 +1373,13 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
+
 				return;
 			}
 
 			$bookedStatus    = $this->flow->getBookedStatus( $bookPaymentResult );
 			$bookedPaymentId = $this->flow->getBookedPaymentId( $bookPaymentResult );
-			if ( empty($bookedPaymentId )) {
+			if ( empty( $bookedPaymentId ) ) {
 				$bookedStatus = "FAILED";
 			} else {
 				update_post_meta( $order_id, 'paymentId', $bookedPaymentId );
@@ -1739,12 +1747,12 @@ function woocommerce_gateway_resurs_bank_init() {
 			$bookedPaymentId        = 0;
 			$bookStatus             = null;
 
-			$flowType = isset($request['flow-type']) ? $request['flow-type'] : "";
-			if (isset($_REQUEST['flow-type']) && empty($flowType)) {
+			$flowType = isset( $request['flow-type'] ) ? $request['flow-type'] : "";
+			if ( isset( $_REQUEST['flow-type'] ) && empty( $flowType ) ) {
 				$flowType = $_REQUEST['flow-type'];
 			}
-			$eventType = isset($request['event-type']) ? $request['event-type'] : "";
-			if (isset($_REQUEST['event-type']) && empty($eventType)) {
+			$eventType = isset( $request['event-type'] ) ? $request['event-type'] : "";
+			if ( isset( $_REQUEST['event-type'] ) && empty( $eventType ) ) {
 				$eventType = $_REQUEST['event-type'];
 			}
 			if ( isset( $request['flow-type'] ) ) {
@@ -1785,8 +1793,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					$order_id  = wc_get_order_id_by_payment_id( $paymentId );
 					$order     = new WC_Order( $order_id );
 
-					$storeId = apply_filters("resursbank_set_storeid", null);
-					if (!empty($storeId)) {
+					$storeId = apply_filters( "resursbank_set_storeid", null );
+					if ( ! empty( $storeId ) ) {
 						update_post_meta( $order_id, 'resursStoreId', $storeId );
 					}
 
@@ -1953,7 +1961,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$validationFail = false;
 			foreach ( $methodFields as $fieldName ) {
-				if ( isset( $_REQUEST[ $fieldName ] ) && isset($regEx[ $fieldName ]) ) {
+				if ( isset( $_REQUEST[ $fieldName ] ) && isset( $regEx[ $fieldName ] ) ) {
 					$regExString       = $regEx[ $fieldName ];
 					$regExString       = str_replace( '\\\\', '\\', $regExString );
 					$fieldData         = $_REQUEST[ $fieldName ];
@@ -2467,8 +2475,8 @@ function woocommerce_gateway_resurs_bank_init() {
              * MarGul change
              * If it's demoshop get the translation.
              */
-			$private = __('Private', 'WC_Payment_Gateway');
-			$company = __('Company', 'WC_Payment_Gateway');
+			$private = __( 'Private', 'WC_Payment_Gateway' );
+			$company = __( 'Company', 'WC_Payment_Gateway' );
 			if ( isResursDemo() && class_exists( 'CountryHandler' ) ) {
 				$translation = CountryHandler::getDictionary();
 				$private     = $translation['private'];
@@ -2494,7 +2502,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					$translation = array();
 				}
-				$get_address = ( ! empty( $translation ) ) ? $translation['get_address'] : __('Get address', 'WC_Payment_Gateway');
+				$get_address = ( ! empty( $translation ) ) ? $translation['get_address'] : __( 'Get address', 'WC_Payment_Gateway' );
 				echo '<a href="#" class="button" id="fetch_address">' . $get_address . '</a><br>';
 			}
 		}
@@ -2513,21 +2521,21 @@ function woocommerce_gateway_resurs_bank_init() {
 		}
 		$OmniVars = array();
 		if ( isResursOmni() ) {
-			wp_enqueue_script( 'resursomni', plugin_dir_url( __FILE__ ) . 'js/omnicheckout.js', array(), RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
+			wp_enqueue_script( 'resursomni', plugin_dir_url( __FILE__ ) . 'js/omnicheckout.js', array(), RB_WOO_VERSION . ( defined( 'RB_ALWAYS_RELOAD_JS' ) && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "" ) );
 			$omniBookUrl   = home_url( '/' );
 			$omniBookUrl   = add_query_arg( 'wc-api', 'WC_Resurs_Bank', $omniBookUrl );
 			$omniBookUrl   = add_query_arg( 'event-type', 'prepare-omni-order', $omniBookUrl );
 			$omniBookUrl   = add_query_arg( 'set-no-session', '1', $omniBookUrl );
 			$omniBookNonce = wp_nonce_url( $omniBookUrl, "omnicheckout", "omnicheckout_nonce" );
 
-			$flow           = initializeResursFlow();
-			$sEnv           = getServerEnv();
-			$OmniUrl        = $flow->getOmniUrl( $sEnv );
+			$flow         = initializeResursFlow();
+			$sEnv         = getServerEnv();
+			$OmniUrl      = $flow->getOmniUrl( $sEnv );
 			$isWooSession = false;
-			if (isset(WC()->session)) {
+			if ( isset( WC()->session ) ) {
 				$isWooSession = true;
 			}
-			if ($isWooSession) {
+			if ( $isWooSession ) {
 				$omniRef        = WC()->session->get( 'omniRef' );
 				$omniRefCreated = WC()->session->get( 'omniRefCreated' );
 				$omniRefAge     = intval( WC()->session->get( 'omniRefAge' ) );
@@ -2541,7 +2549,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				'OmniRefCreated'                       => isset( $omniRefCreated ) && ! empty( $omniRefCreated ) ? $omniRefCreated : null,
 				'OmniRefAge'                           => $omniRefAge,
 				'isResursTest'                         => isResursTest(),
-				'iframeShape'                         => getResursOption("iframeShape", "woocommerce_resurs_bank_omnicheckout_settings"),
+				'iframeShape'                          => getResursOption( "iframeShape", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'useStandardFieldsForShipping'         => getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" )
 			);
@@ -2623,8 +2631,8 @@ function woocommerce_gateway_resurs_bank_init() {
 			$oneRandomValue = "?randomizeMe=" . rand( 1024, 65535 );
 		}
 		$ajaxObject = array( 'ajax_url' => admin_url( 'admin-ajax.php' ) );
-		wp_enqueue_style( 'resursInternal', plugin_dir_url( __FILE__ ) . 'css/resursinternal.css', array(), RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
-		wp_enqueue_script( 'resursbankmain', plugin_dir_url( __FILE__ ) . 'js/resursbank.js' . $oneRandomValue, array( 'jquery' ), RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
+		wp_enqueue_style( 'resursInternal', plugin_dir_url( __FILE__ ) . 'css/resursinternal.css', array(), RB_WOO_VERSION . ( defined( 'RB_ALWAYS_RELOAD_JS' ) && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "" ) );
+		wp_enqueue_script( 'resursbankmain', plugin_dir_url( __FILE__ ) . 'js/resursbank.js' . $oneRandomValue, array( 'jquery' ), RB_WOO_VERSION . ( defined( 'RB_ALWAYS_RELOAD_JS' ) && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "" ) );
 		wp_localize_script( 'resursbankmain', 'rb_getaddress_fields', $resursLanguageLocalization );
 		wp_localize_script( 'resursbankmain', 'rb_general_translations', $generalJsTranslations );
 		wp_localize_script( 'resursbankmain', 'ajax_object', $ajaxObject );
@@ -2639,8 +2647,8 @@ function woocommerce_gateway_resurs_bank_init() {
 	 * @return null        Returns null current page is not correct
 	 */
 	function admin_enqueue_script( $hook ) {
-		wp_enqueue_style( 'resursInternal', plugin_dir_url( __FILE__ ) . 'css/resursinternal.css', array(), RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
-		wp_enqueue_script( 'resursBankAdminScript', plugin_dir_url( __FILE__ ) . 'js/resursbankadmin.js', array(), RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
+		wp_enqueue_style( 'resursInternal', plugin_dir_url( __FILE__ ) . 'css/resursinternal.css', array(), RB_WOO_VERSION . ( defined( 'RB_ALWAYS_RELOAD_JS' ) && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "" ) );
+		wp_enqueue_script( 'resursBankAdminScript', plugin_dir_url( __FILE__ ) . 'js/resursbankadmin.js', array(), RB_WOO_VERSION . ( defined( 'RB_ALWAYS_RELOAD_JS' ) && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "" ) );
 
 		$requestForCallbacks = callbackUpdateRequest();
 
@@ -2783,22 +2791,26 @@ function woocommerce_gateway_resurs_bank_init() {
 	 */
 	function woocommerce_resurs_bank_available_payment_gateways( $gateways ) {
 		unset( $gateways['resurs-bank'] );
+
 		return $gateways;
 	}
-	function resurs_order_column_header($columns) {
+
+	function resurs_order_column_header( $columns ) {
 		$new_columns = array();
-		foreach ($columns as $column_name => $column_info) {
-			$new_columns[$column_name] = $column_info;
-			if ($column_name == "order_title") {
+		foreach ( $columns as $column_name => $column_info ) {
+			$new_columns[ $column_name ] = $column_info;
+			if ( $column_name == "order_title" ) {
 				$new_columns['resurs_order_id'] = __( 'Resurs Reference', 'WC_Payment_Gateway' );
 			}
 		}
+
 		return $new_columns;
 	}
-	function resurs_order_column_info($column) {
+
+	function resurs_order_column_info( $column ) {
 		global $post;
-		if ($column == "resurs_order_id") {
-			$resursId = wc_get_payment_id_by_order_id($post->ID);
+		if ( $column == "resurs_order_id" ) {
+			$resursId = wc_get_payment_id_by_order_id( $post->ID );
 			echo $resursId;
 		}
 	}
@@ -2842,7 +2854,7 @@ function woocommerce_gateway_resurs_bank_init() {
 	//add_action( 'woocommerce_after_checkout_form' , 'resurs_omnicheckout_after_checkout_form' );
 	add_filter( 'woocommerce_order_button_html', 'resurs_omnicheckout_order_button_html' );
 	add_filter( 'woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check' );
-	if (getResursOption("showPaymentIdInOrderList")) {
+	if ( getResursOption( "showPaymentIdInOrderList" ) ) {
 		add_filter( 'manage_edit-shop_order_columns', 'resurs_order_column_header' );
 		add_action( 'manage_shop_order_posts_custom_column', 'resurs_order_column_info' );
 	}
@@ -3211,6 +3223,7 @@ function resurs_remove_order_item( $item_id ) {
 function wc_get_order_id_by_payment_id( $paymentId = '' ) {
 	global $wpdb;
 	$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and meta_value = '%s'", $paymentId ) );
+
 	return $order_id;
 }
 
@@ -3564,6 +3577,7 @@ function isResursSimulation() {
 
 function repairResursSimulation( $returnRepairState = false ) {
 	setResursOption( "devSimulateErrors", $returnRepairState );
+
 	return $returnRepairState;
 }
 
@@ -3751,14 +3765,14 @@ function isWooCommerce3() {
 	return hasWooCommerce( "3.0.0" );
 }
 
-if (isset($_REQUEST['wc-api']) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && isset($_REQUEST['paymentId'])) {
-	if (isset($_REQUEST['paymentId']) && isset($_REQUEST['event-type'])) {
-		$cbPaymentId = $_REQUEST['paymentId'];
-		$eventType = $_REQUEST['event-type'];
-		$orderIdFast = wc_get_order_id_by_payment_id($cbPaymentId);
+if ( isset( $_REQUEST['wc-api'] ) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && isset( $_REQUEST['paymentId'] ) ) {
+	if ( isset( $_REQUEST['paymentId'] ) && isset( $_REQUEST['event-type'] ) ) {
+		$cbPaymentId       = $_REQUEST['paymentId'];
+		$eventType         = $_REQUEST['event-type'];
+		$orderIdFast       = wc_get_order_id_by_payment_id( $cbPaymentId );
 		$hasCallbackCached = get_post_meta( $orderIdFast, 'hasCallback' . $eventType, true );
-		if (!empty($hasCallbackCached) && is_numeric($hasCallbackCached)) {
-			header( 'HTTP/1.1 204 CachedCallback '.$eventType.' OK ' . $hasCallbackCached );
+		if ( ! empty( $hasCallbackCached ) && is_numeric( $hasCallbackCached ) ) {
+			header( 'HTTP/1.1 204 CachedCallback ' . $eventType . ' OK ' . $hasCallbackCached );
 			die();
 		}
 	}

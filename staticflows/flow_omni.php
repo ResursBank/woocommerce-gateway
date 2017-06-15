@@ -192,10 +192,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			'successUrl' => $getUrls['successUrl'],
 			'backUrl'    => $getUrls['backUrl']
 		);
-		$storeId = apply_filters("resursbank_set_storeid", null);
-		if (!empty($storeId)) {
-		    $bookDataOmni['storeId'] = $storeId;
+		$storeId      = apply_filters( "resursbank_set_storeid", null );
+		if ( ! empty( $storeId ) ) {
+			$bookDataOmni['storeId'] = $storeId;
 		}
+
 		return $bookDataOmni;
 	}
 
@@ -294,11 +295,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			$paymentSpec = self::get_payment_spec( $woocommerce->cart );
 			if ( isset( $paymentSpec['totalAmount'] ) ) {
 				$flow               = initializeResursFlow();
-				$updateSpec         = array(
-					'orderLines' => $paymentSpec['specLines']
-				);
-				$omniJson           = $flow->toJsonByType( $updateSpec, \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_OMNI, true );
-				$omniUpdateResponse = $flow->omniUpdateOrder( $omniJson, $currentOmniRef );
+				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $paymentSpec['specLines'], $currentOmniRef );
 				if ( isset( $omniUpdateResponse['code'] ) ) {
 					if ( $omniUpdateResponse['code'] == 200 ) {
 					}
@@ -495,11 +492,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 				$coupon_tax_values = $cart->coupon_discount_tax_amounts;
 
 				foreach ( $coupons as $code => $coupon ) {
-					$post = get_post( $coupon->id );
+					$post = get_post( ( ! isWooCommerce3() ? $coupon->id : $coupon->get_id() ) );
 					//$taxify = ($coupon_tax_values[$code] / $coupon_values[$code]*100);
+
+					$couponId     = ( ! isWooCommerce3() ? $coupon->id : $coupon->get_id() );
+					$couponCode   = ( ! isWooCommerce3() ? $coupon->id : $coupon->get_code() );
 					$spec_lines[] = array(
-						'id'                   => $coupon->id,
-						'artNo'                => $coupon->code . '_' . 'kupong',
+						'id'                   => $couponId,
+						'artNo'                => $couponCode . '_' . 'kupong',
 						'description'          => $post->post_excerpt,
 						'quantity'             => 1,
 						'unitMeasure'          => '',
