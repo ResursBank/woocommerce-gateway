@@ -325,11 +325,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			if ( isset( $paymentSpec['totalAmount'] ) && $doUpdateIframe ) {
 				$paymentSpecAmount = $paymentSpec['totalAmount'];
 				$flow              = initializeResursFlow();
-				$OmniUrl           = $flow->getOmniUrl();
-				$updateSpec        = array(
-					'orderLines' => $paymentSpec['specLines']
-				);
-				$omniJson          = $flow->toJsonByType( $updateSpec, \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_OMNI, true );
+				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $paymentSpec['specLines'], $currentOmniRef );
 				if ( omniOption( "omniFrameNotReloading" ) ) {
 					$array['#omniActions'] = '<script>document.location.reload(true);</script>';
 				} else {
