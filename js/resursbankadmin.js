@@ -74,6 +74,12 @@ function adminResursChangeFlowByCountry(o) {
 }
 
 function resursEditProtectedField(currentField, ns) {
+    var spinnerBlock = $RB('#' + currentField.id + "_spinner");
+    var hiddenBlock = $RB('#' + currentField.id + "_hidden");
+    spinnerBlock.html('<img src="' + adminJs.resursSpinner + '" border="0">');
+    spinnerBlock.show("medium");
+    hiddenBlock.hide("medium");
+    $RB('#' + currentField.id).hide("medium");
     $RB.ajax({
         url: rbAjaxSetup.ran,
         type: 'POST',
@@ -167,14 +173,17 @@ function resursProtectedFieldToggle(currentField) {
         if (arguments[1] === "show") {
             $RB('#' + currentField).hide("medium");
             $RB('#' + currentField + "_hidden").show("medium");
+            $RB('#' + currentField + "_spinner").hide("medium");
         }
         if (arguments[1] === "hide") {
             $RB('#' + currentField).show("medium");
             $RB('#' + currentField + "_hidden").hide("medium");
+            $RB('#' + currentField + "_spinner").show("medium");
         }
     } else {
         $RB('#' + currentField).toggle("medium");
         $RB('#' + currentField + "_hidden").toggle("medium");
+        $RB('#' + currentField + "_spinner").toggle("medium");
     }
 }
 function runResursAdminCallback(callbackName) {
@@ -274,7 +283,6 @@ function runResursAdminCallback(callbackName) {
 
     }).fail(function (x, y) {
         console.log("Failed in runResursAdminCallback(): " + y);
-	console.dir(x);
         if (typeof window[setArg] === "function") {
             window[setArg]([]);
         }

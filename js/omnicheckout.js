@@ -1,35 +1,13 @@
-/*! ResursCheckoutJS v0.08 - Generic Reurs Bank iFrame-driver for Resurs Checkout, for catching events in the Resurs Checkout iFrame */
+/*! ResursCheckoutJS v0.09 - Generic Reurs Bank iFrame-driver for Resurs Checkout, for catching events in the Resurs Checkout iFrame */
 
 /*
  * CHANGELOG
  *
  * The changelog has moved to https://test.resurs.com/docs/x/5ABV
  *
- * Dependencies to external libraries:
+ * DOCS
  *
- *      - None.
- *
- * Requirements:
- *
- *      - RESURSCHECKOUT_IFRAME_URL (OMNICHECKOUT_IFRAME_URL) needs to be set from your store, to define where events are sent from.
- *      - Make sure that shopUrl is sent and matches with the target iFrame URL, when creating the iFrame at API level.
- *      - A html element that holds the iframe
- *
- * What this script won't do:
- *
- *      - Live updates of the shop cart (pushing data into the frame that occurs when the cart is changed). This a feature that should be completely backend based.
- *
- * The script is written so that you can put it on a webpage without having it primarily activated (to avoid colliding with other scripts).
- * It utilizes the message handler in the Resurs Checkout iframe, so that you can push an order into the store in the background, as the checkout is completed at Resurs Bank.
- *
- * Events that this module catches from Resurs Checkout:
- *
- *      checkout:loaded                 - Handled by this script when the iFrame has loaded and is ready
- *      checkout:user-info-change       - Stored until checkout is finished (Data passed to function resursCheckoutCustomerChange if set)
- *      checkout:payment-method-change  - Stored until checkout is finished
- *      checkout:booking-order          - Passed with necessary customer data to a callback, or dropped if no callback is set
- *
- *      As Resurs Checkout will rename events in short, please take a look at the variable currentResursEventNamePrefix, if you need to make a quickfix.
+ * Also located at https://test.resurs.com/docs/x/5ABV (You can also look att README.md in the repo)
  *
  * Usage example:
  *
@@ -44,7 +22,7 @@
  *
  *      var resursCheckout = ResursCheckout('#myResursElement');
  *
- *  Developers only - Activate debugging:
+ *  Developers - Activate debugging:
  *
  *      resursCheckout.setDebug(true);
  */
@@ -54,12 +32,13 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
         var currentResursEventNamePrefix = "checkout";
         var resursCheckoutElement = "";     // defined element for where Resurs Checkout iframe is (or should be) located
         var resursCheckoutFrame = "";
-        var resursCheckoutVersion = "0.08";
+        var resursCheckoutVersion = "0.09";
         var resursCheckoutData = {"paymentMethod": "", "customerData": {}};
         var resursCheckoutDebug = false;
         var resursCheckoutBookingCallback = null;
         var resursCheckoutPurchaseFail = null;
         var resursCheckoutCustomerChange = null;
+        var resursCheckoutIframeReady = null;
         var resursPostMessageElement = null;
         // If there is an argument, there is something else implemented as the Resurs Checkout-container than the default.
         if (typeof arguments[0] !== "undefined") {
@@ -148,6 +127,9 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
             setCustomerChangedEventCallback: function (eventCallbackSet) {
                 resursCheckoutCustomerChange = eventCallbackSet;
             },
+            setOnIframeReady: function (eventCallbackSet) {
+                resursCheckoutIframeReady = eventCallbackSet;
+            },
             setDebug: function (activateDebug) {
                 if (activateDebug == 1) {
                     activateDebug = true;
@@ -197,6 +179,9 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                                     eventType: currentResursEventNamePrefix + ":set-purchase-button-interceptor",
                                     checkOrderBeforeBooking: true
                                 });
+                                if (typeof resursCheckoutIframeReady === "function") {
+                                    resursCheckoutIframeReady(resursCheckoutFrame);
+                                }
                                 break;
                             default:
                                 /*

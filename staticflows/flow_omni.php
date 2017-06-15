@@ -160,7 +160,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	}
 
 	protected function resurs_omnicheckout_create_frame() {
-		$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_OMNI );
+		$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_CHECKOUT );
 		$this->flow->Include = array();
 		$bookDataOmni        = self::createResursOmniOrder();
 		//$shopUrl = home_url('');
@@ -192,7 +192,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			'successUrl' => $getUrls['successUrl'],
 			'backUrl'    => $getUrls['backUrl']
 		);
-
+		$storeId = apply_filters("resursbank_set_storeid", null);
+		if (!empty($storeId)) {
+		    $bookDataOmni['storeId'] = $storeId;
+		}
 		return $bookDataOmni;
 	}
 
