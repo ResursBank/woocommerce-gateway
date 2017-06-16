@@ -282,30 +282,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		return $fields;
 	}
 
-	/**
-	 * Update the frame dynamically with cart-corrections from the checkout.
-	 */
-	public static function resurs_omni_update_order_review( $data ) {
-		global $woocommerce;
-		$currentOmniRef = null;
-		if ( isset( WC()->session ) ) {
-			$currentOmniRef = WC()->session->get( 'omniRef' );
-		}
-		if ( $_REQUEST['payment_method'] === 'resurs_bank_omnicheckout' && ! empty( $currentOmniRef ) ) {
-			$paymentSpec = self::get_payment_spec( $woocommerce->cart );
-			if ( isset( $paymentSpec['totalAmount'] ) ) {
-				$flow               = initializeResursFlow();
-				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
-				if ( isset( $omniUpdateResponse['code'] ) ) {
-					if ( $omniUpdateResponse['code'] == 200 ) {
-					}
-				}
-
-				return $omniUpdateResponse;
-			}
-		}
-	}
-
 	public static function interfere_update_order_review( $array ) {
 		$currentOmniRef = null;
 		$doUpdateIframe = false;
@@ -567,7 +543,6 @@ if ( hasResursOmni() ) {
 	}
 
 	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_omnicheckout', 0 );
-	//add_action('woocommerce_checkout_update_order_review', 'WC_Gateway_ResursBank_Omni::resurs_omni_update_order_review');
 	add_filter( 'woocommerce_get_terms_page_id', 'omni_terms_page', 1 );
 
 	/*

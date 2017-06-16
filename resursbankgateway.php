@@ -1061,9 +1061,10 @@ function woocommerce_gateway_resurs_bank_init() {
 			$fieldGenHtml     = "";
 			$sessionHasErrors = false;
 			try {
+				$methodList = $this->flow->getPaymentMethods();
+				/*
 				$cacheMethods = get_transient( 'resurs_bank_methods_checkout_cache' );
 				if ( empty( $cacheMethods ) ) {
-					$methodList = $this->flow->getPaymentMethods();
 					$cacheTime = 3600;
 					if (isResursDemo()) {
 						$cacheTime = 300;
@@ -1072,6 +1073,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					$methodList = $cacheMethods;
 				}
+				*/
 			} catch ( Exception $e ) {
 				$sessionHasErrors    = true;
 				$sessionErrorMessage = $e->getMessage();
@@ -1111,6 +1113,14 @@ function woocommerce_gateway_resurs_bank_init() {
 							echo $e->getMessage();
 						}
 						if ( strtolower( $id ) == strtolower( $payment_id ) ) {
+							// When boths customer types are allowed, this is going arrayified.
+							// In that case, select the one that the customer has chosen.
+							if (isset($_REQUEST['ssnCustomerType'])) {
+								$customerTypeTest = $_REQUEST['ssnCustomerType'];
+								if (is_array($customerType) && in_array($customerTypeTest, $customerType)) {
+									$customerType = $customerTypeTest;
+								}
+							}
 							$requiredFormFields = $this->flow->getTemplateFieldsByMethodType( $method, $customerType, $specificType );
 							$buttonCssClasses   = "btn btn-info active";
 							$ajaxUrl            = admin_url( 'admin-ajax.php' );

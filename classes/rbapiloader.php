@@ -3792,10 +3792,13 @@ class ResursBank {
 		/* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
 		if ( is_object( $paymentMethodName ) || is_array( $paymentMethodName ) ) {
 			if ( is_object( $paymentMethodName ) ) {
-				/** @noinspection PhpUndefinedFieldInspection */
-				if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ] ) ) {
+				// Prevent arrays to go through here and crash something
+				if (!is_array($customerType)) {
 					/** @noinspection PhpUndefinedFieldInspection */
-					$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ];
+					if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ] ) ) {
+						/** @noinspection PhpUndefinedFieldInspection */
+						$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ];
+					}
 				}
 			} else if ( is_array( $paymentMethodName ) ) {
 				/*

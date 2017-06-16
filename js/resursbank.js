@@ -488,9 +488,7 @@ function getMethodType(customerType) {
         $RB('#ssn_field').attr("placeholder", enterNumberPhrase);
         $RB("label[for*='ssn_field']").html(labelNumberPhrase);
     }
-
     if ($RB('#ssnCustomerType').length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
-
         var selectedType = $RB('#ssnCustomerType:checked');
         if ($RB('#billing_company').length > 0 && $RB('#billing_company').val() !== "") {
             customerType = "legal";

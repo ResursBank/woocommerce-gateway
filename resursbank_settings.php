@@ -266,7 +266,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                             size="64"
                             ' . $scriptLoader . '
                             value="' . $UseValue . '"> <i>' . $setLabel . '</i><br>
-                            <i>' . $this->oldFormFields[ $settingKey ]['description'] . '</i>
+                            <i>' . (isset($this->oldFormFields[ $settingKey ]['description']) ? $this->oldFormFields[ $settingKey ]['description'] : "") . '</i>
                             ' . $isPassword . '
                             </td>
         ';
@@ -407,14 +407,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		try {
 			if ( ! preg_match( "/^resurs_bank_nr/i", $section ) ) {
 				$this->paymentMethods = $this->flow->getPaymentMethods();
-
 				if ( is_array( $this->paymentMethods ) ) {
 					foreach ( $this->paymentMethods as $methodLoop ) {
 						$class_files[] = $methodLoop->id;
 					}
 				}
 				$this->UnusedPaymentClassesCleanup( $class_files );
-
 			} else {
 				$theMethod            = preg_replace( "/^resurs_bank_nr_(.*?)/", '$1', $section );
 				$this->paymentMethods = $this->flow->getPaymentMethodSpecific( $theMethod );
