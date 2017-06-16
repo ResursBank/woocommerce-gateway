@@ -295,7 +295,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			$paymentSpec = self::get_payment_spec( $woocommerce->cart );
 			if ( isset( $paymentSpec['totalAmount'] ) ) {
 				$flow               = initializeResursFlow();
-				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $paymentSpec['specLines'], $currentOmniRef );
+				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
 				if ( isset( $omniUpdateResponse['code'] ) ) {
 					if ( $omniUpdateResponse['code'] == 200 ) {
 					}
@@ -325,11 +325,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			if ( isset( $paymentSpec['totalAmount'] ) && $doUpdateIframe ) {
 				$paymentSpecAmount = $paymentSpec['totalAmount'];
 				$flow              = initializeResursFlow();
-				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $paymentSpec['specLines'], $currentOmniRef );
+				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
 				if ( omniOption( "omniFrameNotReloading" ) ) {
 					$array['#omniActions'] = '<script>document.location.reload(true);</script>';
 				} else {
-					$omniUpdateResponse = $flow->omniUpdateOrder( $omniJson, $currentOmniRef );
+					$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
 				}
 
 				if ( isset( $omniUpdateResponse['code'] ) ) {

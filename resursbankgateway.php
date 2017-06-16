@@ -1064,7 +1064,11 @@ function woocommerce_gateway_resurs_bank_init() {
 				$cacheMethods = get_transient( 'resurs_bank_methods_checkout_cache' );
 				if ( empty( $cacheMethods ) ) {
 					$methodList = $this->flow->getPaymentMethods();
-					set_transient( "resurs_bank_methods_checkout_cache", $methodList, 3600 );
+					$cacheTime = 3600;
+					if (isResursDemo()) {
+						$cacheTime = 300;
+					}
+					set_transient( "resurs_bank_methods_checkout_cache", $methodList, $cacheTime );
 				} else {
 					$methodList = $cacheMethods;
 				}
@@ -3425,24 +3429,20 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	$username       = resursOption( "login" );
 	$password       = resursOption( "password" );
 	$useEnvironment = getServerEnv();
-
 	if ( $setEnvironment !== \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_NOT_SET ) {
 		$useEnvironment = $setEnvironment;
 	}
-
 	if ( ! empty( $overrideUser ) ) {
 		$username = $overrideUser;
 	}
 	if ( ! empty( $overridePassword ) ) {
 		$password = $overridePassword;
 	}
-
 	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
 	$initFlow->convertObjects      = true;
 	$initFlow->convertObjectsOnGet = true;
 	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
-
 	if ( isset( $_REQUEST['testurl'] ) ) {
 		$baseUrlTest = $_REQUEST['testurl'];
 		// Set this up once
@@ -3452,7 +3452,6 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 			$_SESSION['customTestUrl'] = $baseUrlTest;
 		}
 	}
-
 	if ( isset( $_SESSION['customTestUrl'] ) ) {
 		$_SESSION['customTestUrl'] = $initFlow->setTestUrl( $_SESSION['customTestUrl'] );
 	}
@@ -3467,7 +3466,8 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 		}
 	} catch ( Exception $e ) {
 	}
-
+	$country = getResursOption("country");
+	$initFlow->setCountryByCountryCode($country);
 	return $initFlow;
 }
 
