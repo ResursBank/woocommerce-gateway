@@ -572,7 +572,9 @@ function preSetResursMethods(customerType, returnedObjects) {
                             for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length; getChild++) {
                                 if (typeof hideElm[hideElmCount].childNodes[getChild].type !== "undefined" && hideElm[hideElmCount].childNodes[getChild].type === "radio") {
                                     // Unselect this radio buttons if found, just to make sure no method are chosen in a moment like this
-                                    hideElm[hideElmCount].childNodes[getChild].checked = false;
+                                    if (!$RB.inArray(hideElm[hideElmCount].childNodes[getChild].value, returnedObjects[hideCustomerType])) {
+                                        hideElm[hideElmCount].childNodes[getChild].checked = false;
+                                    }
                                 }
                             }
                             hideElm[hideElmCount].style.display = "none";

@@ -26,10 +26,10 @@ use TorneLIB\CURL_POST_AS;
 if ( ! defined( 'RB_API_PATH' ) ) {
 	define( 'RB_API_PATH', __DIR__ );
 }
-require_once(RB_API_PATH . '/thirdparty/network.php');
-require_once(RB_API_PATH . '/rbapiloader/ResursTypeClasses.php');
-require_once(RB_API_PATH . '/rbapiloader/ResursEnvironments.php');
-require_once(RB_API_PATH . '/rbapiloader/ResursException.php');
+require_once( RB_API_PATH . '/thirdparty/network.php' );
+require_once( RB_API_PATH . '/rbapiloader/ResursTypeClasses.php' );
+require_once( RB_API_PATH . '/rbapiloader/ResursEnvironments.php' );
+require_once( RB_API_PATH . '/rbapiloader/ResursException.php' );
 
 /**
  * Class ResursBank Primary class for EComPHP
@@ -675,12 +675,12 @@ class ResursBank {
 		if ( defined( 'RB_API_PATH' ) ) {
 			$this->classPath = RB_API_PATH;
 		}
-		if (isset($_SERVER['HTTP_HOST'])) {
+		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
 			$theHost = $_SERVER['HTTP_HOST'];
 		} else {
 			$theHost = "nohost.localhost";
 		}
-		$this->checkoutShopUrl = $this->hasHttps(true) . "://" . $theHost;
+		$this->checkoutShopUrl           = $this->hasHttps( true ) . "://" . $theHost;
 		$this->soapOptions['cache_wsdl'] = ( defined( 'WSDL_CACHE_BOTH' ) ? WSDL_CACHE_BOTH : true );
 		$this->soapOptions['ssl_method'] = ( defined( 'SOAP_SSL_METHOD_TLS' ) ? SOAP_SSL_METHOD_TLS : false );
 		if ( ! is_null( $login ) ) {
@@ -891,12 +891,17 @@ class ResursBank {
 		}
 		// Prepare services URL in case of nonWsdl mode.
 		// This makes the throwing on "no available services" unnecessary
-		if (count($this->Include) < 1) {
+		if ( count( $this->Include ) < 1 ) {
 			$this->hasWsdl = false;
 		}
 		$this->wsdlServices = array();
-		foreach ($this->ServiceRequestList as $reqType => $reqService) { $this->wsdlServices[$reqService] = true;}
-		foreach ( $this->wsdlServices as $ServiceName => $isAvailableBoolean) {$this->URLS[ $ServiceName ] = $this->environment . $ServiceName . "?wsdl";}
+		foreach ( $this->ServiceRequestList as $reqType => $reqService ) {
+			$this->wsdlServices[ $reqService ] = true;
+		}
+		foreach ( $this->wsdlServices as $ServiceName => $isAvailableBoolean ) {
+			$this->URLS[ $ServiceName ] = $this->environment . $ServiceName . "?wsdl";
+		}
+
 		return true;
 	}
 
@@ -1162,6 +1167,7 @@ class ResursBank {
 	 * Get a timestamp for when the last cache of a call was requested and saved from Ecommerce
 	 *
 	 * @param $cachedArrayName
+	 *
 	 * @return int
 	 * @deprecated 1.0.8
 	 * @deprecated 1.1.8
@@ -1824,6 +1830,7 @@ class ResursBank {
 	 * Enforce another method than the simplified flow
 	 *
 	 * @param int $methodType
+	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -1945,9 +1952,10 @@ class ResursBank {
 		) );
 		// Make sure this method always returns an array even if it is only one method. Ecommerce will, in case of only one available method
 		// return an object instead of an array.
-		if (is_object($paymentMethods)) {
-			$paymentMethods = array($paymentMethods);
+		if ( is_object( $paymentMethods ) ) {
+			$paymentMethods = array( $paymentMethods );
 		}
+
 		return $paymentMethods;
 	}
 
@@ -2140,11 +2148,12 @@ class ResursBank {
 	 * Set store id for the payload
 	 *
 	 * @param null $storeId
+	 *
 	 * @since 1.0.7
 	 * @since 1.1.7
 	 */
-	public function setStoreId($storeId = null) {
-		if (!empty($storeId)) {
+	public function setStoreId( $storeId = null ) {
+		if ( ! empty( $storeId ) ) {
 			$this->storeId = $storeId;
 		}
 	}
@@ -2370,6 +2379,7 @@ class ResursBank {
 	 * While generating a getCostOfPurchase where $returnBody is true, this function adds custom html before the returned html-code from Resurs Bank
 	 *
 	 * @param string $htmlData
+	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2381,6 +2391,7 @@ class ResursBank {
 	 * While generating a getCostOfPurchase where $returnBody is true, this function adds custom html after the returned html-code from Resurs Bank
 	 *
 	 * @param string $htmlData
+	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2735,6 +2746,7 @@ class ResursBank {
 	 * Set a logged in username (will be merged with the client name at aftershopFlow-level)
 	 *
 	 * @param string $currentUsername
+	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2749,11 +2761,12 @@ class ResursBank {
 	 * It is also possible to handle this through the manual payload as always.
 	 *
 	 * @param string $shopUrl
+	 *
 	 * @since 1.0.4
 	 * @since 1.1.4
 	 */
-	public function setShopUrl($shopUrl = '') {
-		if (!empty($shopUrl)) {
+	public function setShopUrl( $shopUrl = '' ) {
+		if ( ! empty( $shopUrl ) ) {
 			$this->checkoutShopUrl = $shopUrl;
 		}
 	}
@@ -3793,7 +3806,7 @@ class ResursBank {
 		if ( is_object( $paymentMethodName ) || is_array( $paymentMethodName ) ) {
 			if ( is_object( $paymentMethodName ) ) {
 				// Prevent arrays to go through here and crash something
-				if (!is_array($customerType)) {
+				if ( ! is_array( $customerType ) ) {
 					/** @noinspection PhpUndefinedFieldInspection */
 					if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ] ) ) {
 						/** @noinspection PhpUndefinedFieldInspection */
@@ -4196,6 +4209,7 @@ class ResursBank {
 	 * Set target country (optional)
 	 *
 	 * @param int $Country
+	 *
 	 * @return string Country code is returned
 	 * @since 1.0.2
 	 * @since 1.1.2
@@ -4212,6 +4226,7 @@ class ResursBank {
 		} else {
 			$this->envCountry = null;
 		}
+
 		return $this->envCountry;
 	}
 
@@ -4220,15 +4235,15 @@ class ResursBank {
 	 *
 	 * @param string $countryCodeString
 	 */
-	public function setCountryByCountryCode($countryCodeString = "") {
-		if (strtolower($countryCodeString) == "dk") {
-			$this->setCountry(ResursCountry::COUNTRY_DK);
-		} else if (strtolower($countryCodeString) == "no") {
-			$this->setCountry(ResursCountry::COUNTRY_NO);
-		} else if (strtolower($countryCodeString) == "fi") {
-			$this->setCountry(ResursCountry::COUNTRY_FI);
+	public function setCountryByCountryCode( $countryCodeString = "" ) {
+		if ( strtolower( $countryCodeString ) == "dk" ) {
+			$this->setCountry( ResursCountry::COUNTRY_DK );
+		} else if ( strtolower( $countryCodeString ) == "no" ) {
+			$this->setCountry( ResursCountry::COUNTRY_NO );
+		} else if ( strtolower( $countryCodeString ) == "fi" ) {
+			$this->setCountry( ResursCountry::COUNTRY_FI );
 		} else {
-			$this->setCountry(ResursCountry::COUNTRY_SE);
+			$this->setCountry( ResursCountry::COUNTRY_SE );
 		}
 	}
 
@@ -4251,6 +4266,7 @@ class ResursBank {
 	 * @param string $unitMeasure
 	 * @param string $articleType ORDER_LINE, DISCOUNT, SHIPPING_FEE
 	 * @param int $quantity
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4323,28 +4339,29 @@ class ResursBank {
 			}
 			if ( $myFlow === ResursMethodTypes::METHOD_SIMPLIFIED ) {
 				$this->Payload['orderData'] = array(
-					'specLines'      => $this->sanitizePaymentSpec($this->SpecLines),
+					'specLines'      => $this->sanitizePaymentSpec( $this->SpecLines ),
 					'totalAmount'    => $paymentSpec['totalAmount'],
 					'totalVatAmount' => $paymentSpec['totalVatAmount']
 				);
 			}
 			if ( $myFlow === ResursMethodTypes::METHOD_HOSTED ) {
 				$this->Payload['orderData'] = array(
-					'orderLines'     => $this->sanitizePaymentSpec($this->SpecLines),
+					'orderLines'     => $this->sanitizePaymentSpec( $this->SpecLines ),
 					'totalAmount'    => $paymentSpec['totalAmount'],
 					'totalVatAmount' => $paymentSpec['totalVatAmount']
 				);
 			}
 			if ( $myFlow == ResursMethodTypes::METHOD_CHECKOUT ) {
-				$this->Payload['orderLines'] = $this->sanitizePaymentSpec($this->SpecLines);
+				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->SpecLines );
 			}
 		} else {
 			// If there are no array for the speclines yet, check if we could update one from the payload
-			if (isset($this->Payload['orderLines']) && is_array($this->Payload['orderLines'])) {
-				$this->Payload['orderLines'] = $this->sanitizePaymentSpec($this->Payload['orderLines']);
-				$this->SpecLines = $this->Payload['orderLines'];
+			if ( isset( $this->Payload['orderLines'] ) && is_array( $this->Payload['orderLines'] ) ) {
+				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->Payload['orderLines'] );
+				$this->SpecLines             = $this->Payload['orderLines'];
 			}
 		}
+
 		return $this->Payload;
 	}
 
@@ -4372,6 +4389,7 @@ class ResursBank {
 		$this->preparePayload( $payment_id_or_method, $payload );
 		if ( $this->forceExecute ) {
 			$this->createPaymentExecuteCommand = "bookPayment";
+
 			return array( 'status' => 'delayed' );
 		} else {
 			$bookPaymentResult = $this->createPaymentExecute( $payment_id_or_method, $this->Payload );
@@ -4397,12 +4415,13 @@ class ResursBank {
 		$myFlow = $this->getPreferredPaymentService();
 		// Using this function to validate that card data info is properly set up during the deprecation state in >= 1.0.2/1.1.1
 		if ( $myFlow == ResursMethodTypes::METHOD_SIMPLIFIED ) {
-			$paymentMethodInfo = $this->getPaymentMethodSpecific($payment_id_or_method);
-			if ($paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo->specificType == "NEWCARD" || $paymentMethodInfo->specificType == "REVOLVING_CREDIT") {
+			$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
+			if ( $paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo->specificType == "NEWCARD" || $paymentMethodInfo->specificType == "REVOLVING_CREDIT" ) {
 				$this->validateCardData();
 			}
 			$myFlowResponse  = $this->postService( 'bookPayment', $this->Payload );
 			$this->SpecLines = array();
+
 			return $myFlowResponse;
 		} else if ( $myFlow == ResursMethodTypes::METHOD_CHECKOUT ) {
 			$checkoutUrl      = $this->getCheckoutUrl() . "/checkout/payments/" . $payment_id_or_method;
@@ -4410,9 +4429,10 @@ class ResursBank {
 			$parsedResponse   = $this->CURL->getParsedResponse( $checkoutResponse );
 			$responseCode     = $this->CURL->getResponseCode( $checkoutResponse );
 			// Do not trust response codes!
-			if (isset($parsedResponse->paymentSessionId)) {
+			if ( isset( $parsedResponse->paymentSessionId ) ) {
 				$this->paymentSessionId = $parsedResponse->paymentSessionId;
 				$this->SpecLines        = array();
+
 				return $parsedResponse->html;
 			} else {
 				if ( isset( $parsedResponse->error ) ) {
@@ -4423,15 +4443,17 @@ class ResursBank {
 				}
 				throw new \Exception( implode( "\n", $error ), $responseCode );
 			}
+
 			return $parsedResponse;
 		} else if ( $myFlow == ResursMethodTypes::METHOD_HOSTED ) {
 			$hostedUrl      = $this->getHostedUrl();
 			$hostedResponse = $this->CURL->doPost( $hostedUrl, $this->Payload, \TorneLIB\CURL_POST_AS::POST_AS_JSON );
 			$parsedResponse = $this->CURL->getParsedResponse( $hostedResponse );
-			$responseCode     = $this->CURL->getResponseCode( $hostedResponse );
+			$responseCode   = $this->CURL->getResponseCode( $hostedResponse );
 			// Do not trust response codes!
 			if ( isset( $parsedResponse->location ) ) {
 				$this->SpecLines = array();
+
 				return $parsedResponse->location;
 			} else {
 				if ( isset( $parsedResponse->error ) ) {
@@ -4456,7 +4478,7 @@ class ResursBank {
 	 * @since 1.0.5
 	 * @since 1.1.5
 	 */
-	public function bookSignedPayment($paymentId = '') {
+	public function bookSignedPayment( $paymentId = '' ) {
 		return $this->postService( "bookSignedPayment", array( 'paymentId' => $paymentId ) );
 	}
 
@@ -4491,6 +4513,7 @@ class ResursBank {
 	 * If no unit measure are set but setCountry() have been used, this function will try to set a matching string depending on the country.
 	 *
 	 * @param null $unitMeasure
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4554,7 +4577,7 @@ class ResursBank {
 			}
 			unset( $this->Payload['specLine'] );
 			$this->renderPaymentSpec();
-		} else if (isset($this->Payload['orderLines'])) {
+		} else if ( isset( $this->Payload['orderLines'] ) ) {
 			$this->renderPaymentSpec();
 		}
 		if ( $this->enforceService === ResursMethodTypes::METHOD_HOSTED || $this->enforceService === ResursMethodTypes::METHOD_SIMPLIFIED ) {
@@ -4563,8 +4586,8 @@ class ResursBank {
 				'preferredId'       => $this->getPreferredPaymentId(),
 				'customerIpAddress' => $this->getCustomerIp()
 			);
-			if ($this->enforceService === ResursMethodTypes::METHOD_SIMPLIFIED) {
-				if (!isset($this->Payload['storeId']) && !empty($this->storeId)) {
+			if ( $this->enforceService === ResursMethodTypes::METHOD_SIMPLIFIED ) {
+				if ( ! isset( $this->Payload['storeId'] ) && ! empty( $this->storeId ) ) {
 					$this->Payload['storeId'] = $this->storeId;
 				}
 			}
@@ -4595,7 +4618,7 @@ class ResursBank {
 			}
 			// Rules for customer only applies to checkout. As this also involves the hosted flow (see above) this must only specifically occur on the checkout
 			if ( $this->enforceService == ResursMethodTypes::METHOD_CHECKOUT ) {
-				if (!isset($this->Payload['storeId']) && !empty($this->storeId)) {
+				if ( ! isset( $this->Payload['storeId'] ) && ! empty( $this->storeId ) ) {
 					$this->Payload['storeId'] = $this->storeId;
 				}
 				if ( isset( $this->Payload['paymentData'] ) ) {
@@ -4611,7 +4634,7 @@ class ResursBank {
 					unset( $this->Payload['customer'] );
 				}
 				// Making sure sloppy developers uses shopUrl properly.
-				if (!isset($this->Payload['shopUrl'])) {
+				if ( ! isset( $this->Payload['shopUrl'] ) ) {
 					$this->Payload['shopUrl'] = $this->checkoutShopUrl;
 				}
 			}
@@ -4627,23 +4650,23 @@ class ResursBank {
 	 * @since 1.0.3
 	 * @since 1.1.3
 	 */
-	private function hasHttps($returnProtocol = false) {
-		if (isset($_SERVER['HTTPS'])) {
-			if ($_SERVER['HTTPS'] == "on") {
-				if (!$returnProtocol) {
+	private function hasHttps( $returnProtocol = false ) {
+		if ( isset( $_SERVER['HTTPS'] ) ) {
+			if ( $_SERVER['HTTPS'] == "on" ) {
+				if ( ! $returnProtocol ) {
 					return true;
 				} else {
 					return "https";
 				}
 			} else {
-				if (!$returnProtocol) {
+				if ( ! $returnProtocol ) {
 					return false;
 				} else {
 					return "http";
 				}
 			}
 		}
-		if (!$returnProtocol) {
+		if ( ! $returnProtocol ) {
 			return false;
 		} else {
 			return "http";
@@ -4664,43 +4687,65 @@ class ResursBank {
 	 * @since 1.0.4
 	 * @since 1.1.4
 	 */
-	public function sanitizePaymentSpec($specLines = array(), $myFlowOverrider = ResursMethodTypes::METHOD_UNDEFINED) {
+	public function sanitizePaymentSpec( $specLines = array(), $myFlowOverrider = ResursMethodTypes::METHOD_UNDEFINED ) {
 		$specRules = array(
-			'checkout' => array(
-				'artNo', 'description', 'quantity', 'unitMeasure', 'unitAmountWithoutVat', 'vatPct', 'type'
+			'checkout'   => array(
+				'artNo',
+				'description',
+				'quantity',
+				'unitMeasure',
+				'unitAmountWithoutVat',
+				'vatPct',
+				'type'
 			),
-			'hosted' => array(
-				'artNo', 'description', 'quantity', 'unitMeasure', 'unitAmountWithoutVat', 'vatPct', 'totalVatAmount', 'totalAmount'
+			'hosted'     => array(
+				'artNo',
+				'description',
+				'quantity',
+				'unitMeasure',
+				'unitAmountWithoutVat',
+				'vatPct',
+				'totalVatAmount',
+				'totalAmount'
 			),
 			'simplified' => array(
-				'id', 'artNo', 'description', 'quantity', 'unitMeasure', 'unitAmountWithoutVat', 'vatPct', 'totalVatAmount', 'totalAmount'
+				'id',
+				'artNo',
+				'description',
+				'quantity',
+				'unitMeasure',
+				'unitAmountWithoutVat',
+				'vatPct',
+				'totalVatAmount',
+				'totalAmount'
 			)
 		);
-		if (is_array($specLines)) {
+		if ( is_array( $specLines ) ) {
 			$myFlow = $this->getPreferredPaymentService();
-			if ($myFlowOverrider !== ResursMethodTypes::METHOD_UNDEFINED) {
+			if ( $myFlowOverrider !== ResursMethodTypes::METHOD_UNDEFINED ) {
 				$myFlow = $myFlowOverrider;
 			}
 			$mySpecRules = array();
-			if ($myFlow == ResursMethodTypes::METHOD_SIMPLIFIED) {
+			if ( $myFlow == ResursMethodTypes::METHOD_SIMPLIFIED ) {
 				$mySpecRules = $specRules['simplified'];
-			} else if ($myFlow == ResursMethodTypes::METHOD_HOSTED) {
+			} else if ( $myFlow == ResursMethodTypes::METHOD_HOSTED ) {
 				$mySpecRules = $specRules['hosted'];
-			} else if ($myFlow == ResursMethodTypes::METHOD_CHECKOUT) {
+			} else if ( $myFlow == ResursMethodTypes::METHOD_CHECKOUT ) {
 				$mySpecRules = $specRules['checkout'];
 			}
-			foreach ($specLines as $specIndex => $specArray) {
-				foreach ($specArray as $key => $value) {
-					if (!in_array(strtolower($key), array_map("strtolower", $mySpecRules))) {
-						unset($specArray[$key]);
+			foreach ( $specLines as $specIndex => $specArray ) {
+				foreach ( $specArray as $key => $value ) {
+					if ( ! in_array( strtolower( $key ), array_map( "strtolower", $mySpecRules ) ) ) {
+						unset( $specArray[ $key ] );
 					}
-					if (strtolower($key) == "unitmeasure" && empty($value)) {
-						$specArray[$key] = $this->defaultUnitMeasure;
+					if ( strtolower( $key ) == "unitmeasure" && empty( $value ) ) {
+						$specArray[ $key ] = $this->defaultUnitMeasure;
 					}
 				}
-				$specLines[$specIndex] = $specArray;
+				$specLines[ $specIndex ] = $specArray;
 			}
 		}
+
 		return $specLines;
 	}
 
@@ -4708,6 +4753,7 @@ class ResursBank {
 	 * Defines if the checkout should honor the customer field array as it is not officially supported by Resurs Bank
 	 *
 	 * @param bool $isCustomerSupported
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4724,6 +4770,7 @@ class ResursBank {
 	 * before completion.
 	 *
 	 * @param bool $enableExecute
+	 *
 	 * @since 1.0.3
 	 * @since 1.1.3
 	 */
@@ -4773,6 +4820,7 @@ class ResursBank {
 	 *
 	 * @param $ArrayKey
 	 * @param array $ArrayValue
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4791,6 +4839,7 @@ class ResursBank {
 	 * Generate a Payload for customer address, depending on a received getAddress()-object
 	 *
 	 * @param $addressData
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4824,6 +4873,7 @@ class ResursBank {
 	 * Payload simplifier: Having data from getAddress, you want to set as billing address, this can be done from here.
 	 *
 	 * @param $getaddressdata_or_governmentid
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4842,6 +4892,7 @@ class ResursBank {
 	 * Payload simplifier: Having data from getAddress, you want to set as shipping address, this can be done from here.
 	 *
 	 * @param $getAddressData
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4860,6 +4911,7 @@ class ResursBank {
 	 * @param $postalArea
 	 * @param $postalCode
 	 * @param $country
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4878,6 +4930,7 @@ class ResursBank {
 	 * @param $postalArea
 	 * @param $postalCode
 	 * @param $country
+	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4929,6 +4982,7 @@ class ResursBank {
 	 * @param string $successUrl
 	 * @param string $failUrl
 	 * @param bool $forceSigning
+	 *
 	 * @since 1.0.6
 	 * @since 1.1.6
 	 */
@@ -4993,6 +5047,7 @@ class ResursBank {
 	 */
 	public function getPayload() {
 		$this->preparePayload();
+
 		return $this->Payload;
 	}
 
@@ -5534,7 +5589,7 @@ class ResursBank {
 	 * @deprecated 1.1.8
 	 */
 	public function omniUpdateOrder( $jsonData, $paymentId = '' ) {
-		return $this->setCheckoutFrameOrderLines($paymentId, $jsonData);
+		return $this->setCheckoutFrameOrderLines( $paymentId, $jsonData );
 		if ( empty( $paymentId ) ) {
 			throw new \Exception( "Payment id not set" );
 		}
@@ -5555,12 +5610,13 @@ class ResursBank {
 	 *
 	 * @param string $paymentId
 	 * @param array $orderLines
+	 *
 	 * @return array
 	 * @throws \Exception
 	 * @since 1.0.8
 	 * @since 1.1.8
 	 */
-	public function setCheckoutFrameOrderLines($paymentId = '', $orderLines = array()) {
+	public function setCheckoutFrameOrderLines( $paymentId = '', $orderLines = array() ) {
 		if ( empty( $paymentId ) ) {
 			throw new \Exception( "Payment id not set" );
 		}
@@ -5568,21 +5624,22 @@ class ResursBank {
 			$this->InitializeServices();
 		}
 		$outputOrderLines = array();
-		if (is_string($orderLines)) {
+		if ( is_string( $orderLines ) ) {
 			// If this is a string, it might be an json string from older systems. We need, in that case make sure it is returned as an array.
 			// This will destroy the content going to the PUT call, if it is not the case. However, sending a string to this point has no effect in the flow whatsoever.
-			$orderLines = $this->objectsIntoArray(json_decode($orderLines));
+			$orderLines = $this->objectsIntoArray( json_decode( $orderLines ) );
 		}
 		// Make sure that the payment spec are clean up and set correctly to a non-recursive array
-		if (isset($orderLines['orderLines'])) {
+		if ( isset( $orderLines['orderLines'] ) ) {
 			$outputOrderLines = $orderLines['orderLines'];
-		} else if (isset($orderLines['specLines'])) {
+		} else if ( isset( $orderLines['specLines'] ) ) {
 			$outputOrderLines = $orderLines['specLines'];
 		} else {
 			$outputOrderLines = $orderLines;
 		}
-		$sanitizedOutputOrderLines = $this->sanitizePaymentSpec($outputOrderLines,ResursMethodTypes::METHOD_CHECKOUT);
-		return $this->CURL->doPut($this->getCheckoutUrl() . "/checkout/payments/" . $paymentId, array('orderLines' => $sanitizedOutputOrderLines), CURL_POST_AS::POST_AS_JSON);
+		$sanitizedOutputOrderLines = $this->sanitizePaymentSpec( $outputOrderLines, ResursMethodTypes::METHOD_CHECKOUT );
+
+		return $this->CURL->doPut( $this->getCheckoutUrl() . "/checkout/payments/" . $paymentId, array( 'orderLines' => $sanitizedOutputOrderLines ), CURL_POST_AS::POST_AS_JSON );
 	}
 
 	////// HOSTED FLOW

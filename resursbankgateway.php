@@ -635,6 +635,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			if ( $event_type === 'check_signing_response' ) {
 				$this->check_signing_response();
+
 				return;
 			}
 			if ( $event_type === "prepare-omni-order" ) {
@@ -1114,12 +1115,13 @@ function woocommerce_gateway_resurs_bank_init() {
 						}
 						if ( strtolower( $id ) == strtolower( $payment_id ) ) {
 							// When boths customer types are allowed, this is going arrayified.
-							// In that case, select the one that the customer has chosen.
-							if (isset($_REQUEST['ssnCustomerType'])) {
-								$customerTypeTest = $_REQUEST['ssnCustomerType'];
-								if (is_array($customerType) && in_array($customerTypeTest, $customerType)) {
-									$customerType = $customerTypeTest;
-								}
+							// In that case, select the one that the customer has chosen. Default is NATURAL
+							if ( ! isset( $_REQUEST['ssnCustomerType'] ) ) {
+								$_REQUEST['ssnCustomerType'] = "NATURAL";
+							}
+							$customerTypeTest = $_REQUEST['ssnCustomerType'];
+							if ( is_array( $customerType ) && in_array( $customerTypeTest, $customerType ) ) {
+								$customerType = $customerTypeTest;
 							}
 							$requiredFormFields = $this->flow->getTemplateFieldsByMethodType( $method, $customerType, $specificType );
 							$buttonCssClasses   = "btn btn-info active";
@@ -1288,10 +1290,10 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$bookDataArray['specLine'] = $paymentSpec;
 			$bookDataArray['customer'] = array(
-				'governmentId' => $_REQUEST['applicant-government-id'],
-				'phone'        => $_REQUEST['applicant-telephone-number'],
-				'email'        => $_REQUEST['applicant-email-address'],
-				'type'         => $_REQUEST['ssnCustomerType']
+				'governmentId' => ( isset( $_REQUEST['applicant-government-id'] ) ? $_REQUEST['applicant-government-id'] : "" ),
+				'phone'        => ( isset( $_REQUEST['applicant-telephone-number'] ) ? $_REQUEST['applicant-telephone-number'] : "" ),
+				'email'        => ( isset( $_REQUEST['applicant-email-address'] ) ? $_REQUEST['applicant-email-address'] : "" ),
+				'type'         => ( isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : "" )
 			);
 
 			if ( isset( $methodSpecification->specificType ) && ( $methodSpecification->specificType == "REVOLVING_CREDIT" || $methodSpecification->specificType == "CARD" ) ) {
@@ -1301,16 +1303,20 @@ function woocommerce_gateway_resurs_bank_init() {
 				if ( $methodSpecification->specificType == "REVOLVING_CREDIT" ) {
 					$this->flow->prepareCardData( null, true );
 				} else {
-					$cardNumber = $_REQUEST['card-number'];
-					$this->flow->prepareCardData( $cardNumber, false );
+					if ( isset( $_REQUEST['card-number'] ) ) {
+						$cardNumber = $_REQUEST['card-number'];
+						$this->flow->prepareCardData( $cardNumber, false );
+					}
 				}
 			}
 			if ( $methodSpecification->customerType == "LEGAL" ) {
-				$bookDataArray['customer']['contactGovernmentId'] = (isset($_REQUEST['contact-government-id']) ? $_REQUEST['contact-government-id'] :  null);
+				$bookDataArray['customer']['contactGovernmentId'] = ( isset( $_REQUEST['contact-government-id'] ) ? $_REQUEST['contact-government-id'] : null );
 			}
 			if ( isset( $_REQUEST['applicant-mobile-number'] ) && ! empty( $_REQUEST['applicant-mobile-number'] ) ) {
 				$bookDataArray['customer']['cellPhone'] = $_REQUEST['applicant-mobile-number'];
 			}
+			$supportProviderMethods = true;
+			$emulateHostedFlow      = false;
 
 			try {
 				if ( isResursHosted() ) {
@@ -1333,8 +1339,10 @@ function woocommerce_gateway_resurs_bank_init() {
 					$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 					$failBooking   = false;
 					$hostedFlowUrl = null;
-					if ( $methodSpecification->type == "PAYMENT_PROVIDER" ) {
+
+					if ( $methodSpecification->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
 						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+
 						return;
 					} else {
 						try {
@@ -1357,6 +1365,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						$order->update_status( 'pending' );
 						$bookedStatus = 'FROZEN';
 						update_post_meta( $order_id, 'paymentId', $preferredId );
+
 						return array(
 							'result'   => 'success',
 							'redirect' => $hostedFlowUrl
@@ -1370,7 +1379,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					}
 				} else {
-					if ( $methodSpecification->type == "PAYMENT_PROVIDER" ) {
+					if ( $methodSpecification->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
 						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
 
 						return;
@@ -1385,6 +1394,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
+
 				return;
 			}
 
@@ -2481,8 +2491,8 @@ function woocommerce_gateway_resurs_bank_init() {
 
 		$selectedCountry  = getResursOption( "country" );
 		$optionGetAddress = getResursOption( "getAddress" );
-		$private = __('Private', 'WC_Payment_Gateway');
-		$company = __('Company', 'WC_Payment_Gateway');
+		$private          = __( 'Private', 'WC_Payment_Gateway' );
+		$company          = __( 'Company', 'WC_Payment_Gateway' );
 		if ( $optionGetAddress && ! isResursOmni() ) {
 			/*
              * MarGul change
@@ -2802,22 +2812,26 @@ function woocommerce_gateway_resurs_bank_init() {
 	 */
 	function woocommerce_resurs_bank_available_payment_gateways( $gateways ) {
 		unset( $gateways['resurs-bank'] );
+
 		return $gateways;
 	}
-	function resurs_order_column_header($columns) {
+
+	function resurs_order_column_header( $columns ) {
 		$new_columns = array();
-		foreach ($columns as $column_name => $column_info) {
-			$new_columns[$column_name] = $column_info;
-			if ($column_name == "order_title") {
+		foreach ( $columns as $column_name => $column_info ) {
+			$new_columns[ $column_name ] = $column_info;
+			if ( $column_name == "order_title" ) {
 				$new_columns['resurs_order_id'] = __( 'Resurs Reference', 'WC_Payment_Gateway' );
 			}
 		}
+
 		return $new_columns;
 	}
-	function resurs_order_column_info($column) {
+
+	function resurs_order_column_info( $column ) {
 		global $post;
-		if ($column == "resurs_order_id") {
-			$resursId = wc_get_payment_id_by_order_id($post->ID);
+		if ( $column == "resurs_order_id" ) {
+			$resursId = wc_get_payment_id_by_order_id( $post->ID );
 			echo $resursId;
 		}
 	}
@@ -3229,6 +3243,7 @@ function resurs_remove_order_item( $item_id ) {
 function wc_get_order_id_by_payment_id( $paymentId = '' ) {
 	global $wpdb;
 	$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and meta_value = '%s'", $paymentId ) );
+
 	return $order_id;
 }
 
@@ -3476,8 +3491,9 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 		}
 	} catch ( Exception $e ) {
 	}
-	$country = getResursOption("country");
-	$initFlow->setCountryByCountryCode($country);
+	$country = getResursOption( "country" );
+	$initFlow->setCountryByCountryCode( $country );
+
 	return $initFlow;
 }
 
@@ -3578,6 +3594,7 @@ function isResursSimulation() {
 
 function repairResursSimulation( $returnRepairState = false ) {
 	setResursOption( "devSimulateErrors", $returnRepairState );
+
 	return $returnRepairState;
 }
 
