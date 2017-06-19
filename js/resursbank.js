@@ -573,6 +573,7 @@ function preSetResursMethods(customerType, returnedObjects) {
                                 if (typeof hideElm[hideElmCount].childNodes[getChild].type !== "undefined" && hideElm[hideElmCount].childNodes[getChild].type === "radio") {
                                     // Unselect this radio buttons if found, just to make sure no method are chosen in a moment like this
                                     if (!$RB.inArray(hideElm[hideElmCount].childNodes[getChild].value, returnedObjects[hideCustomerType])) {
+                                        // Only uncheck a method box if it does not already exists in the new array, when switching over from customerType
                                         hideElm[hideElmCount].childNodes[getChild].checked = false;
                                     }
                                 }
