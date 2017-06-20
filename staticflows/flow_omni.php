@@ -61,7 +61,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	}
 
 	public function resurs_omnicheckout_form_location() {
-		global $resursIframeCount;
+		global $resursIframeCount, $woocommerce;
 		if ( ! isset( $resursIframeCount ) ) {
 			$resursIframeCount = 1;
 		}
@@ -70,6 +70,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		if ( $resursIframeCount > 1 ) {
 			return;
 		}
+
 		// Actions and info for Resurs Checkout that invokes on last-resorts (legacy)
 		echo '<div id="omniActions" style="display: none;"></div>';
 		echo '<div id="omniInfo"></div>';

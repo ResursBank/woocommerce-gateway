@@ -442,6 +442,13 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'description' => __( 'The country for which the payment services should be used', 'WC_Payment_Gateway' ),
 					'desc_tip'    => true,
 				),
+				'removeGatewayListOnOmni'                => array(
+					'title'       => __( 'No methods on Checkout (Experimental)', 'WC_Payment_Gateway' ),
+					'type'        => 'checkbox',
+					'default'     => 'false',
+					'description' => __( 'Remove payment methods list if Resurs Checkout is the only gateway', 'WC_Payment_Gateway' ),
+					'desc_tip'    => false,
+				),
 				'omniFrameNotReloading'                => array(
 					'title'       => __( 'Reload checkout on cart changes', 'WC_Payment_Gateway' ),
 					'type'        => 'checkbox',

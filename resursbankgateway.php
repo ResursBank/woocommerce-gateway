@@ -2339,10 +2339,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				try {
 					$payment = $resursFlow->getPayment( $payment_id );
 				} catch ( Exception $getPaymentException ) {
-					$_SESSION['resurs_bank_admin_notice'] = array(
-						'type'    => 'error',
-						'message' => $getPaymentException->getMessage(),
-					);
 					return;
 				}
 
@@ -2571,7 +2567,9 @@ function woocommerce_gateway_resurs_bank_init() {
 				$omniRefAge     = intval( WC()->session->get( 'omniRefAge' ) );
 			}
 
-			$OmniVars         = array(
+			$gateways = WC()->payment_gateways()->get_available_payment_gateways();
+
+			$OmniVars = array(
 				'RESURSCHECKOUT_IFRAME_URL'            => $OmniUrl,
 				'RESURSCHECKOUT'                       => home_url(),
 				'OmniPreBookUrl'                       => $omniBookNonce,
@@ -2581,7 +2579,9 @@ function woocommerce_gateway_resurs_bank_init() {
 				'isResursTest'                         => isResursTest(),
 				'iframeShape'                          => getResursOption( "iframeShape", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'useStandardFieldsForShipping'         => getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" ),
-				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" )
+				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" ),
+				'gatewayCount'                         => count( $gateways ),
+				'removeGatewayListOnOmni'              => getResursOption( "removeGatewayListOnOmni", "woocommerce_resurs_bank_omnicheckout_settings")
 			);
 			$setSessionEnable = true;
 			$setSession       = isset( $_REQUEST['set-no-session'] ) ? $_REQUEST['set-no-session'] : null;
