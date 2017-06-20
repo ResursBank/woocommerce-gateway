@@ -2339,12 +2339,21 @@ function woocommerce_gateway_resurs_bank_init() {
 				try {
 					$payment = $resursFlow->getPayment( $payment_id );
 				} catch ( Exception $getPaymentException ) {
+					$_SESSION['resurs_bank_admin_notice'] = array(
+						'type'    => 'error',
+						'message' => $getPaymentException->getMessage(),
+					);
+					return;
 				}
 
-				if ( false === is_array( $payment->status ) ) {
-					$status = array( $payment->status );
+				if (isset($payment)) {
+					if ( false === is_array( $payment->status ) ) {
+						$status = array( $payment->status );
+					} else {
+						$status = $payment->status;
+					}
 				} else {
-					$status = $payment->status;
+					return;
 				}
 			} else {
 				// No payment id, no Resurs handling
