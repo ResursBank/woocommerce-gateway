@@ -1639,7 +1639,6 @@ function woocommerce_gateway_resurs_bank_init() {
 							}
 						}
 						$resursOrder = new WC_Checkout();
-
 						try {
 							/*
                              * As we work with the session, we'd try to get the current order that way.
@@ -1674,11 +1673,9 @@ function woocommerce_gateway_resurs_bank_init() {
 								$internalErrorMessage = $e->getMessage();
 								$internalErrorCode    = $e->getCode();
 							}
-
 							WC()->session->set( 'omniId', $orderId );
 							$returnResult['orderId'] = $orderId;
 							$returnResult['session'] = WC()->session;
-
 							$returnResult['hasInternalErrors'] = $hasInternalErrors;
 							if ( $orderId > 0 && ! $hasInternalErrors ) {
 								/*
@@ -2247,12 +2244,11 @@ function woocommerce_gateway_resurs_bank_init() {
 				$methodsHasErrors    = true;
 				$methodsErrorMessage = $e->getMessage();
 			}
-			$requestedCustomerType = $_REQUEST['customerType'];
+			$requestedCustomerType = isset($_REQUEST['customerType']) ? $_REQUEST['customerType'] : "NATURAL";
 			$responseArray         = array(
 				'natural' => array(),
 				'legal'   => array()
 			);
-
 
 			if ( is_array( $paymentMethods ) ) {
 				foreach ( $paymentMethods as $objId ) {
@@ -2580,8 +2576,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				'iframeShape'                          => getResursOption( "iframeShape", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'useStandardFieldsForShipping'         => getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" ),
-				'gatewayCount'                         => count( $gateways ),
-				'removeGatewayListOnOmni'              => getResursOption( "removeGatewayListOnOmni", "woocommerce_resurs_bank_omnicheckout_settings")
+				'gatewayCount'                         => count( $gateways )
 			);
 			$setSessionEnable = true;
 			$setSession       = isset( $_REQUEST['set-no-session'] ) ? $_REQUEST['set-no-session'] : null;
@@ -3618,6 +3613,8 @@ function repairResursSimulation( $returnRepairState = false ) {
  */
 function isResursOmni( $ignoreActiveFlag = false ) {
 	global $woocommerce;
+	$returnValue = false;
+	$externalOmniValue = null;
 	$currentMethod = "";
 	if ( isset( $woocommerce->session ) ) {
 		$currentMethod = $woocommerce->session->get( 'chosen_payment_method' );
@@ -3625,16 +3622,22 @@ function isResursOmni( $ignoreActiveFlag = false ) {
 	$flowType = resursOption( "flowtype" );
 	$hasOmni  = hasResursOmni( $ignoreActiveFlag );
 	if ( ( $hasOmni == 1 || $hasOmni === true ) && ( ! empty( $currentMethod ) && $flowType === $currentMethod ) ) {
-		return true;
+		$returnValue = true;
 	}
 	/*
 	 * If Omni is enabled and the current chosen method is empty, pre-select omni
 	 */
 	if ( ( $hasOmni == 1 || $hasOmni === true ) && $flowType === "resurs_bank_omnicheckout" && empty( $currentMethod ) ) {
-		return true;
+		$returnValue = true;
 	}
-
-	return false;
+	if ($returnValue) {
+		// If the checkout is normally set to be enabled, this gives external plugins a chance to have it disabled
+		$externalOmniValue = apply_filters( "resursbank_temporary_disable_checkout", null );
+		if (!is_null($externalOmniValue)) {
+			$returnValue = ($externalOmniValue ? false : true);
+		}
+	}
+	return $returnValue;
 }
 
 /**

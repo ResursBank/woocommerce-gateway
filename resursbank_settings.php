@@ -658,7 +658,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					// This is reserved for future use, so we won't touch this for now
 					//echo $this->setCheckBox( 'useStandardFieldsForShipping', $namespace );
 					echo $this->setSeparator( __( 'Advanced', 'WC_Payment_Gateway' ) );
-					echo $this->setCheckBox( 'removeGatewayListOnOmni', $namespace );
 					echo $this->setCheckBox( 'omniFrameNotReloading', $namespace );
 					echo $this->setCheckBox( 'cleanOmniCustomerFields', $namespace );
 				} else if ( $section == "advanced" ) {

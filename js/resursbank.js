@@ -22,9 +22,6 @@ $RB(document).ready(function ($) {
     });
         //$RB('#resurs-checkout-container iframe').css('background-color', '#9900FF');
         if (typeof ResursCheckout !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
-            if (omnivars["removeGatewayListOnOmni"] && omnivars["gatewayCount"] == "1") {
-                jQuery('#payment').remove();
-            }
             if (omnivars["useStandardFieldsForShipping"] == "1") {
                 console.log("ResursCheckout: useStandardFieldsForShipping (Experimental) is active, so customer fields are hidden rather than removed");
                 if (omnivars["showResursCheckoutStandardFieldsTest"] !== "1") {
