@@ -67,8 +67,8 @@ class TorneLIB_Network
         if (!isset($urlParsed['host']) || !$urlParsed['scheme']) {
             return array(null, null, null);
         }
-        // Make sure that the host is not invalid
         if ($validateHost) {
+            // Make sure that the host is not invalid
             $hostRecord = dns_get_record($urlParsed['host'], DNS_ANY);
             if (!count($hostRecord)) {
                 return array(null, null, null);

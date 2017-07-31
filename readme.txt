@@ -49,7 +49,39 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 = 2.1.0 =
 
-    * [WOO-143] EComPHP 1.1.x patch
+    * [WOO-130] Implement orderLines/type to extend Resurs Checkout order confirmation information
+    * [WOO-141] Ability to disable aftershopflow
+    * [WOO-143] Upgrade to EComPHP 1.1.x
+    * [WOO-146] Support storeId (Inherited from 2.0.2.8) via wordpress filter function
+    * [WOO-150] Also log faulty digests in order view
+    * [WOO-151] ShapeShifter Patch (Allow the change of iframe shapes (background + frame border) via injected css in ResursCheckoutJS)
+    * [WOO-164] setCountryByCountryCode for using automatically configured unitMeasure (until put into configuration)
+    * [WOO-168] Support PAYMENT_PROVIDER in  simplified flow.
+    * [WOO-144] Undefined index: showOrderInfoAfter
+    * [WOO-145] Callbacks list upgrade
+    * [WOO-149] Slow callback responses might cause timeouts from oAdmin
+    * [WOO-152] Double clicking on merchant passwords in slow systems might frustrate administrators
+    * [WOO-154] isResursDemo() might cause eternal loops on plugin activation in some systems
+    * [WOO-158] Selecting payment methods from store might be slow (Uncached calls)
+    * [WOO-160] Invoice LEGAL problems with unsent form data
+    * [WOO-163] Setting coupons with EComPHP 1.1 does not work properly (setCheckoutFrameOrderLines)
+    * [WOO-165] Cached payment methods in store to speed up breaks the demoshop
+    * [WOO-166] Forms in simplified flow prevents PAYMENT_PROVIDER to be clickable (PSP Compatibility)
+    * [WOO-167] Cached payment methods tend to disappear in checkout (simplified)
+    * [WOO-170] Notice: Undefined variable: payment in resursbankgateway.php on line 2344
+
+= 2.0.2.15 =
+
+    * Regex control complaining on some undefined field indexes
+    * Contact-government-id has a faulty variable control
+
+= 2.0.2.12 =
+
+    * Payment method types (NATURAL vs LEGAL) are very slow from time to time due to remote fetchings (2.0.2.11)
+
+= 2.0.2.10 =
+
+    * Micropatch for getAddress-LEGAL (2.0.2.9)
 
 = 2.0.2.8 =
 
