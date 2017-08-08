@@ -81,6 +81,44 @@ class TorneLIB_Network
         );
     }
 
+	public function getUrlsFromHtml( $stringWithUrls, $offset = - 1, $urlLimit = - 1, $protocols = array( "http" ) ) {
+		$returnArray = array();
+		// Pick up all urls
+		foreach ( $protocols as $protocol ) {
+			preg_match_all( "/src=\"$protocol(.*?)\"|src='$protocol(.*?)'/is", $stringWithUrls, $matches );
+			if ( isset( $matches[1] ) && count( $matches[1] ) ) {
+				$urls = $matches[1];
+			}
+			if ( count( $urls ) ) {
+				foreach ( $urls as $url ) {
+					$prependUrl    = $protocol . $url;
+					$returnArray[] = $prependUrl;
+				}
+			}
+		}
+		// Start at a specific offset if defined
+		if ( count( $returnArray ) && $offset > - 1 && $offset <= $returnArray ) {
+			$allowedOffset  = 0;
+			$returnNewArray = array();
+			$urlCount       = 0;
+			for ( $offsetIndex = 0; $offsetIndex < count( $returnArray ); $offsetIndex ++ ) {
+				if ( $offsetIndex == $offset ) {
+					$allowedOffset = true;
+				}
+				if ( $allowedOffset ) {
+					// Break when requested limit has beenreached
+					$urlCount ++;
+					if ( $urlLimit > - 1 && $urlCount > $urlLimit ) {
+						break;
+					}
+					$returnNewArray[] = $returnArray[ $offsetIndex ];
+				}
+			}
+			$returnArray = $returnNewArray;
+		}
+		return $returnArray;
+	}
+
     /**
      * Set a cookie
      *
