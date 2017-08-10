@@ -7,6 +7,8 @@
  * Version: 2.1.0
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
+ * Text Domain: WC_Payment_Gateway
+ * Domain Path: /languages
  */
 
 define( 'RB_WOO_VERSION', "2.1.0" );

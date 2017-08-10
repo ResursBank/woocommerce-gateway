@@ -220,7 +220,8 @@ class TorneLIB_Network
             $extractHost = $this->getUrlDomain($useHost);
             $currentHost = $extractHost[0];
         }
-        if (!empty($currentHost)) {
+        // Do this, only if it's a real domain (if scripts are running from console, there might be a loss of this hostname (or if it is a single name, like localhost)
+        if (!empty($currentHost) && preg_match("/\./", $currentHost)) {
             $thisdomainArray = explode(".", $currentHost);
             $thisdomain = $thisdomainArray[sizeof($thisdomainArray) - 2] . "." . $thisdomainArray[sizeof($thisdomainArray) - 1];
         }
@@ -429,7 +430,7 @@ class Tornevall_cURL
     private $CurlVersion = null;
 
     /** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-    private $TorneCurlRelease = "20170603";
+    private $TorneCurlRelease = "20170809";
 
     /**
      * Target environment (if target is production some debugging values will be skipped)
@@ -567,7 +568,10 @@ class Tornevall_cURL
     public $CurlUseCookies = true;
     private $CurlResolveForced = false;
     private $CurlResolveRetry = 0;
-    private $CurlUserAgent = null;
+    /** @var string Custom User-Agent sent in the HTTP-HEADER */
+    private $CurlUserAgent;
+    /** @var string Custom User-Agent Memory */
+    private $CustomUserAgent;
 
     /** @var bool Try to automatically parse the retrieved body content. Supports, amongst others json, serialization, etc */
     public $CurlAutoParse = true;
@@ -623,7 +627,6 @@ class Tornevall_cURL
         if (!function_exists('curl_init')) {
             throw new \Exception("curl library not found");
         }
-
         // Common ssl checkers (if they fail, there is a sslDriverError to recall
         if (!in_array('https', @stream_get_wrappers())) {
             $this->sslDriverError[] = "SSL Failure: HTTPS wrapper can not be found";
@@ -631,6 +634,8 @@ class Tornevall_cURL
         if (!extension_loaded('openssl')) {
             $this->sslDriverError[] = "SSL Failure: HTTPS extension can not be found";
         }
+        // Initial setup
+	    $this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease . ')';
         if (function_exists('curl_version')) {
             $CurlVersionRequest = curl_version();
             $this->CurlVersion = $CurlVersionRequest['version'];
@@ -654,7 +659,6 @@ class Tornevall_cURL
             $this->sslCurlDriver = false;
         }
         $this->CurlResolve = CURL_RESOLVER::RESOLVER_DEFAULT;
-        $this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease . ')';
         if (class_exists('TorneLIB\TorneLIB_Network')) {
             $this->NETWORK = new TorneLIB_Network();
         }
@@ -849,10 +853,11 @@ class Tornevall_cURL
      *
      * @param null $CustomUserAgent
      */
-    public function setUserAgent($CustomUserAgent = null)
+    public function setUserAgent($CustomUserAgent = "")
     {
         if (!empty($CustomUserAgent)) {
-            $this->CurlUserAgent = $CustomUserAgent . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease;
+        	$this->CustomUserAgent .= preg_replace("/\s+$/", '', $CustomUserAgent);
+            $this->CurlUserAgent = $this->CustomUserAgent . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease;
         } else {
             $this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease . ')';
         }
@@ -866,6 +871,9 @@ class Tornevall_cURL
     public function getUserAgent()
     {
         return $this->CurlUserAgent;
+    }
+    public function getCustomUserAgent() {
+    	return $this->CustomUserAgent;
     }
 
     /**
@@ -1857,6 +1865,7 @@ class Tornevall_cURL
         $this->CurlHeaders = array();
         if (preg_match("/\?wsdl$|\&wsdl$/i", $this->CurlURL) || $postAs == CURL_POST_AS::POST_AS_SOAP) {
             $Soap = new Tornevall_SimpleSoap($this->CurlURL, $this->curlopt);
+            $Soap->setCustomUserAgent($this->CustomUserAgent);
             $Soap->setThrowableState($this->canThrow);
             $Soap->setSoapAuthentication($this->AuthData);
             $Soap->SoapTryOnce = $this->SoapTryOnce;
@@ -2103,6 +2112,7 @@ class Tornevall_SimpleSoap extends Tornevall_cURL
     private $soapResponseHeaders;
     private $libResponse;
     private $canThrowSoapFaults = true;
+    private $CustomUserAgent;
 
     public $SoapFaultString = null;
     public $SoapFaultCode = 0;
@@ -2116,7 +2126,6 @@ class Tornevall_SimpleSoap extends Tornevall_cURL
     function __construct($Url, $SoapOptions = array())
     {
         parent::__construct();
-        $this->setUserAgent("TorneLIB-cUrlClient/SimpleSoap");
         $this->soapUrl = $Url;
         $this->sslGetOptionsStream();
         if (!count($SoapOptions)) {
@@ -2143,6 +2152,12 @@ class Tornevall_SimpleSoap extends Tornevall_cURL
         }
     }
 
+    public function setCustomUserAgent($userAgentString) {
+    	$this->CustomUserAgent = preg_replace("/\s+$/", '', $userAgentString);
+	    $this->setUserAgent($userAgentString . " +TorneLIB-SimpleSoap");
+	    $this->sslGetOptionsStream();
+    }
+
     /**
      * Set up this class so that it can throw exceptions
      *
@@ -2165,8 +2180,7 @@ class Tornevall_SimpleSoap extends Tornevall_cURL
         if (gettype($this->sslopt['stream_context']) == "resource") {
             $this->soapOptions['stream_context'] = $this->sslopt['stream_context'];
         }
-
-        if ($this->SoapTryOnce) {
+	    if ($this->SoapTryOnce) {
             $this->soapClient = new \SoapClient($this->soapUrl, $this->soapOptions);
         } else {
             try {

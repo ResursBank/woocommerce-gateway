@@ -10,7 +10,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.1
- * @version 1.1.12
+ * @version 1.1.13
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -25,6 +25,7 @@ if ( ! defined( 'RB_API_PATH' ) ) {
 	define( 'RB_API_PATH', __DIR__ );
 }
 require_once(RB_API_PATH . '/thirdparty/network.php');
+require_once(RB_API_PATH . '/thirdparty/crypto.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursTypeClasses.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursEnvironments.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursException.php');
@@ -123,7 +124,6 @@ class ResursBank {
 	public $developerWebService = null;
 	/** @var null Object simplifiedShopFlowService (this is what is primary used by this gateway) */
 	public $simplifiedShopFlowService = null;
-	/** @var null Object afterShopFlowService */
 	public $afterShopFlowService = null;
 	/** @var null Object shopFlowService (Deprecated) */
 	public $shopFlowService = null;
@@ -148,6 +148,9 @@ class ResursBank {
 	public $bookPaymentRoundDecimals = 2;
 	/** @var string Customer id used at afterShopFlow */
 	public $customerId = "";
+
+	/** @var bool Enable the possibility to push over User-Agent from customer into header (debugging related) */
+	private $customerUserAgentPush = false;
 
 
 	///// Public SSL handlers
@@ -201,9 +204,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.12";
+	private $version = "1.1.13";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20170808";
+	private $lastUpdate = "20170810";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -244,6 +247,13 @@ class ResursBank {
 	 * @since 1.1.1
 	 */
 	private $NETWORK;
+	/**
+	 * @var \TorneLIB\TorneLIB_Crypto Class for handling data encoding/encryption
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	private $T_CRYPTO;
 	/**
 	 * The payload rendered out from CreatePayment()
 	 * @var
@@ -695,7 +705,6 @@ class ResursBank {
 			$this->setEnvironment( $targetEnvironment );
 		}
 		$this->setUserAgent();
-
 	}
 
 	/**
@@ -879,13 +888,13 @@ class ResursBank {
 			}
 		}
 
-		if ( class_exists( 'TorneLIB\Tornevall_cURL' ) ) {
+		if ( class_exists( '\TorneLIB\Tornevall_cURL' ) ) {
 			$this->CURL = new \TorneLIB\Tornevall_cURL();
 			$this->CURL->setStoreSessionExceptions( true );
 			$this->CURL->setAuthentication( $this->soapOptions['login'], $this->soapOptions['password'] );
 			$this->CURL->setUserAgent( $this->myUserAgent );
 		}
-		if ( class_exists( 'TorneLIB\TorneLIB_Network' ) ) {
+		if ( class_exists( '\TorneLIB\TorneLIB_Network' ) ) {
 			$this->NETWORK = new \TorneLIB\TorneLIB_Network();
 		}
 		// Prepare services URL in case of nonWsdl mode.
@@ -912,11 +921,14 @@ class ResursBank {
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
-	public function setUserAgent( $MyUserAgent = '' ) {
+	public function setUserAgent( $MyUserAgent = '') {
 		if ( ! empty( $MyUserAgent ) ) {
 			$this->myUserAgent = $MyUserAgent . " +" . $this->getVersionFull();
 		} else {
 			$this->myUserAgent = $this->getVersionFull();
+		}
+		if ($this->customerUserAgentPush && isset($_SERVER['HTTP_USER_AGENT'])) {
+			$this->myUserAgent .= " +CLI-" . $this->T_CRYPTO->base64_compress($_SERVER['HTTP_USER_AGENT']);
 		}
 	}
 
@@ -1779,6 +1791,23 @@ class ResursBank {
 	}
 
 	/**
+	 * Special function for pushing user-agent from customer into our ecommerce communication. This must be enabled before setUserAgent.
+	 *
+	 * @param bool $enableCustomerUserAgent
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	public function setPushCustomerUserAgent($enableCustomerUserAgent = false) {
+		if ( class_exists( '\TorneLIB\TorneLIB_Crypto' ) ) {
+			$this->T_CRYPTO = new \TorneLIB\TorneLIB_Crypto();
+		}
+		if (!empty($this->T_CRYPTO)) {
+			$this->customerUserAgentPush = $enableCustomerUserAgent;
+		}
+	}
+
+	/**
 	 * Get next invoice number - and initialize if not set.
 	 *
 	 * @param bool $initInvoice Allow to set a new invoice number if not set (if not set, this is set to 1 if nothing else is set)
@@ -2605,8 +2634,10 @@ class ResursBank {
 	 * @deprecated 1.0.2 Use setUserAgent
 	 * @deprecated 1.1.2 Use setUserAgent
 	 */
-	public function setClientName( $clientNameString = null ) {
-		$this->setUserAgent( $clientNameString );
+	public function setClientName( $clientNameString = "" ) {
+		if (!empty($clientNameString)) {
+			$this->setUserAgent( $clientNameString );
+		}
 	}
 
 	/**
@@ -3968,8 +3999,8 @@ class ResursBank {
 	 * @return string
 	 * @since 1.0.0
 	 * @since 1.1.0
-	 * @deprecated 1.0.12 Will be replaced with getPreferredPaymentId
-	 * @deprecated 1.1.12 Will be replaced with getPreferredPaymentId
+	 * @deprecated 1.0.13 Will be replaced with getPreferredPaymentId
+	 * @deprecated 1.1.13 Will be replaced with getPreferredPaymentId
 	 */
 	public function getPreferredId( $maxLength = 25, $prefix = "", $dualUniq = true ) {
 		return $this->getPreferredPaymentId($maxLength, $prefix, $dualUniq);
@@ -4225,30 +4256,33 @@ class ResursBank {
 				}
 			}
 			if ( $myFlow === ResursMethodTypes::METHOD_SIMPLIFIED ) {
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
 				$this->Payload['orderData'] = array(
-					'specLines'      => $this->sanitizePaymentSpec( $this->SpecLines ),
+					'specLines'      => $this->sanitizePaymentSpec( $this->SpecLines, $myFlow ),
 					'totalAmount'    => $paymentSpec['totalAmount'],
 					'totalVatAmount' => $paymentSpec['totalVatAmount']
 				);
 			}
 			if ( $myFlow === ResursMethodTypes::METHOD_HOSTED ) {
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
 				$this->Payload['orderData'] = array(
-					'orderLines'     => $this->sanitizePaymentSpec( $this->SpecLines ),
+					'orderLines'     => $this->sanitizePaymentSpec( $this->SpecLines, $myFlow ),
 					'totalAmount'    => $paymentSpec['totalAmount'],
 					'totalVatAmount' => $paymentSpec['totalVatAmount']
 				);
 			}
 			if ( $myFlow == ResursMethodTypes::METHOD_CHECKOUT ) {
-				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->SpecLines );
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
+				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->SpecLines, $myFlow );
 			}
 		} else {
 			// If there are no array for the speclines yet, check if we could update one from the payload
 			if ( isset( $this->Payload['orderLines'] ) && is_array( $this->Payload['orderLines'] ) ) {
-				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->Payload['orderLines'] );
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
+				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->Payload['orderLines'], $myFlow );
 				$this->SpecLines             = $this->Payload['orderLines'];
 			}
 		}
-
 		return $this->Payload;
 	}
 
@@ -4621,12 +4655,8 @@ class ResursBank {
 			}
 			foreach ( $specLines as $specIndex => $specArray ) {
 				foreach ( $specArray as $key => $value ) {
-					if ( ! in_array( strtolower( $key ), array_map( "strtolower", $mySpecRules ) ) ) {
-						unset( $specArray[ $key ] );
-					}
-					if ( strtolower( $key ) == "unitmeasure" && empty( $value ) ) {
-						$specArray[ $key ] = $this->defaultUnitMeasure;
-					}
+					if ( strtolower( $key ) == "unitmeasure" && empty( $value ) ) { $specArray[ $key ] = $this->defaultUnitMeasure;	}
+					if ( ! in_array( strtolower( $key ), array_map( "strtolower", $mySpecRules ) ) ) { unset( $specArray[ $key ] );	}
 				}
 				$specLines[ $specIndex ] = $specArray;
 			}
