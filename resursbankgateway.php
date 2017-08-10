@@ -1322,9 +1322,6 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			try {
 				if ( isResursHosted() ) {
-					/**
-					 * Inherit some data from request
-					 */
 					if ( isset( $_REQUEST['ssn_field'] ) && ! empty( $_REQUEST['ssn_field'] ) ) {
 						$bookDataArray['customer']['governmentId'] = $_REQUEST['ssn_field'];
 					}
@@ -1383,7 +1380,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					if ( $methodSpecification->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
 						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
-
 						return;
 					} else {
 						$storeId = apply_filters( "resursbank_set_storeid", null );
