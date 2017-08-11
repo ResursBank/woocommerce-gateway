@@ -2408,10 +2408,10 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'processing':
 					break;
 				case 'completed':
-					$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
+					/*$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
 					if ( $optionDisableAftershop ) {
 						break;
-					}
+					}*/
 					$flowCode         = 0;
 					$flowErrorMessage = "";
 					if ( $resursFlow->canDebit( $payment ) ) {
@@ -2441,10 +2441,10 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'on-hold':
 					break;
 				case 'cancelled':
-					$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
+					/*$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
 					if ( $optionDisableAftershop ) {
 						break;
-					}
+					}*/
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
@@ -2460,10 +2460,10 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 					break;
 				case 'refunded':
-					$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
+					/*$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
 					if ( $optionDisableAftershop ) {
 						break;
-					}
+					}*/
 					try {
 						$resursFlow->cancelPayment( $payment_id );
 					} catch ( Exception $e ) {
