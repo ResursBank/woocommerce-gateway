@@ -671,8 +671,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					echo $this->setTextBox( 'callbackUpdateInterval', $namespace );
 					echo $this->setSeparator( __( 'Customer address handling', 'WC_Payment_Gateway' ) );
 					echo $this->setCheckBox( 'getAddress', $namespace );
-					echo $this->setSeparator( __( 'Special aftershopFlow Settings', 'WC_Payment_Gateway' ) );
-					echo $this->setCheckBox( 'disableAftershopFunctions', $namespace );
+					//echo $this->setSeparator( __( 'Special aftershopFlow Settings', 'WC_Payment_Gateway' ) );
+					//echo $this->setCheckBox( 'disableAftershopFunctions', $namespace );
 					echo $this->setSeparator( __( 'Testing and development', 'WC_Payment_Gateway' ) );
 					echo $this->setCheckBox( 'devResursSimulation', $namespace );
 					echo $this->setTextBox( 'devSimulateSuccessUrl', $namespace );
