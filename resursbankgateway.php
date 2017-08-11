@@ -1108,6 +1108,10 @@ function woocommerce_gateway_resurs_bank_init() {
 						'applicant-mobile-number'    => __( 'Applicant mobile number', 'WC_Payment_Gateway' ),
 						'card-number'                => __( 'Card number', 'WC_Payment_Gateway' ),
 					);
+					// Appears to happen when LEGAL are chosen
+					$labelsLegal = array(
+						'applicant-government-id'    => __( 'Company government ID', 'WC_Payment_Gateway' ),
+					);
 					$minMaxError   = false;
 					if ( $totalAmount >= $min && $totalAmount <= $max ) {
 						try {
@@ -1150,8 +1154,12 @@ function woocommerce_gateway_resurs_bank_init() {
 											}
 										}
 									}
+									$setLabel = $labels[ $fieldName ];
+									if (isset($labelsLegal[$fieldName]) && !empty($labelsLegal[$fieldName])) {
+										$setLabell = $labelsLegal[$fieldName];
+									}
 									$fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
-									$fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $labels[ $fieldName ] . '</label>';
+									$fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $setLabel . '</label>';
 									$fieldGenHtml .= '<input onkeyup="rbFormChange(\'' . $fieldName . '\', this)" id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
 									$fieldGenHtml .= '</div>';
 								}
@@ -1297,17 +1305,15 @@ function woocommerce_gateway_resurs_bank_init() {
 				'email'        => ( isset( $_REQUEST['applicant-email-address'] ) ? $_REQUEST['applicant-email-address'] : "" ),
 				'type'         => ( isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : "" )
 			);
-
 			if ( isset( $methodSpecification->specificType ) && ( $methodSpecification->specificType == "REVOLVING_CREDIT" || $methodSpecification->specificType == "CARD" ) ) {
 				$bookDataArray['customer']['governmentId'] = isset( $_REQUEST['applicant-government-id'] ) ? $_REQUEST['applicant-government-id'] : "";
 				$bookDataArray['customer']['type']         = isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : "";
-
 				if ( $methodSpecification->specificType == "REVOLVING_CREDIT" ) {
-					$this->flow->prepareCardData( null, true );
+					$this->flow->setCardData();
 				} else {
 					if ( isset( $_REQUEST['card-number'] ) ) {
 						$cardNumber = $_REQUEST['card-number'];
-						$this->flow->prepareCardData( $cardNumber, false );
+						$this->flow->setCardData($cardNumber);
 					}
 				}
 			}
@@ -1319,7 +1325,6 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			$supportProviderMethods = true;
 			$emulateHostedFlow      = false;
-
 			try {
 				if ( isResursHosted() ) {
 					if ( isset( $_REQUEST['ssn_field'] ) && ! empty( $_REQUEST['ssn_field'] ) ) {
@@ -1345,7 +1350,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						return;
 					} else {
 						try {
-							$hostedBookPayment = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, false );
+							$hostedBookPayment = $this->flow->createPayment( $shortMethodName, $bookDataArray);
 							$hostedFlowUrl     = $hostedBookPayment;
 						} catch ( ResursException $hostedException ) {
 							$failBooking = true;
@@ -1371,7 +1376,6 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					} else {
 						$order->update_status( 'failed', __( 'An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly', 'WC_Payment_Gateway' ) );
-
 						return array(
 							'result'   => 'failure',
 							'redirect' => $failUrl
@@ -1387,12 +1391,18 @@ function woocommerce_gateway_resurs_bank_init() {
 							$bookDataArray['storeId'] = $storeId;
 							update_post_meta( $order_id, 'resursStoreId', $storeId );
 						}
-						$bookPaymentResult = $this->flow->bookPayment( $shortMethodName, $bookDataArray, true, true );
+						// If woocommerce forms do offer phone and email, while our own don't, use them.
+						if (empty($bookDataArray['customer']['phone']) && isset( $_REQUEST['billing_phone'] ) && !empty($_REQUEST['billing_phone'])) {
+							$bookDataArray['customer']['phone'] = $_REQUEST['billing_phone'];
+						}
+						if (empty($bookDataArray['customer']['email']) && isset( $_REQUEST['billing_phone'] ) && !empty($_REQUEST['billing_email'])) {
+							$bookDataArray['customer']['email'] = $_REQUEST['billing_email'];
+						}
+						$bookPaymentResult = $this->flow->createPayment( $shortMethodName, $bookDataArray);
 					}
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
-
 				return;
 			}
 

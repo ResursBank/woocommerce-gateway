@@ -262,6 +262,14 @@ class ResursBank {
 	 */
 	private $Payload;
 	/**
+	 * If there is a chosen payment method, the information about it (received from Resurs Ecommerce) will be stored here
+	 * @var array $PaymentMethod
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	private $PaymentMethod;
+	/**
 	 * Payment spec (orderlines)
 	 * @var
 	 * @since 1.0.2
@@ -4306,7 +4314,17 @@ class ResursBank {
 		if ( ! $this->hasServicesInitialization ) {
 			$this->InitializeServices();
 		}
-		// Payloads are built here
+		$myFlow = $this->getPreferredPaymentService();
+		try {
+			if ($myFlow !== ResursMethodTypes::METHOD_CHECKOUT) {
+				$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
+				if ( isset( $paymentMethodInfo->id ) ) {
+					$this->PaymentMethod = $paymentMethodInfo;
+				}
+			}
+		} catch (\Exception $e) {
+
+		}
 		$this->preparePayload( $payment_id_or_method, $payload );
 		if ( $this->forceExecute ) {
 			$this->createPaymentExecuteCommand = $payment_id_or_method;
@@ -4314,7 +4332,6 @@ class ResursBank {
 		} else {
 			$bookPaymentResult = $this->createPaymentExecute( $payment_id_or_method, $this->Payload );
 		}
-
 		return $bookPaymentResult;
 	}
 
@@ -4337,7 +4354,7 @@ class ResursBank {
 		if ( $myFlow == ResursMethodTypes::METHOD_SIMPLIFIED ) {
 			$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
 			if ( $paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo->specificType == "NEWCARD" || $paymentMethodInfo->specificType == "REVOLVING_CREDIT" ) {
-				$this->validateCardData();
+				$this->validateCardData($paymentMethodInfo->specificType);
 			}
 			$myFlowResponse  = $this->postService( 'bookPayment', $this->Payload );
 			$this->SpecLines = array();
@@ -4557,6 +4574,13 @@ class ResursBank {
 				if ( ! isset( $this->Payload['shopUrl'] ) ) {
 					$this->Payload['shopUrl'] = $this->checkoutShopUrl;
 				}
+			}
+		}
+		// If card data has been included in the payload, make sure that the card data is validated if the payload has been sent
+		// by manual hands (deprecated mode)
+		if (isset($this->Payload['card'])) {
+			if (isset($this->PaymentMethod->specificType)) {
+				$this->validateCardData($this->PaymentMethod->specificType);
 			}
 		}
 	}
@@ -5952,10 +5976,11 @@ class ResursBank {
 	/**
 	 * Payment card validity check for deprecation layer
 	 *
+	 * @param string $specificType
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
-	private function validateCardData() {
+	private function validateCardData($specificType = "") {
 		// Keeps compatibility with card data sets
 		if ( isset( $this->Payload['orderData']['totalAmount'] ) && $this->getPreferredPaymentService() == ResursMethodTypes::METHOD_SIMPLIFIED ) {
 			$cardInfo = isset( $this->Payload['card'] ) ? $this->Payload['card'] : array();
@@ -5964,6 +5989,25 @@ class ResursBank {
 					// Adding the exact total amount as we do not rule of exchange rates. For example, adding 500 extra to the total
 					// amount in sweden will work, but will on the other hand be devastating for countries using euro.
 					$this->Payload['card']['amount'] = $this->Payload['orderData']['totalAmount'];
+				}
+			}
+		}
+		if (isset($this->Payload['customer'])) {
+			// CARD + (NEWCARD, REVOLVING_CREDIT)
+			$mandatoryExtendedCustomerFields = array('governmentId', 'address', 'phone', 'email', 'type');
+			if ( $specificType == "CARD" ) {
+				$mandatoryExtendedCustomerFields = array('governmentId');
+			} else if (($specificType == "REVOLVING_CREDIT" || $specificType == "NEWCARD")) {
+				$mandatoryExtendedCustomerFields = array('governmentId', 'phone', 'email');
+			}
+			if (count($mandatoryExtendedCustomerFields)) {
+				foreach ( $this->Payload['customer'] as $customerKey => $customerValue ) {
+					// If the key belongs to extendedCustomer, is mandatory for the specificType and is empty,
+					// this means we can not deliver this data as a null value to ecommerce. Therefore, we have to remove it.
+					// The control being made here will skip the address object as we will only check the non-recursive data strings.
+					if ( ! is_array($customerValue) &&  ! in_array( $customerKey, $mandatoryExtendedCustomerFields ) && empty( trim( $customerValue ) ) ) {
+						unset( $this->Payload['customer'][ $customerKey ] );
+					}
 				}
 			}
 		}
