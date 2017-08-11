@@ -10,7 +10,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.1
- * @version 1.1.12
+ * @version 1.1.13
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -25,6 +25,7 @@ if ( ! defined( 'RB_API_PATH' ) ) {
 	define( 'RB_API_PATH', __DIR__ );
 }
 require_once(RB_API_PATH . '/thirdparty/network.php');
+require_once(RB_API_PATH . '/thirdparty/crypto.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursTypeClasses.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursEnvironments.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursException.php');
@@ -123,7 +124,6 @@ class ResursBank {
 	public $developerWebService = null;
 	/** @var null Object simplifiedShopFlowService (this is what is primary used by this gateway) */
 	public $simplifiedShopFlowService = null;
-	/** @var null Object afterShopFlowService */
 	public $afterShopFlowService = null;
 	/** @var null Object shopFlowService (Deprecated) */
 	public $shopFlowService = null;
@@ -148,6 +148,9 @@ class ResursBank {
 	public $bookPaymentRoundDecimals = 2;
 	/** @var string Customer id used at afterShopFlow */
 	public $customerId = "";
+
+	/** @var bool Enable the possibility to push over User-Agent from customer into header (debugging related) */
+	private $customerUserAgentPush = false;
 
 
 	///// Public SSL handlers
@@ -201,9 +204,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.12";
+	private $version = "1.1.13";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20170808";
+	private $lastUpdate = "20170810";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -245,12 +248,27 @@ class ResursBank {
 	 */
 	private $NETWORK;
 	/**
+	 * @var \TorneLIB\TorneLIB_Crypto Class for handling data encoding/encryption
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	private $T_CRYPTO;
+	/**
 	 * The payload rendered out from CreatePayment()
 	 * @var
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
 	private $Payload;
+	/**
+	 * If there is a chosen payment method, the information about it (received from Resurs Ecommerce) will be stored here
+	 * @var array $PaymentMethod
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	private $PaymentMethod;
 	/**
 	 * Payment spec (orderlines)
 	 * @var
@@ -695,7 +713,6 @@ class ResursBank {
 			$this->setEnvironment( $targetEnvironment );
 		}
 		$this->setUserAgent();
-
 	}
 
 	/**
@@ -879,13 +896,13 @@ class ResursBank {
 			}
 		}
 
-		if ( class_exists( 'TorneLIB\Tornevall_cURL' ) ) {
+		if ( class_exists( '\TorneLIB\Tornevall_cURL' ) ) {
 			$this->CURL = new \TorneLIB\Tornevall_cURL();
 			$this->CURL->setStoreSessionExceptions( true );
 			$this->CURL->setAuthentication( $this->soapOptions['login'], $this->soapOptions['password'] );
 			$this->CURL->setUserAgent( $this->myUserAgent );
 		}
-		if ( class_exists( 'TorneLIB\TorneLIB_Network' ) ) {
+		if ( class_exists( '\TorneLIB\TorneLIB_Network' ) ) {
 			$this->NETWORK = new \TorneLIB\TorneLIB_Network();
 		}
 		// Prepare services URL in case of nonWsdl mode.
@@ -912,11 +929,14 @@ class ResursBank {
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
-	public function setUserAgent( $MyUserAgent = '' ) {
+	public function setUserAgent( $MyUserAgent = '') {
 		if ( ! empty( $MyUserAgent ) ) {
 			$this->myUserAgent = $MyUserAgent . " +" . $this->getVersionFull();
 		} else {
 			$this->myUserAgent = $this->getVersionFull();
+		}
+		if ($this->customerUserAgentPush && isset($_SERVER['HTTP_USER_AGENT'])) {
+			$this->myUserAgent .= " +CLI-" . $this->T_CRYPTO->base64_compress($_SERVER['HTTP_USER_AGENT']);
 		}
 	}
 
@@ -1779,6 +1799,23 @@ class ResursBank {
 	}
 
 	/**
+	 * Special function for pushing user-agent from customer into our ecommerce communication. This must be enabled before setUserAgent.
+	 *
+	 * @param bool $enableCustomerUserAgent
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	public function setPushCustomerUserAgent($enableCustomerUserAgent = false) {
+		if ( class_exists( '\TorneLIB\TorneLIB_Crypto' ) ) {
+			$this->T_CRYPTO = new \TorneLIB\TorneLIB_Crypto();
+		}
+		if (!empty($this->T_CRYPTO)) {
+			$this->customerUserAgentPush = $enableCustomerUserAgent;
+		}
+	}
+
+	/**
 	 * Get next invoice number - and initialize if not set.
 	 *
 	 * @param bool $initInvoice Allow to set a new invoice number if not set (if not set, this is set to 1 if nothing else is set)
@@ -2605,8 +2642,10 @@ class ResursBank {
 	 * @deprecated 1.0.2 Use setUserAgent
 	 * @deprecated 1.1.2 Use setUserAgent
 	 */
-	public function setClientName( $clientNameString = null ) {
-		$this->setUserAgent( $clientNameString );
+	public function setClientName( $clientNameString = "" ) {
+		if (!empty($clientNameString)) {
+			$this->setUserAgent( $clientNameString );
+		}
 	}
 
 	/**
@@ -3968,8 +4007,8 @@ class ResursBank {
 	 * @return string
 	 * @since 1.0.0
 	 * @since 1.1.0
-	 * @deprecated 1.0.12 Will be replaced with getPreferredPaymentId
-	 * @deprecated 1.1.12 Will be replaced with getPreferredPaymentId
+	 * @deprecated 1.0.13 Will be replaced with getPreferredPaymentId
+	 * @deprecated 1.1.13 Will be replaced with getPreferredPaymentId
 	 */
 	public function getPreferredId( $maxLength = 25, $prefix = "", $dualUniq = true ) {
 		return $this->getPreferredPaymentId($maxLength, $prefix, $dualUniq);
@@ -4225,30 +4264,33 @@ class ResursBank {
 				}
 			}
 			if ( $myFlow === ResursMethodTypes::METHOD_SIMPLIFIED ) {
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
 				$this->Payload['orderData'] = array(
-					'specLines'      => $this->sanitizePaymentSpec( $this->SpecLines ),
+					'specLines'      => $this->sanitizePaymentSpec( $this->SpecLines, $myFlow ),
 					'totalAmount'    => $paymentSpec['totalAmount'],
 					'totalVatAmount' => $paymentSpec['totalVatAmount']
 				);
 			}
 			if ( $myFlow === ResursMethodTypes::METHOD_HOSTED ) {
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
 				$this->Payload['orderData'] = array(
-					'orderLines'     => $this->sanitizePaymentSpec( $this->SpecLines ),
+					'orderLines'     => $this->sanitizePaymentSpec( $this->SpecLines, $myFlow ),
 					'totalAmount'    => $paymentSpec['totalAmount'],
 					'totalVatAmount' => $paymentSpec['totalVatAmount']
 				);
 			}
 			if ( $myFlow == ResursMethodTypes::METHOD_CHECKOUT ) {
-				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->SpecLines );
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
+				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->SpecLines, $myFlow );
 			}
 		} else {
 			// If there are no array for the speclines yet, check if we could update one from the payload
 			if ( isset( $this->Payload['orderLines'] ) && is_array( $this->Payload['orderLines'] ) ) {
-				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->Payload['orderLines'] );
+				// Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
+				$this->Payload['orderLines'] = $this->sanitizePaymentSpec( $this->Payload['orderLines'], $myFlow );
 				$this->SpecLines             = $this->Payload['orderLines'];
 			}
 		}
-
 		return $this->Payload;
 	}
 
@@ -4272,7 +4314,17 @@ class ResursBank {
 		if ( ! $this->hasServicesInitialization ) {
 			$this->InitializeServices();
 		}
-		// Payloads are built here
+		$myFlow = $this->getPreferredPaymentService();
+		try {
+			if ($myFlow !== ResursMethodTypes::METHOD_CHECKOUT) {
+				$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
+				if ( isset( $paymentMethodInfo->id ) ) {
+					$this->PaymentMethod = $paymentMethodInfo;
+				}
+			}
+		} catch (\Exception $e) {
+
+		}
 		$this->preparePayload( $payment_id_or_method, $payload );
 		if ( $this->forceExecute ) {
 			$this->createPaymentExecuteCommand = $payment_id_or_method;
@@ -4280,7 +4332,6 @@ class ResursBank {
 		} else {
 			$bookPaymentResult = $this->createPaymentExecute( $payment_id_or_method, $this->Payload );
 		}
-
 		return $bookPaymentResult;
 	}
 
@@ -4303,7 +4354,7 @@ class ResursBank {
 		if ( $myFlow == ResursMethodTypes::METHOD_SIMPLIFIED ) {
 			$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
 			if ( $paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo->specificType == "NEWCARD" || $paymentMethodInfo->specificType == "REVOLVING_CREDIT" ) {
-				$this->validateCardData();
+				$this->validateCardData($paymentMethodInfo->specificType);
 			}
 			$myFlowResponse  = $this->postService( 'bookPayment', $this->Payload );
 			$this->SpecLines = array();
@@ -4525,6 +4576,13 @@ class ResursBank {
 				}
 			}
 		}
+		// If card data has been included in the payload, make sure that the card data is validated if the payload has been sent
+		// by manual hands (deprecated mode)
+		if (isset($this->Payload['card'])) {
+			if (isset($this->PaymentMethod->specificType)) {
+				$this->validateCardData($this->PaymentMethod->specificType);
+			}
+		}
 	}
 
 	/**
@@ -4621,12 +4679,8 @@ class ResursBank {
 			}
 			foreach ( $specLines as $specIndex => $specArray ) {
 				foreach ( $specArray as $key => $value ) {
-					if ( ! in_array( strtolower( $key ), array_map( "strtolower", $mySpecRules ) ) ) {
-						unset( $specArray[ $key ] );
-					}
-					if ( strtolower( $key ) == "unitmeasure" && empty( $value ) ) {
-						$specArray[ $key ] = $this->defaultUnitMeasure;
-					}
+					if ( strtolower( $key ) == "unitmeasure" && empty( $value ) ) { $specArray[ $key ] = $this->defaultUnitMeasure;	}
+					if ( ! in_array( strtolower( $key ), array_map( "strtolower", $mySpecRules ) ) ) { unset( $specArray[ $key ] );	}
 				}
 				$specLines[ $specIndex ] = $specArray;
 			}
@@ -5922,10 +5976,11 @@ class ResursBank {
 	/**
 	 * Payment card validity check for deprecation layer
 	 *
+	 * @param string $specificType
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
-	private function validateCardData() {
+	private function validateCardData($specificType = "") {
 		// Keeps compatibility with card data sets
 		if ( isset( $this->Payload['orderData']['totalAmount'] ) && $this->getPreferredPaymentService() == ResursMethodTypes::METHOD_SIMPLIFIED ) {
 			$cardInfo = isset( $this->Payload['card'] ) ? $this->Payload['card'] : array();
@@ -5934,6 +5989,25 @@ class ResursBank {
 					// Adding the exact total amount as we do not rule of exchange rates. For example, adding 500 extra to the total
 					// amount in sweden will work, but will on the other hand be devastating for countries using euro.
 					$this->Payload['card']['amount'] = $this->Payload['orderData']['totalAmount'];
+				}
+			}
+		}
+		if (isset($this->Payload['customer'])) {
+			// CARD + (NEWCARD, REVOLVING_CREDIT)
+			$mandatoryExtendedCustomerFields = array('governmentId', 'address', 'phone', 'email', 'type');
+			if ( $specificType == "CARD" ) {
+				$mandatoryExtendedCustomerFields = array('governmentId');
+			} else if (($specificType == "REVOLVING_CREDIT" || $specificType == "NEWCARD")) {
+				$mandatoryExtendedCustomerFields = array('governmentId', 'phone', 'email');
+			}
+			if (count($mandatoryExtendedCustomerFields)) {
+				foreach ( $this->Payload['customer'] as $customerKey => $customerValue ) {
+					// If the key belongs to extendedCustomer, is mandatory for the specificType and is empty,
+					// this means we can not deliver this data as a null value to ecommerce. Therefore, we have to remove it.
+					// The control being made here will skip the address object as we will only check the non-recursive data strings.
+					if ( ! is_array($customerValue) &&  ! in_array( $customerKey, $mandatoryExtendedCustomerFields ) && empty( trim( $customerValue ) ) ) {
+						unset( $this->Payload['customer'][ $customerKey ] );
+					}
 				}
 			}
 		}
