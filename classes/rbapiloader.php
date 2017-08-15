@@ -4685,7 +4685,6 @@ class ResursBank {
 				$specLines[ $specIndex ] = $specArray;
 			}
 		}
-
 		return $specLines;
 	}
 
@@ -5562,6 +5561,9 @@ class ResursBank {
 		if ( ! $this->hasServicesInitialization ) {
 			$this->InitializeServices();
 		}
+		if (empty($this->defaultUnitMeasure)) {
+			$this->setDefaultUnitMeasure();
+		}
 		$outputOrderLines = array();
 		if ( is_string( $orderLines ) ) {
 			// If this is a string, it might be an json string from older systems. We need, in that case make sure it is returned as an array.
@@ -5577,7 +5579,6 @@ class ResursBank {
 			$outputOrderLines = $orderLines;
 		}
 		$sanitizedOutputOrderLines = $this->sanitizePaymentSpec( $outputOrderLines, ResursMethodTypes::METHOD_CHECKOUT );
-
 		return $this->CURL->doPut( $this->getCheckoutUrl() . "/checkout/payments/" . $paymentId, array( 'orderLines' => $sanitizedOutputOrderLines ), CURL_POST_AS::POST_AS_JSON );
 	}
 
