@@ -758,7 +758,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 				}*/
 				case 'UPDATE':
-					// Currently unsupported
+					break;
 				default:
 					break;
 			}
@@ -3480,6 +3480,7 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	$initFlow->convertObjectsOnGet = true;
 	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
+	$initFlow->setDefaultUnitMeasure();
 	if ( isset( $_REQUEST['testurl'] ) ) {
 		$baseUrlTest = $_REQUEST['testurl'];
 		// Set this up once
