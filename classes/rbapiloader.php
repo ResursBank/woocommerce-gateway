@@ -6046,7 +6046,58 @@ class ResursBank {
 		if ( in_array( "DEBITABLE", $Status ) ) {
 			return true;
 		}
+		return false;
+	}
 
+	/**
+	 * Return true if order is debited
+	 *
+	 * @param array $paymentArrayOrPaymentId
+	 *
+	 * @return bool
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	public function getIsDebited( $paymentArrayOrPaymentId = array() ) {
+		$Status = (array) $this->getPaymentContent( $paymentArrayOrPaymentId, "status" );
+		if ( in_array( "IS_DEBITED", $Status ) ) {
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * Return true if order is credited
+	 *
+	 * @param array $paymentArrayOrPaymentId
+	 *
+	 * @return bool
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	public function getIsCredited( $paymentArrayOrPaymentId = array() ) {
+		$Status = (array) $this->getPaymentContent( $paymentArrayOrPaymentId, "status" );
+		if ( in_array( "IS_CREDITED", $Status ) ) {
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * Return true if order is annulled
+	 *
+	 * @param array $paymentArrayOrPaymentId
+	 *
+	 * @return bool
+	 * @since 1.0.13
+	 * @since 1.1.13
+	 * @since 1.2.0
+	 */
+	public function getIsAnnulled( $paymentArrayOrPaymentId = array() ) {
+		$Status = (array) $this->getPaymentContent( $paymentArrayOrPaymentId, "status" );
+		if ( in_array( "IS_ANNULLED", $Status ) ) {
+			return true;
+		}
 		return false;
 	}
 
