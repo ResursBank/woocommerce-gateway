@@ -353,6 +353,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		foreach ( glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' ) as $filename ) {
 			$allIncludes[] = str_replace( $path, '', $filename );
 		}
+		// Prevent the plugin from sending legacy data to this controller
+		foreach ($temp_class_files as $fileRow) {
+		    $newFileRow = "resurs_bank_nr_".$fileRow.".php";
+		    $temp_class_files[] = $newFileRow;
+        }
 		if ( is_array( $temp_class_files ) ) {
 			foreach ( $allIncludes as $exclude ) {
 				if ( ! in_array( $exclude, $temp_class_files ) ) {

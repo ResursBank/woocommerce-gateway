@@ -365,7 +365,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 				'type'                 => 'ORDER_LINE',
 			);
 		}
-
 		return $spec_lines;
 	}
 

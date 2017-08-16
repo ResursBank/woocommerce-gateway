@@ -897,7 +897,6 @@ function woocommerce_gateway_resurs_bank_init() {
 					'type'                 => 'ORDER_LINE'
 				);
 			}
-
 			return $spec_lines;
 		}
 
@@ -1156,7 +1155,7 @@ function woocommerce_gateway_resurs_bank_init() {
 									}
 									$setLabel = $labels[ $fieldName ];
 									if (isset($labelsLegal[$fieldName]) && !empty($labelsLegal[$fieldName])) {
-										$setLabell = $labelsLegal[$fieldName];
+										$setLabel = $labelsLegal[$fieldName];
 									}
 									$fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
 									$fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $setLabel . '</label>';
