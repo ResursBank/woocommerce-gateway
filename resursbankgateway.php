@@ -2416,6 +2416,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					if ( $resursFlow->canDebit( $payment ) ) {
 						try {
 							$resursFlow->finalizePayment( $payment_id );
+							wp_set_object_terms( $order_id, array( $old_status_slug ), 'shop_order_status', false );
 						} catch ( Exception $e ) {
 							$flowErrorMessage = $e->getMessage();
 							$flowCode         = $e->getCode();
@@ -2423,19 +2424,24 @@ function woocommerce_gateway_resurs_bank_init() {
 							$order->add_order_note( __( 'Finalization failed', 'WC_Payment_Gateway' ) . ": " . $flowErrorMessage );
 						}
 					} else {
-						$flowErrorMessage = __( 'Can not finalize the payment', 'WC_Payment_Gateway' );
-						$order->update_status( $old_status_slug );
-						$order->add_order_note( __( 'Finalization failed', 'WC_Payment_Gateway' ) . ": " . __( 'The order is not debitable', 'WC_Payment_Gateway' ) );
+						// Generate a notice if the order has been debited from for example payment admin.
+						// This notice requires that an order is not debitable (if it is, there's more to debit anyway, so in that case the above finalization event will occur)
+						if ($resursFlow->getIsDebited()) {
+							$order->add_order_note( __( 'This order has already been finalized somewhere else', 'WC_Payment_Gateway' ) );
+						} else {
+							// Generate error message if the order is something else than debited and debitable
+							$orderNote = __( 'This order is in a state at Resurs Bank where it can not be finalized', 'WC_Payment_Gateway' );
+							$order->add_order_note( $orderNote );
+							$flowErrorMessage = $orderNote;
+						}
 					}
 					if ( ! empty( $flowErrorMessage ) ) {
 						$_SESSION['resurs_bank_admin_notice'] = array(
 							'type'    => 'error',
 							'message' => $flowErrorMessage
 						);
-					} else {
-						wp_set_object_terms( $order_id, array( $old_status_slug ), 'shop_order_status', false );
-						wp_safe_redirect( $url );
 					}
+					wp_safe_redirect( $url );
 					break;
 				case 'on-hold':
 					break;
@@ -2913,6 +2919,14 @@ function resurs_order_data_info_after_shipping( $order = null ) {
 	resurs_order_data_info( $order, 'AS' );
 }
 
+function resurs_no_debit_debited() {
+	?>
+	<div class="notice notice-error">
+		<p><?php _e('It seems this order has already been finalized somewhere else - if your order is finished you may update it here aswell', 'WC_Payment_Gateway'); ?></p>
+	</div>
+	<?php
+}
+
 /**
  * Hook into WooCommerce OrderAdmin fetch payment data from Resurs Bank.
  * This hook are tested from WooCommerce 2.1.5 up to WooCommcer 2.5.2
@@ -2944,6 +2958,11 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 		try {
 			$rb                = initializeResursFlow();
 			$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
+			$currentWcStatus = $order->get_status();
+			$notIn = array("completed", "cancelled", "refunded");
+			if (!$rb->canDebit($resursPaymentInfo) && $rb->getIsDebited($resursPaymentInfo) && !in_array($currentWcStatus, $notIn)) {
+				resurs_no_debit_debited();
+			}
 		} catch ( Exception $e ) {
 			$hasError         = $e->getMessage();
 			$hasErrorNonStack = $hasError;
@@ -3006,7 +3025,6 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 				//$renderedResursData .= '<p>' . __('Confirm the invoice to be sent before changes can be made to order. <br> Changes of the invoice must be made in resurs bank management.') . '</p>';
 			}
 			$renderedResursData .= '</div>
-
                      <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url( __FILE__ ) . '/img/rb_logo.png' . '"></span>
                 ';
 
@@ -3018,6 +3036,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 				$addressInfo .= ( isset( $resursPaymentInfo->customer->address->country ) && ! empty( $resursPaymentInfo->customer->address->country ) ? $resursPaymentInfo->customer->address->country : "" ) . " " . ( isset( $resursPaymentInfo->customer->address->postalCode ) && ! empty( $resursPaymentInfo->customer->address->postalCode ) ? $resursPaymentInfo->customer->address->postalCode : "" ) . "\n";
 			}
 			ThirdPartyHooksSetPaymentTrigger( 'orderinfo', $resursPaymentId, ! isWooCommerce3() ? $order->id : $order->get_id() );
+
 			$renderedResursData .= '
                 <br>
                 <fieldset>
