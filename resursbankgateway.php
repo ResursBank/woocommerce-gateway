@@ -1154,7 +1154,7 @@ function woocommerce_gateway_resurs_bank_init() {
 										}
 									}
 									$setLabel = $labels[ $fieldName ];
-									if (isset($labelsLegal[$fieldName]) && !empty($labelsLegal[$fieldName])) {
+									if (isset($labelsLegal[$fieldName]) && !empty($labelsLegal[$fieldName]) && $customerType != "NATURAL") {
 										$setLabel = $labelsLegal[$fieldName];
 									}
 									$fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
