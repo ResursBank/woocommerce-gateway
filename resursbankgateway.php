@@ -897,6 +897,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					'type'                 => 'ORDER_LINE'
 				);
 			}
+
 			return $spec_lines;
 		}
 
@@ -1109,9 +1110,9 @@ function woocommerce_gateway_resurs_bank_init() {
 					);
 					// Appears to happen when LEGAL are chosen
 					$labelsLegal = array(
-						'applicant-government-id'    => __( 'Company government ID', 'WC_Payment_Gateway' ),
+						'applicant-government-id' => __( 'Company government ID', 'WC_Payment_Gateway' ),
 					);
-					$minMaxError   = false;
+					$minMaxError = false;
 					if ( $totalAmount >= $min && $totalAmount <= $max ) {
 						try {
 							$regExRules = $this->flow->getRegEx( '', $currentCountry, $customerType );
@@ -1154,8 +1155,8 @@ function woocommerce_gateway_resurs_bank_init() {
 										}
 									}
 									$setLabel = $labels[ $fieldName ];
-									if (isset($labelsLegal[$fieldName]) && !empty($labelsLegal[$fieldName]) && $customerType != "NATURAL") {
-										$setLabel = $labelsLegal[$fieldName];
+									if ( isset( $labelsLegal[ $fieldName ] ) && ! empty( $labelsLegal[ $fieldName ] ) && $customerType != "NATURAL" ) {
+										$setLabel = $labelsLegal[ $fieldName ];
 									}
 									$fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
 									$fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $setLabel . '</label>';
@@ -1312,7 +1313,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					if ( isset( $_REQUEST['card-number'] ) ) {
 						$cardNumber = $_REQUEST['card-number'];
-						$this->flow->setCardData($cardNumber);
+						$this->flow->setCardData( $cardNumber );
 					}
 				}
 			}
@@ -1349,7 +1350,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						return;
 					} else {
 						try {
-							$hostedBookPayment = $this->flow->createPayment( $shortMethodName, $bookDataArray);
+							$hostedBookPayment = $this->flow->createPayment( $shortMethodName, $bookDataArray );
 							$hostedFlowUrl     = $hostedBookPayment;
 						} catch ( ResursException $hostedException ) {
 							$failBooking = true;
@@ -1375,6 +1376,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						);
 					} else {
 						$order->update_status( 'failed', __( 'An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly', 'WC_Payment_Gateway' ) );
+
 						return array(
 							'result'   => 'failure',
 							'redirect' => $failUrl
@@ -1383,6 +1385,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					if ( $methodSpecification->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
 						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+
 						return;
 					} else {
 						$storeId = apply_filters( "resursbank_set_storeid", null );
@@ -1391,17 +1394,18 @@ function woocommerce_gateway_resurs_bank_init() {
 							update_post_meta( $order_id, 'resursStoreId', $storeId );
 						}
 						// If woocommerce forms do offer phone and email, while our own don't, use them.
-						if (empty($bookDataArray['customer']['phone']) && isset( $_REQUEST['billing_phone'] ) && !empty($_REQUEST['billing_phone'])) {
+						if ( empty( $bookDataArray['customer']['phone'] ) && isset( $_REQUEST['billing_phone'] ) && ! empty( $_REQUEST['billing_phone'] ) ) {
 							$bookDataArray['customer']['phone'] = $_REQUEST['billing_phone'];
 						}
-						if (empty($bookDataArray['customer']['email']) && isset( $_REQUEST['billing_phone'] ) && !empty($_REQUEST['billing_email'])) {
+						if ( empty( $bookDataArray['customer']['email'] ) && isset( $_REQUEST['billing_phone'] ) && ! empty( $_REQUEST['billing_email'] ) ) {
 							$bookDataArray['customer']['email'] = $_REQUEST['billing_email'];
 						}
-						$bookPaymentResult = $this->flow->createPayment( $shortMethodName, $bookDataArray);
+						$bookPaymentResult = $this->flow->createPayment( $shortMethodName, $bookDataArray );
 					}
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
+
 				return;
 			}
 
@@ -1681,8 +1685,8 @@ function woocommerce_gateway_resurs_bank_init() {
 								$internalErrorCode    = $e->getCode();
 							}
 							WC()->session->set( 'omniId', $orderId );
-							$returnResult['orderId'] = $orderId;
-							$returnResult['session'] = WC()->session;
+							$returnResult['orderId']           = $orderId;
+							$returnResult['session']           = WC()->session;
 							$returnResult['hasInternalErrors'] = $hasInternalErrors;
 							if ( $orderId > 0 && ! $hasInternalErrors ) {
 								/*
@@ -2251,7 +2255,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				$methodsHasErrors    = true;
 				$methodsErrorMessage = $e->getMessage();
 			}
-			$requestedCustomerType = isset($_REQUEST['customerType']) ? $_REQUEST['customerType'] : "NATURAL";
+			$requestedCustomerType = isset( $_REQUEST['customerType'] ) ? $_REQUEST['customerType'] : "NATURAL";
 			$responseArray         = array(
 				'natural' => array(),
 				'legal'   => array()
@@ -2345,7 +2349,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					return;
 				}
 
-				if (isset($payment)) {
+				if ( isset( $payment ) ) {
 					if ( false === is_array( $payment->status ) ) {
 						$status = array( $payment->status );
 					} else {
@@ -2426,7 +2430,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					} else {
 						// Generate a notice if the order has been debited from for example payment admin.
 						// This notice requires that an order is not debitable (if it is, there's more to debit anyway, so in that case the above finalization event will occur)
-						if ($resursFlow->getIsDebited()) {
+						if ( $resursFlow->getIsDebited() ) {
 							$order->add_order_note( __( 'This order has already been finalized somewhere else', 'WC_Payment_Gateway' ) );
 						} else {
 							// Generate error message if the order is something else than debited and debitable
@@ -2578,7 +2582,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$gateways = WC()->payment_gateways()->get_available_payment_gateways();
 
-			$OmniVars = array(
+			$OmniVars         = array(
 				'RESURSCHECKOUT_IFRAME_URL'            => $OmniUrl,
 				'RESURSCHECKOUT'                       => home_url(),
 				'OmniPreBookUrl'                       => $omniBookNonce,
@@ -2921,9 +2925,9 @@ function resurs_order_data_info_after_shipping( $order = null ) {
 
 function resurs_no_debit_debited() {
 	?>
-	<div class="notice notice-error">
-		<p><?php _e('It seems this order has already been finalized somewhere else - if your order is finished you may update it here aswell', 'WC_Payment_Gateway'); ?></p>
-	</div>
+    <div class="notice notice-error">
+        <p><?php _e( 'It seems this order has already been finalized somewhere else - if your order is finished you may update it here aswell', 'WC_Payment_Gateway' ); ?></p>
+    </div>
 	<?php
 }
 
@@ -2958,27 +2962,14 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 		try {
 			$rb                = initializeResursFlow();
 			$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
-			$currentWcStatus = $order->get_status();
-			$notIn = array("completed", "cancelled", "refunded");
-			if (!$rb->canDebit($resursPaymentInfo) && $rb->getIsDebited($resursPaymentInfo) && !in_array($currentWcStatus, $notIn)) {
+			$currentWcStatus   = $order->get_status();
+			$notIn             = array( "completed", "cancelled", "refunded" );
+			if ( ! $rb->canDebit( $resursPaymentInfo ) && $rb->getIsDebited( $resursPaymentInfo ) && ! in_array( $currentWcStatus, $notIn ) ) {
 				resurs_no_debit_debited();
 			}
 		} catch ( Exception $e ) {
-			$hasError         = $e->getMessage();
+			$hasError         = $e->getMessage();   // We no longer need to read the stack trace
 			$hasErrorNonStack = $hasError;
-			if ( preg_match( "/soapfault/i", $hasError ) ) {
-				// Trying to handle errors based on content, showing stack traces if errors could not be identified
-				// It might not be necessary to handle this way if using the curl library!
-				if ( preg_match( "/Stack trace/is", $hasError ) && preg_match( "/Do you find this error strange\?/is", $hasError ) ) {
-					$hasErrorNonStack = preg_replace( "/(.*?)Stack trace:(.*)/is", '$1', $hasError );
-					$soapFault        = preg_replace( "/(.*?)Do you find this error strange\?(.*)/is", "$1", $hasErrorNonStack );
-					$strangeMessage   = preg_replace( "/(.*?)Do you find this error strange\?(.*?)/is", "\nDo you find this error strange? $2 ", $hasErrorNonStack );
-					$strangeMessage   = preg_replace( "/(.*?) in \/(.*?)$/is", ' $1 ', $strangeMessage );
-					$hasErrorNonStack = '<div style="font-weight: bold;color:#990000;">' . $soapFault . '</div><div style="color:#000099;font-weight:bold;">' . $strangeMessage . '</div>';
-				} else {
-					$hasErrorNonStack = '<div style="font-weight: bold;color:#990000;">' . $hasError . '</div>';
-				}
-			}
 		}
 		$renderedResursData .= '
                 <div class="clear">&nbsp;</div>
@@ -2987,9 +2978,11 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
                 <div style="padding: 30px;border:none;" id="resursInfo">
                 ';
 
+		$invoices = array();
 		if ( empty( $hasError ) ) {
 			$status = "AUTHORIZE";
 			if ( is_array( $resursPaymentInfo->paymentDiffs ) ) {
+                $invoices = $rb->getPaymentInvoices($resursPaymentInfo);
 				foreach ( $resursPaymentInfo->paymentDiffs as $paymentDiff ) {
 					if ( $paymentDiff->type === "DEBIT" ) {
 						$status = "DEBIT";
@@ -3016,7 +3009,11 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 			if ( $status === "AUTHORIZE" ) {
 				$renderedResursData .= __( 'The order is booked', 'WC_Payment_Gateway' );
 			} elseif ( $status === "DEBIT" ) {
-				$renderedResursData .= __( 'The order is debited', 'WC_Payment_Gateway' );
+				if ( ! $rb->canDebit( $resursPaymentInfo ) ) {
+					$renderedResursData .= __( 'The order is debited', 'WC_Payment_Gateway' );
+				} else {
+					$renderedResursData .= __( 'The order is partially debited', 'WC_Payment_Gateway' );
+				}
 			} elseif ( $status === "CREDIT" ) {
 				$renderedResursData .= __( 'The order is credited', 'WC_Payment_Gateway' );
 			} elseif ( $status === "ANNUL" ) {
@@ -3036,6 +3033,20 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 				$addressInfo .= ( isset( $resursPaymentInfo->customer->address->country ) && ! empty( $resursPaymentInfo->customer->address->country ) ? $resursPaymentInfo->customer->address->country : "" ) . " " . ( isset( $resursPaymentInfo->customer->address->postalCode ) && ! empty( $resursPaymentInfo->customer->address->postalCode ) ? $resursPaymentInfo->customer->address->postalCode : "" ) . "\n";
 			}
 			ThirdPartyHooksSetPaymentTrigger( 'orderinfo', $resursPaymentId, ! isWooCommerce3() ? $order->id : $order->get_id() );
+
+			$unsetKeys = array(
+				'id',
+				'paymentMethodId',
+				'storeId',
+				'paymentMethodName',
+				'paymentMethodType',
+				'totalAmount',
+				'limit',
+				'fraud',
+				'frozen',
+				'customer',
+				'paymentDiffs'
+			);
 
 			$renderedResursData .= '
                 <br>
@@ -3074,6 +3085,52 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( ! empty( $addressInfo ) ? nl2br( $addressInfo ) : "" ) . '</span>
             ';
 
+			if (count($invoices)) {
+				$renderedResursData .= '
+                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">Invoices:</span>
+                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . implode(", ", $invoices) . '</span>
+                        ';
+			}
+
+			$continueView = $resursPaymentInfo;
+			foreach ( $continueView as $key => $value ) {
+				if ( in_array( $key, $unsetKeys ) ) {
+					unset( $continueView->$key );
+				}
+			}
+			if ( is_object( $continueView ) ) {
+				foreach ( $continueView as $key => $value ) {
+					if ( ! is_array( $value ) && ! is_object( $value ) ) {
+						$renderedResursData .= '
+                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst( $key ) . ':</span>
+                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( ! empty( $value ) ? nl2br( $value ) : "" ) . '</span>
+                        ';
+					} else {
+						if ($key == "metaData") {
+						    if (is_array($value)) {
+							    foreach ($value as $metaArray) {
+								    $renderedResursData .= '
+                                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst( $metaArray->key ) . ':</span>
+                                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . $metaArray->value . '</span>
+                                    ';
+							    }
+                            } else {
+							    $renderedResursData .= '
+                                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst( $value->key ) . ':</span>
+                                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . $value->value . '</span>
+                                ';
+                            }
+						} else {
+							foreach ( $value as $subKey => $subValue ) {
+							    $renderedResursData .= '
+                                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst($key) . " (" . ucfirst( $subKey ) . '):</span>
+                                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( ! empty( $subValue ) ? nl2br( $subValue ) : "" ) . '</span>
+                                ';
+							}
+						}
+                    }
+				}
+			}
 		} else {
 			$renderedResursData .= '<div>' . nl2br( $hasErrorNonStack ) . '</div>';
 		}
@@ -3640,9 +3697,9 @@ function repairResursSimulation( $returnRepairState = false ) {
  */
 function isResursOmni( $ignoreActiveFlag = false ) {
 	global $woocommerce;
-	$returnValue = false;
+	$returnValue       = false;
 	$externalOmniValue = null;
-	$currentMethod = "";
+	$currentMethod     = "";
 	if ( isset( $woocommerce->session ) ) {
 		$currentMethod = $woocommerce->session->get( 'chosen_payment_method' );
 	}
@@ -3657,13 +3714,14 @@ function isResursOmni( $ignoreActiveFlag = false ) {
 	if ( ( $hasOmni == 1 || $hasOmni === true ) && $flowType === "resurs_bank_omnicheckout" && empty( $currentMethod ) ) {
 		$returnValue = true;
 	}
-	if ($returnValue) {
+	if ( $returnValue ) {
 		// If the checkout is normally set to be enabled, this gives external plugins a chance to have it disabled
 		$externalOmniValue = apply_filters( "resursbank_temporary_disable_checkout", null );
-		if (!is_null($externalOmniValue)) {
-			$returnValue = ($externalOmniValue ? false : true);
+		if ( ! is_null( $externalOmniValue ) ) {
+			$returnValue = ( $externalOmniValue ? false : true );
 		}
 	}
+
 	return $returnValue;
 }
 
