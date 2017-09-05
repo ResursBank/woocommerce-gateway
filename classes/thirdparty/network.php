@@ -3,17 +3,17 @@
 namespace Resursbank\RBEcomPHP;
 
 // Make sure this library won't conflict with others
-if ( ! class_exists( 'TorneLIB_Network' ) ) {
-	/**
-	 * Libraries for handling network related things (currently not sockets). Conversion of Legacy TorneEngine and family.
-	 * As this library may run as stand alone code, exceptions are thrown as regular \Exception instead of a TorneLIB_Exception.
-	 *
-	 * Class TorneLIB_Network
-	 * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
-	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
-	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
-	 * @package TorneLIB
-	 */
+if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_Network' ) ) {
+    /**
+     * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
+     *
+     * Class TorneLIB_Network
+     * @version 6.0.1
+     * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
+     * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
+     * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
+     * @package TorneLIB
+     */
 	class TorneLIB_Network {
 		/** @var array Headers from the webserver that may contain potential proxies */
 		private $proxyHeaders = array(
@@ -80,6 +80,16 @@ if ( ! class_exists( 'TorneLIB_Network' ) ) {
 			);
 		}
 
+		/**
+		 * Extract urls from a text string and return as array
+		 *
+		 * @param $stringWithUrls
+		 * @param int $offset
+		 * @param int $urlLimit
+		 * @param array $protocols
+		 *
+		 * @return array
+		 */
 		public function getUrlsFromHtml( $stringWithUrls, $offset = - 1, $urlLimit = - 1, $protocols = array( "http" ) ) {
 			$returnArray = array();
 			// Pick up all urls
@@ -386,14 +396,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) ) {
 	/**
 	 * Class Tornevall_cURL
 	 *
-	 * Requirements: curl
-	 * Recommended: php-xml (For SOAP etc)
-	 * Installation of the above could be done with apt-get install php-curl php-xml on moste instances.
-	 *
-	 * Versioning are based on TorneLIB v5, but follows its own standards in the chain.
-	 *
 	 * @package TorneLIB
-	 * @version 5.0.0/2017.1
+	 * @version 6.0.1
 	 * @link https://phpdoc.tornevall.net/TorneLIBv5/source-class-TorneLIB.Tornevall_cURL.html PHPDoc/Staging - Tornevall_cURL
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
@@ -409,11 +413,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) ) {
 		private $NETWORK;
 
 		/** @var string Internal version that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlVersion = "5.0.0";
+		private $TorneCurlVersion = "6.0.1";
 		private $CurlVersion = null;
 
 		/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlRelease = "20170814";
+		private $TorneCurlRelease = "20170902";
 
 		/**
 		 * Target environment (if target is production some debugging values will be skipped)
@@ -1980,18 +1984,24 @@ if ( ! class_exists( 'TorneLIB_Network' ) ) {
 			curl_setopt( $this->CurlSession, CURLOPT_AUTOREFERER, true );
 			curl_setopt( $this->CurlSession, CURLINFO_HEADER_OUT, true );
 
-			/*
-         * Find out if CURLOPT_FOLLOWLOCATION can be set or not.
-         * If you need to enforce this setting to something very specific, setEnforceFollowLocation([bool]) is available for this.
-         */
+			// Find out if CURLOPT_FOLLOWLOCATION can be set by user/developer or not.
+			// If you need to enforce this setting to something very specific, setEnforceFollowLocation([bool]) is available for this.
+			// Note: This should only be possible to do, if security for PHP is not set too high. For this curl module we normally
+			// like to follow redirects as scripts that fetches some kind of content sometimes lands on redirect-pages. However,
+			// this is set to false by default in the curl library.
 			if ( ! $this->followLocationEnforce ) {
-				if ( ini_get( 'open_basedir' ) == '' && ini_get( 'safe_mode' == 'Off' ) ) {
+				if ( ini_get( 'open_basedir' ) == '' && ! ini_get( 'safe_mode' ) ) {
 					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, true );
 				} else {
 					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, false );
 				}
 			} else {
-				curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, $this->followLocationSet );
+				// Make sure the safety control occurs even when the enforcing parameter is false.
+				// This should prevent problems when $this->>followLocationSet is set to anything else than false
+				// and security settings are higher for PHP
+				if ( ini_get( 'open_basedir' ) == '' && ! ini_get( 'safe_mode' ) ) {
+					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, $this->followLocationSet );
+				}
 			}
 
 			$returnContent = curl_exec( $this->CurlSession );
