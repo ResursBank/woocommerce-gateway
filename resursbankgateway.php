@@ -587,12 +587,19 @@ function woocommerce_gateway_resurs_bank_init() {
 							} else if ( $_REQUEST['run'] == 'cleanRbMethods' ) {
 								$numDel     = 0;
 								$numConfirm = 0;
-								foreach ( glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' ) as $filename ) {
-									@unlink( $filename );
-									$numDel ++;
-								}
-								foreach ( glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' ) as $filename ) {
-									$numConfirm ++;
+								// Make sure that the clobs does not return anything else than an array.
+								$globIncludes = glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' );
+								if (is_array($globIncludes)) {
+									foreach ( $globIncludes as $filename ) {
+										@unlink( $filename );
+										$numDel ++;
+									}
+									$globIncludes = glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' );
+									if (is_array($globIncludes)) {
+										foreach ( $globIncludes as $filename ) {
+											$numConfirm ++;
+										}
+									}
 								}
 								$responseArray['deleteFiles'] = 0;
 								$responseArray['element']     = "process_cleanResursMethods";
@@ -2115,8 +2122,11 @@ function woocommerce_gateway_resurs_bank_init() {
 		private function UnusedPaymentClassesCleanup( $temp_class_files ) {
 			$allIncludes = array();
 			$path        = plugin_dir_path( __FILE__ ) . 'includes/';
-			foreach ( glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' ) as $filename ) {
-				$allIncludes[] = str_replace( $path, '', $filename );
+			$globIncludes = glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' );
+			if (is_array($globIncludes)) {
+				foreach ( $globIncludes as $filename ) {
+					$allIncludes[] = str_replace( $path, '', $filename );
+				}
 			}
 			if ( is_array( $temp_class_files ) ) {
 				foreach ( $allIncludes as $exclude ) {
@@ -2783,19 +2793,26 @@ function woocommerce_gateway_resurs_bank_init() {
 	function test_before_shipping() {
 	}
 
-	foreach ( glob( plugin_dir_path( __FILE__ ) . '/includes/*.php' ) as $filename ) {
-		if ( ! in_array( $filename, get_included_files() ) ) {
-			include $filename;
+    // If glob returns null (error) nothing should run
+	$incGlob = glob( plugin_dir_path( __FILE__ ) . '/includes/*.php' );
+	if (is_array($incGlob)) {
+		foreach ( $incGlob as $filename ) {
+			if ( ! in_array( $filename, get_included_files() ) ) {
+				include $filename;
+			}
 		}
 	}
-	foreach ( glob( plugin_dir_path( __FILE__ ) . '/staticflows/*.php' ) as $filename ) {
-		if ( ! in_array( $filename, get_included_files() ) ) {
-			include $filename;
+	$staticGlob = glob( plugin_dir_path( __FILE__ ) . '/staticflows/*.php' );
+	if (is_array($staticGlob)) {
+		foreach ( $staticGlob as $filename ) {
+			if ( ! in_array( $filename, get_included_files() ) ) {
+				include $filename;
+			}
 		}
 	}
+
 	function rb_settings_pages( $settings ) {
 		$settings[] = include( plugin_dir_path( __FILE__ ) . "/resursbank_settings.php" );
-
 		return $settings;
 	}
 
