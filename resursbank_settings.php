@@ -350,8 +350,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	private function UnusedPaymentClassesCleanup( $temp_class_files ) {
 		$allIncludes = array();
 		$path        = plugin_dir_path( __FILE__ ) . 'includes/';
-		foreach ( glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' ) as $filename ) {
-			$allIncludes[] = str_replace( $path, '', $filename );
+		$globInclude = glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' );
+		if (is_array($globInclude)) {
+			foreach ( $globInclude as $filename ) {
+				$allIncludes[] = str_replace( $path, '', $filename );
+			}
 		}
 		// Prevent the plugin from sending legacy data to this controller
 		foreach ($temp_class_files as $fileRow) {

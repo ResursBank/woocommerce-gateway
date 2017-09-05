@@ -10,7 +10,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.1
- * @version 1.1.13
+ * @version 1.1.19
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -206,9 +206,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.13";
+	private $version = "1.1.19";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20170814";
+	private $lastUpdate = "20170904";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -1285,6 +1285,8 @@ class ResursBank {
 		$numchars = array();
 		for ( $i = 0; $i < $max; $i ++ ) {
 			$charListId = rand( 0, count( $characterListArray ) - 1 );
+			// Set $numchars[ $charListId ] to a zero a value if not set before. This might render ugly notices about undefined offsets in some cases.
+			if (!isset($numchars[ $charListId ])) {$numchars[ $charListId ] = 0;}
 			$numchars[ $charListId ] ++;
 			$chars[] = $characterListArray[ $charListId ]{mt_rand( 0, ( strlen( $characterListArray[ $charListId ] ) - 1 ) )};
 		}
@@ -1457,11 +1459,48 @@ class ResursBank {
 					}
 				}
 			}
-
+			// Redmine #78124 workaround
+			if (!isset($ResursResponseArray['UPDATE'])) {
+				$updateResponse = $this->getRegisteredEventCallback(ResursCallbackTypes::UPDATE);
+				if (is_object($updateResponse) && isset($updateResponse->uriTemplate)) {
+					$ResursResponseArray['UPDATE'] = $updateResponse->uriTemplate;
+				}
+			}
 			return $ResursResponseArray;
 		}
-
+		$hasUpdate = false;
+		foreach ($ResursResponse as $responseObject) {
+			if (isset($responseObject->eventType) && $responseObject->eventType == "UPDATE") {
+				$hasUpdate = true;
+			}
+		}
+		if (!$hasUpdate) {
+			$updateResponse = $this->getRegisteredEventCallback(ResursCallbackTypes::UPDATE);
+			if (isset($updateResponse->uriTemplate) && !empty($updateResponse->uriTemplate)) {
+				if (!isset($updateResponse->eventType)) {
+					$updateResponse->eventType = "UPDATE";
+				}
+				$ResursResponse[] = $updateResponse;
+			}
+		}
 		return $ResursResponse;
+	}
+
+	/**
+	 * Reimplementation of getRegisteredEventCallback due to #78124
+	 *
+	 * @param int $callbackType
+	 * @return mixed
+	 * @since 1.x.x
+	 */
+	public function getRegisteredEventCallback( $callbackType = ResursCallbackTypes::UNDEFINED ) {
+		$this->InitializeServices();
+		$fetchThisCallback        = $this->getCallbackTypeString( $callbackType );
+		$getRegisteredCallbackUrl = $this->getServiceUrl( "getRegisteredEventCallback" );
+		// We are not using postService here, since we are dependent on the response code rather than the response itself
+		$renderedResponse = $this->CURL->doPost( $getRegisteredCallbackUrl )->getRegisteredEventCallback( array( 'eventType' => $fetchThisCallback ) );
+		$parsedResponse = $this->CURL->getParsedResponse($renderedResponse);
+		return $parsedResponse;
 	}
 
 	/**
@@ -1549,7 +1588,7 @@ class ResursBank {
 			throw new \Exception( "Can not continue without a digest salt key", \ResursExceptions::CALLBACK_SALTDIGEST_MISSING );
 		}
 		////// DIGEST CONFIGURATION FINISH
-		if ( $this->registerCallbacksViaRest ) {
+		if ( $this->registerCallbacksViaRest && $callbackType !== ResursCallbackTypes::UPDATE ) {
 			$serviceUrl        = $this->getCheckoutUrl() . "/callbacks";
 			$renderCallbackUrl = $serviceUrl . "/" . $renderCallback['eventType'];
 			if ( isset( $renderCallback['eventType'] ) ) {
@@ -1663,7 +1702,7 @@ class ResursBank {
 	 */
 	public function triggerCallback() {
 		$serviceUrl = $this->env_test . "DeveloperWebService?wsdl";
-		$CURL       = new Tornevall_cURL();
+		$CURL       = new \Resursbank\RBEcomPHP\Tornevall_cURL();
 		$CURL->setAuthentication( $this->username, $this->password );
 		$CURL->setUserAgent( $this->myUserAgent );
 		$eventRequest    = $CURL->doGet( $serviceUrl );
@@ -4742,7 +4781,8 @@ class ResursBank {
 			'postalArea'  => $postalArea,
 			'postalCode'  => $postalCode
 		);
-		if ( ! empty( trim( $addressRow2 ) ) ) {
+		$trimAddress = trim($addressRow2); // PHP Compatibility
+		if ( ! empty( $trimAddress ) ) {
 			$ReturnAddress['addressRow2'] = $addressRow2;
 		}
 		if ( $this->enforceService === ResursMethodTypes::METHOD_SIMPLIFIED ) {
@@ -4750,7 +4790,6 @@ class ResursBank {
 		} else {
 			$ReturnAddress['countryCode'] = $country;
 		}
-
 		return $ReturnAddress;
 	}
 
@@ -6006,7 +6045,13 @@ class ResursBank {
 					// If the key belongs to extendedCustomer, is mandatory for the specificType and is empty,
 					// this means we can not deliver this data as a null value to ecommerce. Therefore, we have to remove it.
 					// The control being made here will skip the address object as we will only check the non-recursive data strings.
-					if ( ! is_array($customerValue) &&  ! in_array( $customerKey, $mandatoryExtendedCustomerFields ) && empty( trim( $customerValue ) ) ) {
+					if (is_string($customerValue)) {
+						$trimmedCustomerValue = trim($customerValue);
+					} else {
+						// Do not touch if this is not an array (and consider that something was sent into this part, that did not belong here?)
+						$trimmedCustomerValue = $customerValue;
+					}
+					if ( ! is_array($customerValue) &&  ! in_array( $customerKey, $mandatoryExtendedCustomerFields ) && empty( $trimmedCustomerValue ) ) {
 						unset( $this->Payload['customer'][ $customerKey ] );
 					}
 				}
@@ -6050,6 +6095,19 @@ class ResursBank {
 	}
 
 	/**
+	 * A payment is annullable if the payment is debitable
+	 *
+	 * @param array $paymentArrayOrPaymentId
+	 *
+	 * @return bool
+	 * @since 1.0.2
+	 * @since 1.1.2
+	 */
+	public function canAnnul( $paymentArrayOrPaymentId = array() ) {
+		return $this->canDebit( $paymentArrayOrPaymentId );
+	}
+
+	/**
 	 * Return true if order is debited
 	 *
 	 * @param array $paymentArrayOrPaymentId
@@ -6066,6 +6124,7 @@ class ResursBank {
 		}
 		return false;
 	}
+
 	/**
 	 * Return true if order is credited
 	 *
@@ -6083,6 +6142,7 @@ class ResursBank {
 		}
 		return false;
 	}
+
 	/**
 	 * Return true if order is annulled
 	 *
@@ -6099,19 +6159,6 @@ class ResursBank {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * A payment is annullable if the payment is debitable
-	 *
-	 * @param array $paymentArrayOrPaymentId
-	 *
-	 * @return bool
-	 * @since 1.0.2
-	 * @since 1.1.2
-	 */
-	public function canAnnul( $paymentArrayOrPaymentId = array() ) {
-		return $this->canDebit( $paymentArrayOrPaymentId );
 	}
 
 	/**
@@ -6438,20 +6485,16 @@ class ResursBank {
 	/**
 	 * Returns all invoice numbers for a specific payment
 	 *
-	 * @param string $paymentIdOrPaymentData
+	 * @param string $paymentId
 	 *
 	 * @return array
 	 * @since 1.0.11
 	 * @since 1.1.11
 	 * @since 1.2.0
 	 */
-	public function getPaymentInvoices($paymentIdOrPaymentData = '') {
+	public function getPaymentInvoices($paymentId = '') {
 		$invoices = array();
-		if (!is_object($paymentIdOrPaymentData)) {
-			$paymentData = $this->getPayment( $paymentIdOrPaymentData );
-		} else {
-			$paymentData = $paymentIdOrPaymentData;
-		}
+		$paymentData = $this->getPayment($paymentId);
 		if (!empty($paymentData) && isset($paymentData->paymentDiffs)) {
 			foreach ($paymentData->paymentDiffs as $paymentRow) {
 				if (isset($paymentRow->type) && $paymentRow->type == "DEBIT" && isset($paymentRow->invoiceId)) {

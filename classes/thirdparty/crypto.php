@@ -2,11 +2,12 @@
 
 namespace Resursbank\RBEcomPHP;
 
-if ( ! class_exists( 'TorneLIB_Crypto' ) ) {
+if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_Crypto' ) ) {
 	/**
-	 * Class TorneLIB_Crypto Encryption and encoding
+	 * Class TorneLIB_Crypto
 	 *
 	 * @package TorneLIB
+	 * @version 6.0.1
 	 */
 	class TorneLIB_Crypto {
 
@@ -72,9 +73,9 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) ) {
 			if ( $setMax > 0 ) {
 				$max = $setMax;
 			}
-			$chars        = array();
-			$numchars     = array();
-			$equalityPart = ceil( $max / count( $characterListArray ) );
+			$chars    = array();
+			$numchars = array();
+			//$equalityPart = ceil( $max / count( $characterListArray ) );
 			for ( $i = 0; $i < $max; $i ++ ) {
 				$charListId = rand( 0, count( $characterListArray ) - 1 );
 				if ( ! isset( $numchars[ $charListId ] ) ) {
@@ -344,7 +345,7 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) ) {
 		}
 
 		/**
-		 * base64_encode
+		 * URL compatible base64_encode
 		 *
 		 * @param $data
 		 *
@@ -355,7 +356,7 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) ) {
 		}
 
 		/**
-		 * base64_decode
+		 * URL compatible base64_decode
 		 *
 		 * @param $data
 		 *
