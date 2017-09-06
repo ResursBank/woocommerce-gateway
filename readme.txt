@@ -2,7 +2,8 @@
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 4.8.1
+Tested up to: 4.8
+Requires PHP: 5.4
 Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -12,11 +13,11 @@ Resurs Bank Payment Gateway for WooCommerce.
 
 == Description ==
 
-Resurs Bank payment gateway for WooCommerce 3.0.8 / 3.1.1
+Resurs Bank payment gateway for WooCommerce
+Compatible with WooCommerce from at least version 5.6 up to 3.0/3.1
 
 Requirements:
 
- * PHP 5.4 or later
  * [curl](https://curl.haxx.se)
  * In case of the use of our SOAP-based shop flow - [SoapClient](http://php.net/manual/en/class.soapclient.php)
 
@@ -57,26 +58,39 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 = 2.1.0 =
 
-    * [WOO-130] Implement orderLines/type to extend Resurs Checkout order confirmation information
-    * [WOO-141] Ability to disable aftershopflow
-    * [WOO-143] Upgrade to EComPHP 1.1.x
-    * [WOO-146] Support storeId (Inherited from 2.0.2.8) via wordpress filter function
-    * [WOO-150] Also log faulty digests in order view
-    * [WOO-151] ShapeShifter Patch (Allow the change of iframe shapes (background + frame border) via injected css in ResursCheckoutJS)
-    * [WOO-164] setCountryByCountryCode for using automatically configured unitMeasure (until put into configuration)
-    * [WOO-168] Support PAYMENT_PROVIDER in  simplified flow.
-    * [WOO-144] Undefined index: showOrderInfoAfter
-    * [WOO-145] Callbacks list upgrade
-    * [WOO-149] Slow callback responses might cause timeouts from oAdmin
-    * [WOO-152] Double clicking on merchant passwords in slow systems might frustrate administrators
-    * [WOO-154] isResursDemo() might cause eternal loops on plugin activation in some systems
-    * [WOO-158] Selecting payment methods from store might be slow (Uncached calls)
-    * [WOO-160] Invoice LEGAL problems with unsent form data
-    * [WOO-163] Setting coupons with EComPHP 1.1 does not work properly (setCheckoutFrameOrderLines)
-    * [WOO-165] Cached payment methods in store to speed up breaks the demoshop
-    * [WOO-166] Forms in simplified flow prevents PAYMENT_PROVIDER to be clickable (PSP Compatibility)
-    * [WOO-167] Cached payment methods tend to disappear in checkout (simplified)
-    * [WOO-170] Notice: Undefined variable: payment in resursbankgateway.php on line 2344
+    * [WOO-143] - Upgrade to EComPHP 1.1-series (RBWC-2.1 change)
+    * [WOO-130] - Implement orderLines/type to extend Resurs Checkout order confirmation information
+    * [WOO-141] - Ability to disable aftershopflow
+    * [WOO-146] - Support storeId (Inherited from 2.0.2.8) via wordpress filter function
+    * [WOO-150] - Also log faulty digests in order view
+    * [WOO-151] - ShapeShifter Patch (Allow the change of iframe shapes (background + frame border) via injected css in ResursCheckoutJS)
+    * [WOO-164] - setCountryByCountryCode for using automatically configured unitMeasure (until put into configuration)
+    * [WOO-168] - Support PAYMENT_PROVIDER in  simplified flow.
+    * [WOO-172] - Validate AfterShop flow functions
+    * [WOO-173] - WooCommerce order view and details from Resurs
+    * [WOO-174] - When internal aftershop is disabled show notice in order view
+    * [WOO-179] - Prevent class conflicts by renaming external library classes - put them in namespace
+    * [WOO-181] - Investigate the specrows vs tax-calculating on "show inc. or ex. tax"
+    * [WOO-144] - Undefined index: showOrderInfoAfter
+    * [WOO-145] - Callbacks list upgrade
+    * [WOO-149] - Slow callback responses might cause timeouts from oAdmin
+    * [WOO-152] - Double clicking on merchant passwords in slow systems might frustrate administrators
+    * [WOO-154] - isResursDemo() might cause eternal loops on plugin activation in some systems
+    * [WOO-158] - Selecting payment methods from store might be slow (Uncached calls)
+    * [WOO-160] - Invoice LEGAL problems with unsent form data
+    * [WOO-163] - Setting coupons with EComPHP 1.1 does not work properly (setCheckoutFrameOrderLines)
+    * [WOO-165] - Cached payment methods in store to speed up breaks the demoshop
+    * [WOO-166] - Forms in simplified flow prevents PAYMENT_PROVIDER to be clickable (PSP Compatibility)
+    * [WOO-167] - Cached payment methods tend to disappear in checkout (simplified)
+    * [WOO-170] - Notice: Undefined variable: payment in resursbankgateway.php on line 2344
+    * [WOO-175] - If order is finalized from payment admin woocommerce might not get updated properly
+    * [WOO-176] - Updating cart (with discounts etc) fails
+    * [WOO-182] - indexes
+    * [WOO-186] - glob() returns null instead of arrays
+
+= 2.0.2.16 =
+
+    * readme.txt update
 
 = 2.0.2.15 =
 
