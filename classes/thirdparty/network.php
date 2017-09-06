@@ -33,6 +33,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			'FORWARDED_FOR_IP',
 			'HTTP_PROXY_CONNECTION'
 		);
+
 		/** @var array Stored list of what the webserver revealed */
 		private $clientAddressList = array();
 		private $cookieDefaultPath = "/";
@@ -397,7 +398,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 	 * Class Tornevall_cURL
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.1
+	 * @version 6.0.3
 	 * @link https://phpdoc.tornevall.net/TorneLIBv5/source-class-TorneLIB.Tornevall_cURL.html PHPDoc/Staging - Tornevall_cURL
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
@@ -413,11 +414,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		private $NETWORK;
 
 		/** @var string Internal version that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlVersion = "6.0.1";
+		private $TorneCurlVersion = "6.0.3";
 		private $CurlVersion = null;
 
 		/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlRelease = "20170902";
+		private $TorneCurlRelease = "20170906";
 
 		/**
 		 * Target environment (if target is production some debugging values will be skipped)
@@ -483,7 +484,14 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		/** @var null A tempoary set of the response from the url called */
 		private $TemporaryResponse = null;
 
-		/** @var array Default settings when initializing our curlsession */
+		/**
+		 * Default settings when initializing our curlsession.
+		 *
+		 * Since v6.0.2 no urls are followed by default, it is set internally by first checking PHP security before setting this up.
+		 * The reason of the change is not only the security, it is also about inheritage of options to SOAPClient.
+		 *
+		 * @var array
+		 */
 		public $curlopt = array(
 			CURLOPT_CONNECTTIMEOUT => 5,
 			CURLOPT_RETURNTRANSFER => true,
@@ -494,13 +502,16 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			CURLOPT_USERAGENT      => 'TorneLIB-PHPcURL',
 			CURLOPT_POST           => true,
 			CURLOPT_SSLVERSION     => 4,
-			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_FOLLOWLOCATION => false,
 			CURLOPT_HTTPHEADER     => array( 'Accept-Language: en' ),
 		);
+
+		private $redirectedUrls = array();
+
 		/** @var array User set SSL Options */
 		public $sslopt = array();
 
-		private $followLocationEnforce = true;
+		/** @var bool Decide whether the curl library should follow an url redirect or not */
 		private $followLocationSet = true;
 
 		/** @var array Interfaces to use */
@@ -732,13 +743,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		/**
 		 * Enforces CURLOPT_FOLLOWLOCATION to act different if not matching with the internal rules
 		 *
-		 * @param bool $setEnabled
+		 * @param bool $setEnabledState
 		 *
 		 * @since 5.0.0/2017.4
 		 */
-		public function setEnforceFollowLocation( $setEnabled = true ) {
-			$this->followLocationEnforce = true;
-			$this->followLocationSet     = $setEnabled;
+		public function setEnforceFollowLocation( $setEnabledState = true ) {
+			$this->followLocationSet     = $setEnabledState;
 		}
 
 
@@ -873,8 +883,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return null|resource
 		 */
 		public function init() {
+			$this->initCookiePath();
 			$this->CurlSession = curl_init( $this->CurlURL );
-
 			return $this->CurlSession;
 		}
 
@@ -1577,6 +1587,10 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			return null;
 		}
 
+		public function getRedirectedUrls() {
+			return $this->redirectedUrls;
+		}
+
 		/**
 		 * Parse response, in case of there is any followed traces from the curl engine, so we'll always land on the right ending stream
 		 *
@@ -1601,6 +1615,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 
 			// If response code starts with 3xx, this is probably a redirect
 			if ( preg_match( "/^3/", $code ) ) {
+				$this->redirectedUrls[] = $this->CurlURL;
 				$redirectArray[] = array(
 					'header' => $header,
 					'body'   => $body,
@@ -1807,22 +1822,37 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			if ( ! empty( $url ) ) {
 				$this->CurlURL = $url;
 			}
+
+			$this->init();
 			$this->CurlHeaders = array();
+
+			// Find out if CURLOPT_FOLLOWLOCATION can be set by user/developer or not.
+			//
+			// Make sure the safety control occurs even when the enforcing parameter is false.
+			// This should prevent problems when $this->>followLocationSet is set to anything else than false
+			// and security settings are higher for PHP. From v6.0.2, the in this logic has been simplified
+			// to only set any flags if the security levels of PHP allows it, and only if the follow flag is enabled.
+			//
+			// Refers to http://php.net/manual/en/ini.sect.safe-mode.php
+			if ( ini_get( 'open_basedir' ) == '' && ! filter_var( ini_get( 'safe_mode' ), FILTER_VALIDATE_BOOLEAN ) ) {
+				// To disable the default behaviour of this function, use setEnforceFollowLocation([bool]).
+				if ( $this->followLocationSet ) {
+					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, $this->followLocationSet );
+					$this->curlopt[ CURLOPT_FOLLOWLOCATION ] = $this->followLocationSet;
+				}
+			}
+
+			// Prepare SOAPclient if requested
 			if ( preg_match( "/\?wsdl$|\&wsdl$/i", $this->CurlURL ) || $postAs == CURL_POST_AS::POST_AS_SOAP ) {
 				$Soap = new Tornevall_SimpleSoap( $this->CurlURL, $this->curlopt );
 				$Soap->setCustomUserAgent( $this->CustomUserAgent );
 				$Soap->setThrowableState( $this->canThrow );
 				$Soap->setSoapAuthentication( $this->AuthData );
 				$Soap->SoapTryOnce = $this->SoapTryOnce;
-
 				return $Soap->getSoap();
 			}
-			$this->initCookiePath();
-			$this->init();
 
-			/*
-         * Picking up externally select outgoing ip if any
-         */
+			// Picking up externally select outgoing ip if any
 			$this->handleIpList();
 			curl_setopt( $this->CurlSession, CURLOPT_URL, $this->CurlURL );
 
@@ -1983,26 +2013,6 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			curl_setopt( $this->CurlSession, CURLOPT_RETURNTRANSFER, true );
 			curl_setopt( $this->CurlSession, CURLOPT_AUTOREFERER, true );
 			curl_setopt( $this->CurlSession, CURLINFO_HEADER_OUT, true );
-
-			// Find out if CURLOPT_FOLLOWLOCATION can be set by user/developer or not.
-			// If you need to enforce this setting to something very specific, setEnforceFollowLocation([bool]) is available for this.
-			// Note: This should only be possible to do, if security for PHP is not set too high. For this curl module we normally
-			// like to follow redirects as scripts that fetches some kind of content sometimes lands on redirect-pages. However,
-			// this is set to false by default in the curl library.
-			if ( ! $this->followLocationEnforce ) {
-				if ( ini_get( 'open_basedir' ) == '' && ! ini_get( 'safe_mode' ) ) {
-					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, true );
-				} else {
-					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, false );
-				}
-			} else {
-				// Make sure the safety control occurs even when the enforcing parameter is false.
-				// This should prevent problems when $this->>followLocationSet is set to anything else than false
-				// and security settings are higher for PHP
-				if ( ini_get( 'open_basedir' ) == '' && ! ini_get( 'safe_mode' ) ) {
-					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, $this->followLocationSet );
-				}
-			}
 
 			$returnContent = curl_exec( $this->CurlSession );
 
