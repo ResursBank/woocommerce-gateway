@@ -2441,7 +2441,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						// Generate a notice if the order has been debited from for example payment admin.
 						// This notice requires that an order is not debitable (if it is, there's more to debit anyway, so in that case the above finalization event will occur)
 						if ( $resursFlow->getIsDebited() ) {
-							$order->add_order_note( __( 'This order has already been finalized somewhere else', 'WC_Payment_Gateway' ) );
+							$order->add_order_note( __( 'This order has already been finalized externally', 'WC_Payment_Gateway' ) );
 						} else {
 							// Generate error message if the order is something else than debited and debitable
 							$orderNote = __( 'This order is in a state at Resurs Bank where it can not be finalized', 'WC_Payment_Gateway' );
@@ -2943,7 +2943,7 @@ function resurs_order_data_info_after_shipping( $order = null ) {
 function resurs_no_debit_debited() {
 	?>
     <div class="notice notice-error">
-        <p><?php _e( 'It seems this order has already been finalized somewhere else - if your order is finished you may update it here aswell', 'WC_Payment_Gateway' ); ?></p>
+        <p><?php _e( 'It seems this order has already been finalized from an external system - if your order is finished you may update it here aswell', 'WC_Payment_Gateway' ); ?></p>
     </div>
 	<?php
 }
