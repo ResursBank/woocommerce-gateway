@@ -106,7 +106,7 @@ function woocommerce_gateway_resurs_bank_init() {
             */
 
 			hasResursOmni();
-			isResursSimulation(); // Make sure settings are properly set each round
+            isResursSimulation(); // Make sure settings are properly set each round
 
 			$this->id = "resurs-bank";
 			//$this->title = "Resurs Bank";
@@ -188,7 +188,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			if ( isset( $_REQUEST['flowconfig'] ) ) {
 				if ( isResursDemo() ) {
 					$updatedFlow        = false;
-					$currentFlowType    = get_option( 'woocommerce_resurs-bank_settings' )['flowtype'];
+					$currentFlowType    = getResursOption('flowtype');
 					$availableFlowTypes = array(
 						'simplifiedshopflow'       => 'Simplified Flow',
 						'resurs_bank_hosted'       => 'Resurs Bank Hosted Flow',
@@ -944,7 +944,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$payment_method        = $woocommerce->session->chosen_payment_method;
 			$payment_fee           = getResursOption( 'price', 'woocommerce_' . $payment_method . '_settings' );
 			$payment_fee           = (float) ( isset( $payment_fee ) ? $payment_fee : '0' );
-			$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
+			$payment_fee_tax_class = getResursOption('priceTaxClass');
 			if ( ! hasWooCommerce( "2.3", ">=" ) ) {
 				$payment_fee_tax_class_rates = $cart->tax->get_rates( $payment_fee_tax_class );
 				$payment_fee_tax             = $cart->tax->calc_tax( $payment_fee, $payment_fee_tax_class_rates, false, true );
@@ -1070,20 +1070,19 @@ function woocommerce_gateway_resurs_bank_init() {
 			$totalAmount      = $paymentSpec['totalAmount'];
 			$fieldGenHtml     = "";
 			$sessionHasErrors = false;
+
+			$resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
+			$timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+
 			try {
-				$methodList = $this->flow->getPaymentMethods();
-				/*
-				$cacheMethods = get_transient( 'resurs_bank_methods_checkout_cache' );
-				if ( empty( $cacheMethods ) ) {
-					$cacheTime = 3600;
-					if (isResursDemo()) {
-						$cacheTime = 300;
-					}
-					set_transient( "resurs_bank_methods_checkout_cache", $methodList, $cacheTime );
+				if ($timeDiff >= 3600) {
+					$methodList = $this->flow->getPaymentMethods();
+					set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
+					set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
 				} else {
-					$methodList = $cacheMethods;
+					$methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
 				}
-				*/
+				$methodList = $this->flow->getPaymentMethods();
 			} catch ( Exception $e ) {
 				$sessionHasErrors    = true;
 				$sessionErrorMessage = $e->getMessage();
@@ -2175,18 +2174,18 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * @return  JSON Prints the address data as JSON
 		 */
 		public static function get_address_ajax() {
-			if ( isset( $_REQUEST ) && 'SE' == get_option( 'woocommerce_resurs-bank_settings' )['country'] ) {
+			if ( isset( $_REQUEST ) && 'SE' == getResursOption('country') ) {
 				$customerType = isset( $_REQUEST['customerType'] ) ? ( $_REQUEST['customerType'] != 'LEGAL' ? 'NATURAL' : 'LEGAL' ) : 'NATURAL';
 
-				$serverEnv = get_option( 'woocommerce_resurs-bank_settings' )['serverEnv'];
+				$serverEnv = getResursOption( "serverEnv" );
 				/*
                  * Overriding settings here, if we want getAddress picked from production instead of test.
                  * The only requirement for this to work is that we are running in test and credentials for production is set.
                  */
-				$userProd                = resursOption( "ga_login" );
-				$passProd                = resursOption( "ga_password" );
-				$disabledProdTests       = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
+				$userProd                = getResursOption( "ga_login" );
+				$passProd                = getResursOption( "ga_password" );
 				$getAddressUseProduction = getResursOption( "getAddressUseProduction" );
+				$disabledProdTests       = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
 				if ( $getAddressUseProduction && isResursDemo() && $serverEnv == "test" && ! empty( $userProd ) && ! empty( $passProd ) && ! $disabledProdTests ) {
 					$results = getAddressProd( $_REQUEST['ssn'], $customerType, self::get_ip_address() );
 				} else {
@@ -2259,8 +2258,17 @@ function woocommerce_gateway_resurs_bank_init() {
 			$flow                = initializeResursFlow();
 			$methodsHasErrors    = false;
 			$methodsErrorMessage = null;
+
+			$resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
+			$timeDiff = time() - $resursTemporaryPaymentMethodsTime;
 			try {
-				$paymentMethods = $flow->getPaymentMethods();
+				if ($timeDiff >= 3600) {
+					$paymentMethods = $flow->getPaymentMethods();
+                    set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
+                    set_transient("resursTemporaryPaymentMethods", serialize($paymentMethods), 3600);
+				} else {
+				    $paymentMethods = unserialize(get_transient("resursTemporaryPaymentMethods"));
+                }
 			} catch ( Exception $e ) {
 				$methodsHasErrors    = true;
 				$methodsErrorMessage = $e->getMessage();
@@ -2513,7 +2521,7 @@ function woocommerce_gateway_resurs_bank_init() {
 	 * @return WC_Checkout           The WooCommerce checkout object
 	 */
 	function add_ssn_checkout_field( $checkout ) {
-		if ( 'no' == get_option( 'woocommerce_resurs-bank_settings' )['enabled'] ) {
+		if ( ! getResursOption('enabled') ) {
 			return $checkout;
 		}
 
@@ -2565,7 +2573,7 @@ function woocommerce_gateway_resurs_bank_init() {
 	 * @return null Returns null if Resurs Bank plugin is not enabled
 	 */
 	function enqueue_script() {
-		if ( 'no' == get_option( 'woocommerce_resurs-bank_settings' )['enabled'] ) {
+		if ( ! getResursOption( 'enabled' ) ) {
 			return;
 		}
 		$OmniVars = array();
@@ -3598,6 +3606,7 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 	$country = getResursOption( "country" );
 	$initFlow->setCountryByCountryCode( $country );
+	$initFlow->setDebug(true);
 
 	return $initFlow;
 }
@@ -3633,8 +3642,8 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
 function getServerEnv() {
 	$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST;
 
-	$serverEnv    = get_option( 'woocommerce_resurs-bank_settings' )['serverEnv'];
-	$demoshopMode = get_option( 'woocommerce_resurs-bank_settings' )['demoshopMode'];
+	$serverEnv    = getResursOption('serverEnv');
+	$demoshopMode = getResursOption('demoshopMode');
 
 	if ( $serverEnv == 'live' ) {
 		$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION;
@@ -3869,7 +3878,8 @@ if ( is_admin() ) {
  * @return bool
  */
 function isResursDemo() {
-	$demoshopMode = get_option( 'woocommerce_resurs-bank_settings' )['demoshopMode'];
+    $resursSettings = get_option( 'woocommerce_resurs-bank_settings' );
+	$demoshopMode = isset($resursSettings['demoshopMode']) ? $resursSettings['demoshopMode'] : false;
 	if ( $demoshopMode === "true" ) {
 		return true;
 	}
@@ -3882,7 +3892,6 @@ function isResursDemo() {
 	if ( $demoshopMode === "no" ) {
 		return false;
 	}
-
 	return false;
 }
 
