@@ -4,16 +4,16 @@ namespace Resursbank\RBEcomPHP;
 
 // Make sure this library won't conflict with others
 if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_Network' ) ) {
-    /**
-     * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
-     *
-     * Class TorneLIB_Network
-     * @version 6.0.1
-     * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
-     * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
-     * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
-     * @package TorneLIB
-     */
+	/**
+	 * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
+	 *
+	 * Class TorneLIB_Network
+	 * @version 6.0.1
+	 * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
+	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
+	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
+	 * @package TorneLIB
+	 */
 	class TorneLIB_Network {
 		/** @var array Headers from the webserver that may contain potential proxies */
 		private $proxyHeaders = array(
@@ -398,7 +398,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 	 * Class Tornevall_cURL
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.3
+	 * @version 6.0.4
 	 * @link https://phpdoc.tornevall.net/TorneLIBv5/source-class-TorneLIB.Tornevall_cURL.html PHPDoc/Staging - Tornevall_cURL
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
@@ -414,11 +414,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		private $NETWORK;
 
 		/** @var string Internal version that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlVersion = "6.0.3";
+		private $TorneCurlVersion = "6.0.4";
 		private $CurlVersion = null;
 
 		/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlRelease = "20170906";
+		private $TorneCurlRelease = "20170908";
 
 		/**
 		 * Target environment (if target is production some debugging values will be skipped)
@@ -1482,8 +1482,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @param null $ResponseContent
 		 *
 		 * @return null
+		 * @throws \Exception
 		 */
 		public function getParsedResponse( $ResponseContent = null ) {
+			if ( isset( $ResponseContent['code'] ) && $ResponseContent['code'] >= 400 ) {
+				throw new \Exception( "Unexpected response code from server: " . $ResponseContent['code'], $ResponseContent['code'] );
+			}
 			if ( is_null( $ResponseContent ) && ! empty( $this->TemporaryResponse ) ) {
 				return $this->TemporaryResponse['parsed'];
 			} else if ( isset( $ResponseContent['parsed'] ) ) {
@@ -1493,13 +1497,14 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			return null;
 		}
 
+
 		/**
 		 * @param null $ResponseContent
 		 *
 		 * @return int
 		 */
 		public function getResponseCode( $ResponseContent = null ) {
-			if ( is_null( $ResponseContent ) && ! empty( $this->TemporaryResponse ) ) {
+			if ( is_null( $ResponseContent ) && ! empty( $this->TemporaryResponse ) && isset( $this->TemporaryResponse['code'] ) ) {
 				return (int) $this->TemporaryResponse['code'];
 			} else if ( isset( $ResponseContent['code'] ) ) {
 				return (int) $ResponseContent['code'];
@@ -1514,7 +1519,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return null
 		 */
 		public function getResponseBody( $ResponseContent = null ) {
-			if ( is_null( $ResponseContent ) && ! empty( $this->TemporaryResponse ) ) {
+			if ( is_null( $ResponseContent ) && ! empty( $this->TemporaryResponse ) && isset( $this->TemporaryResponse['body'] ) ) {
 				return $this->TemporaryResponse['body'];
 			} else if ( isset( $ResponseContent['body'] ) ) {
 				return $ResponseContent['body'];
@@ -1681,6 +1686,34 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
+		 * Check if SOAP exists in system
+		 *
+		 * @param bool $extendedSearch Extend search for SOAP (unsafe method, looking for constants defined as SOAP_*)
+		 *
+		 * @return bool
+		 */
+		public function hasSoap( $extendedSearch = false ) {
+			$soapClassBoolean = false;
+			if ( ( class_exists( 'SoapClient' ) || class_exists( '\SoapClient' ) ) ) {
+				$soapClassBoolean = true;
+			}
+			$sysConst = get_defined_constants();
+			if ( in_array( 'SOAP_1_1', $sysConst ) || in_array( 'SOAP_1_2', $sysConst ) ) {
+				$soapClassBoolean = true;
+			} else {
+				if ( $extendedSearch ) {
+					foreach ( $sysConst as $constantKey => $constantValue ) {
+						if ( preg_match( '/^SOAP_/', $constantKey ) ) {
+							$soapClassBoolean = true;
+						}
+					}
+				}
+			}
+
+			return $soapClassBoolean;
+		}
+
+		/**
 		 * Return number of tries resolver has been working
 		 *
 		 * @return int
@@ -1708,10 +1741,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return array
 		 */
 		public function doPost( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
-			$content       = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_POST, $postAs );
-			$ResponseArray = $this->ParseResponse( $content );
-
-			return $ResponseArray;
+			$response = null;
+			if (!empty($url)) {
+				$content       = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_POST, $postAs );
+				$response = $this->ParseResponse( $content );
+			}
+			return $response;
 		}
 
 		/**
@@ -1722,10 +1757,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return array
 		 */
 		public function doPut( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
-			$content       = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_PUT, $postAs );
-			$ResponseArray = $this->ParseResponse( $content );
-
-			return $ResponseArray;
+			$response = null;
+			if (!empty($url)) {
+				$content       = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_PUT, $postAs );
+				$response = $this->ParseResponse( $content );
+			}
+			return $response;
 		}
 
 		/**
@@ -1736,10 +1773,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return array
 		 */
 		public function doDelete( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
-			$content       = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_DELETE, $postAs );
-			$ResponseArray = $this->ParseResponse( $content );
-
-			return $ResponseArray;
+			$response = null;
+			if (!empty($url)) {
+				$content  = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_DELETE, $postAs );
+				$response = $this->ParseResponse( $content );
+			}
+			return $response;
 		}
 
 		/**
@@ -1751,10 +1790,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return array
 		 */
 		public function doGet( $url = '', $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
-			$content       = $this->handleUrlCall( $url, array(), CURL_METHODS::METHOD_GET, $postAs );
-			$ResponseArray = $this->ParseResponse( $content );
-
-			return $ResponseArray;
+			$response = null;
+			if (!empty($url)) {
+				$content       = $this->handleUrlCall( $url, array(), CURL_METHODS::METHOD_GET, $postAs );
+				$response = $this->ParseResponse( $content );
+			}
+			return $response;
 		}
 
 		/**
@@ -1844,12 +1885,20 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 
 			// Prepare SOAPclient if requested
 			if ( preg_match( "/\?wsdl$|\&wsdl$/i", $this->CurlURL ) || $postAs == CURL_POST_AS::POST_AS_SOAP ) {
+				if ( ! $this->hasSoap() ) {
+					throw new \Exception( "SoapClient is not available in this system", 500 );
+				}
 				$Soap = new Tornevall_SimpleSoap( $this->CurlURL, $this->curlopt );
 				$Soap->setCustomUserAgent( $this->CustomUserAgent );
 				$Soap->setThrowableState( $this->canThrow );
 				$Soap->setSoapAuthentication( $this->AuthData );
 				$Soap->SoapTryOnce = $this->SoapTryOnce;
-				return $Soap->getSoap();
+				try {
+					$getSoapResponse = $Soap->getSoap();
+				} catch (\Exception $getSoapResponseException) {
+					throw new \Exception($getSoapResponseException->getMessage(), $getSoapResponseException->getCode());
+				}
+				return $getSoapResponse;
 			}
 
 			// Picking up externally select outgoing ip if any
@@ -2138,23 +2187,24 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				$this->soapOptions['stream_context'] = $this->sslopt['stream_context'];
 			}
 			if ( $this->SoapTryOnce ) {
-				$this->soapClient = new \SoapClient( $this->soapUrl, $this->soapOptions );
+				try {
+					$this->soapClient = new \SoapClient( $this->soapUrl, $this->soapOptions );
+				} catch (\Exception $soapException) {
+					$soapCode = $soapException->getCode();
+					if (!$soapCode) {
+						$soapCode = 500;
+					}
+					throw new \Exception( $soapException->getMessage(), $soapCode );
+				}
 			} else {
 				try {
-					/*
-                 * FailoverMethod is active per default, trying to parry SOAP-sites that requires ?wsdl in the urls
-                 */
+					// FailoverMethod is active per default, trying to parry SOAP-sites that requires ?wsdl in the urls
 					$this->soapClient = @new \SoapClient( $this->soapUrl, $this->soapOptions );
 				} catch ( \Exception $soapException ) {
 					if ( isset( $soapException->faultcode ) && $soapException->faultcode == "WSDL" ) {
-						/*
-                     * If an exception has been invoked, check if the url contains a ?wsdl or &wsdl - if not, it may be the problem.
-                     * In that case, retry the call and throw an exception if we fail twice.
-                     */
+						// If an exception has been invoked, check if the url contains a ?wsdl or &wsdl - if not, it may be the problem. In that case, retry the call and throw an exception if we fail twice.
 						if ( ! preg_match( "/\?wsdl|\&wsdl/i", $this->soapUrl ) ) {
-							/*
-                         * Try to determine how the URL is built before trying this.
-                         */
+							// Try to determine how the URL is built before trying this.
 							if ( preg_match( "/\?/", $this->soapUrl ) ) {
 								$this->soapUrl .= "&wsdl";
 							} else {
@@ -2169,7 +2219,6 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 					}
 				}
 			}
-
 			return $this;
 		}
 
