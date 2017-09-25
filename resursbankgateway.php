@@ -1082,7 +1082,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					$methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
 				}
-				$methodList = $this->flow->getPaymentMethods();
 			} catch ( Exception $e ) {
 				$sessionHasErrors    = true;
 				$sessionErrorMessage = $e->getMessage();
@@ -2801,7 +2800,7 @@ function woocommerce_gateway_resurs_bank_init() {
 	function test_before_shipping() {
 	}
 
-    // If glob returns null (error) nothing should run
+	// If glob returns null (error) nothing should run
 	$incGlob = glob( plugin_dir_path( __FILE__ ) . '/includes/*.php' );
 	if (is_array($incGlob)) {
 		foreach ( $incGlob as $filename ) {
@@ -2882,46 +2881,33 @@ function woocommerce_gateway_resurs_bank_init() {
 		}
 	}
 
-	/* Load settings pages through this class */
 	add_filter( 'woocommerce_get_settings_pages', 'rb_settings_pages' );
 	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway' );
 	add_filter( 'woocommerce_available_payment_gateways', 'woocommerce_resurs_bank_available_payment_gateways' ); // Had prio 1
-
 	add_filter( 'woocommerce_before_checkout_billing_form', 'add_ssn_checkout_field' );
 	add_action( 'woocommerce_order_status_changed', 'WC_Resurs_Bank::order_status_changed', 10, 3 );
-
 	add_action( 'wp_enqueue_scripts', 'enqueue_script', 0 );
 	add_action( 'admin_enqueue_scripts', 'admin_enqueue_script' );
-
 	add_action( 'wp_ajax_get_address_ajax', 'WC_Resurs_Bank::get_address_ajax' );
 	add_action( 'wp_ajax_nopriv_get_address_ajax', 'WC_Resurs_Bank::get_address_ajax' );
-
 	add_action( 'wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax' );
 	add_action( 'wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax' );
-
 	add_action( 'wp_ajax_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype' );
 	add_action( 'wp_ajax_nopriv_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype' );
-
 	add_action( 'init', 'start_session', 1 );
 	add_action( 'wp_logout', 'end_session' );
 	add_action( 'wp_login', 'end_session' );
-
 	add_action( 'init', 'app_output_buffer', 2 );
-
 	add_action( 'admin_notices', 'resurs_bank_admin_notice' );
-
 	add_action( 'woocommerce_before_checkout_shipping_form', 'test_before_shipping' );
 	add_action( 'woocommerce_before_delete_order_item', 'resurs_remove_order_item' );
-
 	add_action( 'woocommerce_admin_order_data_after_order_details', 'resurs_order_data_info_after_order' );
 	add_action( 'woocommerce_admin_order_data_after_billing_address', 'resurs_order_data_info_after_billing' );
 	add_action( 'woocommerce_admin_order_data_after_shipping_address', 'resurs_order_data_info_after_shipping' );
-
-	/* OmniCheckout */
-	//add_action( 'woocommerce_after_checkout_form' , 'resurs_omnicheckout_after_checkout_form' );
-	add_filter( 'woocommerce_order_button_html', 'resurs_omnicheckout_order_button_html' );
-	add_filter( 'woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check' );
+	add_filter( 'woocommerce_order_button_html', 'resurs_omnicheckout_order_button_html' ); // Omni
+	add_filter( 'woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check' ); // Omni
 	if ( getResursOption( "showPaymentIdInOrderList" ) ) {
+		// Omni
 		add_filter( 'manage_edit-shop_order_columns', 'resurs_order_column_header' );
 		add_action( 'manage_shop_order_posts_custom_column', 'resurs_order_column_info' );
 	}

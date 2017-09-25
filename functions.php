@@ -542,11 +542,22 @@ if ( is_admin() ) {
             \$this->maxLimit = '{$maxLimit}';
 			\$this->title       = \$this->get_option( 'title' );
 
+			\$resursTemporaryMethodTime = get_transient("resursTemporaryMethodTime_" . \$this->id_short);
+			\$timeDiff = time() - \$resursTemporaryMethodTime;
+
 			if (empty(\$this->title) || strtolower(\$this->title) == "resurs bank") {
     			\$this->flow = initializeResursFlow();
     			try {
+    			
+                    if (\$timeDiff >= 3600) {
+        			    \$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
+					    set_transient("resursTemporaryMethodTime_" . \$this->id_short, time(), 3600);
+					    set_transient("resursTemporaryMethod_" . \$this->id_short, serialize(\$realTimePaymentMethod), 3600);
+				    } else {
+    					\$realTimePaymentMethod = unserialize(get_transient("resursTemporaryMethod_" . \$this->id_short));
+    				}
+
     			    // Fetch this data if there is no errors during controls (this could for example, if credentials are wrong, generate errors that makes the site unreachable)
-    			    \$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
     			} catch (Exception \$realTimeException) {
     			    \$this->hasErrors = true;
     			}
