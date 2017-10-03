@@ -1,14 +1,37 @@
 <?php
 
+/**
+ * Copyright 2017 Tomas Tornevall & Tornevall Networks
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Tornevall Networks NETCURL-6.0.8
+ *
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ *
+ * @version 6.0.8
+ */
+
 namespace Resursbank\RBEcomPHP;
 
-// Make sure this library won't conflict with others
 if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_Network' ) ) {
 	/**
 	 * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
 	 *
 	 * Class TorneLIB_Network
-	 * @version 6.0.1
+	 * @version 6.0.2
 	 * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
@@ -40,10 +63,15 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		private $cookieUseSecure;
 		private $cookieDefaultDomain;
 		private $cookieDefaultPrefix;
+		private $alwaysResolveHostvalidation = false;
+
+		/** @var TorneLIB_NetBits BitMask handler with 8 bits as default */
+		public $BIT;
 
 		function __construct() {
 			// Initiate and get client headers.
 			$this->renderProxyHeaders();
+			$this->BIT = new TorneLIB_NetBits();
 		}
 
 		/**
@@ -66,7 +94,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			if ( ! isset( $urlParsed['host'] ) || ! $urlParsed['scheme'] ) {
 				return array( null, null, null );
 			}
-			if ( $validateHost ) {
+			if ( $validateHost || $this->alwaysResolveHostvalidation === true ) {
 				// Make sure that the host is not invalid
 				$hostRecord = dns_get_record( $urlParsed['host'], DNS_ANY );
 				if ( ! count( $hostRecord ) ) {
@@ -272,22 +300,22 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				if ( $returnIpType === true ) {
 					$vArpaTest = $this->getArpaFromIpv6( $ipAddr );    // PHP 5.3
 					if ( ! empty( $vArpaTest ) ) {
-						return TorneLIB_Network_IP::IPTYPE_V6;
+						return TorneLIB_Network_IP_Protocols::PROTOCOL_IPV6;
 					} else {
-						return TorneLIB_Network_IP::IPTYPE_NONE;
+						return TorneLIB_Network_IP_Protocols::PROTOCOL_NONE;
 					}
 				} else {
 					return $this->getArpaFromIpv6( $ipAddr );
 				}
 			} else if ( filter_var( $ipAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) !== false ) {
 				if ( $returnIpType ) {
-					return TorneLIB_Network_IP::IPTYPE_V4;
+					return TorneLIB_Network_IP_Protocols::PROTOCOL_IPV4;
 				} else {
 					return $this->getArpaFromIpv4( $ipAddr );
 				}
 			} else {
 				if ( $returnIpType ) {
-					return TorneLIB_Network_IP::IPTYPE_NONE;
+					return TorneLIB_Network_IP_Protocols::PROTOCOL_NONE;
 				}
 			}
 
@@ -380,29 +408,33 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			exit;
 		}
 
+		/**
+		 * When active: Force this libray to always validate hosts with a DNS resolve during a getUrlDomain()-call.
+		 *
+		 * @param bool $activate
+		 */
+		public function setAlwaysResolveHostvalidation( $activate = false ) {
+			$this->alwaysResolveHostvalidation = $activate;
+		}
+
+		/**
+		 * Return the current boolean value for alwaysResolveHostvalidation.
+		 */
+		public function getAlwaysResolveHostvalidation() {
+			$this->alwaysResolveHostvalidation;
+		}
+
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
-	/**
-	 * Class TorneLIB_Network_IP IP Address Types class
-	 * @package TorneLIB
-	 */
-	abstract class TorneLIB_Network_IP {
-		const IPTYPE_NONE = 0;
-		const IPTYPE_V4 = 4;
-		const IPTYPE_V6 = 6;
-	}
-
+}
+if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_cURL' ) ) {
 	/**
 	 * Class Tornevall_cURL
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.4
-	 * @link https://phpdoc.tornevall.net/TorneLIBv5/source-class-TorneLIB.Tornevall_cURL.html PHPDoc/Staging - Tornevall_cURL
-	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
-	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
-	 * @link https://docs.tornevall.net/x/KwCy Network & Curl Library usage
+	 * @version 6.0.6
+	 * @link https://docs.tornevall.net/x/KQCy TorneLIBv5
+	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php-netcurl/browse Sources of TorneLIB
+	 * @link https://docs.tornevall.net/x/KwCy Network & Curl v5 and v6 Library usage
 	 * @link https://docs.tornevall.net/x/FoBU TorneLIB Full documentation
 	 */
 	class Tornevall_cURL {
@@ -414,11 +446,14 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		private $NETWORK;
 
 		/** @var string Internal version that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlVersion = "6.0.4";
+		private $TorneCurlVersion = "6.0.7";
+		/** @var null Curl Version */
 		private $CurlVersion = null;
+		/** @var string This modules name (inherited to some exceptions amongst others) */
+		protected $ModuleName = "NetCurl";
 
 		/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlRelease = "20170908";
+		private $TorneCurlRelease = "20171002";
 
 		/**
 		 * Target environment (if target is production some debugging values will be skipped)
@@ -483,6 +518,9 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 
 		/** @var null A tempoary set of the response from the url called */
 		private $TemporaryResponse = null;
+
+		/** @var What post type to use when using POST (Enforced) */
+		private $forcePostType = null;
 
 		/**
 		 * Default settings when initializing our curlsession.
@@ -582,6 +620,9 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		private $AuthData = array( 'Username' => null, 'Password' => null, 'Type' => CURL_AUTH_TYPES::AUTHTYPE_NONE );
 
+		/** @var Throwable http codes */
+		private $throwableHttpCodes;
+
 		/** @var array Adding own headers to the HTTP-request here */
 		private $CurlHeaders = array();
 		private $CurlHeadersSystem = array();
@@ -623,8 +664,10 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @throws \Exception
 		 */
 		public function __construct( $PreferredURL = '', $PreparedPostData = array(), $PreferredMethod = CURL_METHODS::METHOD_POST ) {
+			register_shutdown_function( array( $this, 'tornecurl_terminate' ) );
+
 			if ( ! function_exists( 'curl_init' ) ) {
-				throw new \Exception( "curl library not found" );
+				throw new \Exception( $this->ModuleName . " curl init exception: curl library not found" );
 			}
 			// Common ssl checkers (if they fail, there is a sslDriverError to recall
 			if ( ! in_array( 'https', @stream_get_wrappers() ) ) {
@@ -660,7 +703,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			$this->CurlResolve = CURL_RESOLVER::RESOLVER_DEFAULT;
 			$this->NETWORK     = new TorneLIB_Network();
 			$this->openssl_guess();
-			register_shutdown_function( array( $this, 'tornecurl_terminate' ) );
+			$this->throwableHttpCodes = array();
 
 			if ( ! empty( $PreferredURL ) ) {
 				$InstantResponse = null;
@@ -680,6 +723,13 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			return null;
 		}
 
+		/**
+		 * Get the current version of the module
+		 *
+		 * @param bool $fullRelease
+		 *
+		 * @return string
+		 */
 		public function getVersion( $fullRelease = false ) {
 			if ( ! $fullRelease ) {
 				return $this->TorneCurlVersion;
@@ -689,12 +739,54 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
-		 * TorneCurl Termination Controller - Used amongst others, to make sure that empty cookiepaths created by this library gets removed if they are being used.
+		 * Set up a list of which HTTP error codes that should be throwable (default: >= 400, <= 599)
+		 *
+		 * @param int $throwableMin Minimum value to throw on (Used with >=)
+		 * @param int $throwableMax Maxmimum last value to throw on (Used with <)
+		 *
+		 * @since 6.0.6
+		 */
+		public function setThrowableHttpCodes( $throwableMin = 400, $throwableMax = 599 ) {
+			$throwableMin               = intval( $throwableMin ) > 0 ? $throwableMin : 400;
+			$throwableMax               = intval( $throwableMax ) > 0 ? $throwableMax : 599;
+			$this->throwableHttpCodes[] = array( $throwableMin, $throwableMax );
+		}
+
+		/**
+		 * Return the list of throwable http error codes (if set)
+		 *
+		 * @return array|Throwable
+		 * @since 6.0.6
+		 */
+		public function getThrowableHttpCodes() {
+			return $this->throwableHttpCodes;
+		}
+
+		/**
+		 * Throw on any code that matches the store throwableHttpCode (use with setThrowableHttpCodes())
+		 *
+		 * @param string $message
+		 * @param string $code
+		 *
+		 * @throws \Exception
+		 * @since 6.0.6
+		 */
+		private function throwCodeException( $message = '', $code = '' ) {
+			if ( ! is_array( $this->throwableHttpCodes ) ) {
+				$this->throwableHttpCodes = array();
+			}
+			foreach ( $this->throwableHttpCodes as $codeListArray => $codeArray ) {
+				if ( isset( $codeArray[1] ) && $code >= intval( $codeArray[0] ) && $code <= intval( $codeArray[1] ) ) {
+					throw new \Exception( $this->ModuleName . " HTTP Response Exception: " . $message, $code );
+				}
+			}
+		}
+
+		/**
+		 * Termination Controller - Used amongst others, to make sure that empty cookiepaths created by this library gets removed if they are being used.
 		 */
 		function tornecurl_terminate() {
-			/*
-         * If this indicates that we created the path, make sure it's removed if empty after session completion
-         */
+			// If this indicates that we created the path, make sure it's removed if empty after session completion
 			if ( ! count( glob( $this->CookiePath . "/*" ) ) && $this->CookiePathCreated ) {
 				@rmdir( $this->CookiePath );
 			}
@@ -730,6 +822,15 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
+		 * Returns the current setting whether to use local cookies or not
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getLocalCookies() {
+			return $this->useLocalCookies;
+		}
+
+		/**
 		 * Enforce a response type if you're not happy with the default returned array.
 		 *
 		 * @param int $ResponseType
@@ -741,6 +842,39 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
+		 * Return the value of how the responses are returned
+		 *
+		 * @return int
+		 * @since 6.0.6
+		 */
+		public function getResponseType() {
+			return $this->ResponseType;
+		}
+
+		/**
+		 * Enforce a specific type of post method
+		 *
+		 * To always send PostData, even if it is not set in the doXXX-method, you can use this setting to enforce - for example - JSON posts
+		 * $myLib->setPostTypeDefault(CURL_POST_AS::POST_AS_JSON)
+		 *
+		 * @param int $postType
+		 *
+		 * @since 6.0.6
+		 */
+		public function setPostTypeDefault( $postType = CURL_POST_AS::POST_AS_NORMAL ) {
+			$this->forcePostType = $postType;
+		}
+
+		/**
+		 * Returns what to use as post method (CURL_POST_AS) on default. Returns null if none are set (= no overrides will be made)
+		 * @return CURL_POST_AS
+		 * @since 6.0.6
+		 */
+		public function getPostTypeDefault() {
+			return $this->forcePostType;
+		}
+
+		/**
 		 * Enforces CURLOPT_FOLLOWLOCATION to act different if not matching with the internal rules
 		 *
 		 * @param bool $setEnabledState
@@ -748,9 +882,17 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @since 5.0.0/2017.4
 		 */
 		public function setEnforceFollowLocation( $setEnabledState = true ) {
-			$this->followLocationSet     = $setEnabledState;
+			$this->followLocationSet = $setEnabledState;
 		}
 
+		/**
+		 * Returns the boolean value of followLocationSet (see setEnforceFollowLocation)
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getEnforceFollowLocation() {
+			return $this->followLocationSet;
+		}
 
 		/**
 		 * Switch over to forced debugging
@@ -765,6 +907,15 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
+		 * Returns current target environment
+		 * @return int
+		 * @since 6.0.6
+		 */
+		public function getTestEnabled() {
+			return $this->TargetEnvironment;
+		}
+
+		/**
 		 * Allow the initCookie-function to throw exceptions if the local cookie store can not be created properly
 		 *
 		 * Exceptions are invoked, normally when the function for initializing cookies can not create the storage directory. This is something you should consider disabled in a production environment.
@@ -775,8 +926,30 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			$this->UseCookieExceptions = $enabled;
 		}
 
+		/**
+		 * Returns the boolean value set (eventually) from setCookieException
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getCookieExceptions() {
+			return $this->UseCookieExceptions;
+		}
+
+		/**
+		 * Set up whether we should allow html parsing or not
+		 *
+		 * @param bool $enabled
+		 */
 		public function setParseHtml( $enabled = false ) {
 			$this->allowParseHtml = $enabled;
+		}
+
+		/**
+		 * Return the boolean of the setParseHtml
+		 * @return bool
+		 */
+		public function getParseHtml() {
+			return $this->allowParseHtml;
 		}
 
 		/**
@@ -791,7 +964,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			if ( defined( 'TORNELIB_ALLOW_VERSION_REQUESTS' ) && TORNELIB_ALLOW_VERSION_REQUESTS === true ) {
 				return $this->TorneCurlVersion . "," . $this->TorneCurlRelease;
 			}
-			throw new \Exception( "[" . __CLASS__ . "] Version requests are not allowed", 403 );
+			throw new \Exception( $this->ModuleName . " internalReleaseException [" . __CLASS__ . "]: Version requests are not allowed in current state (permissions required)", 403 );
 		}
 
 		/**
@@ -800,9 +973,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return string
 		 */
 		private function getHasUpdateState( $libName = 'tornelib_curl' ) {
-			/*
-         * Currently only supporting this internal module (through $myRelease).
-         */
+			// Currently only supporting this internal module (through $myRelease).
 			$myRelease  = $this->getInternalRelease();
 			$libRequest = ( ! empty( $libName ) ? "lib/" . $libName : "" );
 			$getInfo    = $this->doGet( "https://api.tornevall.net/2.0/libs/getLibs/" . $libRequest . "/me/" . $myRelease );
@@ -820,6 +991,10 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			return "";
 		}
 
+		/**
+		 * Get store exceptions
+		 * @return array
+		 */
 		public function getStoredExceptionInformation() {
 			return $this->sessionsExceptions;
 		}
@@ -844,7 +1019,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 *
 		 * To make proper identification of the library we are always appending TorbeLIB+cUrl to the chosen user agent string.
 		 *
-		 * @param null $CustomUserAgent
+		 * @param string $CustomUserAgent
 		 */
 		public function setUserAgent( $CustomUserAgent = "" ) {
 			if ( ! empty( $CustomUserAgent ) ) {
@@ -864,6 +1039,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			return $this->CurlUserAgent;
 		}
 
+		/**
+		 * Get the value of customized user agent
+		 *
+		 * @return string
+		 * @since 6.0.6
+		 */
 		public function getCustomUserAgent() {
 			return $this->CustomUserAgent;
 		}
@@ -878,13 +1059,24 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
+		 * Get the boolean value of whether to try to use XML/Serializer functions when fetching XML data
+		 *
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getXmlSerializer() {
+			return $this->useXmlSerializer;
+		}
+
+		/**
 		 * cUrl initializer, if needed faster
 		 *
-		 * @return null|resource
+		 * @return resource
 		 */
 		public function init() {
 			$this->initCookiePath();
 			$this->CurlSession = curl_init( $this->CurlURL );
+
 			return $this->CurlSession;
 		}
 
@@ -928,7 +1120,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 						$this->CookiePath = realpath( __DIR__ . "/../cookies" );
 					}
 					if ( $this->UseCookieExceptions && ( empty( $this->CookiePath ) || ! is_dir( $this->CookiePath ) ) ) {
-						throw new \Exception( __FUNCTION__ . ": Could not set up a proper cookiepath [To override this, use AllowTempAsCookiePath (not recommended)]", 1002 );
+						throw new \Exception( $this->ModuleName . " " . __FUNCTION__ . " exception: Could not set up a proper cookiepath [To override this, use AllowTempAsCookiePath (not recommended)]", 1002 );
 					}
 				}
 			}
@@ -1033,10 +1225,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * @return bool
 		 */
 		private function openssl_guess( $forceTesting = false ) {
-			/*
-         * The certificate location here will be set up for the curl engine later on, during preparation of the connection.
-         * NOTE: ini_set() does not work for setting up the cafile, this has to be done through php.ini, .htaccess, httpd.conf or .user.ini
-         */
+			// The certificate location here will be set up for the curl engine later on, during preparation of the connection.
+			// NOTE: ini_set() does not work for setting up the cafile, this has to be done through php.ini, .htaccess, httpd.conf or .user.ini
 			if ( ini_get( 'open_basedir' ) == '' ) {
 				if ( $this->testssl || $forceTesting ) {
 					$this->openSslGuessed = true;
@@ -1135,8 +1325,18 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			if ( $this->allowSslUnverified ) {
 				$this->sslVerify = $enabledFlag;
 			} else {
-				throw new \Exception( "setSslUnverified(true) has not been set." );
+				throw new \Exception( $this->ModuleName . " setSslVerify exception: setSslUnverified(true) has not been set." );
 			}
+		}
+
+		/**
+		 * Return the boolean value set in setSslVerify
+		 *
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getSslVerify() {
+			return $this->sslVerify;
 		}
 
 		/**
@@ -1152,6 +1352,15 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		public function setSslUnverified( $enabledFlag = false ) {
 			$this->allowSslUnverified = $enabledFlag;
+		}
+
+		/**
+		 * Return the boolean value set from setSslUnverified
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getSslUnverified() {
+			return $this->allowSslUnverified;
 		}
 
 		/**
@@ -1264,9 +1473,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 					$UseIp = ( isset( $this->IpAddr[0] ) && ! empty( $this->IpAddr[0] ) ? $this->IpAddr[0] : null );
 				} elseif ( count( $this->IpAddr ) > 1 ) {
 					if ( ! $this->IpAddrRandom ) {
-						/*
-                     * If we have multiple ip addresses in the list, but the randomizer is not active, always use the first address in the list.
-                     */
+						// If we have multiple ip addresses in the list, but the randomizer is not active, always use the first address in the list.
 						$UseIp = ( isset( $this->IpAddr[0] ) && ! empty( $this->IpAddr[0] ) ? $this->IpAddr[0] : null );
 					} else {
 						$IpAddrNum = rand( 0, count( $this->IpAddr ) - 1 );
@@ -1277,15 +1484,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				$UseIp = $this->IpAddr;
 			}
 			$ipType = $this->NETWORK->getArpaFromAddr( $UseIp, true );
-			/*
-         * Bind interface to specific ip only if any are found
-         */
+			// Bind interface to specific ip only if any are found
 			if ( $ipType == "0" ) {
-				/*
-             * If the ip type is 0 and it shows up there is something defined here, throw an exception.
-             */
+				// If the ip type is 0 and it shows up there is something defined here, throw an exception.
 				if ( ! empty( $UseIp ) ) {
-					throw new \Exception( __FUNCTION__ . ": " . $UseIp . " is not a valid ip-address", 1003 );
+					throw new \Exception( $this->ModuleName . " " . __FUNCTION__ . " exception: " . $UseIp . " is not a valid ip-address", 1003 );
 				}
 			} else {
 				$this->CurlIp = $UseIp;
@@ -1332,8 +1535,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				}
 			}
 			if ( is_null( $parsedContent ) && ( preg_match( "/xml version/", $content ) || preg_match( "/rss version/", $content ) || preg_match( "/xml/i", $contentType ) ) ) {
-				$trimmedContent = trim( $content ); // PHP 5.3: Can't use function return value in write context
-
+				$trimmedContent        = trim( $content ); // PHP 5.3: Can't use function return value in write context
 				$overrideXmlSerializer = false;
 				if ( $this->useXmlSerializer ) {
 					$serializerPath = stream_resolve_include_path( 'XML/Unserializer.php' );
@@ -1357,9 +1559,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 						return null;
 					}
 				} else {
-					/*
-                 * Returns empty class if the SimpleXMLElement is missing.
-                 */
+					// Returns empty class if the SimpleXMLElement is missing.
 					if ( $overrideXmlSerializer ) {
 						$xmlSerializer = new \XML_Unserializer();
 						$xmlSerializer->unserialize( $content );
@@ -1396,7 +1596,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 						}
 					}
 				} else {
-					throw new \Exception( "Can not parse DOMDocuments without the DOMDocuments class" );
+					throw new \Exception( $this->ModuleName . " HtmlParse exception: Can not parse DOMDocuments without the DOMDocuments class" );
 				}
 			}
 
@@ -1486,7 +1686,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		public function getParsedResponse( $ResponseContent = null ) {
 			if ( isset( $ResponseContent['code'] ) && $ResponseContent['code'] >= 400 ) {
-				throw new \Exception( "Unexpected response code from server: " . $ResponseContent['code'], $ResponseContent['code'] );
+				throw new \Exception( $this->ModuleName . " parseResponse exception - Unexpected response code from server: " . $ResponseContent['code'], $ResponseContent['code'] );
 			}
 			if ( is_null( $ResponseContent ) && ! empty( $this->TemporaryResponse ) ) {
 				return $this->TemporaryResponse['parsed'];
@@ -1584,7 +1784,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 					if ( $hasRecursion ) {
 						return $Parsed;
 					} else {
-						throw new \Exception( "Requested key was not found in parsed response" );
+						throw new \Exception( $this->ModuleName . " getParsedValue exception: Requested key was not found in parsed response" );
 					}
 				}
 			}
@@ -1608,9 +1808,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				return $content;
 			}
 			list( $header, $body ) = explode( "\r\n\r\n", $content, 2 );
-			$rows     = explode( "\n", $header );
-			$response = explode( " ", $rows[0] );
-			$code     = isset( $response[1] ) ? $response[1] : - 1;
+			$rows              = explode( "\n", $header );
+			$response          = explode( " ", isset( $rows[0] ) ? $rows[0] : null );
+			$shortCodeResponse = explode( " ", isset( $rows[0] ) ? $rows[0] : null, 3 );
+			$httpMessage       = isset( $shortCodeResponse[2] ) ? $shortCodeResponse[2] : null;
+			$code              = isset( $response[1] ) ? $response[1] : null;
 			// If the first row of the body contains a HTTP/-string, we'll try to reparse it
 			if ( preg_match( "/^HTTP\//", $body ) ) {
 				$newBody = $this->ParseResponse( $body );
@@ -1621,7 +1823,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			// If response code starts with 3xx, this is probably a redirect
 			if ( preg_match( "/^3/", $code ) ) {
 				$this->redirectedUrls[] = $this->CurlURL;
-				$redirectArray[] = array(
+				$redirectArray[]        = array(
 					'header' => $header,
 					'body'   => $body,
 					'code'   => $code
@@ -1634,6 +1836,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				'body'   => $body,
 				'code'   => $code
 			);
+
+			$this->throwCodeException( $httpMessage, $code );
 			if ( $this->CurlAutoParse ) {
 				$contentType              = isset( $headerInfo['Content-Type'] ) ? $headerInfo['Content-Type'] : null;
 				$parsedContent            = $this->ParseContent( $returnResponse['body'], false, $contentType );
@@ -1732,6 +1936,16 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
+		 * Returns the boolean value of whether exceptions can be stored in memory during calls
+		 *
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getStoreSessionExceptions() {
+			return $this->canStoreSessionException;
+		}
+
+		/**
 		 * Call cUrl with a POST
 		 *
 		 * @param string $url
@@ -1742,10 +1956,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		public function doPost( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
-			if (!empty($url)) {
-				$content       = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_POST, $postAs );
+			if ( ! empty( $url ) ) {
+				$content  = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_POST, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
+
 			return $response;
 		}
 
@@ -1758,10 +1973,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		public function doPut( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
-			if (!empty($url)) {
-				$content       = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_PUT, $postAs );
+			if ( ! empty( $url ) ) {
+				$content  = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_PUT, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
+
 			return $response;
 		}
 
@@ -1774,10 +1990,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		public function doDelete( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
-			if (!empty($url)) {
+			if ( ! empty( $url ) ) {
 				$content  = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_DELETE, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
+
 			return $response;
 		}
 
@@ -1791,10 +2008,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		public function doGet( $url = '', $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
-			if (!empty($url)) {
-				$content       = $this->handleUrlCall( $url, array(), CURL_METHODS::METHOD_GET, $postAs );
+			if ( ! empty( $url ) ) {
+				$content  = $this->handleUrlCall( $url, array(), CURL_METHODS::METHOD_GET, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
+
 			return $response;
 		}
 
@@ -1811,6 +2029,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			$this->AuthData['Type']     = $AuthType;
 		}
 
+		/**
+		 * Set up a proxy
+		 *
+		 * @param $ProxyAddr
+		 * @param int $ProxyType
+		 */
 		public function setProxy( $ProxyAddr, $ProxyType = CURLPROXY_HTTP ) {
 			$this->CurlProxy     = $ProxyAddr;
 			$this->CurlProxyType = $ProxyType;
@@ -1849,6 +2073,16 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		}
 
 		/**
+		 * Return user defined headers
+		 *
+		 * @return array
+		 * @since 6.0.6
+		 */
+		public function getCurlHeader() {
+			return $this->CurlHeadersUserDefined;
+		}
+
+		/**
 		 * cURL data handler, sets up cURL in what it believes is the correct set for you.
 		 *
 		 * @param string $url
@@ -1866,6 +2100,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 
 			$this->init();
 			$this->CurlHeaders = array();
+
+			// Enforce postAs
+			// If you'd like to force everything to use json you can for example use: $myLib->setPostTypeDefault(CURL_POST_AS::POST_AS_JSON)
+			if ( ! is_null( $this->forcePostType ) ) {
+				$postAs = $this->forcePostType;
+			}
 
 			// Find out if CURLOPT_FOLLOWLOCATION can be set by user/developer or not.
 			//
@@ -1886,7 +2126,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			// Prepare SOAPclient if requested
 			if ( preg_match( "/\?wsdl$|\&wsdl$/i", $this->CurlURL ) || $postAs == CURL_POST_AS::POST_AS_SOAP ) {
 				if ( ! $this->hasSoap() ) {
-					throw new \Exception( "SoapClient is not available in this system", 500 );
+					throw new \Exception( $this->ModuleName . " ".__FUNCTION__." exception: SoapClient is not available in this system", 500 );
 				}
 				$Soap = new Tornevall_SimpleSoap( $this->CurlURL, $this->curlopt );
 				$Soap->setCustomUserAgent( $this->CustomUserAgent );
@@ -1895,9 +2135,10 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				$Soap->SoapTryOnce = $this->SoapTryOnce;
 				try {
 					$getSoapResponse = $Soap->getSoap();
-				} catch (\Exception $getSoapResponseException) {
-					throw new \Exception($getSoapResponseException->getMessage(), $getSoapResponseException->getCode());
+				} catch ( \Exception $getSoapResponseException ) {
+					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $getSoapResponseException->getMessage(), $getSoapResponseException->getCode() );
 				}
+
 				return $getSoapResponse;
 			}
 
@@ -1936,8 +2177,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 
 				if ( $postAs == CURL_POST_AS::POST_AS_JSON ) {
 					/*
-                 * Using $jsonRealData to validate the string
-                 */
+				 * Using $jsonRealData to validate the string
+				 */
 					$jsonRealData = null;
 					if ( ! is_string( $postData ) ) {
 						$jsonRealData = json_encode( $postData );
@@ -2073,8 +2314,9 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 					);
 				}
 				$errorCode = curl_errno( $this->CurlSession );
+				$errorMessage = curl_error($this->CurlSession);
 				if ( $this->CurlResolveForced && $this->CurlResolveRetry >= 2 ) {
-					throw new \Exception( __FUNCTION__ . ": Could not fetch url after internal retries", 1004 );
+					throw new \Exception( $this->ModuleName . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for ".$this->CurlURL." has been reached without any successful response. Normally, this happens after " . $this->CurlResolveRetry . " CurlResolveRetries and might be connected with a bad URL or similar that can not resolve properly.\nCurl error message follows: " . $errorMessage, $errorCode );
 				}
 				if ( $errorCode == CURLE_COULDNT_RESOLVE_HOST || $errorCode === 45 ) {
 					$this->CurlResolveRetry ++;
@@ -2089,21 +2331,201 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 
 					return $this->handleUrlCall( $this->CurlURL, $postData, $CurlMethod );
 				}
-				throw new \Exception( "PHPException at " . __FUNCTION__ . ": " . curl_error( $this->CurlSession ), curl_errno( $this->CurlSession ) );
+				throw new \Exception( $this->ModuleName . " exception from PHP/CURL at " . __FUNCTION__ . ": " . curl_error( $this->CurlSession ), curl_errno( $this->CurlSession ) );
 			}
 
 			return $returnContent;
 		}
 	}
+}
+if ( ! class_exists( 'TorneLIB_NetBits' ) && ! class_exists( 'TorneLIB\TorneLIB_NetBits' ) ) {
+	/**
+	 * Class TorneLIB_NetBits Netbits Library for calculations with bitmasks
+	 *
+	 * @package TorneLIB
+	 * @version 6.0.1
+	 */
+	class TorneLIB_NetBits {
+		/** @var array Standard bitmask setup */
+		private $BIT_SETUP;
+		private $maxBits = 8;
 
-	/** @noinspection PhpUndefinedClassInspection */
+		function __construct( $bitStructure = array() ) {
+			$this->BIT_SETUP = array(
+				'OFF'     => 0,
+				'BIT_1'   => 1,
+				'BIT_2'   => 2,
+				'BIT_4'   => 4,
+				'BIT_8'   => 8,
+				'BIT_16'  => 16,
+				'BIT_32'  => 32,
+				'BIT_64'  => 64,
+				'BIT_128' => 128
+			);
+			if ( count( $bitStructure ) ) {
+				$this->BIT_SETUP = $this->validateBitStructure( $bitStructure );
+			}
+		}
 
+		public function setMaxBits( $maxBits = 8 ) {
+			$this->maxBits = $maxBits;
+			$this->validateBitStructure( $maxBits );
+		}
+
+		public function getMaxBits() {
+			return $this->maxBits;
+		}
+
+		private function getRequiredBits( $maxBits = 8 ) {
+			$requireArray = array();
+			if ( $this->maxBits != $maxBits ) {
+				$maxBits = $this->maxBits;
+			}
+			for ( $curBit = 0; $curBit <= $maxBits; $curBit ++ ) {
+				$requireArray[] = (int) pow( 2, $curBit );
+			}
+
+			return $requireArray;
+		}
+
+		private function validateBitStructure( $bitStructure = array() ) {
+			if ( is_numeric( $bitStructure ) ) {
+				$newBitStructure = array(
+					'OFF' => 0
+				);
+				for ( $bitIndex = 0; $bitIndex <= $bitStructure; $bitIndex ++ ) {
+					$powIndex                              = pow( 2, $bitIndex );
+					$newBitStructure[ "BIT_" . $powIndex ] = $powIndex;
+				}
+				$bitStructure    = $newBitStructure;
+				$this->BIT_SETUP = $bitStructure;
+			}
+			$require                  = $this->getRequiredBits( count( $bitStructure ) );
+			$validated                = array();
+			$newValidatedBitStructure = array();
+			$valueKeys                = array();
+			foreach ( $bitStructure as $key => $value ) {
+				if ( in_array( $value, $require ) ) {
+					$newValidatedBitStructure[ $key ] = $value;
+					$valueKeys[ $value ]              = $key;
+					$validated[]                      = $value;
+				}
+			}
+			foreach ( $require as $bitIndex ) {
+				if ( ! in_array( $bitIndex, $validated ) ) {
+					if ( $bitIndex == "0" ) {
+						$newValidatedBitStructure["OFF"] = $bitIndex;
+					} else {
+						$bitIdentificationName                              = "BIT_" . $bitIndex;
+						$newValidatedBitStructure[ $bitIdentificationName ] = $bitIndex;
+					}
+				} else {
+					if ( isset( $valueKeys[ $bitIndex ] ) && ! empty( $valueKeys[ $bitIndex ] ) ) {
+						$bitIdentificationName                              = $valueKeys[ $bitIndex ];
+						$newValidatedBitStructure[ $bitIdentificationName ] = $bitIndex;
+					}
+				}
+			}
+			asort( $newValidatedBitStructure );
+			$this->BIT_SETUP = $newValidatedBitStructure;
+
+			return $newValidatedBitStructure;
+		}
+
+		public function setBitStructure( $bitStructure = array() ) {
+			$this->validateBitStructure( $bitStructure );
+		}
+
+		public function getBitStructure() {
+			return $this->BIT_SETUP;
+		}
+
+		/**
+		 * Finds out if a bitmasked value is located in a bitarray
+		 *
+		 * @param int $requestedExistingBit
+		 * @param int $requestedBitSum
+		 *
+		 * @return bool
+		 */
+		public function isBit( $requestedExistingBit = 0, $requestedBitSum = 0 ) {
+			$return = false;
+			if ( is_array( $requestedExistingBit ) ) {
+				foreach ( $requestedExistingBit as $bitKey ) {
+					if ( ! $this->isBit( $bitKey, $requestedBitSum ) ) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			// Solution that works with unlimited bits
+			for ( $bitCount = 0; $bitCount < count( $this->getBitStructure() ); $bitCount ++ ) {
+				if ( $requestedBitSum & pow( 2, $bitCount ) ) {
+					if ( $requestedExistingBit == pow( 2, $bitCount ) ) {
+						$return = true;
+					}
+				}
+			}
+
+			// Solution that works with bits up to 8
+			/*
+			$sum = 0;
+			preg_match_all("/\d/", sprintf("%08d", decbin( $requestedBitSum)), $bitArray);
+			for ($bitCount = count($bitArray[0]); $bitCount >= 0; $bitCount--) {
+				if (isset($bitArray[0][$bitCount])) {
+					if ( $requestedBitSum & pow(2, $bitCount)) {
+						if ( $requestedExistingBit == pow(2, $bitCount)) {
+							$return = true;
+						}
+					}
+				}
+			}
+			*/
+
+			return $return;
+		}
+
+		/**
+		 * Get active bits in an array
+		 *
+		 * @param int $bitValue
+		 *
+		 * @return array
+		 */
+		public function getBitArray( $bitValue = 0 ) {
+			$returnBitList = array();
+			foreach ( $this->BIT_SETUP as $key => $value ) {
+				if ( $this->isBit( $value, $bitValue ) ) {
+					$returnBitList[] = $key;
+				}
+			}
+
+			return $returnBitList;
+		}
+
+	}
+}
+if ( ! class_exists( 'TorneLIB_Network_IP_Protocols' ) && ! class_exists( 'TorneLIB\TorneLIB_Network_IP_Protocols' ) ) {
+	/**
+	 * Class TorneLIB_Network_IP IP Address Types class
+	 * @package TorneLIB
+	 */
+	abstract class TorneLIB_Network_IP_Protocols {
+		const PROTOCOL_NONE = 0;
+		const PROTOCOL_IPV4 = 4;
+		const PROTOCOL_IPV6 = 6;
+	}
+}
+if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Tornevall_SimpleSoap' ) ) {
 	/**
 	 * Class TorneLIB_SimpleSoap Simple SOAP client.
 	 *
 	 * Masking no difference of a SOAP call and a regular GET/POST
 	 *
 	 * @package TorneLIB
+	 * @version 6.0.2
 	 */
 	class Tornevall_SimpleSoap extends Tornevall_cURL {
 		protected $soapClient;
@@ -2113,6 +2535,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			'trace'      => true,
 			'cache_wsdl' => 0       // Replacing WSDL_CACHE_NONE (WSDL_CACHE_BOTH = 3)
 		);
+		private $simpleSoapVersion = "6.0.2";
 		private $soapUrl;
 		private $AuthData;
 		private $soapRequest;
@@ -2122,6 +2545,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		private $libResponse;
 		private $canThrowSoapFaults = true;
 		private $CustomUserAgent;
+		private $soapFaultExceptionObject;
 
 		public $SoapFaultString = null;
 		public $SoapFaultCode = 0;
@@ -2162,7 +2586,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 
 		public function setCustomUserAgent( $userAgentString ) {
 			$this->CustomUserAgent = preg_replace( "/\s+$/", '', $userAgentString );
-			$this->setUserAgent( $userAgentString . " +TorneLIB-SimpleSoap" );
+			$this->setUserAgent( $userAgentString . " +TorneLIB-SimpleSoap/" . $this->simpleSoapVersion );
 			$this->sslGetOptionsStream();
 		}
 
@@ -2189,12 +2613,12 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			if ( $this->SoapTryOnce ) {
 				try {
 					$this->soapClient = new \SoapClient( $this->soapUrl, $this->soapOptions );
-				} catch (\Exception $soapException) {
+				} catch ( \Exception $soapException ) {
 					$soapCode = $soapException->getCode();
-					if (!$soapCode) {
+					if ( ! $soapCode ) {
 						$soapCode = 500;
 					}
-					throw new \Exception( $soapException->getMessage(), $soapCode );
+					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $soapException->getMessage(), $soapCode );
 				}
 			} else {
 				try {
@@ -2213,12 +2637,13 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 							try {
 								$this->soapClient = @new \SoapClient( $this->soapUrl, $this->soapOptions );
 							} catch ( \Exception $soapException ) {
-								throw new \Exception( $soapException->getMessage(), $soapException->getCode() );
+								throw new \Exception( $this->ModuleName . " exception from soapClient: " . $soapException->getMessage(), $soapException->getCode() );
 							}
 						}
 					}
 				}
 			}
+
 			return $this;
 		}
 
@@ -2249,12 +2674,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 				$returnResponse['header']  = $parsedHeader['header'];
 				$returnResponse['code']    = isset( $parsedHeader['code'] ) ? $parsedHeader['code'] : 0;
 				$returnResponse['body']    = $this->soapResponse;
-				/*
-             * Collect the response received internally, before throwing
-             */
-				$this->libResponse = $returnResponse;
+				// Collect the response received internally, before throwing
+				$this->libResponse              = $returnResponse;
+				$this->soapFaultExceptionObject = $e;
 				if ( $this->canThrowSoapFaults ) {
-					throw new \Exception( $e->getMessage(), $e->getCode() );
+					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $e->getMessage(), $e->getCode(), $e );
 				}
 				$this->SoapFaultString = $e->getMessage();
 				$this->SoapFaultCode   = $e->getCode();
@@ -2285,14 +2709,35 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 * Get the SOAP response independently on exceptions or successes
 		 *
 		 * @return mixed
+		 * @since 5.0.0
+		 * @deprecated 6.0.5 Use getSoapResponse()
 		 */
 		public function getLibResponse() {
 			return $this->libResponse;
 		}
+
+		/**
+		 * Get the SOAP response independently on exceptions or successes
+		 *
+		 * @return mixed
+		 * @since 6.0.5
+		 */
+		public function getSoapResponse() {
+			return $this->libResponse;
+		}
+
+		/**
+		 * Get the last thrown soapfault object
+		 *
+		 * @return mixed
+		 * @since 6.0.5
+		 */
+		public function getSoapFault() {
+			return $this->soapFaultExceptionObject;
+		}
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
+}
+if ( ! class_exists( 'CURL_METHODS' ) && ! class_exists( 'TorneLIB\CURL_METHODS' ) ) {
 	/**
 	 * Class CURL_METHODS List of methods available in this library
 	 *
@@ -2304,9 +2749,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		const METHOD_PUT = 2;
 		const METHOD_DELETE = 3;
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
+}
+if ( ! class_exists( 'CURL_RESOLVER' ) && ! class_exists( 'TorneLIB\CURL_RESOLVER' ) ) {
 	/**
 	 * Class CURL_RESOLVER Resolver methods that is available when trying to connect
 	 *
@@ -2317,9 +2761,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		const RESOLVER_IPV4 = 1;
 		const RESOLVER_IPV6 = 2;
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
+}
+if ( ! class_exists( 'CURL_POST_AS' ) && ! class_exists( 'TorneLIB\CURL_POST_AS' ) ) {
 	/**
 	 * Class CURL_POST_AS Prepared formatting for POST-content in this library (Also available from for example PUT)
 	 *
@@ -2330,9 +2773,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		const POST_AS_JSON = 1;
 		const POST_AS_SOAP = 2;
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
+}
+if ( ! class_exists( 'CURL_AUTH_TYPES' ) && ! class_exists( 'TorneLIB\CURL_AUTH_TYPES' ) ) {
 	/**
 	 * Class CURL_AUTH_TYPES Available authentication types for use with password protected sites
 	 *
@@ -2344,9 +2786,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		const AUTHTYPE_NONE = 0;
 		const AUTHTYPE_BASIC = 1;
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
+}
+if ( ! class_exists( 'TORNELIB_CURL_ENVIRONMENT' ) && ! class_exists( 'TorneLIB\TORNELIB_CURL_ENVIRONMENT' ) ) {
 	/**
 	 * Class TORNELIB_CURL_ENVIRONMENT
 	 *
@@ -2358,9 +2799,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		const ENVIRONMENT_PRODUCTION = 0;
 		const ENVIRONMENT_TEST = 1;
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
+}
+if ( ! class_exists( 'TORNELIB_CURL_RESPONSETYPE' ) && ! class_exists( 'TorneLIB\TORNELIB_CURL_RESPONSETYPE' ) ) {
 	/**
 	 * Class TORNELIB_CURL_RESPONSETYPE
 	 * @package TorneLIB
@@ -2369,9 +2809,8 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		const RESPONSETYPE_ARRAY = 0;
 		const RESPONSETYPE_OBJECT = 1;
 	}
-
-	/** @noinspection PhpUndefinedClassInspection */
-
+}
+if ( ! class_exists( 'TORNELIB_CURLOBJECT' ) && ! class_exists( 'TorneLIB\TORNELIB_CURLOBJECT' ) ) {
 	/**
 	 * Class TORNELIB_CURLOBJECT
 	 * @package TorneLIB
