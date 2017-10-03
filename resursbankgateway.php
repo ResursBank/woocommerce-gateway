@@ -75,7 +75,7 @@ function woocommerce_gateway_resurs_bank_init() {
 	 */
 	class WC_Resurs_Bank extends WC_Payment_Gateway {
 
-		/** @var ResursBank */
+		/** @var \Resursbank\RBEcomPHP\ResursBank */
 		protected $flow;
 		protected $rates;
 
