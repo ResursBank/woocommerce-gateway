@@ -5,13 +5,13 @@
 var $RB = jQuery.noConflict();
 
 $RB(document).ready(function ($) {
-    /*
-     * This one fixes our new requirements.
-     */
-    if (typeof adminJs["requestForCallbacks"] !== "undefined" && (adminJs["requestForCallbacks"] === false || adminJs["requestForCallbacks"] == "" || null === adminJs["requestForCallbacks"])) {
-        runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
-    } else {
-        doUpdateResursCallbacks();
+    // Only run this when the elements are correct
+    if (jQuery('#callbackContent').length > 0) {
+        if (typeof adminJs["requestForCallbacks"] !== "undefined" && (adminJs["requestForCallbacks"] === false || adminJs["requestForCallbacks"] == "" || null === adminJs["requestForCallbacks"])) {
+            runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
+        } else {
+            doUpdateResursCallbacks();
+        }
     }
 
     // TODO: This might come back when stuff are cleared out

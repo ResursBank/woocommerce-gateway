@@ -7086,16 +7086,22 @@ class ResursBank {
 	/**
 	 * Returns all invoice numbers for a specific payment
 	 *
-	 * @param string $paymentId
+	 * @param string $paymentIdOrPaymentObject
 	 *
 	 * @return array
 	 * @since 1.0.11
 	 * @since 1.1.11
 	 * @since 1.2.0
 	 */
-	public function getPaymentInvoices($paymentId = '') {
+	public function getPaymentInvoices($paymentIdOrPaymentObject = '') {
 		$invoices = array();
-		$paymentData = $this->getPayment($paymentId);
+		if (is_string($paymentIdOrPaymentObject)) {
+			$paymentData = $this->getPayment( $paymentIdOrPaymentObject );
+		} else if (is_object($paymentIdOrPaymentObject)) {
+			$paymentData = $paymentIdOrPaymentObject;
+		} else {
+			return array();
+		}
 		if (!empty($paymentData) && isset($paymentData->paymentDiffs)) {
 			foreach ($paymentData->paymentDiffs as $paymentRow) {
 				if (isset($paymentRow->type) && $paymentRow->type == "DEBIT" && isset($paymentRow->invoiceId)) {

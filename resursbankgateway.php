@@ -2971,8 +2971,13 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 	if ( ! empty( $resursPaymentId ) ) {
 		$hasError = "";
 		try {
+		    /** @var $rb \Resursbank\RBEcomPHP\ResursBank */
 			$rb                = initializeResursFlow();
-			$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
+			try {
+				$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
+			} catch (\Exception $e) {
+			    return;
+            }
 			$currentWcStatus   = $order->get_status();
 			$notIn             = array( "completed", "cancelled", "refunded" );
 			if ( ! $rb->canDebit( $resursPaymentInfo ) && $rb->getIsDebited( $resursPaymentInfo ) && ! in_array( $currentWcStatus, $notIn ) ) {
@@ -3314,8 +3319,9 @@ function resurs_remove_order_item( $item_id ) {
 		}
 
 		try {
-			//$removeResursRow = $resursFlow->annulPayment($resursPaymentId, $clientPaymentSpec);
-			$removeResursRow = $resursFlow->cancelPayment( $resursPaymentId, $clientPaymentSpec, array(), false, true );
+		    $order = new WC_Order($orderId);
+			$removeResursRow = $resursFlow->cancelPayment( $resursPaymentId, $clientPaymentSpec );
+			$order->add_order_note( __( 'Resurs Bank API was called for partial or full cancellation', 'WC_Payment_Gateway' ) );
 		} catch ( Exception $e ) {
 			$resultArray = array(
 				'success' => false,
