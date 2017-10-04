@@ -126,8 +126,11 @@ abstract class ResursAfterShopRenderTypes
     const NONE = 0;
     const FINALIZE = 1;
     const CREDIT = 2;
-    const ANNUL = 3;
-    const UPDATE = 4;
+    const ANNUL = 4;
+    const AUTHORIZE = 8;
+
+    /** @deprecated */
+    const UPDATE = 16;
 }
 
 /**
