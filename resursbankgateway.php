@@ -1425,12 +1425,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			switch ( $bookedStatus ) {
 				case 'FINALIZED':
 					$order->update_status( 'completed' );
-					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
-					if ( $optionReduceOrderStock ) {
-						$order->reduce_order_stock();
-					}
 					WC()->cart->empty_cart();
-
 					return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
 					break;
 				case 'BOOKED':
@@ -1445,12 +1440,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 				case 'FROZEN':
 					$order->update_status( 'on-hold' );
-					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
-					if ( $optionReduceOrderStock ) {
-						$order->reduce_order_stock();
-					}
 					WC()->cart->empty_cart();
-
 					return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
 					break;
 				case 'SIGNING':
