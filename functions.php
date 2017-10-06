@@ -334,6 +334,12 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'type'        => 'text',
 					'default'     => 'https://google.com/?test+landingpage'
 				),
+				'devFlags'                => array(
+					'title'       => __( 'Special flags (for testing only)', 'WC_Payment_Gateway' ),
+					'description' => __( 'Running in test, you can set up special sets of flags here (comma separated) to test parts of the plugin that is otherwise impossible.', 'WC_Payment_Gateway' ),
+					'type'        => 'text',
+					'default'     => ''
+				),
 				'callbackUpdateInterval'               => array(
 					'title'       => __( 'Callback update interval', 'WC_Payment_Gateway' ),
 					'description' => __( 'Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. This function has to be enabled above, to have any effect. Interval is set in days.', 'WC_Payment_Gateway' ),

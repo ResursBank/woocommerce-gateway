@@ -56,6 +56,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.1.1 =
+
+    * [WOO-193] - Reduce order stock disappeared from wp-admin (hotfix)
+
 = 2.1.0 =
 
     * [WOO-143] - Upgrade to EComPHP 1.1-series (RBWC-2.1 change)

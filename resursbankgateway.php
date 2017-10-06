@@ -4,14 +4,14 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.1.0
+ * Version: 2.1.2
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', "2.1.0" );
+define( 'RB_WOO_VERSION', "2.1.2" );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
@@ -3356,6 +3356,34 @@ function wc_get_payment_id_by_order_id( $orderId = '' ) {
 }
 
 /**
+ * @param string $flagKey
+ *
+ * @return bool|string
+ */
+function getResursFlag($flagKey = '') {
+	$flagRow = getResursOption("devFlags");
+	$flagsArray = explode(",", $flagRow);
+	if (is_array($flagsArray)) {
+		foreach ($flagsArray as $flagIndex => $flagParameter) {
+			$flagEx = explode("=", $flagParameter,2);
+			if (is_array($flagEx) && isset($flagEx[1])) {
+				// Handle as parameter key with values
+				if (strtolower($flagEx[0]) == strtolower($flagKey)) {
+					return $flagEx[1];
+				}
+			} else {
+				// Handle as defined true
+				if (strtolower($flagParameter) == strtolower($flagKey)) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+
+/**
  * Get specific options from the Resurs configuration set
  *
  * @param string $key
@@ -3557,7 +3585,15 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	if ( ! empty( $overridePassword ) ) {
 		$password = $overridePassword;
 	}
+	/** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
 	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
+	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
+	if (isResursTest() && $sslHandler) {
+        $initFlow->setDebug(true);
+        $curlComm = $initFlow->getCurlHandle();
+        $curlComm->setSslVerify(false);
+        $curlComm->setSslUnverified(true);
+	}
 	$initFlow->convertObjects      = true;
 	$initFlow->convertObjectsOnGet = true;
 	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
