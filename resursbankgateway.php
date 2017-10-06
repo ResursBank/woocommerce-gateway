@@ -3627,7 +3627,6 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 	$country = getResursOption( "country" );
 	$initFlow->setCountryByCountryCode( $country );
-	$initFlow->setDebug(true);
 
 	return $initFlow;
 }

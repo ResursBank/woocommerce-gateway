@@ -18,14 +18,17 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	private $spinner;
 	private $spinnerLocal;
 	private $methodLabel;
+	private $curlInDebug = false;
 	public $id = "tab_resursbank";
 	//private $current_section;
 	private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
 	/** @var array THe oldFormFields are not so old actually. They are still in use! */
 	private $oldFormFields;
+	/** @var $flow Resursbank\RBEcomPHP\ResursBank */
 	private $flow;
 
 	function __construct() {
+	    /** @var $flow Resursbank\RBEcomPHP\ResursBank */
 		$this->flow          = initializeResursFlow();
 		$this->label         = __( 'Resurs Bank', 'woocommerce' );
 		$this->oldFormFields = getResursWooFormFields();
@@ -394,6 +397,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 			echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __( 'This plugin needs read/write access to the includes directory located in the path of the plugin or it will not be able to save the payment method configuration.', 'WC_Payment_Gateway' ) . '</div>';
 			return;
 		}
+		$debugSet = $this->flow->getDebug();
+		if (isset($debugSet['debug'])) {
+            $this->curlInDebug = $debugSet['debug'] == 1 ? true:false;
+		}
 		$url       = admin_url( 'admin.php' );
 		$url       = add_query_arg( 'page', isset( $_REQUEST['page'] ) ? $_REQUEST['page'] : "", $url );
 		$url       = add_query_arg( 'tab', isset( $_REQUEST['tab'] ) ? $_REQUEST['tab'] : "", $url );
@@ -470,8 +477,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					if ( callbackUpdateRequest() ) {
 						echo '<div id="callbacksRequireUpdate" style="margin-top: 8px;" class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . __( 'Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...', 'WC_Payment_Gateway' ) . '</div><br><br>';
 					}
+
 					echo '
-                            <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' . __( 'Callback URLs registered at Resurs Bank', 'WC_Payment_Gateway' ) . '</div>
+                            <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' . __( 'Callback URLs registered at Resurs Bank', 'WC_Payment_Gateway' ) . ' ' . ($this->curlInDebug? " [".__('curl module is set to enter debug mode', 'WC_Payment_Gateway') . "]" : "" ) . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
 					$login = getResursOption( "login" );
@@ -728,6 +736,17 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					}
 				}
 				echo $this->setSeparator( __( 'Save above configuration with the button below', 'WC_Payment_Gateway' ) );
+
+				if ($this->curlInDebug) {
+				    $getDebugData = $this->flow->getDebug();
+				    echo '<tr><td colspan="2">';
+				    echo '<b>curlmodule debug data</b><br>';
+				    echo '<pre>';
+				    print_r($getDebugData);
+				    echo '</pre>';
+				    echo '</td></tr>';
+                }
+
 				?>
 
 
