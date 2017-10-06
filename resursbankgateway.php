@@ -3590,9 +3590,12 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
 	if (isResursTest() && $sslHandler) {
         $initFlow->setDebug(true);
+        /** @var $curlComm \Resursbank\RBEcomPHP\Tornevall_cURL */
         $curlComm = $initFlow->getCurlHandle();
-        $curlComm->setSslVerify(false);
-        $curlComm->setSslUnverified(true);
+        if (!is_null($curlComm)) {
+	        $curlComm->setSslUnverified( true );
+	        $curlComm->setSslVerify( false );
+        }
 	}
 	$initFlow->convertObjects      = true;
 	$initFlow->convertObjectsOnGet = true;

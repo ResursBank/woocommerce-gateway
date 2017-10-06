@@ -784,6 +784,7 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function setDebug($debugModeState = false) {
+		$this->InitializeServices();
 		$this->debug = $debugModeState;
 	}
 
@@ -802,6 +803,7 @@ class ResursBank {
 	 * @throws \Exception
 	 */
 	public function getCurlHandle() {
+		$this->InitializeServices();
 		if ($this->debug) {
 			return $this->CURL;
 		} else {
