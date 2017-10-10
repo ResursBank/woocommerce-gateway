@@ -1043,6 +1043,74 @@ class ResursBank {
 		}
 	}
 
+	/**
+	 * Set internal flag parameter
+	 *
+	 * @param string $flagKey
+	 * @param string $flagValue
+	 * @return bool If successful
+	 * @throws \Exception
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	public function setFlag($flagKey = '', $flagValue = '') {
+		if (!empty($flagKey)) {
+			$this->internalFlags[$flagKey] = $flagValue ;
+			return true;
+		}
+		throw new \Exception("Flags can not be empty", 500);
+	}
+
+	/**
+	 * Get internal flag
+	 * @param string $flagKey
+	 *
+	 * @return mixed|null
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	public function getFlag($flagKey = '') {
+		if (isset($this->internalFlags[$flagKey])) {
+			return $this->internalFlags[$flagKey];
+		}
+		return null;
+	}
+
+	/**
+	 * Check if flag is set and true
+	 *
+	 * @param string $flagKey
+	 *
+	 * @return bool
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	public function isFlag($flagKey = '') {
+		if ($this->hasFlag($flagKey)) {
+			return ($this->getFlag($flagKey) === 1 || $this->getFlag($flagKey) === true ? true : false);
+		}
+		return false;
+	}
+
+	/**
+	 * Check if there is an internal flag set with current key
+	 *
+	 * @param string $flagKey
+	 *
+	 * @return bool
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	public function hasFlag($flagKey = '') {
+		if (!is_null($this->getFlag($flagKey))) {
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Find classes
