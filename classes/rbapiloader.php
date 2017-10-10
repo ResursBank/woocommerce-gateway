@@ -10,7 +10,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.1
- * @version 1.1.22
+ * @version 1.1.23
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -212,9 +212,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.22";
+	private $version = "1.1.23";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171004";
+	private $lastUpdate = "20171006";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -791,16 +791,24 @@ class ResursBank {
 	/**
 	 * Get debugging information
 	 * @return array
+	 * @since 1.0.22
+	 * @since 1.1.22
+	 * @since 1.2.0
 	 */
 	public function getDebug() {
+
 		$this->curlStats['debug'] = $this->debug;
 		return $this->curlStats;
 	}
 
 	/**
-	 * Return the CURL communication handle to the client, when in debug mode
+	 * Return the CURL communication handle to the client, when in debug mode (Read only)
+	 *
 	 * @return Tornevall_cURL
 	 * @throws \Exception
+	 * @since 1.0.22
+	 * @since 1.1.22
+	 * @since 1.2.0
 	 */
 	public function getCurlHandle() {
 		$this->InitializeServices();
@@ -808,6 +816,46 @@ class ResursBank {
 			return $this->CURL;
 		} else {
 			throw new \Exception("Can't return handle. The module is in wrong state (non-debug mode)", 403);
+		}
+	}
+
+	/**
+	 *
+	 * Make it possible, in test mode, to replace the old curl handle with a new reconfigured one
+	 *
+	 * @param $newCurlHandle
+	 *
+	 * @return Tornevall_cURL
+	 * @throws \Exception
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	public function setCurlHandle($newCurlHandle) {
+		$this->InitializeServices();
+		if ($this->debug) {
+			$this->CURL = $newCurlHandle;
+		} else {
+			throw new \Exception("Can't return handle. The module is in wrong state (non-debug mode)", 403);
+		}
+	}
+
+	/**
+	 * Put SSL Validation into relaxed mode (Test and debug only) - this disables SSL certificate validation off
+	 *
+	 * @param bool $validationEnabled
+	 *
+	 * @throws \Exception
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	public function setSslValidation($validationEnabled = false) {
+		if ($this->debug && $this->current_environment == ResursEnvironments::ENVIRONMENT_TEST) {
+			$this->CURL->setSslUnverified( true );
+			$this->CURL->setSslVerify( false );
+		} else {
+			throw new \Exception("Can't set SSL validation in relaxed mode. Debug mode is disabled and/or test environment are not set", 403);
 		}
 	}
 
@@ -7077,8 +7125,9 @@ class ResursBank {
 		$Result              = $this->postService( "additionalDebitOfPayment", $additionalDataArray, true );
 		if ( $Result >= 200 && $Result <= 250 ) {
 			// Reset orderData for each addition
-			$this->Payload['orderData'] = array();
-			$this->SpecLines            = array();
+			//$this->Payload['orderData'] = array();
+			//$this->SpecLines            = array();
+			$this->resetPayload();
 			return true;
 		} else {
 			return false;
@@ -7088,7 +7137,7 @@ class ResursBank {
 	/**
 	 * Returns all invoice numbers for a specific payment
 	 *
-	 * @param string $paymentIdOrPaymentObject
+	 * @param string $paymentId
 	 *
 	 * @return array
 	 * @since 1.0.11
