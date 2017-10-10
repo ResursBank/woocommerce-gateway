@@ -3590,15 +3590,10 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
 	if (isResursTest() && $sslHandler) {
         $initFlow->setDebug(true);
-        /** @var $curlComm \Resursbank\RBEcomPHP\Tornevall_cURL */
-        $curlComm = $initFlow->getCurlHandle();
-        if (!is_null($curlComm)) {
-	        $curlComm->setSslUnverified( true );
-	        $curlComm->setSslVerify( false );
-        }
+        $initFlow->setSslValidation(false, false);
 	}
-	$initFlow->convertObjects      = true;
-	$initFlow->convertObjectsOnGet = true;
+	//$initFlow->convertObjects      = true;
+	//$initFlow->convertObjectsOnGet = true;
 	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
 	$initFlow->setDefaultUnitMeasure();
@@ -3637,8 +3632,8 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
 	$password = resursOption( "ga_password" );
 	if ( ! empty( $username ) && ! empty( $password ) ) {
 		$initFlow                      = new ResursBank( $username, $password );
-		$initFlow->convertObjects      = true;
-		$initFlow->convertObjectsOnGet = true;
+		//$initFlow->convertObjects      = true;
+		//$initFlow->convertObjectsOnGet = true;
 		$initFlow->setClientName( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
 		$initFlow->setEnvironment( \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION );
 		try {

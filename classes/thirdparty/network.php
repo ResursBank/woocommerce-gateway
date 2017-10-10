@@ -17,11 +17,11 @@
  */
 
 /**
- * Tornevall Networks NETCURL-6.0.8
+ * Tornevall Networks netCurl library - Yet another http- and network communicator library
  *
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
  *
- * @version 6.0.8
+ * @version 6.0.11
  */
 
 namespace Resursbank\RBEcomPHP;
@@ -431,45 +431,92 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 	 * Class Tornevall_cURL
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.6
+	 * @version 6.0.9
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIBv5
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php-netcurl/browse Sources of TorneLIB
 	 * @link https://docs.tornevall.net/x/KwCy Network & Curl v5 and v6 Library usage
 	 * @link https://docs.tornevall.net/x/FoBU TorneLIB Full documentation
 	 */
 	class Tornevall_cURL {
+
+		//// PUBLIC VARIABLES
+		/**
+		 * Default settings when initializing our curlsession.
+		 *
+		 * Since v6.0.2 no urls are followed by default, it is set internally by first checking PHP security before setting this up.
+		 * The reason of the change is not only the security, it is also about inheritage of options to SOAPClient.
+		 *
+		 * @var array
+		 */
+		private $curlopt = array(
+			CURLOPT_CONNECTTIMEOUT => 5,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSL_VERIFYPEER => 1,
+			CURLOPT_SSL_VERIFYHOST => 2,
+			CURLOPT_ENCODING       => 1,
+			CURLOPT_TIMEOUT        => 10,
+			CURLOPT_USERAGENT      => 'TorneLIB-PHPcURL',
+			CURLOPT_POST           => true,
+			CURLOPT_SSLVERSION     => 4,
+			CURLOPT_FOLLOWLOCATION => false,
+			CURLOPT_HTTPHEADER     => array( 'Accept-Language: en' ),
+		);
+		/** @var array User set SSL Options */
+		private $sslopt = array();
+
+		//// PUBLIC CONFIG THAT SHOULD GO PRIVATE
+		/** @var array Default paths to the certificates we are looking for */
+		private $sslPemLocations = array( '/etc/ssl/certs/cacert.pem', '/etc/ssl/certs/ca-certificates.crt' );
+		/** @var bool For debugging only */
+		public $_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION = false;
+		/** @var array Interfaces to use */
+		public $IpAddr = array();
+		/** @var bool If more than one ip is set in the interfaces to use, this will make the interface go random */
+		public $IpAddrRandom = true;
+		/** @var null Sets a HTTP_REFERER to the http call */
+		private $CurlReferer;
+
+		/**
+		 * Die on use of proxy/tunnel on first try (Incomplete).
+		 *
+		 * This function is supposed to stop if the proxy fails on connection, so the library won't continue looking for a preferred exit point, since that will reveal the current unproxified address.
+		 *
+		 * @var bool
+		 */
+		private $CurlProxyDeath = true;
+
+		//// PRIVATE AND PROTECTED VARIABLES VARIABLES
+		/** @var string This modules name (inherited to some exceptions amongst others) */
+		protected $ModuleName = "NetCurl";
+		/** @var string Internal version that is being used to find out if we are running the latest version of this library */
+		private $TorneCurlVersion = "6.0.10";
+		/** @var null Curl Version */
+		private $CurlVersion = null;
+		/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
+		private $TorneCurlReleaseDate = "20171010";
 		/**
 		 * Prepare TorneLIB_Network class if it exists (as of the november 2016 it does).
 		 *
 		 * @var TorneLIB_Network
 		 */
 		private $NETWORK;
-
-		/** @var string Internal version that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlVersion = "6.0.7";
-		/** @var null Curl Version */
-		private $CurlVersion = null;
-		/** @var string This modules name (inherited to some exceptions amongst others) */
-		protected $ModuleName = "NetCurl";
-
-		/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlRelease = "20171002";
-
 		/**
 		 * Target environment (if target is production some debugging values will be skipped)
 		 *
-		 * @since 5.0.0-20170210
+		 * @since 5.0.0
 		 * @var int
 		 */
 		private $TargetEnvironment = TORNELIB_CURL_ENVIRONMENT::ENVIRONMENT_PRODUCTION;
+		/** @var null Our communication channel */
+		private $CurlSession = null;
+		/** @var null URL that was set to communicate with */
+		private $CurlURL = null;
+		private $internalFlags = array();
 
-		/**
-		 * Autodetecting of SSL capabilities section
-		 *
-		 * Default settings: Always disabled, to let the system handle this automatically.
-		 * If there are problems reaching wsdl or connecting to https-based URLs, try set $testssl to true
-		 *
-		 */
+
+		//// SSL AUTODETECTION CAPABILITIES
+		/// DEFAULT: Most of the settings are set to be disabled, so that the system handles this automatically with defaults
+		/// If there are problems reaching wsdl or connecting to https-based URLs, try set $testssl to true
 
 		/**
 		 * @var bool $testssl
@@ -484,22 +531,19 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		private $testssldeprecated = false;
 		/** @var bool If there are problems with certificates bound to a host/peer, set this to false if necessary. Default is to always try to verify them */
 		private $sslVerify = true;
-
+		/** @var array Error messages from SSL loading */
 		private $sslDriverError = array();
+		/** @var bool If SSL has been compiled in CURL, this will transform to true */
 		private $sslCurlDriver = false;
-
+		/** @var array Storage of invisible errors */
+		private $hasErrorsStore = array();
 		/**
 		 * Allow https calls to unverified peers/hosts
 		 *
-		 * @since 5.0.0-20170210
+		 * @since 5.0.0
 		 * @var bool
 		 */
 		private $allowSslUnverified = false;
-
-		/** @var array Default paths to the certificates we are looking for */
-		public $sslPemLocations = array( '/etc/ssl/certs/cacert.pem', '/etc/ssl/certs/ca-certificates.crt' );
-		/** @var bool For debugging only */
-		public $_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION = false;
 		/** @var bool During tests this will be set to true if certificate files is found */
 		private $hasCertFile = false;
 		/** @var string Defines what file to use as a certificate bundle */
@@ -511,54 +555,52 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		/** @var bool During tests this will be set to true if certificate directory is found */
 		private $hasCertDir = false;
 
-		/** @var null Our communication channel */
-		private $CurlSession = null;
-		/** @var null URL to communicate with */
-		private $CurlURL = null;
-
-		/** @var null A tempoary set of the response from the url called */
-		private $TemporaryResponse = null;
-
-		/** @var What post type to use when using POST (Enforced) */
-		private $forcePostType = null;
-
-		/**
-		 * Default settings when initializing our curlsession.
-		 *
-		 * Since v6.0.2 no urls are followed by default, it is set internally by first checking PHP security before setting this up.
-		 * The reason of the change is not only the security, it is also about inheritage of options to SOAPClient.
-		 *
-		 * @var array
-		 */
-		public $curlopt = array(
-			CURLOPT_CONNECTTIMEOUT => 5,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_SSL_VERIFYPEER => 1,
-			CURLOPT_SSL_VERIFYHOST => 2,
-			CURLOPT_ENCODING       => 1,
-			CURLOPT_TIMEOUT        => 10,
-			CURLOPT_USERAGENT      => 'TorneLIB-PHPcURL',
-			CURLOPT_POST           => true,
-			CURLOPT_SSLVERSION     => 4,
-			CURLOPT_FOLLOWLOCATION => false,
-			CURLOPT_HTTPHEADER     => array( 'Accept-Language: en' ),
-		);
-
-		private $redirectedUrls = array();
-
-		/** @var array User set SSL Options */
-		public $sslopt = array();
-
-		/** @var bool Decide whether the curl library should follow an url redirect or not */
-		private $followLocationSet = true;
-
-		/** @var array Interfaces to use */
-		public $IpAddr = array();
-		/** @var bool If more than one ip is set in the interfaces to use, this will make the interface go random */
-		public $IpAddrRandom = true;
+		//// IP AND PROXY CONFIG
 		private $CurlIp = null;
 		private $CurlIpType = null;
+		/** @var null CurlProxy, if set, we will try to proxify the traffic */
+		private $CurlProxy = null;
+		/** @var null, if not set, but CurlProxy is, we will use HTTP as proxy (See CURLPROXY_* for more information) */
+		private $CurlProxyType = null;
+		/** @var bool Enable tunneling mode */
+		public $CurlTunnel = false;
 
+		//// URL REDIRECT
+		/** @var bool Decide whether the curl library should follow an url redirect or not */
+		private $followLocationSet = true;
+		/** @var array List of redirections during curl calls */
+		private $redirectedUrls = array();
+
+		//// POST-GET-RESPONSE
+		/** @var null A tempoary set of the response from the url called */
+		private $TemporaryResponse = null;
+		/** @var What post type to use when using POST (Enforced) */
+		private $forcePostType = null;
+		/** @var string Sets an encoding to the http call */
+		public $CurlEncoding = null;
+		/** @var array Run-twice-in-handler (replaces CurlResolveRetry, etc) */
+		private $CurlRetryTypes = array( 'resolve' => 0, 'sslunverified' => 0 );
+		/** @var string Custom User-Agent sent in the HTTP-HEADER */
+		private $CurlUserAgent;
+		/** @var string Custom User-Agent Memory */
+		private $CustomUserAgent;
+		/** @var bool Try to automatically parse the retrieved body content. Supports, amongst others json, serialization, etc */
+		public $CurlAutoParse = true;
+		/** @var bool Allow parsing of content bodies (tags) */
+		private $allowParseHtml = false;
+		private $ResponseType = TORNELIB_CURL_RESPONSETYPE::RESPONSETYPE_ARRAY;
+		/** @var array Authentication */
+		private $AuthData = array( 'Username' => null, 'Password' => null, 'Type' => CURL_AUTH_TYPES::AUTHTYPE_NONE );
+		/** @var array Adding own headers to the HTTP-request here */
+		private $CurlHeaders = array();
+		private $CurlHeadersSystem = array();
+		private $CurlHeadersUserDefined = array();
+		private $allowCdata = false;
+		private $useXmlSerializer = false;
+		/** @var bool Store information about the URL call and if the SSL was unsafe (disabled) */
+		protected $unsafeSslCall = false;
+
+		//// COOKIE CONFIGS
 		private $useLocalCookies = false;
 		private $CookiePath = null;
 		private $SaveCookies = false;
@@ -566,25 +608,10 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		private $CookiePathCreated = false;
 		private $UseCookieExceptions = false;
 		public $AllowTempAsCookiePath = false;
+		/** @var bool Use cookies and save them if needed (Normally not needed, but enabled by default) */
+		public $CurlUseCookies = true;
 
-		/** @var null Sets a HTTP_REFERER to the http call */
-		public $CurlReferer = null;
-
-		/** @var null CurlProxy, if set, we will try to proxify the traffic */
-		private $CurlProxy = null;
-		/** @var null, if not set, but CurlProxy is, we will use HTTP as proxy (See CURLPROXY_* for more information) */
-		private $CurlProxyType = null;
-
-		/** @var bool Enable tunneling mode */
-		public $CurlTunnel = false;
-		/**
-		 * Die on use of proxy/tunnel on first try (Incomplete).
-		 *
-		 * This function is supposed to stop if the proxy fails on connection, so the library won't continue looking for a preferred exit point, since that will reveal the current unproxified address.
-		 *
-		 * @var bool
-		 */
-		public $CurlProxyDeath = true;
+		//// RESOLVING AND TIMEOUTS
 
 		/**
 		 * How to resolve hosts (Default = Not set)
@@ -595,40 +622,21 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * @var int
 		 */
 		public $CurlResolve;
-
 		/** @var string Sets another timeout in seconds when curl_exec should finish the current operation. Sets both TIMEOUT and CONNECTTIMEOUT */
-		public $CurlTimeout = null;
-		/** @var string Sets an encoding to the http call */
-		public $CurlEncoding = null;
-		/** @var bool Use cookies and save them if needed (Normally not needed, but enabled by default) */
-		public $CurlUseCookies = true;
+		public $CurlTimeout;
 		private $CurlResolveForced = false;
-		private $CurlResolveRetry = 0;
-		/** @var string Custom User-Agent sent in the HTTP-HEADER */
-		private $CurlUserAgent;
-		/** @var string Custom User-Agent Memory */
-		private $CustomUserAgent;
 
-		/** @var bool Try to automatically parse the retrieved body content. Supports, amongst others json, serialization, etc */
-		public $CurlAutoParse = true;
-		/** @var bool Allow parsing of content bodies (tags) */
-		private $allowParseHtml = false;
-		private $ResponseType = TORNELIB_CURL_RESPONSETYPE::RESPONSETYPE_ARRAY;
-
-		/**
-		 * Authentication
-		 */
-		private $AuthData = array( 'Username' => null, 'Password' => null, 'Type' => CURL_AUTH_TYPES::AUTHTYPE_NONE );
-
+		//// EXCEPTION HANDLING
 		/** @var Throwable http codes */
 		private $throwableHttpCodes;
-
-		/** @var array Adding own headers to the HTTP-request here */
-		private $CurlHeaders = array();
-		private $CurlHeadersSystem = array();
-		private $CurlHeadersUserDefined = array();
-		private $allowCdata = false;
-		private $useXmlSerializer = false;
+		/** @var bool By default, this library does not store any curl_getinfo during exceptions */
+		private $canStoreSessionException = false;
+		/** @var array An array that contains each curl_exec (curl_getinfo) when an exception are thrown */
+		private $sessionsExceptions = array();
+		/** @var bool The soapTryOnce variable */
+		private $SoapTryOnce = true;
+		private $curlConstantsOpt = array();
+		private $curlConstantsErr = array();
 
 		/**
 		 * Set up if this library can throw exceptions, whenever it needs to do that.
@@ -638,21 +646,6 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * @var bool
 		 */
 		public $canThrow = true;
-
-		/** @var bool By default, this library does not store any curl_getinfo during exceptions */
-		private $canStoreSessionException = false;
-		/** @var array An array that contains each curl_exec (curl_getinfo) when an exception are thrown */
-		private $sessionsExceptions = array();
-
-		/**
-		 * Defines whether, when there is an incoming SOAP-call, we should try to make the SOAP initialization twice.
-		 * This is a kind of fallback when users forget to add ?wsdl or &wsdl in urls that requires this to call for SOAP.
-		 * It may happen when setting CURL_POST_AS to a SOAP-call but, the URL is not defined as one.
-		 * Setting this to false, may suppress important errors, since this will suppress fatal errors at first try.
-		 *
-		 * @var bool
-		 */
-		public $SoapTryOnce = true;
 
 		/**
 		 * Tornevall_cURL constructor.
@@ -665,7 +658,19 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 */
 		public function __construct( $PreferredURL = '', $PreparedPostData = array(), $PreferredMethod = CURL_METHODS::METHOD_POST ) {
 			register_shutdown_function( array( $this, 'tornecurl_terminate' ) );
-
+			// Store constants of curl errors and curlOptions
+			try {
+				$constants = @get_defined_constants();
+				foreach ( $constants as $constKey => $constInt ) {
+					if ( preg_match( "/^curlopt/i", $constKey ) ) {
+						$this->curlConstantsOpt[ $constInt ] = $constKey;
+					}
+					if (preg_match( "/^curle/i", $constKey ) ) {
+						$this->curlConstantsErr[$constInt] = $constKey;
+					}
+				}
+			} catch (\Exception $constantException) {}
+			unset($constants);
 			if ( ! function_exists( 'curl_init' ) ) {
 				throw new \Exception( $this->ModuleName . " curl init exception: curl library not found" );
 			}
@@ -677,7 +682,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				$this->sslDriverError[] = "SSL Failure: HTTPS extension can not be found";
 			}
 			// Initial setup
-			$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease . ')';
+			$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate . ')';
 			if ( function_exists( 'curl_version' ) ) {
 				$CurlVersionRequest = curl_version();
 				$this->CurlVersion  = $CurlVersionRequest['version'];
@@ -724,18 +729,214 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
-		 * Get the current version of the module
-		 *
-		 * @param bool $fullRelease
-		 *
-		 * @return string
+		 * Termination Controller - Used amongst others, to make sure that empty cookiepaths created by this library gets removed if they are being used.
 		 */
-		public function getVersion( $fullRelease = false ) {
-			if ( ! $fullRelease ) {
-				return $this->TorneCurlVersion;
-			} else {
-				return $this->TorneCurlVersion . "-" . $this->TorneCurlRelease;
+		function tornecurl_terminate() {
+			// If this indicates that we created the path, make sure it's removed if empty after session completion
+			if ( ! count( glob( $this->CookiePath . "/*" ) ) && $this->CookiePathCreated ) {
+				@rmdir( $this->CookiePath );
 			}
+		}
+
+		/**
+		 * cUrl initializer, if needed faster
+		 *
+		 * @return resource
+		 */
+		public function init() {
+			$this->initCookiePath();
+			$this->CurlSession = curl_init( $this->CurlURL );
+
+			return $this->CurlSession;
+		}
+
+		/**
+		 * Initialize cookie storage
+		 *
+		 * @throws \Exception
+		 */
+		private function initCookiePath() {
+			if ( defined( 'TORNELIB_DISABLE_CURL_COOKIES' ) || ! $this->useLocalCookies ) {
+				return;
+			}
+
+			/**
+			 * TORNEAPI_COOKIES has priority over TORNEAPI_PATH that is the default path
+			 */
+			if ( defined( 'TORNEAPI_COOKIES' ) ) {
+				$this->CookiePath = TORNEAPI_COOKIES;
+			} else {
+				if ( defined( 'TORNEAPI_PATH' ) ) {
+					$this->CookiePath = TORNEAPI_PATH . "/cookies";
+				}
+			}
+			// If path is still empty after the above check, continue checking other paths
+			if ( empty( $this->CookiePath ) || ( ! empty( $this->CookiePath ) && ! is_dir( $this->CookiePath ) ) ) {
+				// We could use /tmp as cookie path but it is not recommended (which means this permission is by default disabled
+				if ( $this->AllowTempAsCookiePath ) {
+					if ( is_dir( "/tmp" ) ) {
+						$this->CookiePath = "/tmp/";
+					}
+				} else {
+					// However, if we still failed, we're trying to use a local directory
+					$realCookiePath = realpath( __DIR__ . "/../cookies" );
+					if ( empty( $realCookiePath ) ) {
+						// Try to create a directory before bailing out
+						$getCookiePath = realpath( __DIR__ . "/../" );
+						@mkdir( $getCookiePath . "/cookies/" );
+						$this->CookiePathCreated = true;
+						$this->CookiePath        = realpath( $getCookiePath . "/cookies/" );
+					} else {
+						$this->CookiePath = realpath( __DIR__ . "/../cookies" );
+					}
+					if ( $this->UseCookieExceptions && ( empty( $this->CookiePath ) || ! is_dir( $this->CookiePath ) ) ) {
+						throw new \Exception( $this->ModuleName . " " . __FUNCTION__ . " exception: Could not set up a proper cookiepath [To override this, use AllowTempAsCookiePath (not recommended)]", 1002 );
+					}
+				}
+			}
+		}
+
+		/**
+		 * Set internal flag parameter
+		 *
+		 * @param string $flagKey
+		 * @param string $flagValue
+		 * @return bool If successful
+		 * @throws \Exception
+		 * @since 6.0.9
+		 */
+		public function setFlag($flagKey = '', $flagValue = '') {
+			if (!empty($flagKey)) {
+				$this->internalFlags[$flagKey] = $flagValue ;
+				return true;
+			}
+			throw new \Exception("Flags can not be empty", 500);
+		}
+
+		/**
+		 * Get internal flag
+		 * @param string $flagKey
+		 *
+		 * @return mixed|null
+		 * @since 6.0.9
+		 */
+		public function getFlag($flagKey = '') {
+			if (isset($this->internalFlags[$flagKey])) {
+				return $this->internalFlags[$flagKey];
+			}
+			return null;
+		}
+
+		/**
+		 * Check if flag is set and true
+		 *
+		 * @param string $flagKey
+		 *
+		 * @return bool
+		 * @since 6.0.9
+		 */
+		public function isFlag($flagKey = '') {
+			if ($this->hasFlag($flagKey)) {
+				return ($this->getFlag($flagKey) === 1 || $this->getFlag($flagKey) === true ? true : false);
+			}
+			return false;
+		}
+
+		/**
+		 * Check if there is an internal flag set with current key
+		 *
+		 * @param string $flagKey
+		 *
+		 * @return bool
+		 * @since 6.0.9
+		 */
+		public function hasFlag($flagKey = '') {
+			if (!is_null($this->getFlag($flagKey))) {
+				return true;
+			}
+			return false;
+		}
+
+		//// EXCEPTION HANDLING
+
+		/**
+		 * Throw on any code that matches the store throwableHttpCode (use with setThrowableHttpCodes())
+		 *
+		 * @param string $message
+		 * @param string $code
+		 *
+		 * @throws \Exception
+		 * @since 6.0.6
+		 */
+		private function throwCodeException( $message = '', $code = '' ) {
+			if ( ! is_array( $this->throwableHttpCodes ) ) {
+				$this->throwableHttpCodes = array();
+			}
+			foreach ( $this->throwableHttpCodes as $codeListArray => $codeArray ) {
+				if ( isset( $codeArray[1] ) && $code >= intval( $codeArray[0] ) && $code <= intval( $codeArray[1] ) ) {
+					throw new \Exception( $this->ModuleName . " HTTP Response Exception: " . $message, $code );
+				}
+			}
+		}
+
+		//// SESSION
+
+		/**
+		 * Returns an ongoing cUrl session - Normally you may get this from initSession (and normally you don't need this at all)
+		 *
+		 * @return null
+		 */
+		public function getCurlSession() {
+			return $this->CurlSession;
+		}
+
+
+		//// PUBLIC SETTERS & GETTERS
+
+		/**
+		 * Allow fallback tests in SOAP mode
+		 *
+		 * Defines whether, when there is a SOAP-call, we should try to make the SOAP initialization twice.
+		 * This is a kind of fallback when users forget to add ?wsdl or &wsdl in urls that requires this to call for SOAP.
+		 * It may happen when setting CURL_POST_AS to a SOAP-call but, the URL is not defined as one.
+		 * Setting this to false, may suppress important errors, since this will suppress fatal errors at first try.
+		 *
+		 * @param bool $enabledMode
+		 * @since 6.0.9
+		 */
+		public function setSoapTryOnce($enabledMode = true) {
+			$this->SoapTryOnce = $enabledMode;
+		}
+
+		/**
+		 * Get the state of soapTryOnce
+		 *
+		 * @return bool
+		 * @since 6.0.9
+		 */
+		public function getSoapTryOnce() {
+			return $this->SoapTryOnce;
+		}
+
+
+		/**
+		 * Set the curl libraray to die, if no proxy has been successfully set up (TODO: not implemented)
+		 *
+		 * @param bool $dieEnabled
+		 * @since 6.0.9
+		 */
+		public function setDieOnNoProxy($dieEnabled = true) {
+			$this->CurlProxyDeath = $dieEnabled;
+		}
+
+		/**
+		 * Get the state of whether the library should bail out if no proxy has been successfully set
+		 *
+		 * @return bool
+		 * @since 6.0.9
+		 */
+		public function getDieOnNoProxy() {
+			return $this->CurlProxyDeath;
 		}
 
 		/**
@@ -763,39 +964,10 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
-		 * Throw on any code that matches the store throwableHttpCode (use with setThrowableHttpCodes())
-		 *
-		 * @param string $message
-		 * @param string $code
-		 *
-		 * @throws \Exception
-		 * @since 6.0.6
-		 */
-		private function throwCodeException( $message = '', $code = '' ) {
-			if ( ! is_array( $this->throwableHttpCodes ) ) {
-				$this->throwableHttpCodes = array();
-			}
-			foreach ( $this->throwableHttpCodes as $codeListArray => $codeArray ) {
-				if ( isset( $codeArray[1] ) && $code >= intval( $codeArray[0] ) && $code <= intval( $codeArray[1] ) ) {
-					throw new \Exception( $this->ModuleName . " HTTP Response Exception: " . $message, $code );
-				}
-			}
-		}
-
-		/**
-		 * Termination Controller - Used amongst others, to make sure that empty cookiepaths created by this library gets removed if they are being used.
-		 */
-		function tornecurl_terminate() {
-			// If this indicates that we created the path, make sure it's removed if empty after session completion
-			if ( ! count( glob( $this->CookiePath . "/*" ) ) && $this->CookiePathCreated ) {
-				@rmdir( $this->CookiePath );
-			}
-		}
-
-		/**
 		 * When using soap/xml fields returned as CDATA will be returned as text nodes if this is disabled (default: diabled)
 		 *
 		 * @param bool $enabled
+		 * @since 5.0.0
 		 */
 		public function setCdata( $enabled = true ) {
 			$this->allowCdata = $enabled;
@@ -805,6 +977,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * Get current state of the setCdata
 		 *
 		 * @return bool
+		 * @since 5.0.0
 		 */
 		public function getCdata() {
 			return $this->allowCdata;
@@ -816,6 +989,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * Use this only if necessary and if you are planning to cookies locally while, for example, needs to set a logged in state more permanent during get/post/etc
 		 *
 		 * @param bool $enabled
+		 * @since 5.0.0
 		 */
 		public function setLocalCookies( $enabled = false ) {
 			$this->useLocalCookies = $enabled;
@@ -835,7 +1009,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 *
 		 * @param int $ResponseType
 		 *
-		 * @since 5.0.0/2017.4
+		 * @since 5.0.0
 		 */
 		public function setResponseType( $ResponseType = TORNELIB_CURL_RESPONSETYPE::RESPONSETYPE_ARRAY ) {
 			$this->ResponseType = $ResponseType;
@@ -900,7 +1074,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * To not break production environments by setting for example _DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION, switching over to test mode is required
 		 * to use those variables.
 		 *
-		 * @since 5.0.0-20170210
+		 * @since 5.0.0
 		 */
 		public function setTestEnabled() {
 			$this->TargetEnvironment = TORNELIB_CURL_ENVIRONMENT::ENVIRONMENT_TEST;
@@ -953,6 +1127,158 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
+		 * Set up a different user agent for this library
+		 *
+		 * To make proper identification of the library we are always appending TorbeLIB+cUrl to the chosen user agent string.
+		 *
+		 * @param string $CustomUserAgent
+		 */
+		public function setUserAgent( $CustomUserAgent = "" ) {
+			if ( ! empty( $CustomUserAgent ) ) {
+				$this->CustomUserAgent .= preg_replace( "/\s+$/", '', $CustomUserAgent );
+				$this->CurlUserAgent   = $this->CustomUserAgent . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate;
+			} else {
+				$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate . ')';
+			}
+		}
+
+		/**
+		 * Returns the current set user agent
+		 *
+		 * @return string
+		 */
+		public function getUserAgent() {
+			return $this->CurlUserAgent;
+		}
+
+		/**
+		 * Get the value of customized user agent
+		 *
+		 * @return string
+		 * @since 6.0.6
+		 */
+		public function getCustomUserAgent() {
+			return $this->CustomUserAgent;
+		}
+
+		/**
+		 * @param string $refererString
+		 * @since 6.0.9
+		 */
+		public function setReferer($refererString = "") {
+			$this->CurlReferer = $refererString;
+		}
+
+		/**
+		 * @return null
+		 * @since 6.0.9
+		 */
+		public function getReferer() {
+			return $this->CurlReferer;
+		}
+
+		/**
+		 * If XML/Serializer exists in system, use that parser instead of SimpleXML
+		 *
+		 * @param bool $useIfExists
+		 */
+		public function setXmlSerializer( $useIfExists = true ) {
+			$this->useXmlSerializer = $useIfExists;
+		}
+
+		/**
+		 * Get the boolean value of whether to try to use XML/Serializer functions when fetching XML data
+		 *
+		 * @return bool
+		 * @since 6.0.6
+		 */
+		public function getXmlSerializer() {
+			return $this->useXmlSerializer;
+		}
+
+		/**
+		 * Customize the curlopt configuration
+		 *
+		 * @param array $curlOptArray
+		 */
+		public function setCurlOpt($curlOptArray = array()) {
+			// Internal appender
+			foreach ($curlOptArray as $key => $val) {
+				$this->curlopt[$key] = $val;
+			}
+		}
+
+		/**
+		 * @return array
+		 * @since 6.0.9
+		 */
+		public function getCurlOpt() {
+			return $this->curlopt;
+		}
+
+		/**
+		 * Easy readable curlopts
+		 *
+		 * @return array
+		 * @since 6.0.10
+		 */
+		public function getCurlOptByKeys() {
+			$return = array();
+			if (is_array($this->curlConstantsOpt)) {
+				$currentCurlOpt = $this->getCurlOpt();
+				foreach ($currentCurlOpt as $curlOptKey => $curlOptValue) {
+					if (isset($this->curlConstantsOpt[$curlOptKey])) {
+						$return[$this->curlConstantsOpt[$curlOptKey]] = $curlOptValue;
+					} else {
+						$return[$curlOptKey] = $curlOptValue;
+					}
+				}
+			}
+			return $return;
+		}
+
+		/**
+		 * Set up special SSL option array for communicators
+		 *
+		 * @param array $sslOptArray
+		 * @since 6.0.9
+		 */
+		public function setSslOpt($sslOptArray= array()) {
+			foreach ($sslOptArray as $key => $val) {
+				$this->sslopt[$key] = $val;
+			}
+		}
+
+		/**
+		 * Get current setup for SSL options
+		 *
+		 * @return array
+		 * @since 6.0.9
+		 */
+		public function getSslOpt() {
+			return $this->sslopt;
+		}
+
+
+		//// SINGLE PUBLIC GETTERS
+
+		/**
+		 * Get the current version of the module
+		 *
+		 * @param bool $fullRelease
+		 *
+		 * @return string
+		 * @since 5.0.0
+		 */
+		public function getVersion( $fullRelease = false ) {
+			if ( ! $fullRelease ) {
+				return $this->TorneCurlVersion;
+			} else {
+				return $this->TorneCurlVersion . "-" . $this->TorneCurlReleaseDate;
+			}
+		}
+
+		/**
 		 * Get this internal release version
 		 *
 		 * Requires the constant TORNELIB_ALLOW_VERSION_REQUESTS to return any information.
@@ -962,9 +1288,52 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 */
 		public function getInternalRelease() {
 			if ( defined( 'TORNELIB_ALLOW_VERSION_REQUESTS' ) && TORNELIB_ALLOW_VERSION_REQUESTS === true ) {
-				return $this->TorneCurlVersion . "," . $this->TorneCurlRelease;
+				return $this->TorneCurlVersion . "," . $this->TorneCurlReleaseDate;
 			}
 			throw new \Exception( $this->ModuleName . " internalReleaseException [" . __CLASS__ . "]: Version requests are not allowed in current state (permissions required)", 403 );
+		}
+
+		/**
+		 * Get store exceptions
+		 * @return array
+		 */
+		public function getStoredExceptionInformation() {
+			return $this->sessionsExceptions;
+		}
+
+		/// SPECIAL FEATURES
+
+		/**
+		 * @return bool
+		 */
+		public function hasErrors() {
+			if ( ! count( $this->hasErrorsStore ) ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * @return array
+		 */
+		public function getErrors() {
+			return $this->hasErrorsStore;
+		}
+
+		/**
+		 * Check against Tornevall Networks API if there are updates for this module
+		 *
+		 * @param string $libName
+		 *
+		 * @return string
+		 */
+		public function hasUpdate( $libName = 'tornelib_curl' ) {
+			if ( ! defined( 'TORNELIB_ALLOW_VERSION_REQUESTS' ) ) {
+				define( 'TORNELIB_ALLOW_VERSION_REQUESTS', true );
+			}
+
+			return $this->getHasUpdateState( $libName );
 		}
 
 		/**
@@ -992,148 +1361,17 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
-		 * Get store exceptions
-		 * @return array
-		 */
-		public function getStoredExceptionInformation() {
-			return $this->sessionsExceptions;
-		}
-
-		/**
-		 * Check against Tornevall Networks API if there are updates for this module
-		 *
-		 * @param string $libName
-		 *
-		 * @return string
-		 */
-		public function hasUpdate( $libName = 'tornelib_curl' ) {
-			if ( ! defined( 'TORNELIB_ALLOW_VERSION_REQUESTS' ) ) {
-				define( 'TORNELIB_ALLOW_VERSION_REQUESTS', true );
-			}
-
-			return $this->getHasUpdateState( $libName );
-		}
-
-		/**
-		 * Set up a different user agent for this library
-		 *
-		 * To make proper identification of the library we are always appending TorbeLIB+cUrl to the chosen user agent string.
-		 *
-		 * @param string $CustomUserAgent
-		 */
-		public function setUserAgent( $CustomUserAgent = "" ) {
-			if ( ! empty( $CustomUserAgent ) ) {
-				$this->CustomUserAgent .= preg_replace( "/\s+$/", '', $CustomUserAgent );
-				$this->CurlUserAgent   = $this->CustomUserAgent . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease;
-			} else {
-				$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlRelease . ')';
-			}
-		}
-
-		/**
-		 * Returns the current set user agent
-		 *
-		 * @return string
-		 */
-		public function getUserAgent() {
-			return $this->CurlUserAgent;
-		}
-
-		/**
-		 * Get the value of customized user agent
-		 *
-		 * @return string
-		 * @since 6.0.6
-		 */
-		public function getCustomUserAgent() {
-			return $this->CustomUserAgent;
-		}
-
-		/**
-		 * If XML/Serializer exists in system, use that parser instead of SimpleXML
-		 *
-		 * @param bool $useIfExists
-		 */
-		public function setXmlSerializer( $useIfExists = true ) {
-			$this->useXmlSerializer = $useIfExists;
-		}
-
-		/**
-		 * Get the boolean value of whether to try to use XML/Serializer functions when fetching XML data
+		 * Returns true if SSL verification was unset during the URL call
 		 *
 		 * @return bool
-		 * @since 6.0.6
+		 * @since 6.0.10
 		 */
-		public function getXmlSerializer() {
-			return $this->useXmlSerializer;
+		public function getSslIsUnsafe() {
+			return $this->unsafeSslCall;
 		}
 
-		/**
-		 * cUrl initializer, if needed faster
-		 *
-		 * @return resource
-		 */
-		public function init() {
-			$this->initCookiePath();
-			$this->CurlSession = curl_init( $this->CurlURL );
 
-			return $this->CurlSession;
-		}
-
-		/**
-		 * Initialize cookie storage
-		 *
-		 * @throws \Exception
-		 */
-		private function initCookiePath() {
-			if ( defined( 'TORNELIB_DISABLE_CURL_COOKIES' ) || ! $this->useLocalCookies ) {
-				return;
-			}
-
-			/**
-			 * TORNEAPI_COOKIES has priority over TORNEAPI_PATH that is the default path
-			 */
-			if ( defined( 'TORNEAPI_COOKIES' ) ) {
-				$this->CookiePath = TORNEAPI_COOKIES;
-			} else {
-				if ( defined( 'TORNEAPI_PATH' ) ) {
-					$this->CookiePath = TORNEAPI_PATH . "/cookies";
-				}
-			}
-			// If path is still empty after the above check, continue checking other paths
-			if ( empty( $this->CookiePath ) || ( ! empty( $this->CookiePath ) && ! is_dir( $this->CookiePath ) ) ) {
-				// We could use /tmp as cookie path but it is not recommended (which means this permission is by default disabled
-				if ( $this->AllowTempAsCookiePath ) {
-					if ( is_dir( "/tmp" ) ) {
-						$this->CookiePath = "/tmp/";
-					}
-				} else {
-					// However, if we still failed, we're trying to use a local directory
-					$realCookiePath = realpath( __DIR__ . "/../cookies" );
-					if ( empty( $realCookiePath ) ) {
-						// Try to create a directory before bailing out
-						$getCookiePath = realpath( __DIR__ . "/../" );
-						@mkdir( $getCookiePath . "/cookies/" );
-						$this->CookiePathCreated = true;
-						$this->CookiePath        = realpath( $getCookiePath . "/cookies/" );
-					} else {
-						$this->CookiePath = realpath( __DIR__ . "/../cookies" );
-					}
-					if ( $this->UseCookieExceptions && ( empty( $this->CookiePath ) || ! is_dir( $this->CookiePath ) ) ) {
-						throw new \Exception( $this->ModuleName . " " . __FUNCTION__ . " exception: Could not set up a proper cookiepath [To override this, use AllowTempAsCookiePath (not recommended)]", 1002 );
-					}
-				}
-			}
-		}
-
-		/**
-		 * Returns an ongoing cUrl session - Normally you may get this from initSession (and normally you don't need this at all)
-		 *
-		 * @return null
-		 */
-		public function getCurlSession() {
-			return $this->CurlSession;
-		}
+		/// CONFIGURATORS
 
 		/**
 		 * Generate a correctified stream context depending on what happened in openssl_guess(), which also is running in this operation.
@@ -1202,6 +1440,43 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			return $optionsArray;
 		}
 
+		/**
+		 * Set and/or append certificate bundle locations to current configuration
+		 *
+		 * @param array $locationArray
+		 * @param bool $resetArray Make the location array go reset on customized list
+		 *
+		 */
+		public function setSslPemLocations($locationArray = array( '/etc/ssl/certs/cacert.pem', '/etc/ssl/certs/ca-certificates.crt' ), $resetArray = false) {
+			$newPem = array();
+			if ( count( $this->sslPemLocations ) ) {
+				foreach ( $this->sslPemLocations as $filePathAndName ) {
+					if ( ! in_array( $filePathAndName, $newPem ) ) {
+						$newPem[] = $filePathAndName;
+					}
+				}
+			}
+			if ( count( $locationArray ) ) {
+				if ($resetArray) {
+					$newPem = array();
+				}
+				foreach ( $locationArray as $filePathAndName ) {
+					if ( ! in_array( $filePathAndName, $newPem ) ) {
+						$newPem[] = $filePathAndName;
+					}
+				}
+			}
+			$this->sslPemLocations = $newPem;
+		}
+
+		/**
+		 * Get current certificate bundle locations
+		 *
+		 * @return array
+		 */
+		public function getSslPemLocations() {
+			return $this->sslPemLocations;
+		}
 
 		/**
 		 * SSL Cerificate Handler
@@ -1244,10 +1519,12 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 									$this->hasCertDir = true;
 								}
 								// For unit testing
-								if ( $this->TargetEnvironment == TORNELIB_CURL_ENVIRONMENT::ENVIRONMENT_TEST && isset( $this->_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION ) && $this->_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION === true ) {
-									// Enforce wrong certificate location
-									$this->hasCertFile = false;
-									$this->useCertFile = null;
+								if ($this->hasFlag('_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION') && $this->isFlag('_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION')) {
+									if ( $this->TargetEnvironment == TORNELIB_CURL_ENVIRONMENT::ENVIRONMENT_TEST ) {
+										// Enforce wrong certificate location
+										$this->hasCertFile = false;
+										$this->useCertFile = null;
+									}
 								}
 							}
 							// Check if the above control was successful - switch over to pemlocations if not.
@@ -1346,7 +1623,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * in cases, when crt-files are missing and PHP can not under very specific circumstances verify the peer. To allow this behaviour, the client
 		 * MUST use this function.
 		 *
-		 * @since 5.0.0-20170210
+		 * @since 5.0.0
 		 *
 		 * @param bool $enabledFlag
 		 */
@@ -1394,6 +1671,10 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function hasSsl() {
 			return $this->sslCurlDriver;
 		}
+
+
+
+		//// DEPRECATION (POSSIBLY EXTRACTABLE FROM NETWORK-LIBRARY)
 
 		/**
 		 * Extract domain name from URL
@@ -1460,6 +1741,9 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 
+
+		//// IP SETUP
+
 		/**
 		 * Making sure the $IpAddr contains valid address list
 		 *
@@ -1502,6 +1786,21 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				}
 			}
 		}
+
+		/**
+		 * Set up a proxy
+		 *
+		 * @param $ProxyAddr
+		 * @param int $ProxyType
+		 */
+		public function setProxy( $ProxyAddr, $ProxyType = CURLPROXY_HTTP ) {
+			$this->CurlProxy     = $ProxyAddr;
+			$this->CurlProxyType = $ProxyType;
+		}
+
+
+
+		//// PARSING
 
 		/**
 		 * Parse content and handle specially received content automatically
@@ -1601,6 +1900,73 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			}
 
 			return $parsedContent;
+		}
+
+		/**
+		 * Parse response, in case of there is any followed traces from the curl engine, so we'll always land on the right ending stream
+		 *
+		 * @param string $content
+		 *
+		 * @return array|string|TORNELIB_CURLOBJECT
+		 */
+		private function ParseResponse( $content = '' ) {
+			if ( ! is_string( $content ) ) {
+				return $content;
+			}
+			list( $header, $body ) = explode( "\r\n\r\n", $content, 2 );
+			$rows              = explode( "\n", $header );
+			$response          = explode( " ", isset( $rows[0] ) ? $rows[0] : null );
+			$shortCodeResponse = explode( " ", isset( $rows[0] ) ? $rows[0] : null, 3 );
+			$httpMessage       = isset( $shortCodeResponse[2] ) ? $shortCodeResponse[2] : null;
+			$code              = isset( $response[1] ) ? $response[1] : null;
+			// If the first row of the body contains a HTTP/-string, we'll try to reparse it
+			if ( preg_match( "/^HTTP\//", $body ) ) {
+				$newBody = $this->ParseResponse( $body );
+				$header  = $newBody['header'];
+				$body    = $newBody['body'];
+			}
+
+			// If response code starts with 3xx, this is probably a redirect
+			if ( preg_match( "/^3/", $code ) ) {
+				$this->redirectedUrls[] = $this->CurlURL;
+				$redirectArray[]        = array(
+					'header' => $header,
+					'body'   => $body,
+					'code'   => $code
+				);
+				//$redirectContent = $this->ParseContent($body, false);
+			}
+			$headerInfo     = $this->GetHeaderKeyArray( $rows );
+			$returnResponse = array(
+				'header' => array( 'info' => $headerInfo, 'full' => $header ),
+				'body'   => $body,
+				'code'   => $code
+			);
+
+			$this->throwCodeException( $httpMessage, $code );
+			if ( $this->CurlAutoParse ) {
+				$contentType              = isset( $headerInfo['Content-Type'] ) ? $headerInfo['Content-Type'] : null;
+				$parsedContent            = $this->ParseContent( $returnResponse['body'], false, $contentType );
+				$returnResponse['parsed'] = ( ! empty( $parsedContent ) ? $parsedContent : null );
+			}
+			$returnResponse['URL'] = $this->CurlURL;
+			$returnResponse['ip']  = isset( $this->CurlIp ) ? $this->CurlIp : null;  // Will only be filled if there is custom address set.
+
+			if ( $this->ResponseType == TORNELIB_CURL_RESPONSETYPE::RESPONSETYPE_OBJECT ) {
+				// This is probably not necessary and will not be the default setup after all.
+				$returnResponseObject         = new TORNELIB_CURLOBJECT();
+				$returnResponseObject->header = $returnResponse['header'];
+				$returnResponseObject->body   = $returnResponse['body'];
+				$returnResponseObject->code   = $returnResponse['code'];
+				$returnResponseObject->parsed = $returnResponse['parsed'];
+				$returnResponseObject->url    = $returnResponse['URL'];
+				$returnResponseObject->ip     = $returnResponse['ip'];
+
+				return $returnResponseObject;
+			}
+			$this->TemporaryResponse = $returnResponse;
+
+			return $returnResponse;
 		}
 
 		/**
@@ -1797,73 +2163,6 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
-		 * Parse response, in case of there is any followed traces from the curl engine, so we'll always land on the right ending stream
-		 *
-		 * @param string $content
-		 *
-		 * @return array|string|TORNELIB_CURLOBJECT
-		 */
-		private function ParseResponse( $content = '' ) {
-			if ( ! is_string( $content ) ) {
-				return $content;
-			}
-			list( $header, $body ) = explode( "\r\n\r\n", $content, 2 );
-			$rows              = explode( "\n", $header );
-			$response          = explode( " ", isset( $rows[0] ) ? $rows[0] : null );
-			$shortCodeResponse = explode( " ", isset( $rows[0] ) ? $rows[0] : null, 3 );
-			$httpMessage       = isset( $shortCodeResponse[2] ) ? $shortCodeResponse[2] : null;
-			$code              = isset( $response[1] ) ? $response[1] : null;
-			// If the first row of the body contains a HTTP/-string, we'll try to reparse it
-			if ( preg_match( "/^HTTP\//", $body ) ) {
-				$newBody = $this->ParseResponse( $body );
-				$header  = $newBody['header'];
-				$body    = $newBody['body'];
-			}
-
-			// If response code starts with 3xx, this is probably a redirect
-			if ( preg_match( "/^3/", $code ) ) {
-				$this->redirectedUrls[] = $this->CurlURL;
-				$redirectArray[]        = array(
-					'header' => $header,
-					'body'   => $body,
-					'code'   => $code
-				);
-				//$redirectContent = $this->ParseContent($body, false);
-			}
-			$headerInfo     = $this->GetHeaderKeyArray( $rows );
-			$returnResponse = array(
-				'header' => array( 'info' => $headerInfo, 'full' => $header ),
-				'body'   => $body,
-				'code'   => $code
-			);
-
-			$this->throwCodeException( $httpMessage, $code );
-			if ( $this->CurlAutoParse ) {
-				$contentType              = isset( $headerInfo['Content-Type'] ) ? $headerInfo['Content-Type'] : null;
-				$parsedContent            = $this->ParseContent( $returnResponse['body'], false, $contentType );
-				$returnResponse['parsed'] = ( ! empty( $parsedContent ) ? $parsedContent : null );
-			}
-			$returnResponse['URL'] = $this->CurlURL;
-			$returnResponse['ip']  = isset( $this->CurlIp ) ? $this->CurlIp : null;  // Will only be filled if there is custom address set.
-
-			if ( $this->ResponseType == TORNELIB_CURL_RESPONSETYPE::RESPONSETYPE_OBJECT ) {
-				// This is probably not necessary and will not be the default setup after all.
-				$returnResponseObject         = new TORNELIB_CURLOBJECT();
-				$returnResponseObject->header = $returnResponse['header'];
-				$returnResponseObject->body   = $returnResponse['body'];
-				$returnResponseObject->code   = $returnResponse['code'];
-				$returnResponseObject->parsed = $returnResponse['parsed'];
-				$returnResponseObject->url    = $returnResponse['URL'];
-				$returnResponseObject->ip     = $returnResponse['ip'];
-
-				return $returnResponseObject;
-			}
-			$this->TemporaryResponse = $returnResponse;
-
-			return $returnResponse;
-		}
-
-		/**
 		 * Create an array of a header, with keys and values
 		 *
 		 * @param $HeaderRows
@@ -1918,12 +2217,13 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
-		 * Return number of tries resolver has been working
+		 * Return number of tries, arrayed, that different parts of netcurl has been trying to make a call
 		 *
-		 * @return int
+		 * @return array
+		 * @since 6.0.8
 		 */
 		public function getRetries() {
-			return $this->CurlResolveRetry;
+			return $this->CurlRetryTypes;
 		}
 
 		/**
@@ -2030,17 +2330,6 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
-		 * Set up a proxy
-		 *
-		 * @param $ProxyAddr
-		 * @param int $ProxyType
-		 */
-		public function setProxy( $ProxyAddr, $ProxyType = CURLPROXY_HTTP ) {
-			$this->CurlProxy     = $ProxyAddr;
-			$this->CurlProxyType = $ProxyType;
-		}
-
-		/**
 		 * Fix problematic header data by converting them to proper outputs.
 		 *
 		 * @param array $headerList
@@ -2123,23 +2412,53 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				}
 			}
 
-			// Prepare SOAPclient if requested
-			if ( preg_match( "/\?wsdl$|\&wsdl$/i", $this->CurlURL ) || $postAs == CURL_POST_AS::POST_AS_SOAP ) {
-				if ( ! $this->hasSoap() ) {
-					throw new \Exception( $this->ModuleName . " ".__FUNCTION__." exception: SoapClient is not available in this system", 500 );
+			// If certificates missing (place above the wsdl, as it has to be inheritaged down to the soapclient
+			if ( ! $this->TestCerts() ) {
+				// And we're allowed to run without them
+				if ( ! $this->sslVerify && $this->allowSslUnverified ) {
+					// Then disable the checking here
+					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 0 );
+					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
+					$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 0;
+					$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 0;
+					$this->unsafeSslCall = true;
+				} else {
+					// From libcurl 7.28.1 CURLOPT_SSL_VERIFYHOST is deprecated. However, using the value 1 can be used
+					// as of PHP 5.4.11, where the deprecation notices was added. The deprecation has started before libcurl
+					// 7.28.1 (this was discovered on a server that was running PHP 5.5 and libcurl-7.22). In full debug
+					// even libcurl-7.22 was generating this message, so from PHP 5.4.11 we are now enforcing the value 2
+					// for CURLOPT_SSL_VERIFYHOST instead. The reason of why we are using the value 1 before this version
+					// is actually a lazy thing, as we don't want to break anything that might be unsupported before this version.
+					if ( version_compare( PHP_VERSION, '5.4.11', ">=" ) ) {
+						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 2 );
+						$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 2;
+					} else {
+						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 1 );
+						$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 1;
+					}
+					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 1 );
+					$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 1;
 				}
-				$Soap = new Tornevall_SimpleSoap( $this->CurlURL, $this->curlopt );
-				$Soap->setCustomUserAgent( $this->CustomUserAgent );
-				$Soap->setThrowableState( $this->canThrow );
-				$Soap->setSoapAuthentication( $this->AuthData );
-				$Soap->SoapTryOnce = $this->SoapTryOnce;
-				try {
-					$getSoapResponse = $Soap->getSoap();
-				} catch ( \Exception $getSoapResponseException ) {
-					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $getSoapResponseException->getMessage(), $getSoapResponseException->getCode() );
+			} else {
+				// Silently configure for https-connections, if exists
+				if ( $this->useCertFile != "" && file_exists( $this->useCertFile ) ) {
+					if ( ! $this->sslVerify && $this->allowSslUnverified ) {
+						// Then disable the checking here
+						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 0 );
+						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
+						$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 0;
+						$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 0;
+						$this->unsafeSslCall = true;
+					} else {
+						try {
+							curl_setopt( $this->CurlSession, CURLOPT_CAINFO, $this->useCertFile );
+							curl_setopt( $this->CurlSession, CURLOPT_CAPATH, dirname( $this->useCertFile ) );
+							$this->curlopt[ CURLOPT_CAINFO ] = $this->useCertFile;
+							$this->curlopt[ CURLOPT_CAPATH ] = dirname( $this->useCertFile );
+						} catch ( \Exception $e ) {
+						}
+					}
 				}
-
-				return $getSoapResponse;
 			}
 
 			// Picking up externally select outgoing ip if any
@@ -2198,64 +2517,41 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			if ( isset( $this->CurlTimeout ) && $this->CurlTimeout > 0 ) {
 				curl_setopt( $this->CurlSession, CURLOPT_CONNECTTIMEOUT, ceil( $this->CurlTimeout / 2 ) );
 				curl_setopt( $this->CurlSession, CURLOPT_TIMEOUT, $this->CurlTimeout );
+				$this->curlopt[ CURLOPT_CONNECTTIMEOUT ] = ceil( $this->CurlTimeout / 2 );
+				$this->curlopt[ CURLOPT_TIMEOUT ]        = ceil( $this->CurlTimeout );
 			}
 			if ( isset( $this->CurlResolve ) && $this->CurlResolve !== CURL_RESOLVER::RESOLVER_DEFAULT ) {
 				if ( $this->CurlResolve == CURL_RESOLVER::RESOLVER_IPV4 ) {
 					curl_setopt( $this->CurlSession, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 );
+					$this->curlopt[ CURLOPT_IPRESOLVE ] = CURL_IPRESOLVE_V4;
 				}
 				if ( $this->CurlResolve == CURL_RESOLVER::RESOLVER_IPV6 ) {
 					curl_setopt( $this->CurlSession, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6 );
+					$this->curlopt[ CURLOPT_IPRESOLVE ] = CURL_IPRESOLVE_V6;
 				}
 			}
 
-			// If certificates missing
-			if ( ! $this->TestCerts() ) {
-				// And we're allowed to run without them
-				if ( ! $this->sslVerify && $this->allowSslUnverified ) {
-					// Then disable the checking here
-					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 0 );
-					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
-				} else {
-					// From libcurl 7.28.1 CURLOPT_SSL_VERIFYHOST is deprecated. However, using the value 1 can be used
-					// as of PHP 5.4.11, where the deprecation notices was added. The deprecation has started before libcurl
-					// 7.28.1 (this was discovered on a server that was running PHP 5.5 and libcurl-7.22). In full debug
-					// even libcurl-7.22 was generating this message, so from PHP 5.4.11 we are now enforcing the value 2
-					// for CURLOPT_SSL_VERIFYHOST instead. The reason of why we are using the value 1 before this version
-					// is actually a lazy thing, as we don't want to break anything that might be unsupported before this version.
-					if ( version_compare( PHP_VERSION, '5.4.11', ">=" ) ) {
-						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 2 );
-					} else {
-						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 1 );
-					}
-					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 1 );
-				}
-			} else {
-				// Silently configure for https-connections, if exists
-				if ( $this->useCertFile != "" && file_exists( $this->useCertFile ) ) {
-					try {
-						curl_setopt( $this->CurlSession, CURLOPT_CAINFO, $this->useCertFile );
-						curl_setopt( $this->CurlSession, CURLOPT_CAPATH, dirname( $this->useCertFile ) );
-					} catch ( \Exception $e ) {
-					}
-				}
-			}
 			curl_setopt( $this->CurlSession, CURLOPT_VERBOSE, false );
 			if ( isset( $this->CurlProxy ) && ! empty( $this->CurlProxy ) ) {
 				// Run from proxy
 				curl_setopt( $this->CurlSession, CURLOPT_PROXY, $this->CurlProxy );
+				$this->curlopt[ CURLOPT_PROXYTYPE ] = $this->CurlProxy;
 				if ( isset( $this->CurlProxyType ) && ! empty( $this->CurlProxyType ) ) {
 					curl_setopt( $this->CurlSession, CURLOPT_PROXYTYPE, $this->CurlProxyType );
+					$this->curlopt[ CURLOPT_PROXYTYPE ] = $this->CurlProxyType;
 				}
 				unset( $this->CurlIp );
 			}
 			if ( isset( $this->CurlTunnel ) && ! empty( $this->CurlTunnel ) ) {
 				// Run in tunneling mode
 				curl_setopt( $this->CurlSession, CURLOPT_HTTPPROXYTUNNEL, true );
+				$this->curlopt[ CURLOPT_HTTPPROXYTUNNEL ] = true;
 				unset( $this->CurlIp );
 			}
 			// Another HTTP_REFERER
 			if ( isset( $this->CurlReferer ) && ! empty( $this->CurlReferer ) ) {
 				curl_setopt( $this->CurlSession, CURLOPT_REFERER, $this->CurlReferer );
+				$this->curlopt[ CURLOPT_REFERER ] = $this->CurlReferer;
 			}
 
 			$this->fixHttpHeaders( $this->CurlHeadersUserDefined );
@@ -2304,6 +2600,25 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			curl_setopt( $this->CurlSession, CURLOPT_AUTOREFERER, true );
 			curl_setopt( $this->CurlSession, CURLINFO_HEADER_OUT, true );
 
+			// Override with SoapClient just before the real curl_exec is the most proper way to handle inheritages
+			if ( preg_match( "/\?wsdl$|\&wsdl$/i", $this->CurlURL ) || $postAs == CURL_POST_AS::POST_AS_SOAP ) {
+				if ( ! $this->hasSoap() ) {
+					throw new \Exception( $this->ModuleName . " " . __FUNCTION__ . " exception: SoapClient is not available in this system", 500 );
+				}
+				$Soap = new Tornevall_SimpleSoap( $this->CurlURL, $this->curlopt );
+				$Soap->setCustomUserAgent( $this->CustomUserAgent );
+				$Soap->setThrowableState( $this->canThrow );
+				$Soap->setSoapAuthentication( $this->AuthData );
+				$Soap->setSoapTryOnce($this->SoapTryOnce);
+				try {
+					$getSoapResponse = $Soap->getSoap();
+				} catch ( \Exception $getSoapResponseException ) {
+					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $getSoapResponseException->getMessage(), $getSoapResponseException->getCode() );
+				}
+
+				return $getSoapResponse;
+			}
+
 			$returnContent = curl_exec( $this->CurlSession );
 
 			if ( curl_errno( $this->CurlSession ) ) {
@@ -2313,13 +2628,27 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 						'SessionInfo' => curl_getinfo( $this->CurlSession )
 					);
 				}
-				$errorCode = curl_errno( $this->CurlSession );
-				$errorMessage = curl_error($this->CurlSession);
-				if ( $this->CurlResolveForced && $this->CurlResolveRetry >= 2 ) {
-					throw new \Exception( $this->ModuleName . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for ".$this->CurlURL." has been reached without any successful response. Normally, this happens after " . $this->CurlResolveRetry . " CurlResolveRetries and might be connected with a bad URL or similar that can not resolve properly.\nCurl error message follows: " . $errorMessage, $errorCode );
+				$errorCode    = curl_errno( $this->CurlSession );
+				$errorMessage = curl_error( $this->CurlSession );
+				if ( $this->CurlResolveForced && $this->CurlRetryTypes['resolve'] >= 2 ) {
+					throw new \Exception( $this->ModuleName . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for " . $this->CurlURL . " has been reached without any successful response. Normally, this happens after " . $this->CurlRetryTypes['resolve'] . " CurlResolveRetries and might be connected with a bad URL or similar that can not resolve properly.\nCurl error message follows: " . $errorMessage, $errorCode );
+				}
+				if ( $errorCode == CURLE_SSL_CACERT || $errorCode === 60 && $this->allowSslUnverified ) {
+					if ( $this->CurlRetryTypes['sslunverified'] >= 2 ) {
+						throw new \Exception( $this->ModuleName . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for " . $this->CurlURL . ", during a try to make a SSL connection to work, has been reached without any successful response. This normally happens when allowSslUnverified is activated in the library and " . $this->CurlRetryTypes['resolve'] . " tries to fix the problem has been made, but failed.\nCurl error message follows: " . $errorMessage, $errorCode );
+					} else {
+						$this->hasErrorsStore[] = array( 'code' => $errorCode, 'message' => $errorMessage );
+						$this->setSslVerify( false );
+						$this->setSslUnverified( true );
+						$this->unsafeSslCall = true;
+						$this->CurlRetryTypes['sslunverified'] ++;
+
+						return $this->handleUrlCall( $this->CurlURL, $postData, $CurlMethod );
+					}
 				}
 				if ( $errorCode == CURLE_COULDNT_RESOLVE_HOST || $errorCode === 45 ) {
-					$this->CurlResolveRetry ++;
+					$this->hasErrorsStore[] = array( 'code' => $errorCode, 'message' => $errorMessage );
+					$this->CurlRetryTypes['resolve'] ++;
 					unset( $this->CurlIp );
 					$this->CurlResolveForced = true;
 					if ( $this->CurlIpType == 6 ) {
@@ -2525,7 +2854,7 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 	 * Masking no difference of a SOAP call and a regular GET/POST
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.2
+	 * @version 6.0.3
 	 */
 	class Tornevall_SimpleSoap extends Tornevall_cURL {
 		protected $soapClient;
@@ -2535,7 +2864,7 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 			'trace'      => true,
 			'cache_wsdl' => 0       // Replacing WSDL_CACHE_NONE (WSDL_CACHE_BOTH = 3)
 		);
-		private $simpleSoapVersion = "6.0.2";
+		private $simpleSoapVersion = "6.0.3";
 		private $soapUrl;
 		private $AuthData;
 		private $soapRequest;
@@ -2547,9 +2876,9 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 		private $CustomUserAgent;
 		private $soapFaultExceptionObject;
 
-		public $SoapFaultString = null;
-		public $SoapFaultCode = 0;
-		public $SoapTryOnce = true;
+		private $SoapFaultString = null;
+		private $SoapFaultCode = 0;
+		private $SoapTryOnce = true;
 
 		/**
 		 * Tornevall_SimpleSoap constructor.
@@ -2584,6 +2913,9 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 			}
 		}
 
+		/**
+		 * @param $userAgentString
+		 */
 		public function setCustomUserAgent( $userAgentString ) {
 			$this->CustomUserAgent = preg_replace( "/\s+$/", '', $userAgentString );
 			$this->setUserAgent( $userAgentString . " +TorneLIB-SimpleSoap/" . $this->simpleSoapVersion );
@@ -2607,8 +2939,9 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 		 */
 		public function getSoap() {
 			$this->soapClient = null;
-			if ( gettype( $this->sslopt['stream_context'] ) == "resource" ) {
-				$this->soapOptions['stream_context'] = $this->sslopt['stream_context'];
+			$sslOpt = $this->getSslOpt();
+			if ( gettype( $sslOpt['stream_context'] ) == "resource" ) {
+				$this->soapOptions['stream_context'] = $sslOpt['stream_context'];
 			}
 			if ( $this->SoapTryOnce ) {
 				try {
@@ -2645,6 +2978,20 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 			}
 
 			return $this;
+		}
+
+		/**
+		 * @param bool $enabledState
+		 */
+		public function setSoapTryOnce($enabledState = true) {
+			$this->SoapTryOnce = $enabledState;
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getSoapTryOnce() {
+			return $this->SoapTryOnce;
 		}
 
 		function __call( $name, $arguments ) {
@@ -2715,6 +3062,14 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 		public function getLibResponse() {
 			return $this->libResponse;
 		}
+
+		public function getSoapFaultString() {
+			return $this->SoapFaultString;
+		}
+		public function getSoapFaultCode() {
+			return $this->SoapFaultCode;
+		}
+
 
 		/**
 		 * Get the SOAP response independently on exceptions or successes

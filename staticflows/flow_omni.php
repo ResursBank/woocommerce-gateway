@@ -21,6 +21,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		if ( empty( $this->iFrameLocation ) ) {
 			$this->iFrameLocation = "afterCheckoutForm";
 		}
+
+		/** @var flow \Resursbank\RBEcomPHP\ResursBank */
 		$this->flow           = initializeResursFlow();
 		$this->omniSuccessUrl = "";
 
