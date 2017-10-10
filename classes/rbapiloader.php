@@ -460,7 +460,6 @@ class ResursBank {
 	 */
 	private $sslVerify = true;
 
-
 	/// SOAP and WSDL
 	/**
 	 * @var array Standard options for the SOAP-interface.
@@ -472,6 +471,8 @@ class ResursBank {
 		'password'           => '',
 		'trace'              => 1
 	);
+	private $curlSslDisable = false;
+
 	/** @var string The current directory of RB Classes */
 	private $classPath = "";
 	/** @var array Files to look for in class directories, to find RB */
@@ -773,7 +774,7 @@ class ResursBank {
 	private function InitializeServices() {
 		// 1.0.4/1.1.4: No longer checking includes
 		$this->hasServicesInitialization = $this->initWsdl();
-
+		$this->getSslValidation();
 		return $this->hasServicesInitialization;
 	}
 
@@ -796,7 +797,6 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function getDebug() {
-
 		$this->curlStats['debug'] = $this->debug;
 		return $this->curlStats;
 	}
@@ -851,12 +851,36 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function setSslValidation($validationEnabled = false) {
+		$this->InitializeServices();
 		if ($this->debug && $this->current_environment == ResursEnvironments::ENVIRONMENT_TEST) {
-			$this->CURL->setSslUnverified( true );
-			$this->CURL->setSslVerify( false );
+			$this->curlSslDisable = true;
 		} else {
 			throw new \Exception("Can't set SSL validation in relaxed mode. Debug mode is disabled and/or test environment are not set", 403);
 		}
+	}
+
+	/**
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	private function getSslValidation() {
+		if ($this->curlSslDisable) {
+			$this->CURL->setSslUnverified( true );
+			$this->CURL->setCertAuto( false, false );
+		}
+	}
+
+	/**
+	 * Returns true if the URL call was set to be unsafe (disabled)
+	 *
+	 * @return bool
+	 * @since 1.0.23
+	 * @since 1.1.23
+	 * @since 1.2.0
+	 */
+	public function getSslIsUnsafe() {
+		return $this->CURL->getSslIsUnsafe();
 	}
 
 	/**
@@ -1899,16 +1923,14 @@ class ResursBank {
 	 * @since 1.1.2
 	 */
 	public function triggerCallback() {
+		$this->InitializeServices();
 		$envUrl = $this->env_test;
 		$curEnv = $this->getEnvironment();
 		if ($curEnv == ResursEnvironments::ENVIRONMENT_PRODUCTION) {
 			$envUrl = $this->env_prod;
 		}
 		$serviceUrl = $envUrl . "DeveloperWebService?wsdl";
-		$CURL       = new \Resursbank\RBEcomPHP\Tornevall_cURL();
-		$CURL->setAuthentication( $this->username, $this->password );
-		$CURL->setUserAgent( $this->myUserAgent );
-		$eventRequest    = $CURL->doGet( $serviceUrl );
+		$eventRequest    = $this->CURL->doGet( $serviceUrl );
 		$eventParameters = array(
 			'eventType' => 'TEST',
 			'param'     => array(

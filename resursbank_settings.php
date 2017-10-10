@@ -19,6 +19,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	private $spinnerLocal;
 	private $methodLabel;
 	private $curlInDebug = false;
+	private $curlHandle = null;
 	public $id = "tab_resursbank";
 	//private $current_section;
 	private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
@@ -400,6 +401,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		$debugSet = $this->flow->getDebug();
 		if (isset($debugSet['debug'])) {
             $this->curlInDebug = $debugSet['debug'] == 1 ? true:false;
+            if ($this->curlInDebug) {
+                try {
+	                $this->curlHandle = $this->flow->getCurlHandle();
+                } catch (\Exception $curlHandleException) {
+                    // If this was triggered, it should be no more
+                    $this->curlInDebug = false;
+                }
+            }
 		}
 		$url       = admin_url( 'admin.php' );
 		$url       = add_query_arg( 'page', isset( $_REQUEST['page'] ) ? $_REQUEST['page'] : "", $url );
@@ -743,6 +752,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 				    echo '<b>curlmodule debug data</b><br>';
 				    echo '<pre>';
 				    print_r($getDebugData);
+				    $sslUnsafe = $this->flow->getSslIsUnsafe();
+				    echo __("During the URL calls, SSL certificate validation has been disabled", 'WC_Payment_Gateway') . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";
 				    echo '</pre>';
 				    echo '</td></tr>';
                 }

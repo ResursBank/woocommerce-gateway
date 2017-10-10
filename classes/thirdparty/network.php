@@ -597,7 +597,8 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		private $CurlHeadersUserDefined = array();
 		private $allowCdata = false;
 		private $useXmlSerializer = false;
-
+		/** @var bool Store information about the URL call and if the SSL was unsafe (disabled) */
+		protected $unsafeSslCall = false;
 
 		//// COOKIE CONFIGS
 		private $useLocalCookies = false;
@@ -634,7 +635,8 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		private $sessionsExceptions = array();
 		/** @var bool The soapTryOnce variable */
 		private $SoapTryOnce = true;
-		private $curlConstants = array();
+		private $curlConstantsOpt = array();
+		private $curlConstantsErr = array();
 
 		/**
 		 * Set up if this library can throw exceptions, whenever it needs to do that.
@@ -660,8 +662,11 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			try {
 				$constants = @get_defined_constants();
 				foreach ( $constants as $constKey => $constInt ) {
-					if ( preg_match( "/^curlopt/i", $constKey ) || preg_match( "/^curle/i", $constKey ) ) {
-						$this->curlConstants[ $constInt ] = $constKey;
+					if ( preg_match( "/^curlopt/i", $constKey ) ) {
+						$this->curlConstantsOpt[ $constInt ] = $constKey;
+					}
+					if (preg_match( "/^curle/i", $constKey ) ) {
+						$this->curlConstantsErr[$constInt] = $constKey;
 					}
 				}
 			} catch (\Exception $constantException) {}
@@ -1219,11 +1224,11 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 */
 		public function getCurlOptByKeys() {
 			$return = array();
-			if (is_array($this->curlConstants)) {
+			if (is_array($this->curlConstantsOpt)) {
 				$currentCurlOpt = $this->getCurlOpt();
 				foreach ($currentCurlOpt as $curlOptKey => $curlOptValue) {
-					if (isset($this->curlConstants[$curlOptKey])) {
-						$return[$this->curlConstants[$curlOptKey]] = $curlOptValue;
+					if (isset($this->curlConstantsOpt[$curlOptKey])) {
+						$return[$this->curlConstantsOpt[$curlOptKey]] = $curlOptValue;
 					} else {
 						$return[$curlOptKey] = $curlOptValue;
 					}
@@ -1353,6 +1358,16 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			}
 
 			return "";
+		}
+
+		/**
+		 * Returns true if SSL verification was unset during the URL call
+		 *
+		 * @return bool
+		 * @since 6.0.10
+		 */
+		public function getSslIsUnsafe() {
+			return $this->unsafeSslCall;
 		}
 
 
@@ -2406,6 +2421,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
 					$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 0;
 					$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 0;
+					$this->unsafeSslCall = true;
 				} else {
 					// From libcurl 7.28.1 CURLOPT_SSL_VERIFYHOST is deprecated. However, using the value 1 can be used
 					// as of PHP 5.4.11, where the deprecation notices was added. The deprecation has started before libcurl
@@ -2432,6 +2448,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
 						$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 0;
 						$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 0;
+						$this->unsafeSslCall = true;
 					} else {
 						try {
 							curl_setopt( $this->CurlSession, CURLOPT_CAINFO, $this->useCertFile );
@@ -2623,6 +2640,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 						$this->hasErrorsStore[] = array( 'code' => $errorCode, 'message' => $errorMessage );
 						$this->setSslVerify( false );
 						$this->setSslUnverified( true );
+						$this->unsafeSslCall = true;
 						$this->CurlRetryTypes['sslunverified'] ++;
 
 						return $this->handleUrlCall( $this->CurlURL, $postData, $CurlMethod );
