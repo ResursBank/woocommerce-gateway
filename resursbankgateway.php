@@ -2347,6 +2347,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$new_status       = get_term_by( 'slug', sanitize_title( $new_status_slug ), 'shop_order_status' );
 			$order_total      = $order->get_total();
 			$order_fees       = $order->get_fees();
+			/** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
 			$resursFlow       = initializeResursFlow();
 			$flowErrorMessage = null;
 			if ( $payment_id ) {
@@ -2426,7 +2427,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					$flowErrorMessage = "";
 					if ( $resursFlow->canDebit( $payment ) ) {
 						try {
-							$resursFlow->finalizePayment( $payment_id );
+							$resursFlow->paymentFinalize( $payment_id );
 							wp_set_object_terms( $order_id, array( $old_status_slug ), 'shop_order_status', false );
 						} catch ( Exception $e ) {
 							$flowErrorMessage = $e->getMessage();
@@ -2457,12 +2458,9 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'on-hold':
 					break;
 				case 'cancelled':
-					/*$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
-					if ( $optionDisableAftershop ) {
-						break;
-					}*/
 					try {
-						$resursFlow->cancelPayment( $payment_id );
+						$resursFlow->paymentCancel( $payment_id );
+						$order->add_order_note( __( 'Cancelled status set: Resurs Bank API was called for cancellation', 'WC_Payment_Gateway' ) );
 					} catch ( Exception $e ) {
 						$flowErrorMessage = $e->getMessage();
 					}
@@ -2476,12 +2474,9 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 					break;
 				case 'refunded':
-					/*$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
-					if ( $optionDisableAftershop ) {
-						break;
-					}*/
 					try {
-						$resursFlow->cancelPayment( $payment_id );
+						$resursFlow->paymentCancel( $payment_id );
+						$order->add_order_note( __( 'Refunded status set: Resurs Bank API was called for cancellation', 'WC_Payment_Gateway' ) );
 					} catch ( Exception $e ) {
 						$flowErrorMessage = $e->getMessage();
 					}
@@ -3257,6 +3252,7 @@ function resurs_remove_order_item( $item_id ) {
 		die( - 1 );
 	}
 
+	/** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
 	$resursFlow = null;
 	if ( hasEcomPHP() ) {
 		$resursFlow = initializeResursFlow();
@@ -3310,8 +3306,8 @@ function resurs_remove_order_item( $item_id ) {
 
 		try {
 		    $order = new WC_Order($orderId);
-			$removeResursRow = $resursFlow->cancelPayment( $resursPaymentId, $clientPaymentSpec );
-			$order->add_order_note( __( 'Resurs Bank API was called for partial or full cancellation', 'WC_Payment_Gateway' ) );
+			$removeResursRow = $resursFlow->paymentCancel( $resursPaymentId, $clientPaymentSpec );
+			$order->add_order_note( __( 'Orderline Removal: Resurs Bank API was called to remove orderlines', 'WC_Payment_Gateway' ) );
 		} catch ( Exception $e ) {
 			$resultArray = array(
 				'success' => false,
@@ -3587,13 +3583,12 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 	/** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
 	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
+	$initFlow->setSimplifiedPsp(true);
 	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
 	if (isResursTest() && $sslHandler) {
         $initFlow->setDebug(true);
         $initFlow->setSslValidation(false, false);
 	}
-	//$initFlow->convertObjects      = true;
-	//$initFlow->convertObjectsOnGet = true;
 	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
 	$initFlow->setDefaultUnitMeasure();

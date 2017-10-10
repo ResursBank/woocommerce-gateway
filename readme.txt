@@ -58,11 +58,19 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 = 2.1.2 =
 
+    * [WOO-189] - PSP methods are half way supported in simple/hosted flow, but should be excluded from listing
+    * [WOO-190] - Aftershop functions should add notices in shop admin
+    * [WOO-197] - EComPHP change of behaviour in getPaymentMethods
+    * [WOO-195] - Not an actual bug: error setting certificate verify locations (allow, in test, setting SSL validation state disabled)
     * EComPHP 1.1.22 added, with refactored afterShop support
+
 
 = 2.1.1 =
 
     * [WOO-193] - Reduce order stock disappeared from wp-admin (hotfix)
+    * [WOO-191] - Callback update registrator runs on pages that does not belong to the function
+    * [WOO-192] - getPaymentInvoices can't handle prepared objects
+
 
 = 2.1.0 =
 
