@@ -27,9 +27,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	private $oldFormFields;
 	/** @var $flow Resursbank\RBEcomPHP\ResursBank */
 	private $flow;
+	private $paymentMethods = array();
 
 	function __construct() {
-	    /** @var $flow Resursbank\RBEcomPHP\ResursBank */
+		/** @var $flow Resursbank\RBEcomPHP\ResursBank */
 		$this->flow          = initializeResursFlow();
 		$this->label         = __( 'Resurs Bank', 'woocommerce' );
 		$this->oldFormFields = getResursWooFormFields();
@@ -362,9 +363,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		}
 		// Prevent the plugin from sending legacy data to this controller
 		foreach ($temp_class_files as $fileRow) {
-		    $newFileRow = "resurs_bank_nr_".$fileRow.".php";
-		    $temp_class_files[] = $newFileRow;
-        }
+			$newFileRow = "resurs_bank_nr_".$fileRow.".php";
+			$temp_class_files[] = $newFileRow;
+		}
 		if ( is_array( $temp_class_files ) ) {
 			foreach ( $allIncludes as $exclude ) {
 				if ( ! in_array( $exclude, $temp_class_files ) ) {
@@ -400,15 +401,15 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		}
 		$debugSet = $this->flow->getDebug();
 		if (isset($debugSet['debug'])) {
-            $this->curlInDebug = $debugSet['debug'] == 1 ? true:false;
-            if ($this->curlInDebug) {
-                try {
-	                $this->curlHandle = $this->flow->getCurlHandle();
-                } catch (\Exception $curlHandleException) {
-                    // If this was triggered, it should be no more
-                    $this->curlInDebug = false;
-                }
-            }
+			$this->curlInDebug = $debugSet['debug'] == 1 ? true:false;
+			if ($this->curlInDebug) {
+				try {
+					$this->curlHandle = $this->flow->getCurlHandle();
+				} catch (\Exception $curlHandleException) {
+					// If this was triggered, it should be no more
+					$this->curlInDebug = false;
+				}
+			}
 		}
 		$url       = admin_url( 'admin.php' );
 		$url       = add_query_arg( 'page', isset( $_REQUEST['page'] ) ? $_REQUEST['page'] : "", $url );
@@ -428,9 +429,56 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		$methodDescription   = "";
 		$paymentMethodsError = null;
 		$class_files         = array();
+		$countryCredentialArray = array();
+		if ( isResursDemo() && class_exists( "CountryHandler" ) ) {
+			$countryHandler = new CountryHandler();
+			$countryList = array('se', 'no', 'dk', 'fi');
+			$countryConfig = $countryHandler->getCountryConfig();
+			foreach ($countryList as $countryId) {
+				if (isset($countryConfig[$countryId]) && isset($countryConfig[$countryId]['account']) && !empty($countryConfig[$countryId]['account'])) {
+					$countryCredentialArray[$countryId] = $countryConfig[$countryId]['account'];
+				}
+			}
+		}
+
+		$hsaCountries = false;
 		try {
 			if ( ! preg_match( "/^resurs_bank_nr/i", $section ) ) {
-				$this->paymentMethods = $this->flow->getPaymentMethods();
+				// If we're in demoshop mode go another direction
+				if (isResursDemo() && is_array($countryCredentialArray) && count($countryCredentialArray)) {
+					try {
+						/** @var $demoShopFlow \Resursbank\RBEcomPHP\ResursBank */
+						$demoShopFlow               = initializeResursFlow();
+						$countryBasedPaymentMethods = array();
+						foreach ( $countryCredentialArray as $countryId => $countryCredentials ) {
+							if ( isset( $countryCredentials['login'] ) && isset( $countryCredentials['password'] ) ) {
+								// To unslow this part of the plugin, we'd run transient methods storage
+								if ( ! isset( $_REQUEST['reset'] ) ) {
+									$countryBasedPaymentMethods[ $countryId ] = get_transient( 'resursMethods' . $countryId );
+								} else {
+									// Let's make sure that we can clean up mistakes.
+									$countryBasedPaymentMethods[ $countryId ] = array();
+								}
+								if ( empty( $countryBasedPaymentMethods[ $countryId ] ) || ( is_array( $countryBasedPaymentMethods[ $countryId ] ) && ! count( $countryBasedPaymentMethods[ $countryId ] ) ) ) {
+									$demoShopFlow->setAuthentication( $countryCredentials['login'], $countryCredentials['password'] );
+									$countryBasedPaymentMethods[ $countryId ] = $demoShopFlow->getPaymentMethods();
+									foreach ( $countryBasedPaymentMethods[ $countryId ] as $countryObject ) {
+										$countryObject->country = $countryId;
+									}
+									set_transient( 'resursMethods' . $countryId, $countryBasedPaymentMethods[ $countryId ], 3600 );
+								}
+								// Assign a country id for each payment method in this list
+								set_transient( 'resursMethods' . $countryId, $countryBasedPaymentMethods[ $countryId ], 3600 );
+								$this->paymentMethods = array_merge( $this->paymentMethods, $countryBasedPaymentMethods[ $countryId ] );
+							}
+						}
+						$hasCountries = true;
+					} catch (\Exception $countryException) {
+						// Ignore and go on
+					}
+				} else {
+					$this->paymentMethods = $this->flow->getPaymentMethods();
+				}
 				if ( is_array( $this->paymentMethods ) ) {
 					foreach ( $this->paymentMethods as $methodLoop ) {
 						$class_files[] = $methodLoop->id;
@@ -559,6 +607,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                                 <th class="sort"></th>
                                 <th class="name"><?php echo __( 'Method', 'WC_Payment_Gateway' ) ?></th>
                                 <th class="title"><?php echo __( 'Title', 'WC_Payment_Gateway' ) ?></th>
+
+								<?php
+								// Having special configured contries?
+								if ($hasCountries) {
+									?>
+                                    <th class="country"><?php echo __( 'Country', 'WC_Payment_Gateway' ) ?></th>
+									<?php
+								}
+								?>
+
 								<?php if ( ! isResursOmni( true ) ) {
 									?>
                                     <th class="id"><?php echo __( 'ID', 'WC_Payment_Gateway' ) ?></th>
@@ -619,6 +677,17 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 										?>
                                     </td>
                                     <td class="title" width="300px"><?php echo $maTitle ?></td>
+
+									<?php
+									// Having special configured contries?
+									if ($hasCountries) {
+										?>
+                                        <th class="country"><?php echo $methodArray->country ?></th>
+										<?php
+									}
+									?>
+
+
 									<?php if ( ! isResursOmni( true ) ) { ?>
                                         <td class="id"><?php echo $methodArray->id; ?></td>
                                         <td class="fee" id="fee_<?php echo $methodArray->id; ?>"
@@ -747,16 +816,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 				echo $this->setSeparator( __( 'Save above configuration with the button below', 'WC_Payment_Gateway' ) );
 
 				if ($this->curlInDebug) {
-				    $getDebugData = $this->flow->getDebug();
-				    echo '<tr><td colspan="2">';
-				    echo '<b>curlmodule debug data</b><br>';
-				    echo '<pre>';
-				    print_r($getDebugData);
-				    $sslUnsafe = $this->flow->getSslIsUnsafe();
-				    echo __("During the URL calls, SSL certificate validation has been disabled", 'WC_Payment_Gateway') . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";
-				    echo '</pre>';
-				    echo '</td></tr>';
-                }
+					$getDebugData = $this->flow->getDebug();
+					echo '<tr><td colspan="2">';
+					echo '<b>curlmodule debug data</b><br>';
+					echo '<pre>';
+					print_r($getDebugData);
+					$sslUnsafe = $this->flow->getSslIsUnsafe();
+					echo __("During the URL calls, SSL certificate validation has been disabled", 'WC_Payment_Gateway') . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";
+					echo '</pre>';
+					echo '</td></tr>';
+				}
 
 				?>
 
@@ -802,3 +871,4 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 }
 
 return new WC_Settings_Tab_ResursBank();
+git diff
