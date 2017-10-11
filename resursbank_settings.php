@@ -465,11 +465,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 									foreach ( $countryBasedPaymentMethods[ $countryId ] as $countryObject ) {
 										$countryObject->country = $countryId;
 									}
-									set_transient( 'resursMethods' . $countryId, $countryBasedPaymentMethods[ $countryId ], 3600 );
+									set_transient( 'resursMethods' . $countryId, $countryBasedPaymentMethods[ $countryId ] );
 								}
-								// Assign a country id for each payment method in this list
-								set_transient( 'resursMethods' . $countryId, $countryBasedPaymentMethods[ $countryId ], 3600 );
 								$this->paymentMethods = array_merge( $this->paymentMethods, $countryBasedPaymentMethods[ $countryId ] );
+								set_transient("resursAllMethods", $this->paymentMethods);
 							}
 						}
 						$hasCountries = true;
