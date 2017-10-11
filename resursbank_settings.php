@@ -871,4 +871,3 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 }
 
 return new WC_Settings_Tab_ResursBank();
-git diff
