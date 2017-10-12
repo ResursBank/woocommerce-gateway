@@ -441,7 +441,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 			}
 		}
 
-		$hsaCountries = false;
+		$hasCountries = false;
 		try {
 			if ( ! preg_match( "/^resurs_bank_nr/i", $section ) ) {
 				// If we're in demoshop mode go another direction
