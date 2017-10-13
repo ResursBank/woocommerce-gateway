@@ -26,6 +26,10 @@
 
 namespace Resursbank\RBEcomPHP;
 
+if (!defined('TORNELIB_NETCURL_RELEASE')) {
+	define( 'TORNELIB_NETCURL_RELEASE', '6.0.12' );
+}
+
 if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_Network' ) ) {
 	/**
 	 * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
@@ -1196,9 +1200,9 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function setUserAgent( $CustomUserAgent = "" ) {
 			if ( ! empty( $CustomUserAgent ) ) {
 				$this->CustomUserAgent .= preg_replace( "/\s+$/", '', $CustomUserAgent );
-				$this->CurlUserAgent   = $this->CustomUserAgent . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate;
+				$this->CurlUserAgent   = $this->CustomUserAgent . " +TorneLIB-NetCurl-" . TORNELIB_NETCURL_RELEASE . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate;
 			} else {
-				$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate . ')';
+				$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB-NetCurl-' . TORNELIB_NETCURL_RELEASE . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate . ')';
 			}
 		}
 
@@ -2593,8 +2597,8 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			// Picking up externally select outgoing ip if any
 			$this->handleIpList();
 
-			// This curlopt makes it possible to make a call to a specific ip address and still use the HTTP_HOST
-			$this->setCurlOptInternal(CURLOPT_URL, $this->CurlURL);
+			// This curlopt makes it possible to make a call to a specific ip address and still use the HTTP_HOST (Must override)
+			$this->setCurlOpt(CURLOPT_URL, $this->CurlURL);
 
 			if ( is_array( $postData ) || is_object( $postData ) ) {
 				$postDataContainer = http_build_query( $postData );
@@ -2613,16 +2617,18 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			/**** CONDITIONAL SETUP ****/
 
 			// Lazysession: Sets post data if any found and sends it even if the curl-method is GET or any other than POST
+			// The postdata section must overwrite others, since the variables are set more than once depending on how the data
+			// changes or gets converted. The internal curlOpt setter don't overwrite variables if they are alread set.
 			if ( ! empty( $postDataContainer ) ) {
-				$this->setCurlOptInternal(CURLOPT_POSTFIELDS, $postDataContainer);
+				$this->setCurlOpt(CURLOPT_POSTFIELDS, $postDataContainer);
 			}
 			if ( $CurlMethod == CURL_METHODS::METHOD_POST || $CurlMethod == CURL_METHODS::METHOD_PUT || $CurlMethod == CURL_METHODS::METHOD_DELETE ) {
 				if ( $CurlMethod == CURL_METHODS::METHOD_PUT ) {
-					$this->setCurlOptInternal(CURLOPT_CUSTOMREQUEST, "PUT");
+					$this->setCurlOpt(CURLOPT_CUSTOMREQUEST, "PUT");
 				} else if ( $CurlMethod == CURL_METHODS::METHOD_DELETE ) {
-					$this->setCurlOptInternal(CURLOPT_CUSTOMREQUEST, "DELETE");
+					$this->setCurlOpt(CURLOPT_CUSTOMREQUEST, "DELETE");
 				} else {
-					$this->setCurlOptInternal(CURLOPT_POST, true);
+					$this->setCurlOpt(CURLOPT_POST, true);
 				}
 
 				if ( $postAs == CURL_POST_AS::POST_AS_JSON ) {
@@ -2638,7 +2644,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 					}
 					$this->CurlHeadersSystem['Content-Type']   = "application/json";
 					$this->CurlHeadersSystem['Content-Length'] = strlen( $jsonRealData );
-					$this->setCurlOptInternal(CURLOPT_POSTFIELDS, $jsonRealData);
+					$this->setCurlOpt(CURLOPT_POSTFIELDS, $jsonRealData);  // overwrite old
 				}
 			}
 
@@ -2674,13 +2680,13 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			$this->fixHttpHeaders( $this->CurlHeadersSystem );
 
 			if ( isset( $this->CurlHeaders ) && is_array( $this->CurlHeaders ) && count( $this->CurlHeaders ) ) {
-				$this->setCurlOptInternal(CURLOPT_HTTPHEADER, $this->CurlHeaders);
+				$this->setCurlOpt(CURLOPT_HTTPHEADER, $this->CurlHeaders); // overwrite old
 			}
 			if ( isset( $this->CurlUserAgent ) && ! empty( $this->CurlUserAgent ) ) {
-				$this->setCurlOpt(CURLOPT_USERAGENT, $this->CurlUserAgent);
+				$this->setCurlOpt(CURLOPT_USERAGENT, $this->CurlUserAgent); // overwrite old
 			}
 			if ( isset( $this->CurlEncoding ) && ! empty( $this->CurlEncoding ) ) {
-				$this->setCurlOptInternal(CURLOPT_ENCODING, $this->CurlEncoding);
+				$this->setCurlOpt(CURLOPT_ENCODING, $this->CurlEncoding); // overwrite old
 			}
 			if ( file_exists( $this->CookiePath ) && $this->CurlUseCookies && ! empty( $this->CurlURL ) ) {
 				@file_put_contents( $this->CookiePath . "/tmpcookie", "test" );
@@ -2710,7 +2716,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			}
 
 			// UNCONDITIONAL SETUP
-			// Things that should not be overridden
+			// Things that should be overwritten if set by someone else
 			$this->setCurlOpt(CURLOPT_HEADER, true);
 			$this->setCurlOpt(CURLOPT_RETURNTRANSFER, true);
 			$this->setCurlOpt(CURLOPT_AUTOREFERER, true);
@@ -2758,7 +2764,6 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 						$this->setSslUnverified( true );
 						$this->unsafeSslCall = true;
 						$this->CurlRetryTypes['sslunverified'] ++;
-
 						return $this->executeCurl( $this->CurlURL, $postData, $CurlMethod );
 					}
 				}
