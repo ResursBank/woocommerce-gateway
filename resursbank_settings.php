@@ -318,7 +318,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                     ';
 		if ( count( $optionsList ) > 0 ) {
 			$returnDropDown .= '
-                    <select ' . $scriptLoader . '
+                    <select class="resursConfigSelect" ' . $scriptLoader . '
                     ' . ( $listCount > 1 ? "size=\"" . $listCount . "\" multiple " : "" ) . '
                         name="' . $namespace . '_' . $settingKey . '"
                         id="' . $namespace . '_' . $settingKey . '">
@@ -441,7 +441,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 			}
 		}
 
-		$hsaCountries = false;
+		$hasCountries = false;
 		try {
 			if ( ! preg_match( "/^resurs_bank_nr/i", $section ) ) {
 				// If we're in demoshop mode go another direction

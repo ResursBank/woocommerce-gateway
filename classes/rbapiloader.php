@@ -3930,6 +3930,10 @@ class ResursBank {
 	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration.
 	 */
 	private function getFormTemplateRules() {
+
+		// TODO: New regex for swedish phone numbers that supports +4607[...]-typos (see the extra 0)
+		// ^((0|\\+46||0046)[ |-]?(200|20|70|73|76|74|1-9{0,2})([ |-]?[0-9]){5,8})?$
+
 		$formTemplateRules = array(
 			'NATURAL' => array(
 				'fields' => array(
@@ -6049,6 +6053,27 @@ class ResursBank {
 	 * @deprecated Use updateCheckoutOrderLines() instead
 	 */
 	public function setCheckoutFrameOrderLines( $paymentId = '', $orderLines = array() ) {
+		$this->updateCheckoutOrderLines($paymentId, $orderLines);
+	}
+
+	/**
+	 * Update the Checkout iframe
+	 *
+	 * Backwards compatible so the formatting of the orderLines will be accepted in folllowing formats:
+	 *  - $orderLines is accepted as a json string
+	 *  - $orderLines can be sent in as array('orderLines' => $yourOrderlines)
+	 *  - $orderLines can be sent in as array($yourOrderlines)
+	 *
+	 * @param string $paymentId
+	 * @param array $orderLines
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 * @since 1.0.22
+	 * @since 1.1.22
+	 * @since 1.2.0
+	 */
+	public function updateCheckoutOrderLines( $paymentId = '', $orderLines = array() ) {
 		$outputOrderLines = array();
 		if ( empty( $paymentId ) ) {
 			throw new \Exception( "Payment id not set" );
@@ -6083,23 +6108,6 @@ class ResursBank {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Update the Checkout iframe
-	 *
-	 * Backwards compatible so the formatting of the orderLines will be accepted in folllowing formats:
-	 *  - $orderLines is accepted as a json string
-	 *  - $orderLines can be sent in as array('orderLines' => $yourOrderlines)
-	 *  - $orderLines can be sent in as array($yourOrderlines)
-	 *
-	 * @param string $paymentId
-	 * @param array $orderLines
-	 * @since 1.0.22
-	 * @since 1.1.22
-	 * @since 1.2.0
-	 */
-	public function updateCheckoutOrderLines( $paymentId = '', $orderLines = array() ) {
 		$this->setCheckoutFrameOrderLines($paymentId, $orderLines);
 	}
 

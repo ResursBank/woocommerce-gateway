@@ -300,3 +300,13 @@ a.labelBoot:focus, a.labelBoot:hover {
 .labelBoot-danger[href]:focus, .labelBoot-danger[href]:hover {
     background-color: #c9302c
 }
+.resursConfigSelect {
+    height: 40px !important;
+    width: 800px !important;
+    /*-webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;*/
+}
+.resursConfigLeft {
+    /*width: 200px !important;*/
+}

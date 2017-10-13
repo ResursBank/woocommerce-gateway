@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.8.2
 Requires PHP: 5.4
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,14 +14,20 @@ Resurs Bank Payment Gateway for WooCommerce.
 == Description ==
 
 Resurs Bank payment gateway for WooCommerce
-Compatible with WooCommerce from at least version 5.6 up to 3.0/3.1
+
+ * Compatible with WooCommerce 5.6 up to 3.0/3.1
+ * Verified with WooCommerce 3.2
+ * Verified with PHP version 5.4 - 7.1
+
 
 Requirements:
 
+ * At least PHP 5.4
  * [curl](https://curl.haxx.se)
- * In case of the use of our SOAP-based shop flow - [SoapClient](http://php.net/manual/en/class.soapclient.php)
+ * [SoapClient](http://php.net/manual/en/class.soapclient.php)
 
 [Project URL](https://test.resurs.com/docs/display/ecom/WooCommerce) - [Plugin URL](https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/)
+
 
 = Contribute =
 
