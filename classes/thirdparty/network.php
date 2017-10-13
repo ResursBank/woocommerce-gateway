@@ -21,7 +21,7 @@
  *
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
  *
- * @version 6.0.11
+ * @version 6.0.12
  */
 
 namespace Resursbank\RBEcomPHP;
@@ -431,7 +431,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 	 * Class Tornevall_cURL
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.9
+	 * @version 6.0.11
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIBv5
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php-netcurl/browse Sources of TorneLIB
 	 * @link https://docs.tornevall.net/x/KwCy Network & Curl v5 and v6 Library usage
@@ -489,11 +489,11 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		/** @var string This modules name (inherited to some exceptions amongst others) */
 		protected $ModuleName = "NetCurl";
 		/** @var string Internal version that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlVersion = "6.0.10";
+		private $TorneCurlVersion = "6.0.11";
 		/** @var null Curl Version */
 		private $CurlVersion = null;
 		/** @var string Internal release snapshot that is being used to find out if we are running the latest version of this library */
-		private $TorneCurlReleaseDate = "20171010";
+		private $TorneCurlReleaseDate = "20171013";
 		/**
 		 * Prepare TorneLIB_Network class if it exists (as of the november 2016 it does).
 		 *
@@ -563,7 +563,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		/** @var null, if not set, but CurlProxy is, we will use HTTP as proxy (See CURLPROXY_* for more information) */
 		private $CurlProxyType = null;
 		/** @var bool Enable tunneling mode */
-		public $CurlTunnel = false;
+		private $CurlTunnel = false;
 
 		//// URL REDIRECT
 		/** @var bool Decide whether the curl library should follow an url redirect or not */
@@ -653,11 +653,15 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * @param string $PreferredURL
 		 * @param array $PreparedPostData
 		 * @param int $PreferredMethod
+		 * @param array $flags
 		 *
 		 * @throws \Exception
 		 */
-		public function __construct( $PreferredURL = '', $PreparedPostData = array(), $PreferredMethod = CURL_METHODS::METHOD_POST ) {
+		public function __construct( $PreferredURL = '', $PreparedPostData = array(), $PreferredMethod = CURL_METHODS::METHOD_POST, $flags = array() ) {
 			register_shutdown_function( array( $this, 'tornecurl_terminate' ) );
+			if (is_array($flags) && count($flags)) {
+				$this->setFlags( $flags );
+			}
 			// Store constants of curl errors and curlOptions
 			try {
 				$constants = @get_defined_constants();
@@ -711,6 +715,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			$this->throwableHttpCodes = array();
 
 			if ( ! empty( $PreferredURL ) ) {
+				$this->CurlURL = $PreferredURL;
 				$InstantResponse = null;
 				if ( $PreferredMethod == CURL_METHODS::METHOD_GET ) {
 					$InstantResponse = $this->doGet( $PreferredURL );
@@ -736,6 +741,42 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			if ( ! count( glob( $this->CookiePath . "/*" ) ) && $this->CookiePathCreated ) {
 				@rmdir( $this->CookiePath );
 			}
+		}
+
+		function isAssoc(array $arrayData)
+		{
+			if (array() === $arrayData) return false;
+			return array_keys($arrayData) !== range(0, count($arrayData) - 1);
+		}
+
+		/**
+		 * Set multiple flags
+		 *
+		 * @param array $flags
+		 * @since 6.0.10
+		 */
+		private function setFlags( $flags = array() ) {
+			if ( $this->isAssoc( $flags ) ) {
+				foreach ( $flags as $flagKey => $flagData ) {
+					$this->setFlag( $flagKey, $flagData );
+				}
+			} else {
+				foreach ($flags as $flagKey) {
+					$this->setFlag($flagKey, true);
+				}
+			}
+			if ($this->isFlag("NOCHAIN")) {
+				$this->unsetFlag("CHAIN");
+			}
+		}
+
+		/**
+		 * Return all flags
+		 *
+		 * @return array
+		 */
+		public function getFlags() {
+			return $this->internalFlags;
 		}
 
 		/**
@@ -797,20 +838,39 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		}
 
 		/**
-		 * Set internal flag parameter
+		 * Set internal flag parameter.
 		 *
 		 * @param string $flagKey
-		 * @param string $flagValue
+		 * @param string $flagValue Nullable since 6.0.10 = If null, then it is considered a true boolean, set setFlag("key") will always be true as an activation key
 		 * @return bool If successful
 		 * @throws \Exception
 		 * @since 6.0.9
 		 */
-		public function setFlag($flagKey = '', $flagValue = '') {
+		public function setFlag($flagKey = '', $flagValue = null) {
 			if (!empty($flagKey)) {
-				$this->internalFlags[$flagKey] = $flagValue ;
+				if (is_null($flagValue)) {
+					$flagValue = true;
+				}
+				$this->internalFlags[ $flagKey ] = $flagValue;
 				return true;
 			}
 			throw new \Exception("Flags can not be empty", 500);
+		}
+
+		/**
+		 * @param string $flagKey
+		 * @return bool
+		 * @since 6.0.10
+		 */
+		public function unsetFlag($flagKey = '') {
+			if ($this->hasFlag($flagKey)) {
+				unset($this->internalFlags[$flagKey]);
+				return true;
+			}
+			return false;
+		}
+		public function removeFlag($flagKey = '') {
+			return $this->unsetFlag($flagKey);
 		}
 
 		/**
@@ -1199,12 +1259,40 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		/**
 		 * Customize the curlopt configuration
 		 *
-		 * @param array $curlOptArray
+		 * @param array $curlOptArrayOrKey If arrayed, there will be multiple options at once
+		 * @param null $curlOptValue If not null, and the first parameter is not an array, this is taken as a single update value
 		 */
-		public function setCurlOpt($curlOptArray = array()) {
-			// Internal appender
-			foreach ($curlOptArray as $key => $val) {
-				$this->curlopt[$key] = $val;
+		public function setCurlOpt( $curlOptArrayOrKey = array(), $curlOptValue = null ) {
+			if (is_null($this->CurlSession)) {
+				$this->init();
+			}
+			if ( is_array( $curlOptArrayOrKey ) ) {
+				foreach ( $curlOptArrayOrKey as $key => $val ) {
+					$this->curlopt[ $key ] = $val;
+					curl_setopt( $this->CurlSession, $key, $val );
+				}
+			}
+			if ( ! is_array( $curlOptArrayOrKey ) && !empty( $curlOptArrayOrKey ) && ! is_null( $curlOptValue ) ) {
+				$this->curlopt[ $curlOptArrayOrKey ] = $curlOptValue;
+				curl_setopt( $this->CurlSession, $curlOptArrayOrKey, $curlOptValue );
+			}
+		}
+
+		/**
+		 * curlops that can be overridden
+		 *
+		 * @param array $curlOptArrayOrKey
+		 * @param null $curlOptValue
+		 */
+		private function setCurlOptInternal( $curlOptArrayOrKey = array(), $curlOptValue = null ) {
+			if (is_null($this->CurlSession)) {
+				$this->init();
+			}
+			if ( ! is_array( $curlOptArrayOrKey ) && !empty( $curlOptArrayOrKey ) && ! is_null( $curlOptValue ) ) {
+				if (!isset($this->curlopt[$curlOptArrayOrKey])) {
+					$this->curlopt[ $curlOptArrayOrKey ] = $curlOptValue;
+					curl_setopt( $this->CurlSession, $curlOptArrayOrKey, $curlOptValue );
+				}
 			}
 		}
 
@@ -1796,8 +1884,46 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function setProxy( $ProxyAddr, $ProxyType = CURLPROXY_HTTP ) {
 			$this->CurlProxy     = $ProxyAddr;
 			$this->CurlProxyType = $ProxyType;
+			// Run from proxy on request
+			$this->setCurlOptInternal( CURLOPT_PROXY, $this->CurlProxy );
+			if ( isset( $this->CurlProxyType ) && ! empty( $this->CurlProxyType ) ) {
+				$this->setCurlOptInternal( CURLOPT_PROXYTYPE, $this->CurlProxyType );
+			}
 		}
 
+		/**
+		 * Get proxy settings
+		 *
+		 * @return array
+		 * @since 6.0.11
+		 */
+		public function getProxy() {
+			return array(
+				'curlProxy' => $this->CurlProxy,
+				'curlProxyType' => $this->CurlProxyType
+			);
+		}
+
+		/**
+		 * Enable curl tunneling
+		 *
+		 * @param bool $curlTunnelEnable
+		 * @since 6.0.11
+		 */
+		public function setTunnel($curlTunnelEnable = true) {
+			// Run in tunneling mode
+			$this->CurlTunnel = $curlTunnelEnable;
+			$this->setCurlOptInternal(CURLOPT_HTTPPROXYTUNNEL, $curlTunnelEnable);
+		}
+
+		/**
+		 * Return state of curltunneling
+		 *
+		 * @return bool
+		 */
+		public function getTunnel() {
+			return $this->CurlTunnel;
+		}
 
 
 		//// PARSING
@@ -1910,6 +2036,11 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * @return array|string|TORNELIB_CURLOBJECT
 		 */
 		private function ParseResponse( $content = '' ) {
+			// Kill the chaining (for future releases, when we eventually raise chaining mode as default)
+			if ($this->isFlag("NOCHAIN")) {
+				$this->unsetFlag("CHAIN");
+			}
+
 			if ( ! is_string( $content ) ) {
 				return $content;
 			}
@@ -1934,7 +2065,9 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 					'body'   => $body,
 					'code'   => $code
 				);
-				//$redirectContent = $this->ParseContent($body, false);
+				if ($this->isFlag('FOLLOWLOCATION_INTERNAL')) {
+					// For future coding only: Add internal follow function, eventually.
+				}
 			}
 			$headerInfo     = $this->GetHeaderKeyArray( $rows );
 			$returnResponse = array(
@@ -1965,7 +2098,9 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				return $returnResponseObject;
 			}
 			$this->TemporaryResponse = $returnResponse;
-
+			if ($this->isFlag("CHAIN")) {
+				return $this;
+			}
 			return $returnResponse;
 		}
 
@@ -2257,7 +2392,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function doPost( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
 			if ( ! empty( $url ) ) {
-				$content  = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_POST, $postAs );
+				$content  = $this->executeCurl( $url, $postData, CURL_METHODS::METHOD_POST, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
 
@@ -2274,7 +2409,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function doPut( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
 			if ( ! empty( $url ) ) {
-				$content  = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_PUT, $postAs );
+				$content  = $this->executeCurl( $url, $postData, CURL_METHODS::METHOD_PUT, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
 
@@ -2291,7 +2426,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function doDelete( $url = '', $postData = array(), $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
 			if ( ! empty( $url ) ) {
-				$content  = $this->handleUrlCall( $url, $postData, CURL_METHODS::METHOD_DELETE, $postAs );
+				$content  = $this->executeCurl( $url, $postData, CURL_METHODS::METHOD_DELETE, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
 
@@ -2309,7 +2444,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function doGet( $url = '', $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			$response = null;
 			if ( ! empty( $url ) ) {
-				$content  = $this->handleUrlCall( $url, array(), CURL_METHODS::METHOD_GET, $postAs );
+				$content  = $this->executeCurl( $url, array(), CURL_METHODS::METHOD_GET, $postAs );
 				$response = $this->ParseResponse( $content );
 			}
 
@@ -2382,12 +2517,14 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 * @return mixed
 		 * @throws \Exception
 		 */
-		private function handleUrlCall( $url = '', $postData = array(), $CurlMethod = CURL_METHODS::METHOD_GET, $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
+		private function executeCurl( $url = '', $postData = array(), $CurlMethod = CURL_METHODS::METHOD_GET, $postAs = CURL_POST_AS::POST_AS_NORMAL ) {
 			if ( ! empty( $url ) ) {
 				$this->CurlURL = $url;
 			}
 
-			$this->init();
+			if (is_null($this->CurlSession)) {
+				$this->init();
+			}
 			$this->CurlHeaders = array();
 
 			// Enforce postAs
@@ -2407,8 +2544,9 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			if ( ini_get( 'open_basedir' ) == '' && ! filter_var( ini_get( 'safe_mode' ), FILTER_VALIDATE_BOOLEAN ) ) {
 				// To disable the default behaviour of this function, use setEnforceFollowLocation([bool]).
 				if ( $this->followLocationSet ) {
-					curl_setopt( $this->CurlSession, CURLOPT_FOLLOWLOCATION, $this->followLocationSet );
-					$this->curlopt[ CURLOPT_FOLLOWLOCATION ] = $this->followLocationSet;
+					// Since setCurlOptInternal is not an overrider, using the overrider here, will have no effect on the curlopt setting
+					// as it has already been set from our top defaults. This has to be pushed in, by force.
+					$this->setCurlOpt(CURLOPT_FOLLOWLOCATION, $this->followLocationSet);
 				}
 			}
 
@@ -2417,10 +2555,8 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				// And we're allowed to run without them
 				if ( ! $this->sslVerify && $this->allowSslUnverified ) {
 					// Then disable the checking here
-					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 0 );
-					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
-					$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 0;
-					$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 0;
+					$this->setCurlOptInternal(CURLOPT_SSL_VERIFYHOST, 0);
+					$this->setCurlOptInternal(CURLOPT_SSL_VERIFYPEER, 0);
 					$this->unsafeSslCall = true;
 				} else {
 					// From libcurl 7.28.1 CURLOPT_SSL_VERIFYHOST is deprecated. However, using the value 1 can be used
@@ -2430,31 +2566,24 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 					// for CURLOPT_SSL_VERIFYHOST instead. The reason of why we are using the value 1 before this version
 					// is actually a lazy thing, as we don't want to break anything that might be unsupported before this version.
 					if ( version_compare( PHP_VERSION, '5.4.11', ">=" ) ) {
-						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 2 );
-						$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 2;
+						$this->setCurlOptInternal(CURLOPT_SSL_VERIFYHOST, 2);
 					} else {
-						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 1 );
-						$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 1;
+						$this->setCurlOptInternal(CURLOPT_SSL_VERIFYHOST, 1);
 					}
-					curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 1 );
-					$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 1;
+					$this->setCurlOptInternal(CURLOPT_SSL_VERIFYPEER, 1);
 				}
 			} else {
 				// Silently configure for https-connections, if exists
 				if ( $this->useCertFile != "" && file_exists( $this->useCertFile ) ) {
 					if ( ! $this->sslVerify && $this->allowSslUnverified ) {
 						// Then disable the checking here
-						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYHOST, 0 );
-						curl_setopt( $this->CurlSession, CURLOPT_SSL_VERIFYPEER, 0 );
-						$this->curlopt[ CURLOPT_SSL_VERIFYHOST ] = 0;
-						$this->curlopt[ CURLOPT_SSL_VERIFYPEER ] = 0;
+						$this->setCurlOptInternal(CURLOPT_SSL_VERIFYHOST, 0);
+						$this->setCurlOptInternal(CURLOPT_SSL_VERIFYPEER, 0);
 						$this->unsafeSslCall = true;
 					} else {
 						try {
-							curl_setopt( $this->CurlSession, CURLOPT_CAINFO, $this->useCertFile );
-							curl_setopt( $this->CurlSession, CURLOPT_CAPATH, dirname( $this->useCertFile ) );
-							$this->curlopt[ CURLOPT_CAINFO ] = $this->useCertFile;
-							$this->curlopt[ CURLOPT_CAPATH ] = dirname( $this->useCertFile );
+							$this->setCurlOptInternal(CURLOPT_CAINFO, $this->useCertFile);
+							$this->setCurlOptInternal(CURLOPT_CAPATH, dirname( $this->useCertFile ));
 						} catch ( \Exception $e ) {
 						}
 					}
@@ -2463,7 +2592,9 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 
 			// Picking up externally select outgoing ip if any
 			$this->handleIpList();
-			curl_setopt( $this->CurlSession, CURLOPT_URL, $this->CurlURL );
+
+			// This curlopt makes it possible to make a call to a specific ip address and still use the HTTP_HOST
+			$this->setCurlOptInternal(CURLOPT_URL, $this->CurlURL);
 
 			if ( is_array( $postData ) || is_object( $postData ) ) {
 				$postDataContainer = http_build_query( $postData );
@@ -2483,21 +2614,19 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 
 			// Lazysession: Sets post data if any found and sends it even if the curl-method is GET or any other than POST
 			if ( ! empty( $postDataContainer ) ) {
-				curl_setopt( $this->CurlSession, CURLOPT_POSTFIELDS, $postDataContainer );
+				$this->setCurlOptInternal(CURLOPT_POSTFIELDS, $postDataContainer);
 			}
 			if ( $CurlMethod == CURL_METHODS::METHOD_POST || $CurlMethod == CURL_METHODS::METHOD_PUT || $CurlMethod == CURL_METHODS::METHOD_DELETE ) {
 				if ( $CurlMethod == CURL_METHODS::METHOD_PUT ) {
-					curl_setopt( $this->CurlSession, CURLOPT_CUSTOMREQUEST, "PUT" );
+					$this->setCurlOptInternal(CURLOPT_CUSTOMREQUEST, "PUT");
 				} else if ( $CurlMethod == CURL_METHODS::METHOD_DELETE ) {
-					curl_setopt( $this->CurlSession, CURLOPT_CUSTOMREQUEST, "DELETE" );
+					$this->setCurlOptInternal(CURLOPT_CUSTOMREQUEST, "DELETE");
 				} else {
-					curl_setopt( $this->CurlSession, CURLOPT_POST, true );
+					$this->setCurlOptInternal(CURLOPT_POST, true);
 				}
 
 				if ( $postAs == CURL_POST_AS::POST_AS_JSON ) {
-					/*
-				 * Using $jsonRealData to validate the string
-				 */
+					// Using $jsonRealData to validate the string
 					$jsonRealData = null;
 					if ( ! is_string( $postData ) ) {
 						$jsonRealData = json_encode( $postData );
@@ -2509,72 +2638,58 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 					}
 					$this->CurlHeadersSystem['Content-Type']   = "application/json";
 					$this->CurlHeadersSystem['Content-Length'] = strlen( $jsonRealData );
-					curl_setopt( $this->CurlSession, CURLOPT_POSTFIELDS, $jsonRealData );
+					$this->setCurlOptInternal(CURLOPT_POSTFIELDS, $jsonRealData);
 				}
 			}
 
 			// Self set timeouts, making sure the timeout set in the public is an integer over 0. Otherwise this falls back to the curldefauls.
 			if ( isset( $this->CurlTimeout ) && $this->CurlTimeout > 0 ) {
-				curl_setopt( $this->CurlSession, CURLOPT_CONNECTTIMEOUT, ceil( $this->CurlTimeout / 2 ) );
-				curl_setopt( $this->CurlSession, CURLOPT_TIMEOUT, $this->CurlTimeout );
-				$this->curlopt[ CURLOPT_CONNECTTIMEOUT ] = ceil( $this->CurlTimeout / 2 );
-				$this->curlopt[ CURLOPT_TIMEOUT ]        = ceil( $this->CurlTimeout );
+				$this->setCurlOptInternal(CURLOPT_CONNECTTIMEOUT, ceil( $this->CurlTimeout / 2 ));
+				$this->setCurlOptInternal(CURLOPT_TIMEOUT, ceil( $this->CurlTimeout ));
 			}
 			if ( isset( $this->CurlResolve ) && $this->CurlResolve !== CURL_RESOLVER::RESOLVER_DEFAULT ) {
 				if ( $this->CurlResolve == CURL_RESOLVER::RESOLVER_IPV4 ) {
-					curl_setopt( $this->CurlSession, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 );
-					$this->curlopt[ CURLOPT_IPRESOLVE ] = CURL_IPRESOLVE_V4;
+					$this->setCurlOptInternal(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 				}
 				if ( $this->CurlResolve == CURL_RESOLVER::RESOLVER_IPV6 ) {
-					curl_setopt( $this->CurlSession, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6 );
-					$this->curlopt[ CURLOPT_IPRESOLVE ] = CURL_IPRESOLVE_V6;
+					$this->setCurlOptInternal(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6);
 				}
 			}
 
-			curl_setopt( $this->CurlSession, CURLOPT_VERBOSE, false );
-			if ( isset( $this->CurlProxy ) && ! empty( $this->CurlProxy ) ) {
-				// Run from proxy
-				curl_setopt( $this->CurlSession, CURLOPT_PROXY, $this->CurlProxy );
-				$this->curlopt[ CURLOPT_PROXYTYPE ] = $this->CurlProxy;
-				if ( isset( $this->CurlProxyType ) && ! empty( $this->CurlProxyType ) ) {
-					curl_setopt( $this->CurlSession, CURLOPT_PROXYTYPE, $this->CurlProxyType );
-					$this->curlopt[ CURLOPT_PROXYTYPE ] = $this->CurlProxyType;
-				}
+			$this->setCurlOptInternal(CURLOPT_VERBOSE, false);
+			// Tunnel and proxy setup. If this is set, make sure the default IP setup gets cleared out.
+			if ( ! empty( $this->CurlProxy ) && ! empty( $this->CurlProxyType ) ) {
 				unset( $this->CurlIp );
 			}
-			if ( isset( $this->CurlTunnel ) && ! empty( $this->CurlTunnel ) ) {
-				// Run in tunneling mode
-				curl_setopt( $this->CurlSession, CURLOPT_HTTPPROXYTUNNEL, true );
-				$this->curlopt[ CURLOPT_HTTPPROXYTUNNEL ] = true;
+			if ( $this->getTunnel() ) {
 				unset( $this->CurlIp );
 			}
+
 			// Another HTTP_REFERER
 			if ( isset( $this->CurlReferer ) && ! empty( $this->CurlReferer ) ) {
-				curl_setopt( $this->CurlSession, CURLOPT_REFERER, $this->CurlReferer );
-				$this->curlopt[ CURLOPT_REFERER ] = $this->CurlReferer;
+				$this->setCurlOptInternal(CURLOPT_REFERER, $this->CurlReferer);
 			}
 
 			$this->fixHttpHeaders( $this->CurlHeadersUserDefined );
 			$this->fixHttpHeaders( $this->CurlHeadersSystem );
 
 			if ( isset( $this->CurlHeaders ) && is_array( $this->CurlHeaders ) && count( $this->CurlHeaders ) ) {
-				curl_setopt( $this->CurlSession, CURLOPT_HTTPHEADER, $this->CurlHeaders );
+				$this->setCurlOptInternal(CURLOPT_HTTPHEADER, $this->CurlHeaders);
 			}
 			if ( isset( $this->CurlUserAgent ) && ! empty( $this->CurlUserAgent ) ) {
-				curl_setopt( $this->CurlSession, CURLOPT_USERAGENT, $this->CurlUserAgent );
+				$this->setCurlOpt(CURLOPT_USERAGENT, $this->CurlUserAgent);
 			}
 			if ( isset( $this->CurlEncoding ) && ! empty( $this->CurlEncoding ) ) {
-				curl_setopt( $this->CurlSession, CURLOPT_ENCODING, $this->CurlEncoding );
+				$this->setCurlOptInternal(CURLOPT_ENCODING, $this->CurlEncoding);
 			}
 			if ( file_exists( $this->CookiePath ) && $this->CurlUseCookies && ! empty( $this->CurlURL ) ) {
 				@file_put_contents( $this->CookiePath . "/tmpcookie", "test" );
 				if ( ! file_exists( $this->CookiePath . "/tmpcookie" ) ) {
 					$this->SaveCookies = true;
 					$this->CookieFile  = $domainHash;
-					curl_setopt( $this->CurlSession, CURLOPT_COOKIEFILE, $this->CookiePath . "/" . $this->CookieFile );
-					curl_setopt( $this->CurlSession, CURLOPT_COOKIEJAR, $this->CookiePath . "/" . $this->CookieFile );
-					curl_setopt( $this->CurlSession, CURLOPT_COOKIE, 1 );
-
+					$this->setCurlOptInternal(CURLOPT_COOKIEFILE, $this->CookiePath . "/" . $this->CookieFile);
+					$this->setCurlOptInternal(CURLOPT_COOKIEJAR, $this->CookiePath . "/" . $this->CookieFile);
+					$this->setCurlOptInternal(CURLOPT_COOKIE, 1);
 				} else {
 					if ( file_exists( $this->CookiePath . "/tmpcookie" ) ) {
 						unlink( $this->CookiePath . "/tmpcookie" );
@@ -2590,22 +2705,23 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				if ( CURL_AUTH_TYPES::AUTHTYPE_BASIC ) {
 					$useAuth = CURLAUTH_BASIC;
 				}
-				curl_setopt( $this->CurlSession, CURLOPT_HTTPAUTH, $useAuth );
-				curl_setopt( $this->CurlSession, CURLOPT_USERPWD, $this->AuthData['Username'] . ':' . $this->AuthData['Password'] );
+				$this->setCurlOptInternal(CURLOPT_HTTPAUTH, $useAuth);
+				$this->setCurlOptInternal(CURLOPT_USERPWD, $this->AuthData['Username'] . ':' . $this->AuthData['Password']);
 			}
 
-			/**** UNCONDITIONAL SETUP ****/
-			curl_setopt( $this->CurlSession, CURLOPT_HEADER, true );
-			curl_setopt( $this->CurlSession, CURLOPT_RETURNTRANSFER, true );
-			curl_setopt( $this->CurlSession, CURLOPT_AUTOREFERER, true );
-			curl_setopt( $this->CurlSession, CURLINFO_HEADER_OUT, true );
+			// UNCONDITIONAL SETUP
+			// Things that should not be overridden
+			$this->setCurlOpt(CURLOPT_HEADER, true);
+			$this->setCurlOpt(CURLOPT_RETURNTRANSFER, true);
+			$this->setCurlOpt(CURLOPT_AUTOREFERER, true);
+			$this->setCurlOpt(CURLINFO_HEADER_OUT, true);
 
 			// Override with SoapClient just before the real curl_exec is the most proper way to handle inheritages
 			if ( preg_match( "/\?wsdl$|\&wsdl$/i", $this->CurlURL ) || $postAs == CURL_POST_AS::POST_AS_SOAP ) {
 				if ( ! $this->hasSoap() ) {
 					throw new \Exception( $this->ModuleName . " " . __FUNCTION__ . " exception: SoapClient is not available in this system", 500 );
 				}
-				$Soap = new Tornevall_SimpleSoap( $this->CurlURL, $this->curlopt );
+				$Soap = new Tornevall_SimpleSoap( $this->CurlURL, $this );
 				$Soap->setCustomUserAgent( $this->CustomUserAgent );
 				$Soap->setThrowableState( $this->canThrow );
 				$Soap->setSoapAuthentication( $this->AuthData );
@@ -2643,7 +2759,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 						$this->unsafeSslCall = true;
 						$this->CurlRetryTypes['sslunverified'] ++;
 
-						return $this->handleUrlCall( $this->CurlURL, $postData, $CurlMethod );
+						return $this->executeCurl( $this->CurlURL, $postData, $CurlMethod );
 					}
 				}
 				if ( $errorCode == CURLE_COULDNT_RESOLVE_HOST || $errorCode === 45 ) {
@@ -2658,7 +2774,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 						$this->CurlResolve = CURL_RESOLVER::RESOLVER_IPV6;
 					}
 
-					return $this->handleUrlCall( $this->CurlURL, $postData, $CurlMethod );
+					return $this->executeCurl( $this->CurlURL, $postData, $CurlMethod );
 				}
 				throw new \Exception( $this->ModuleName . " exception from PHP/CURL at " . __FUNCTION__ . ": " . curl_error( $this->CurlSession ), curl_errno( $this->CurlSession ) );
 			}
@@ -2846,6 +2962,19 @@ if ( ! class_exists( 'TorneLIB_Network_IP_Protocols' ) && ! class_exists( 'Torne
 		const PROTOCOL_IPV4 = 4;
 		const PROTOCOL_IPV6 = 6;
 	}
+
+	if ( ! class_exists( 'TorneLIB_Network_IP' ) && ! class_exists( 'TorneLIB\TorneLIB_Network_IP' ) ) {
+		/**
+		 * Class TorneLIB_Network_IP
+		 * @package TorneLIB
+		 * @deprecated Use TorneLIB_Network_IP_Protocols
+		 */
+		abstract class TorneLIB_Network_IP extends TorneLIB_Network_IP_Protocols {
+			const IPTYPE_NONE = 0;
+			const IPTYPE_V4 = 4;
+			const IPTYPE_V6 = 6;
+		}
+	}
 }
 if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Tornevall_SimpleSoap' ) ) {
 	/**
@@ -2864,7 +2993,7 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 			'trace'      => true,
 			'cache_wsdl' => 0       // Replacing WSDL_CACHE_NONE (WSDL_CACHE_BOTH = 3)
 		);
-		private $simpleSoapVersion = "6.0.3";
+		private $simpleSoapVersion = "6.0.4";
 		private $soapUrl;
 		private $AuthData;
 		private $soapRequest;
@@ -2875,6 +3004,8 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 		private $canThrowSoapFaults = true;
 		private $CustomUserAgent;
 		private $soapFaultExceptionObject;
+		/** @var Tornevall_cURL */
+		private $PARENT;
 
 		private $SoapFaultString = null;
 		private $SoapFaultCode = 0;
@@ -2884,18 +3015,39 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 		 * Tornevall_SimpleSoap constructor.
 		 *
 		 * @param string $Url
-		 * @param array $SoapOptions
+		 * @param \TorneLIB\Tornevall_cURL
 		 */
-		function __construct( $Url, $SoapOptions = array() ) {
+		function __construct( $Url, $that = null ) {
+			// Inherit parent
 			parent::__construct();
+
+			/** @var Tornevall_cURL */
+			$this->PARENT = $that;      // Get the parent instance from parent, when parent gives wrong information
 			$this->soapUrl = $Url;
 			$this->sslGetOptionsStream();
-			if ( ! count( $SoapOptions ) ) {
-				$this->soapOptions = $SoapOptions;
-			}
+			$this->soapOptions = $this->PARENT->getCurlOpt();
 			foreach ( $this->addSoapOptions as $soapKey => $soapValue ) {
 				if ( ! isset( $this->soapOptions[ $soapKey ] ) ) {
 					$this->soapOptions[ $soapKey ] = $soapValue;
+				}
+			}
+			$this->configureInternals();
+		}
+
+		/**
+		 * Configure internal data
+		 *
+		 * @since 6.0.3
+		 */
+		private function configureInternals() {
+			$proxySettings = $this->PARENT->getProxy();
+
+			// SOCKS is currently unsupported by SoapClient
+			if (!empty($proxySettings['curlProxy'])) {
+				$proxyConfig = explode(":", $proxySettings['curlProxy']);
+				if ( isset( $proxyConfig[1] ) && ! empty( $proxyConfig[0] ) && $proxyConfig[1] > 0 ) {
+					$this->soapOptions['proxy_host'] = $proxyConfig[0];
+					$this->soapOptions['proxy_port'] = $proxyConfig[1];
 				}
 			}
 		}
@@ -2945,13 +3097,16 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 			}
 			if ( $this->SoapTryOnce ) {
 				try {
-					$this->soapClient = new \SoapClient( $this->soapUrl, $this->soapOptions );
+					$this->soapClient = @new \SoapClient( $this->soapUrl, $this->soapOptions );
 				} catch ( \Exception $soapException ) {
 					$soapCode = $soapException->getCode();
 					if ( ! $soapCode ) {
 						$soapCode = 500;
 					}
-					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $soapException->getMessage(), $soapCode );
+					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $soapException->getMessage(), $soapCode, $soapException );
+				}
+				if (!is_object($this->soapClient)) {
+					throw new \Exception( $this->ModuleName . " exception from SimpleSoap->getSoap(): Could not create SoapClient. Make sure that all settings and URLs are correctly configured.", 500 );
 				}
 			} else {
 				try {
@@ -2970,10 +3125,13 @@ if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Torne
 							try {
 								$this->soapClient = @new \SoapClient( $this->soapUrl, $this->soapOptions );
 							} catch ( \Exception $soapException ) {
-								throw new \Exception( $this->ModuleName . " exception from soapClient: " . $soapException->getMessage(), $soapException->getCode() );
+								throw new \Exception( $this->ModuleName . " exception from soapClient: " . $soapException->getMessage(), $soapException->getCode(), $soapException );
 							}
 						}
 					}
+				}
+				if (!is_object($this->soapClient)) {
+					throw new \Exception( $this->ModuleName . " exception from SimpleSoap->getSoap(): Could not create SoapClient. Make sure that all settings and URLs are correctly configured.", 500 );
 				}
 			}
 
