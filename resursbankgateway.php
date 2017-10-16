@@ -4,14 +4,14 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * Version: 2.1.3
+ * Version: 2.1.4
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', "2.1.3" );
+define( 'RB_WOO_VERSION', "2.1.4" );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
@@ -106,7 +106,7 @@ function woocommerce_gateway_resurs_bank_init() {
             */
 
 			hasResursOmni();
-            isResursSimulation(); // Make sure settings are properly set each round
+			isResursSimulation(); // Make sure settings are properly set each round
 
 			$this->id = "resurs-bank";
 			//$this->title = "Resurs Bank";
@@ -1074,17 +1074,29 @@ function woocommerce_gateway_resurs_bank_init() {
 			$resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
 			$timeDiff = time() - $resursTemporaryPaymentMethodsTime;
 
-			try {
-				if ($timeDiff >= 3600) {
-					$methodList = $this->flow->getPaymentMethods();
-					set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
-					set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
-				} else {
-					$methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
+
+			$countryCredentialArray = array();
+			$hasCountry = false;
+			if ( isResursDemo() && isset($_SESSION['rb_country']) && class_exists( "CountryHandler" ) ) {
+				if (isset($_SESSION['rb_country'])) {
+					$methodList = get_transient( 'resursMethods' . $_SESSION['rb_country'] );
+					$hasCountry = true;
 				}
-			} catch ( Exception $e ) {
-				$sessionHasErrors    = true;
-				$sessionErrorMessage = $e->getMessage();
+			}
+
+			if (!$hasCountry) {
+				try {
+					if ( $timeDiff >= 3600 ) {
+						$methodList = $this->flow->getPaymentMethods();
+						set_transient( "resursTemporaryPaymentMethodsTime", time(), 3600 );
+						set_transient( "resursTemporaryPaymentMethods", serialize( $methodList ), 3600 );
+					} else {
+						$methodList = unserialize( get_transient( "resursTemporaryPaymentMethods" ) );
+					}
+				} catch ( Exception $e ) {
+					$sessionHasErrors    = true;
+					$sessionErrorMessage = $e->getMessage();
+				}
 			}
 
 			// Get the read more from internal translation if not set
@@ -2253,11 +2265,11 @@ function woocommerce_gateway_resurs_bank_init() {
 			try {
 				if ($timeDiff >= 3600) {
 					$paymentMethods = $flow->getPaymentMethods();
-                    set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
-                    set_transient("resursTemporaryPaymentMethods", serialize($paymentMethods), 3600);
+					set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
+					set_transient("resursTemporaryPaymentMethods", serialize($paymentMethods), 3600);
 				} else {
-				    $paymentMethods = unserialize(get_transient("resursTemporaryPaymentMethods"));
-                }
+					$paymentMethods = unserialize(get_transient("resursTemporaryPaymentMethods"));
+				}
 			} catch ( Exception $e ) {
 				$methodsHasErrors    = true;
 				$methodsErrorMessage = $e->getMessage();
@@ -2956,13 +2968,13 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 	if ( ! empty( $resursPaymentId ) ) {
 		$hasError = "";
 		try {
-		    /** @var $rb \Resursbank\RBEcomPHP\ResursBank */
+			/** @var $rb \Resursbank\RBEcomPHP\ResursBank */
 			$rb                = initializeResursFlow();
 			try {
 				$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
 			} catch (\Exception $e) {
-			    return;
-            }
+				return;
+			}
 			$currentWcStatus   = $order->get_status();
 			$notIn             = array( "completed", "cancelled", "refunded" );
 			if ( ! $rb->canDebit( $resursPaymentInfo ) && $rb->getIsDebited( $resursPaymentInfo ) && ! in_array( $currentWcStatus, $notIn ) ) {
@@ -2983,7 +2995,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 		if ( empty( $hasError ) ) {
 			$status = "AUTHORIZE";
 			if ( is_array( $resursPaymentInfo->paymentDiffs ) ) {
-                $invoices = $rb->getPaymentInvoices($resursPaymentInfo);
+				$invoices = $rb->getPaymentInvoices($resursPaymentInfo);
 				foreach ( $resursPaymentInfo->paymentDiffs as $paymentDiff ) {
 					if ( $paymentDiff->type === "DEBIT" ) {
 						$status = "DEBIT";
@@ -3108,28 +3120,28 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
                         ';
 					} else {
 						if ($key == "metaData") {
-						    if (is_array($value)) {
-							    foreach ($value as $metaArray) {
-								    $renderedResursData .= '
+							if (is_array($value)) {
+								foreach ($value as $metaArray) {
+									$renderedResursData .= '
                                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst( $metaArray->key ) . ':</span>
                                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . $metaArray->value . '</span>
                                     ';
-							    }
-                            } else {
-							    $renderedResursData .= '
+								}
+							} else {
+								$renderedResursData .= '
                                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst( $value->key ) . ':</span>
                                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . $value->value . '</span>
                                 ';
-                            }
+							}
 						} else {
 							foreach ( $value as $subKey => $subValue ) {
-							    $renderedResursData .= '
+								$renderedResursData .= '
                                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst($key) . " (" . ucfirst( $subKey ) . '):</span>
                                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( ! empty( $subValue ) ? nl2br( $subValue ) : "" ) . '</span>
                                 ';
 							}
 						}
-                    }
+					}
 				}
 			}
 		} else {
@@ -3305,7 +3317,7 @@ function resurs_remove_order_item( $item_id ) {
 		}
 
 		try {
-		    $order = new WC_Order($orderId);
+			$order = new WC_Order($orderId);
 			$removeResursRow = $resursFlow->paymentCancel( $resursPaymentId, $clientPaymentSpec );
 			$order->add_order_note( __( 'Orderline Removal: Resurs Bank API was called to remove orderlines', 'WC_Payment_Gateway' ) );
 		} catch ( Exception $e ) {
@@ -3583,11 +3595,10 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 	/** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
 	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
-	$initFlow->setSimplifiedPsp(true);
 	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
 	if (isResursTest() && $sslHandler) {
-        $initFlow->setDebug(true);
-        $initFlow->setSslValidation(false, false);
+		$initFlow->setDebug(true);
+		$initFlow->setSslValidation(false, false);
 	}
 	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
@@ -3888,7 +3899,7 @@ if ( is_admin() ) {
  * @return bool
  */
 function isResursDemo() {
-    $resursSettings = get_option( 'woocommerce_resurs-bank_settings' );
+	$resursSettings = get_option( 'woocommerce_resurs-bank_settings' );
 	$demoshopMode = isset($resursSettings['demoshopMode']) ? $resursSettings['demoshopMode'] : false;
 	if ( $demoshopMode === "true" ) {
 		return true;
