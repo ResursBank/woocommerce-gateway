@@ -449,6 +449,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					try {
 						/** @var $demoShopFlow \Resursbank\RBEcomPHP\ResursBank */
 						$demoShopFlow               = initializeResursFlow();
+						$demoShopFlow->setSimplifiedPsp(true);
 						$countryBasedPaymentMethods = array();
 						foreach ( $countryCredentialArray as $countryId => $countryCredentials ) {
 							if ( isset( $countryCredentials['login'] ) && isset( $countryCredentials['password'] ) ) {
@@ -476,6 +477,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 						// Ignore and go on
 					}
 				} else {
+					$this->flow->setSimplifiedPsp(true);
 					$this->paymentMethods = $this->flow->getPaymentMethods();
 				}
 				if ( is_array( $this->paymentMethods ) ) {
