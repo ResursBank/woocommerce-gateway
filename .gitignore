@@ -2,8 +2,4 @@
 includes/resurs*
 Makefile
 node_modules
-/rbwsdl/simplifiedshopflowservice-client/index.php
-/rbwsdl/configurationservice-client/index.php
-/rbwsdl/aftershopflowservice-client/index.php
-/rbwsdl/index.php
 /staticflows/index.php
