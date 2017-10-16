@@ -2191,29 +2191,31 @@ class ResursBank {
 		}
 		$paymentSevice = $this->getPreferredPaymentService();
 
-		foreach ( $paymentMethods as $paymentMethodIndex => $paymentMethodData ) {
-			$type      = $paymentMethodData->type;
-			$addMethod = true;
+		if (is_array($paymentMethods) && count($paymentMethods)) {
+			foreach ( $paymentMethods as $paymentMethodIndex => $paymentMethodData ) {
+				$type      = $paymentMethodData->type;
+				$addMethod = true;
 
-			if ($this->paymentMethodIdSanitizing && isset($paymentMethods[$paymentMethodIndex]->id)) {
-				$paymentMethods[$paymentMethodIndex]->id = preg_replace("/[^a-z0-9$]/i", '', $paymentMethods[$paymentMethodIndex]->id);
-			}
+				if ( $this->paymentMethodIdSanitizing && isset( $paymentMethods[ $paymentMethodIndex ]->id ) ) {
+					$paymentMethods[ $paymentMethodIndex ]->id = preg_replace( "/[^a-z0-9$]/i", '', $paymentMethods[ $paymentMethodIndex ]->id );
+				}
 
-			if ( $this->paymentMethodsIsStrictPsp ) {
-				if ( $type == "PAYMENT_PROVIDER" ) {
-					$addMethod = false;
+				if ( $this->paymentMethodsIsStrictPsp ) {
+					if ( $type == "PAYMENT_PROVIDER" ) {
+						$addMethod = false;
+					}
+				} else if ( $paymentSevice != ResursMethodTypes::METHOD_CHECKOUT ) {
+					if ( $type == "PAYMENT_PROVIDER" ) {
+						$addMethod = false;
+					}
+					if ( $this->paymentMethodsHasPsp ) {
+						$addMethod = true;
+					}
 				}
-			} else if ( $paymentSevice != ResursMethodTypes::METHOD_CHECKOUT ) {
-				if ( $type == "PAYMENT_PROVIDER" ) {
-					$addMethod = false;
-				}
-				if ( $this->paymentMethodsHasPsp ) {
-					$addMethod = true;
-				}
-			}
 
-			if ( $addMethod ) {
-				$realPaymentMethods[] = $paymentMethodData;
+				if ( $addMethod ) {
+					$realPaymentMethods[] = $paymentMethodData;
+				}
 			}
 		}
 
