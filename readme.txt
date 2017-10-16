@@ -62,6 +62,12 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.1.3 =
+
+    * [WOO-198] - Support multiple credentials i demoshop mode (special templates only)
+    * [WOO-199] - Test plugin with WooCommerce 3.2.0
+
+
 = 2.1.2 =
 
     * [WOO-189] - PSP methods are half way supported in simple/hosted flow, but should be excluded from listing
