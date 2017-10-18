@@ -311,7 +311,13 @@ a.labelBoot:focus, a.labelBoot:hover {
     /*width: 200px !important;*/
 }
 
-.partPayInfoLink {
+.resursPartPayInfoLink {
     cursor: pointer;
     font-weight: bold;
+}
+.resursPartPaymentInfo {
+    margin: 5px;
+    padding: 5px;
+    border-top: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;
 }

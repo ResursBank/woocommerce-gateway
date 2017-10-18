@@ -2928,6 +2928,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$annuityMethod = trim(resursOption( "resursAnnuityMethod" ));
 			if ( ! empty( $annuityMethod ) ) {
 				$annuityFactorPrice = $product->get_price();
+
 				/** @var $flow \Resursbank\RBEcomPHP\ResursBank */
 				$flow           = initializeResursFlow();
 				try {
@@ -2939,11 +2940,13 @@ function woocommerce_gateway_resurs_bank_init() {
 						$annuityFactors = getResursOption("resursCurrentAnnuityFactors");
 						$annuityDuration = getResursOption("resursAnnuityDuration");
 						$payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice, $annuityFactors, $annuityDuration);
-						$payFromAnnuity = rb_price_string($payFrom, get_woocommerce_currency_symbol());
+                        $payFromAnnuity = wc_price($payFrom);
 						$costOfPurchase = admin_url( 'admin-ajax.php' ) . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
 						$onclick = 'window.open(\''.$costOfPurchase.'\')';
+						$displayAnnuity .= '<div class="resursPartPaymentInfo">';
 						$displayAnnuity .= '<span>' . __('Pay off from ', 'WC_Payment_Gateway') . $payFromAnnuity . ' ' . __('per month', 'WC_Payment_Gateway') . '</span> | ';
-						$displayAnnuity .= '<span class="partPayInfoLink" onclick="'.$onclick.'">'.__('Info', 'WC_Payment_Gateway').'</span>';
+						$displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="'.$onclick.'">'.__('Info', 'WC_Payment_Gateway').'</span>';
+						$displayAnnuity .= '</div>';
 
 						//$fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
 
