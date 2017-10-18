@@ -2949,8 +2949,6 @@ function woocommerce_gateway_resurs_bank_init() {
 							$displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __( 'Info', 'WC_Payment_Gateway' ) . '</span>';
 							$displayAnnuity .= '</div>';
 						}
-						//$fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
-
 					} else {
 						$displayAnnuity = __('Annuity factors can not be displayed: Payment method is missing in merchant configuration.', 'WC_Payment_Gateway');
 					}

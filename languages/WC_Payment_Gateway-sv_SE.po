@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2017-10-18 12:20+0200\n"
-"PO-Revision-Date: 2017-10-18 12:21+0200\n"
+"POT-Creation-Date: 2017-10-18 12:39+0200\n"
+"PO-Revision-Date: 2017-10-18 12:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -950,13 +950,13 @@ msgstr "Spara ovanstående data med hjälp av knappen nedan"
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
 
-#: resursbank_settings.php:856 resursbankgateway.php:3172
-#: resursbankgateway.php:3175
+#: resursbank_settings.php:856 resursbankgateway.php:3174
+#: resursbankgateway.php:3177
 msgid "Yes"
 msgstr "Ja"
 
-#: resursbank_settings.php:856 resursbankgateway.php:3172
-#: resursbankgateway.php:3175
+#: resursbank_settings.php:856 resursbankgateway.php:3174
+#: resursbankgateway.php:3177
 msgid "No"
 msgstr "Nej"
 
@@ -1033,7 +1033,7 @@ msgstr "Artikelbeskrivning saknas"
 msgid "Shipping"
 msgstr "Frakt"
 
-#: resursbankgateway.php:1141 resursbankgateway.php:3234
+#: resursbankgateway.php:1141 resursbankgateway.php:3236
 msgid "Read more"
 msgstr "Läs mer"
 
@@ -1348,19 +1348,19 @@ msgstr ""
 msgid "Resurs Reference"
 msgstr "Resurs referens"
 
-#: resursbankgateway.php:2945
+#: resursbankgateway.php:2948
 msgid "Pay off from "
 msgstr "Delbetala från"
 
-#: resursbankgateway.php:2945
+#: resursbankgateway.php:2948
 msgid "per month"
 msgstr "per månad"
 
-#: resursbankgateway.php:2946
+#: resursbankgateway.php:2949
 msgid "Info"
 msgstr "Info"
 
-#: resursbankgateway.php:2951
+#: resursbankgateway.php:2953
 msgid ""
 "Annuity factors can not be displayed: Payment method is missing in merchant "
 "configuration."
@@ -1368,11 +1368,11 @@ msgstr ""
 "Delbetalningsfaktorerna kan inte visas: Betalningsmetoden saknas i butikens "
 "inställningar."
 
-#: resursbankgateway.php:2956
+#: resursbankgateway.php:2958
 msgid "Annuity factors can not be displayed for the moment"
 msgstr "Delbetalningsfaktorerna kan för närvarande inte visas"
 
-#: resursbankgateway.php:3020
+#: resursbankgateway.php:3022
 msgid ""
 "It seems this order has already been finalized from an external system - if "
 "your order is finished you may update it here aswell"
@@ -1380,76 +1380,76 @@ msgstr ""
 "Det ser ut som att ordern redan har blivit debiterad från ett externt system "
 "- om din order är klar kan du uppdatera den härifrån också"
 
-#: resursbankgateway.php:3106
+#: resursbankgateway.php:3108
 msgid "The order is booked"
 msgstr "Ordern är bokad"
 
-#: resursbankgateway.php:3109
+#: resursbankgateway.php:3111
 msgid "The order is debited"
 msgstr "Ordern är debiterad"
 
-#: resursbankgateway.php:3111
+#: resursbankgateway.php:3113
 msgid "The order is partially debited"
 msgstr "Ordern är delvis debiterad"
 
-#: resursbankgateway.php:3114
+#: resursbankgateway.php:3116
 msgid "The order is credited"
 msgstr "Ordern är krediterad"
 
-#: resursbankgateway.php:3116
+#: resursbankgateway.php:3118
 msgid "The order is annulled"
 msgstr "Ordern är annullerad"
 
-#: resursbankgateway.php:3150
+#: resursbankgateway.php:3152
 msgid "Payment ID"
 msgstr "Betalnings-id"
 
-#: resursbankgateway.php:3153
+#: resursbankgateway.php:3155
 msgid "Payment method ID"
 msgstr "Betalmetodens id"
 
-#: resursbankgateway.php:3156
+#: resursbankgateway.php:3158
 msgid "Store ID"
 msgstr "Butiks-ID (Store ID)"
 
-#: resursbankgateway.php:3159
+#: resursbankgateway.php:3161
 msgid "Payment method name"
 msgstr "Betalmetodens namn"
 
-#: resursbankgateway.php:3162
+#: resursbankgateway.php:3164
 msgid "Payment method type"
 msgstr "Betalmetodens typ"
 
-#: resursbankgateway.php:3165
+#: resursbankgateway.php:3167
 msgid "Payment amount"
 msgstr "Orderbelopp"
 
-#: resursbankgateway.php:3168
+#: resursbankgateway.php:3170
 msgid "Payment limit"
 msgstr "Betalningens limit"
 
-#: resursbankgateway.php:3171
+#: resursbankgateway.php:3173
 msgid "Fraud"
 msgstr "Bedrägeri"
 
-#: resursbankgateway.php:3174
+#: resursbankgateway.php:3176
 msgid "Frozen"
 msgstr "Frusen"
 
-#: resursbankgateway.php:3177
+#: resursbankgateway.php:3179
 msgid "Customer name"
 msgstr "Kundens namn"
 
-#: resursbankgateway.php:3180
+#: resursbankgateway.php:3182
 msgid "Delivery address"
 msgstr "Leveransadress"
 
-#: resursbankgateway.php:3405
+#: resursbankgateway.php:3407
 msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
 msgstr ""
 "Borttagning av orderrad: Resurs Bank API anropades för ta bort orderrader"
 
-#: resursbankgateway.php:3949
+#: resursbankgateway.php:3951
 msgid "There are currently no payment methods available"
 msgstr "Det finns för närvarande inga betalningsmetoder tillgängliga"
 
