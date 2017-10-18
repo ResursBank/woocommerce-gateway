@@ -2925,30 +2925,50 @@ function woocommerce_gateway_resurs_bank_init() {
 		global $product;
 		$displayAnnuity = "";
 		if ( is_object( $product ) ) {
+
+			/** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+			$flow           = initializeResursFlow();
 			$annuityMethod = trim(resursOption( "resursAnnuityMethod" ));
+			$annuityFactorsOverride = null;
+			$annuityDurationOverride = null;
+
+			if ( isResursDemo() && isset($_SESSION['rb_country']) && class_exists( "CountryHandler" ) ) {
+				$countryHandler = new \CountryHandler();
+				$annuityFactorsOverride = $countryHandler->getAnnuityFactors();
+				$annuityDurationOverride = $countryHandler->getAnnuityFactorsDuration();
+			}
+
 			if ( ! empty( $annuityMethod ) ) {
 				$annuityFactorPrice = $product->get_price();
 
-				/** @var $flow \Resursbank\RBEcomPHP\ResursBank */
-				$flow           = initializeResursFlow();
 				try {
-					$methodList = $flow->getPaymentMethodSpecific($annuityMethod);
-					// Make sure the payment method exists.
-					if (count($methodList)) {
-						//$currentAnnuityFactor = (float)$flow->getAnnuityFactorByDuration($annuityFactors, $annuityDuration);
-						//$payFrom = round($currentAnnuityFactor * $annuityFactorPrice);
-						$annuityFactors = getResursOption("resursCurrentAnnuityFactors");
-						$annuityDuration = getResursOption("resursAnnuityDuration");
+					if (empty($annuityFactorsOverride)) {
+						$methodList = $flow->getPaymentMethodSpecific( $annuityMethod );
+					}
+					// Make sure the payment method exists. If there is overriders from the demoshop here, we'd know exists on the hard coded values.
+					if (count($methodList) || !empty($annuityFactorsOverride)) {
+						if (!empty($annuityFactorsOverride)) {
+							$annuityFactors  = $annuityFactorsOverride;
+						} else {
+							$annuityFactors = getResursOption("resursCurrentAnnuityFactors");
+						}
+						if (!empty($annuityFactorsOverride)) {
+							$annuityDuration  = $annuityDurationOverride;
+						} else {
+							$annuityDuration = getResursOption("resursAnnuityDuration");
+						}
 						$payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice, $annuityFactors, $annuityDuration);
 						if ($payFrom >= 150) {
 							$payFromAnnuity = wc_price( $payFrom );
 							$costOfPurchase = admin_url( 'admin-ajax.php' ) . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
 							$onclick        = 'window.open(\'' . $costOfPurchase . '\')';
 							$displayAnnuity .= '<div class="resursPartPaymentInfo">';
-							$displayAnnuity .= '<span>' . __( 'Pay off from ', 'WC_Payment_Gateway' ) . $payFromAnnuity . ' ' . __( 'per month', 'WC_Payment_Gateway' ) . '</span> | ';
+							$displayAnnuity .= '<span>' . __( 'Pay off from', 'WC_Payment_Gateway' ) . ' ' . $payFromAnnuity . ' ' . __( 'per month', 'WC_Payment_Gateway' ) . '</span> | ';
 							$displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __( 'Info', 'WC_Payment_Gateway' ) . '</span>';
 							$displayAnnuity .= '</div>';
 						}
+						//$fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
+
 					} else {
 						$displayAnnuity = __('Annuity factors can not be displayed: Payment method is missing in merchant configuration.', 'WC_Payment_Gateway');
 					}
