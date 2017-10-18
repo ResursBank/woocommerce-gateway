@@ -622,6 +622,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 									?>
                                     <th class="id"><?php echo __( 'ID', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="fee"><?php echo __( 'Fee', 'WC_Payment_Gateway' ) ?></th>
+                                    <th class="annuityfactor"><?php echo __( 'AnnuityFactor', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="status"><?php echo __( 'Enable/Disable', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="process">&nbsp;</th>
 								<?php } ?>
@@ -654,6 +655,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 										$isEnabled = true;
 									}
 								}
+								$annuityMethod = resursOption("resursAnnuityMethod");
+								$annuityDuration = resursOption("resursAnnuityDuration");
 
 								$maTitle = $methodArray->description;
 								// Unacceptable title set (WOO-96)
@@ -686,33 +689,60 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                                         <th class="country"><?php echo $methodArray->country ?></th>
 										<?php
 									}
-									?>
 
-
-									<?php if ( ! isResursOmni( true ) ) { ?>
+									if ( ! isResursOmni( true ) ) { ?>
                                         <td class="id"><?php echo $methodArray->id; ?></td>
                                         <td class="fee" id="fee_<?php echo $methodArray->id; ?>"
                                             onclick="changeResursFee(this)"><?php
 											$priceValue = $this->getOptionByNamespace( "price", "woocommerce_resurs_bank_nr_" . $curId );
 											echo $priceValue;
 											?></td>
+
+
+                                        <td id="annuity_<?php echo $curId;?>" class="status">
+											<?php if (strtolower($annuityMethod) == strtolower($curId) ) {
+												// Clickables must be separated as the selector needs to be editable
+												?>
+                                                <span class="status-enabled tips" data-tip="<?php echo __( 'Enabled', 'woocommerce' ) ?>" onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
+												<?php
+												$annuityFactors = $this->flow->getAnnuityFactors($methodArray->id);
+												$selectorOptions = "";
+												if (is_array($annuityFactors) && count($annuityFactors)) {
+													foreach ($annuityFactors as $factor) {
+														$selected = "";
+														if ($annuityDuration == $factor->duration) {
+															$selected = "selected";
+														}
+														$selectorOptions .= '<option value="'.$factor->duration.'" '.$selected.'>'.$factor->paymentPlanName.'</option>';
+													}
+												}
+												$selector = '<select onchange="runResursAdminCallback(\'annuityDuration\', \''.$curId.'\', this.value)">'.$selectorOptions.'</select>';
+												?>
+												<?php echo $selector ?>
+												<?php
+											} else {
+												?>
+                                                <span class="status-disabled tips" data-tip="<?php echo __( 'Disabled', 'woocommerce' ) ?>" onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
+												<?php
+											}
+											?>
+                                        </td>
+
 										<?php if ( ! $isEnabled ) { ?>
-                                            <td id="status_<?php echo $curId; ?>" class="status"
-                                                style="cursor: pointer;"
+                                            <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
                                                 onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
-                                                <span class="status-disabled tips"
-                                                      data-tip="<?php echo __( 'Disabled', 'woocommerce' ) ?>">-</span>
+                                                <span class="status-disabled tips" data-tip="<?php echo __( 'Disabled', 'woocommerce' ) ?>">-</span>
                                             </td>
 										<?php } else {
 											?>
-                                            <td id="status_<?php echo $curId; ?>" class="status"
-                                                style="cursor: pointer;"
+                                            <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
                                                 onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
-                                                <span class="status-enabled tips"
-                                                      data-tip="<?php echo __( 'Enabled', 'woocommerce' ) ?>">-</span>
+                                                <span class="status-enabled tips" data-tip="<?php echo __( 'Enabled', 'woocommerce' ) ?>">-</span>
                                             </td>
 											<?php
-										} ?>
+										}
+
+										?>
                                         <td id="process_<?php echo $curId; ?>"></td>
 									<?php } ?>
                                 </tr>
