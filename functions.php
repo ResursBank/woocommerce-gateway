@@ -546,7 +546,7 @@ if ( is_admin() ) {
             public function __construct()
             {
                 \$this->isDemo = isResursDemo();
-                \$this->allMethods = array();
+                //\$this->allMethods = array();
                 \$this->overRideIsAvailable = true;
                 \$this->overRideDescription = false;
                 \$this->hasErrors = false;
@@ -590,14 +590,14 @@ if ( is_admin() ) {
                 \$this->demoCountry = null;
                 \$this->demoMethods = null;
                 if (\$this->isDemo) {
-                    \$this->allMethods = get_transient('resursAllMethods');
+                    //\$this->allMethods = \$this->flow->sanitizePaymentMethods(get_transient('resursAllMethods'));
             		if ( class_exists( "CountryHandler" ) ) {
             		    // Now, let's do some magic here.
 			            \$countryHandler = new CountryHandler();
             			\$countryList = array('se', 'no', 'dk', 'fi');
  		    			\$countryConfig = \$countryHandler->getCountryConfig();
  		    			\$this->demoCountry = \$_SESSION['rb_country'];
- 		    			\$this->demoMethod = get_transient('resursMethods' . \$this->demoCountry);
+ 		    			\$this->demoMethod = \$this->flow->sanitizePaymentMethods(get_transient('resursMethods' . \$this->demoCountry));
  		    			\$matchMethod = false;
  		    			
  		    			if (is_array(\$this->demoMethod)) {
