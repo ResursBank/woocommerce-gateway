@@ -257,8 +257,8 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			if ( hasEcomPHP() ) {
 				if ( ! empty( $this->login ) && ! empty( $this->password ) ) {
+					/** @var \Resursbank\RBEcomPHP\ResursBank */
 					$this->flow = initializeResursFlow();
-
 					$setSessionEnable = true;
 					$setSession       = isset( $_REQUEST['set-no-session'] ) ? $_REQUEST['set-no-session'] : null;
 					if ( $setSession == 1 ) {
@@ -487,6 +487,40 @@ function woocommerce_gateway_resurs_bank_init() {
 								} catch ( Exception $e ) {
 									$errorMessage = $e->getMessage();
 								}
+							} else if ($_REQUEST['run'] == "annuityDuration") {
+								$data = isset($_REQUEST['data']) ? $_REQUEST['data'] : null;
+								if (!empty($data)) {
+									setResursOption("resursAnnuityDuration", $data);
+								}
+							} else if ($_REQUEST['run'] == "annuityToggle") {
+								$priorAnnuity = getResursOption("resursAnnuityMethod");
+								$annuityFactors = $this->flow->getAnnuityFactors($arg);
+								setResursOption("resursCurrentAnnuityFactors", $annuityFactors);
+								$selectorOptions = "";
+								if ($priorAnnuity == $arg) {
+									$responseHtml = '<span class="status-disabled tips" data-tip="' . __( 'Disabled', 'woocommerce' ) . '">-</span>';
+									setResursOption("resursAnnuityMethod", "");
+									setResursOption("resursAnnuityDuration", "");
+									$isEnabled = "no";
+								} else {
+									if (is_array($annuityFactors) && count($annuityFactors)) {
+										$firstDuration = "";
+										foreach ($annuityFactors as $factor) {
+											if (!$firstDuration) {
+												$firstDuration = $factor->duration;
+											}
+											$selectorOptions .= '<option value="'.$factor->duration.'">'.$factor->paymentPlanName.'</option>';
+										}
+										setResursOption("resursAnnuityMethod", $arg);
+										setResursOption("resursAnnuityDuration", $firstDuration);
+									}
+									$isEnabled = "yes";
+									$selector = '<select onchange="runResursAdminCallback(\'annuityDuration\', \''.$arg.'\', this.value)">'.$selectorOptions.'</select>';
+									$responseHtml = '<span class="status-enabled tips" data-tip="' . __( 'Enabled', 'woocommerce' ) . '" onclick="runResursAdminCallback(\'annuityToggle\', \''.$arg.'\')">-</span>' . "\n" . $selector;
+								}
+								$responseArray['valueSet'] = $isEnabled;
+								$responseArray['element']  = "annuity_" . $arg;
+								$responseArray['html']     = $responseHtml;
 							} else if ( $_REQUEST['run'] == "methodToggle" ) {
 								$dbMethodName   = "woocommerce_resurs_bank_nr_" . $arg . "_settings";
 								$responseMethod = get_option( $dbMethodName );
@@ -785,6 +819,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		public function register_callback( $type, $options ) {
 			$uriTemplate = null;
 			if ( false === is_object( $this->flow ) ) {
+				/** @var \Resursbank\RBEcomPHP\ResursBank */
 				$this->flow = initializeResursFlow();
 			}
 			try {
@@ -848,6 +883,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 */
 		public function init_webservice( $username = '', $password = '' ) {
 			try {
+				/** @var \Resursbank\RBEcomPHP\ResursBank */
 				$this->flow = initializeResursFlow();
 			} catch ( Exception $initFlowException ) {
 				return false;
@@ -1047,6 +1083,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 		protected static function resurs_hostedflow_create_payment() {
 			global $woocommerce;
+			/** @var \Resursbank\RBEcomPHP\ResursBank */
 			$flow = initializeResursFlow();
 			$flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
 			$flow->Include = array();
@@ -1061,6 +1098,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 */
 		public function start_payment_session( $payment_id, $method_class = null ) {
 			global $woocommerce;
+			/** @var \Resursbank\RBEcomPHP\ResursBank */
 			$this->flow     = initializeResursFlow();
 			$currentCountry = getResursOption( 'country' );
 			$regExRules     = array();
@@ -1243,6 +1281,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
 
 			$payment_settings = get_option( 'woocommerce_' . $className . '_settings' );
+			/** @var \Resursbank\RBEcomPHP\ResursBank */
 			$this->flow       = initializeResursFlow();
 			$bookDataArray    = array();
 
@@ -1491,6 +1530,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		public function getTransientMethod( $methodId = '' ) {
 			//$methodList = get_transient('resurs_bank_payment_methods');
 			if ( empty( $this->flow ) ) {
+				/** @var \Resursbank\RBEcomPHP\ResursBank */
 				$this->flow = initializeResursFlow();
 			}
 			$methodList = $this->flow->getPaymentMethods();
@@ -2190,6 +2230,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				if ( $getAddressUseProduction && isResursDemo() && $serverEnv == "test" && ! empty( $userProd ) && ! empty( $passProd ) && ! $disabledProdTests ) {
 					$results = getAddressProd( $_REQUEST['ssn'], $customerType, self::get_ip_address() );
 				} else {
+					/** @var \Resursbank\RBEcomPHP\ResursBank */
 					$flow = initializeResursFlow();
 					try {
 						$results = $flow->getAddress( $_REQUEST['ssn'], $customerType, self::get_ip_address() );
@@ -2507,6 +2548,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			return;
 		}
+		// Class ends here
 	}
 
 	/**
@@ -2878,6 +2920,47 @@ function woocommerce_gateway_resurs_bank_init() {
 		}
 	}
 
+	function resurs_annuity_factors() {
+		/** @var $product WC_Product_Simple */
+		global $product;
+		$displayAnnuity = "";
+		if ( is_object( $product ) ) {
+			$annuityMethod = trim(resursOption( "resursAnnuityMethod" ));
+			if ( ! empty( $annuityMethod ) ) {
+				$annuityFactorPrice = $product->get_price();
+				/** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+				$flow           = initializeResursFlow();
+				try {
+					$methodList = $flow->getPaymentMethodSpecific($annuityMethod);
+					// Make sure the payment method exists.
+					if (count($methodList)) {
+						//$currentAnnuityFactor = (float)$flow->getAnnuityFactorByDuration($annuityFactors, $annuityDuration);
+						//$payFrom = round($currentAnnuityFactor * $annuityFactorPrice);
+						$annuityFactors = getResursOption("resursCurrentAnnuityFactors");
+						$annuityDuration = getResursOption("resursAnnuityDuration");
+						$payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice, $annuityFactors, $annuityDuration);
+						$payFromAnnuity = rb_price_string($payFrom, get_woocommerce_currency_symbol());
+						$costOfPurchase = admin_url( 'admin-ajax.php' ) . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
+						$onclick = 'window.open(\''.$costOfPurchase.'\')';
+						$displayAnnuity .= '<span>' . __('Pay off from ', 'WC_Payment_Gateway') . $payFromAnnuity . ' ' . __('per month', 'WC_Payment_Gateway') . '</span> | ';
+						$displayAnnuity .= '<span class="partPayInfoLink" onclick="'.$onclick.'">'.__('Info', 'WC_Payment_Gateway').'</span>';
+
+						//$fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
+
+					} else {
+						$displayAnnuity = __('Annuity factors can not be displayed: Payment method is missing in merchant configuration.', 'WC_Payment_Gateway');
+					}
+				} catch (\Exception $annuityException) {
+					// In the multilingual demoshop there might be exceptions when the session is lost.
+					// Exceptions may also occur there, when the wrong payment method is checked and wrong language is chosen.
+					$displayAnnuity .= __('Annuity factors can not be displayed for the moment', 'WC_Payment_Gateway') . ": " . $annuityException->getMessage();
+				}
+			}
+		}
+		echo $displayAnnuity;
+	}
+
+
 	add_filter( 'woocommerce_get_settings_pages', 'rb_settings_pages' );
 	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway' );
 	add_filter( 'woocommerce_available_payment_gateways', 'woocommerce_resurs_bank_available_payment_gateways' ); // Had prio 1
@@ -2902,9 +2985,9 @@ function woocommerce_gateway_resurs_bank_init() {
 	add_action( 'woocommerce_admin_order_data_after_billing_address', 'resurs_order_data_info_after_billing' );
 	add_action( 'woocommerce_admin_order_data_after_shipping_address', 'resurs_order_data_info_after_shipping' );
 	add_filter( 'woocommerce_order_button_html', 'resurs_omnicheckout_order_button_html' ); // Omni
-	add_filter( 'woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check' ); // Omni
+	add_filter( 'woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check' );
+	add_action( 'woocommerce_single_product_summary', 'resurs_annuity_factors' );
 	if ( getResursOption( "showPaymentIdInOrderList" ) ) {
-		// Omni
 		add_filter( 'manage_edit-shop_order_columns', 'resurs_order_column_header' );
 		add_action( 'manage_shop_order_posts_custom_column', 'resurs_order_column_info' );
 	}

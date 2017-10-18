@@ -62,6 +62,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+= 2.1.4 =
+
+    * [WOO-201] - Single product view: Support annuity factors
+
 = 2.1.3 =
 
     * [WOO-198] - Support multiple credentials i demoshop mode (special templates only)
