@@ -310,3 +310,8 @@ a.labelBoot:focus, a.labelBoot:hover {
 .resursConfigLeft {
     /*width: 200px !important;*/
 }
+
+.partPayInfoLink {
+    cursor: pointer;
+    font-weight: bold;
+}
