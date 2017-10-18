@@ -212,9 +212,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.23";
+	private $version = "1.1.24";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171010";
+	private $lastUpdate = "20171018";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -2333,6 +2333,48 @@ class ResursBank {
 	 */
 	public function getAnnuityFactors( $paymentMethodId = '' ) {
 		return $this->postService( "getAnnuityFactors", array( 'paymentMethodId' => $paymentMethodId ) );
+	}
+
+	/**
+	 * Get annuity factor by duration
+	 *
+	 * @param $paymentMethodIdOrFactorObject
+	 * @param $duration
+	 *
+	 * @return float
+	 * @since 1.1.24
+	 */
+	public function getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration) {
+		$returnFactor = 0;
+		$factorObject = $paymentMethodIdOrFactorObject;
+		if (is_string($paymentMethodIdOrFactorObject) && !empty($paymentMethodIdOrFactorObject)) {
+			$factorObject = $this->getAnnuityFactors($paymentMethodIdOrFactorObject);
+		}
+		if (is_array($factorObject)) {
+			foreach ($factorObject as $factorObjectData) {
+				if ($factorObjectData->duration == $duration && isset($factorObjectData->factor)) {
+					return (float)$factorObjectData->factor;
+				}
+			}
+		}
+		return $returnFactor;
+	}
+
+	/**
+	 * Get annuity factor rounded sum by the total price
+	 *
+	 * @param $price
+	 * @param $paymentMethodIdOrFactorObject
+	 * @param $duration
+	 *
+	 * @return float
+	 * @since 1.1.24
+	 */
+	public function getAnnuityPriceByDuration($totalAmount, $paymentMethodIdOrFactorObject, $duration) {
+		$durationFactor = $this->getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration);
+		if ($durationFactor > 0) {
+			return round($durationFactor * $totalAmount);
+		}
 	}
 
 	/**
