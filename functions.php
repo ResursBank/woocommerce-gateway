@@ -573,7 +573,6 @@ if ( is_admin() ) {
                 if (empty(\$this->title) || strtolower(\$this->title) == "resurs bank") {
                     \$this->flow = initializeResursFlow();
                     try {
-                    
                         if (\$timeDiff >= 3600) {
                             \$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
                             set_transient("resursTemporaryMethodTime_" . \$this->id_short, time(), 3600);

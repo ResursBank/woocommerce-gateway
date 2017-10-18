@@ -2177,8 +2177,6 @@ class ResursBank {
 	public function getPaymentMethods( $parameters = array() ) {
 		$this->InitializeServices();
 
-		$realPaymentMethods = array();
-
 		$paymentMethods = $this->postService( "getPaymentMethods", array(
 			'customerType'   => isset( $parameters['customerType'] ) ? $parameters['customerType'] : null,
 			'language'       => isset( $parameters['language'] ) ? $parameters['language'] : null,
@@ -2189,8 +2187,23 @@ class ResursBank {
 		if ( is_object( $paymentMethods ) ) {
 			$paymentMethods = array( $paymentMethods );
 		}
-		$paymentSevice = $this->getPreferredPaymentService();
+		$realPaymentMethods = $this->sanitizePaymentMethods($paymentMethods);
+		return $realPaymentMethods;
+	}
 
+	/**
+	 * Sanitize payment methods locally: make sure, amongst others that also cached payment methods is handled correctly on request, when for example PAYMENT_PROVIDER needs to be cleaned up
+	 *
+	 * @param array $paymentMethods
+	 *
+	 * @return array
+	 * @since 1.0.24
+	 * @since 1.1.24
+	 * @since 1.2.0
+	 */
+	public function sanitizePaymentMethods($paymentMethods = array()) {
+		$realPaymentMethods = array();
+		$paymentSevice = $this->getPreferredPaymentService();
 		if (is_array($paymentMethods) && count($paymentMethods)) {
 			foreach ( $paymentMethods as $paymentMethodIndex => $paymentMethodData ) {
 				$type      = $paymentMethodData->type;
@@ -2218,7 +2231,6 @@ class ResursBank {
 				}
 			}
 		}
-
 		return $realPaymentMethods;
 	}
 
@@ -2342,7 +2354,9 @@ class ResursBank {
 	 * @param $duration
 	 *
 	 * @return float
+	 * @since 1.0.24
 	 * @since 1.1.24
+	 * @since 1.2.0
 	 */
 	public function getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration) {
 		$returnFactor = 0;
@@ -2368,7 +2382,9 @@ class ResursBank {
 	 * @param $duration
 	 *
 	 * @return float
+	 * @since 1.0.24
 	 * @since 1.1.24
+	 * @since 1.2.0
 	 */
 	public function getAnnuityPriceByDuration($totalAmount, $paymentMethodIdOrFactorObject, $duration) {
 		$durationFactor = $this->getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration);
