@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2017-10-18 13:01+0200\n"
-"PO-Revision-Date: 2017-10-18 13:01+0200\n"
+"POT-Creation-Date: 2017-10-19 08:14+0200\n"
+"PO-Revision-Date: 2017-10-19 08:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -21,21 +21,21 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
 #: functions.php:85 functions.php:353 functions.php:369 functions.php:371
-#: functions.php:414 includes/resurs_bank_nr_CARD.php:126
-#: includes/resurs_bank_nr_COMPINVOICE.php:126
-#: includes/resurs_bank_nr_INVOICE.php:126
-#: includes/resurs_bank_nr_MASTERPASS.php:126
-#: includes/resurs_bank_nr_NEWACCOUNT.php:126
-#: includes/resurs_bank_nr_NEWCARD.php:126
-#: includes/resurs_bank_nr_PARTPAYMENT.php:126
-#: includes/resurs_bank_nr_PSPCARD.php:126
-#: includes/resurs_bank_nr_SWISH.php:126 resursbank_settings.php:626
+#: functions.php:414 includes/resurs_bank_nr_CARD.php:125
+#: includes/resurs_bank_nr_COMPINVOICE.php:125
+#: includes/resurs_bank_nr_INVOICE.php:125
+#: includes/resurs_bank_nr_MASTERPASS.php:125
+#: includes/resurs_bank_nr_NEWACCOUNT.php:125
+#: includes/resurs_bank_nr_NEWCARD.php:125
+#: includes/resurs_bank_nr_PARTPAYMENT.php:125
+#: includes/resurs_bank_nr_PSPCARD.php:125
+#: includes/resurs_bank_nr_SWISH.php:125 resursbank_settings.php:626
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktivera"
 
 #: functions.php:87 functions.php:201 functions.php:209 functions.php:218
 #: functions.php:251 functions.php:262 functions.php:273 functions.php:284
-#: functions.php:295 functions.php:326 functions.php:1001
+#: functions.php:295 functions.php:326 functions.php:1000
 #: resursbank_settings.php:706 resursbank_settings.php:740
 #: resursbankgateway.php:519 resursbankgateway.php:535
 #: staticflows/flow_omni.php:109
@@ -105,7 +105,7 @@ msgstr ""
 msgid "What kind of shop flow you want to use"
 msgstr "Vilken typ av flöde du vill använda"
 
-#: functions.php:116 functions.php:374 functions.php:419 functions.php:944
+#: functions.php:116 functions.php:374 functions.php:419 functions.php:943
 #: resursbank_settings.php:610
 msgid "Title"
 msgstr "Titel"
@@ -120,15 +120,15 @@ msgid "Description"
 msgstr "Beskrivning"
 
 #: functions.php:126 functions.php:395 functions.php:429
-#: includes/resurs_bank_nr_CARD.php:152
-#: includes/resurs_bank_nr_COMPINVOICE.php:152
-#: includes/resurs_bank_nr_INVOICE.php:152
-#: includes/resurs_bank_nr_MASTERPASS.php:152
-#: includes/resurs_bank_nr_NEWACCOUNT.php:152
-#: includes/resurs_bank_nr_NEWCARD.php:152
-#: includes/resurs_bank_nr_PARTPAYMENT.php:152
-#: includes/resurs_bank_nr_PSPCARD.php:152
-#: includes/resurs_bank_nr_SWISH.php:152
+#: includes/resurs_bank_nr_CARD.php:151
+#: includes/resurs_bank_nr_COMPINVOICE.php:151
+#: includes/resurs_bank_nr_INVOICE.php:151
+#: includes/resurs_bank_nr_MASTERPASS.php:151
+#: includes/resurs_bank_nr_NEWACCOUNT.php:151
+#: includes/resurs_bank_nr_NEWCARD.php:151
+#: includes/resurs_bank_nr_PARTPAYMENT.php:151
+#: includes/resurs_bank_nr_PSPCARD.php:151
+#: includes/resurs_bank_nr_SWISH.php:151
 msgid ""
 "This controls the payment method description which the user sees during "
 "checkout."
@@ -513,27 +513,27 @@ msgstr ""
 "Om du lämnar detta fältet tomt, så kommer standardvärdet att användas i "
 "kassan"
 
-#: functions.php:381 includes/resurs_bank_nr_CARD.php:138
-#: includes/resurs_bank_nr_COMPINVOICE.php:138
-#: includes/resurs_bank_nr_INVOICE.php:138
-#: includes/resurs_bank_nr_MASTERPASS.php:138
-#: includes/resurs_bank_nr_NEWACCOUNT.php:138
-#: includes/resurs_bank_nr_NEWCARD.php:138
-#: includes/resurs_bank_nr_PARTPAYMENT.php:138
-#: includes/resurs_bank_nr_PSPCARD.php:138
-#: includes/resurs_bank_nr_SWISH.php:138
+#: functions.php:381 includes/resurs_bank_nr_CARD.php:137
+#: includes/resurs_bank_nr_COMPINVOICE.php:137
+#: includes/resurs_bank_nr_INVOICE.php:137
+#: includes/resurs_bank_nr_MASTERPASS.php:137
+#: includes/resurs_bank_nr_NEWACCOUNT.php:137
+#: includes/resurs_bank_nr_NEWCARD.php:137
+#: includes/resurs_bank_nr_PARTPAYMENT.php:137
+#: includes/resurs_bank_nr_PSPCARD.php:137
+#: includes/resurs_bank_nr_SWISH.php:137
 msgid "Custom payment method icon"
 msgstr "Anpassningsbar ikon för betalmetod"
 
-#: functions.php:384 includes/resurs_bank_nr_CARD.php:141
-#: includes/resurs_bank_nr_COMPINVOICE.php:141
-#: includes/resurs_bank_nr_INVOICE.php:141
-#: includes/resurs_bank_nr_MASTERPASS.php:141
-#: includes/resurs_bank_nr_NEWACCOUNT.php:141
-#: includes/resurs_bank_nr_NEWCARD.php:141
-#: includes/resurs_bank_nr_PARTPAYMENT.php:141
-#: includes/resurs_bank_nr_PSPCARD.php:141
-#: includes/resurs_bank_nr_SWISH.php:141
+#: functions.php:384 includes/resurs_bank_nr_CARD.php:140
+#: includes/resurs_bank_nr_COMPINVOICE.php:140
+#: includes/resurs_bank_nr_INVOICE.php:140
+#: includes/resurs_bank_nr_MASTERPASS.php:140
+#: includes/resurs_bank_nr_NEWACCOUNT.php:140
+#: includes/resurs_bank_nr_NEWCARD.php:140
+#: includes/resurs_bank_nr_PARTPAYMENT.php:140
+#: includes/resurs_bank_nr_PSPCARD.php:140
+#: includes/resurs_bank_nr_SWISH.php:140
 msgid ""
 "Used for branded logotypes as icons for the specific payment method. The "
 "image type must be a http/https-link. Suggested link is local, uploaded to "
@@ -543,39 +543,39 @@ msgstr ""
 "måste vara en länk av typen http/https. Föreslagsvis används en lokal länk, "
 "genom att man laddar upp bilden till WordPress egna lagringsställe."
 
-#: functions.php:387 includes/resurs_bank_nr_CARD.php:144
-#: includes/resurs_bank_nr_COMPINVOICE.php:144
-#: includes/resurs_bank_nr_INVOICE.php:144
-#: includes/resurs_bank_nr_MASTERPASS.php:144
-#: includes/resurs_bank_nr_NEWACCOUNT.php:144
-#: includes/resurs_bank_nr_NEWCARD.php:144
-#: includes/resurs_bank_nr_PARTPAYMENT.php:144
-#: includes/resurs_bank_nr_PSPCARD.php:144
-#: includes/resurs_bank_nr_SWISH.php:144
+#: functions.php:387 includes/resurs_bank_nr_CARD.php:143
+#: includes/resurs_bank_nr_COMPINVOICE.php:143
+#: includes/resurs_bank_nr_INVOICE.php:143
+#: includes/resurs_bank_nr_MASTERPASS.php:143
+#: includes/resurs_bank_nr_NEWACCOUNT.php:143
+#: includes/resurs_bank_nr_NEWCARD.php:143
+#: includes/resurs_bank_nr_PARTPAYMENT.php:143
+#: includes/resurs_bank_nr_PSPCARD.php:143
+#: includes/resurs_bank_nr_SWISH.php:143
 msgid "Enable/Disable payment method icon"
 msgstr "Aktivera/Avaktivera betalmetodens ikon"
 
-#: functions.php:402 includes/resurs_bank_nr_CARD.php:159
-#: includes/resurs_bank_nr_COMPINVOICE.php:159
-#: includes/resurs_bank_nr_INVOICE.php:159
-#: includes/resurs_bank_nr_MASTERPASS.php:159
-#: includes/resurs_bank_nr_NEWACCOUNT.php:159
-#: includes/resurs_bank_nr_NEWCARD.php:159
-#: includes/resurs_bank_nr_PARTPAYMENT.php:159
-#: includes/resurs_bank_nr_PSPCARD.php:159
-#: includes/resurs_bank_nr_SWISH.php:159
+#: functions.php:402 includes/resurs_bank_nr_CARD.php:158
+#: includes/resurs_bank_nr_COMPINVOICE.php:158
+#: includes/resurs_bank_nr_INVOICE.php:158
+#: includes/resurs_bank_nr_MASTERPASS.php:158
+#: includes/resurs_bank_nr_NEWACCOUNT.php:158
+#: includes/resurs_bank_nr_NEWCARD.php:158
+#: includes/resurs_bank_nr_PARTPAYMENT.php:158
+#: includes/resurs_bank_nr_PSPCARD.php:158
+#: includes/resurs_bank_nr_SWISH.php:158
 msgid "Payment fee for this payment method"
 msgstr "Avgift för att använda betalalternativet (exkl. moms)"
 
-#: functions.php:406 includes/resurs_bank_nr_CARD.php:163
-#: includes/resurs_bank_nr_COMPINVOICE.php:163
-#: includes/resurs_bank_nr_INVOICE.php:163
-#: includes/resurs_bank_nr_MASTERPASS.php:163
-#: includes/resurs_bank_nr_NEWACCOUNT.php:163
-#: includes/resurs_bank_nr_NEWCARD.php:163
-#: includes/resurs_bank_nr_PARTPAYMENT.php:163
-#: includes/resurs_bank_nr_PSPCARD.php:163
-#: includes/resurs_bank_nr_SWISH.php:163
+#: functions.php:406 includes/resurs_bank_nr_CARD.php:162
+#: includes/resurs_bank_nr_COMPINVOICE.php:162
+#: includes/resurs_bank_nr_INVOICE.php:162
+#: includes/resurs_bank_nr_MASTERPASS.php:162
+#: includes/resurs_bank_nr_NEWACCOUNT.php:162
+#: includes/resurs_bank_nr_NEWCARD.php:162
+#: includes/resurs_bank_nr_PARTPAYMENT.php:162
+#: includes/resurs_bank_nr_PSPCARD.php:162
+#: includes/resurs_bank_nr_SWISH.php:162
 msgid "Description of this payment method fee"
 msgstr "Beskrivning av betalalternativets avgift"
 
@@ -683,37 +683,37 @@ msgstr ""
 "Om pluginet körs i test, aktivera denna inställning, för att inte dölja "
 "standardformulären"
 
-#: functions.php:943 resursbank_settings.php:609
+#: functions.php:942 resursbank_settings.php:609
 msgid "Method"
 msgstr "Metod"
 
-#: functions.php:945 resursbank_settings.php:623
+#: functions.php:944 resursbank_settings.php:623
 msgid "ID"
 msgstr "ID"
 
-#: functions.php:946
+#: functions.php:945
 msgid "Status"
 msgstr "Status"
 
-#: functions.php:947
+#: functions.php:946
 msgid "Process"
 msgstr "Process"
 
-#: functions.php:993 resursbank_settings.php:725 resursbank_settings.php:734
+#: functions.php:992 resursbank_settings.php:725 resursbank_settings.php:734
 #: resursbankgateway.php:501 resursbankgateway.php:532
 #: staticflows/flow_omni.php:109
 msgid "Disabled"
 msgstr "Avaktiverad"
 
-#: includes/resurs_bank_nr_CARD.php:134
-#: includes/resurs_bank_nr_COMPINVOICE.php:134
-#: includes/resurs_bank_nr_INVOICE.php:134
-#: includes/resurs_bank_nr_MASTERPASS.php:134
-#: includes/resurs_bank_nr_NEWACCOUNT.php:134
-#: includes/resurs_bank_nr_NEWCARD.php:134
-#: includes/resurs_bank_nr_PARTPAYMENT.php:134
-#: includes/resurs_bank_nr_PSPCARD.php:134
-#: includes/resurs_bank_nr_SWISH.php:134
+#: includes/resurs_bank_nr_CARD.php:133
+#: includes/resurs_bank_nr_COMPINVOICE.php:133
+#: includes/resurs_bank_nr_INVOICE.php:133
+#: includes/resurs_bank_nr_MASTERPASS.php:133
+#: includes/resurs_bank_nr_NEWACCOUNT.php:133
+#: includes/resurs_bank_nr_NEWCARD.php:133
+#: includes/resurs_bank_nr_PARTPAYMENT.php:133
+#: includes/resurs_bank_nr_PSPCARD.php:133
+#: includes/resurs_bank_nr_SWISH.php:133
 msgid ""
 "This controls the payment method title which the user sees during checkout."
 msgstr "Det här kontrollerar betalmetodens titel som kunden ser i kassan."
@@ -950,13 +950,13 @@ msgstr "Spara ovanstående data med hjälp av knappen nedan"
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
 
-#: resursbank_settings.php:856 resursbankgateway.php:3175
-#: resursbankgateway.php:3178
+#: resursbank_settings.php:856 resursbankgateway.php:3194
+#: resursbankgateway.php:3197
 msgid "Yes"
 msgstr "Ja"
 
-#: resursbank_settings.php:856 resursbankgateway.php:3175
-#: resursbankgateway.php:3178
+#: resursbank_settings.php:856 resursbankgateway.php:3194
+#: resursbankgateway.php:3197
 msgid "No"
 msgstr "Nej"
 
@@ -1033,7 +1033,7 @@ msgstr "Artikelbeskrivning saknas"
 msgid "Shipping"
 msgstr "Frakt"
 
-#: resursbankgateway.php:1141 resursbankgateway.php:3237
+#: resursbankgateway.php:1141 resursbankgateway.php:3256
 msgid "Read more"
 msgstr "Läs mer"
 
@@ -1348,19 +1348,19 @@ msgstr ""
 msgid "Resurs Reference"
 msgstr "Resurs referens"
 
-#: resursbankgateway.php:2949
+#: resursbankgateway.php:2966
 msgid "Pay off from"
 msgstr "Delbetala från"
 
-#: resursbankgateway.php:2949
+#: resursbankgateway.php:2966
 msgid "per month"
 msgstr "per månad"
 
-#: resursbankgateway.php:2950
+#: resursbankgateway.php:2967
 msgid "Info"
 msgstr "Info"
 
-#: resursbankgateway.php:2954
+#: resursbankgateway.php:2973
 msgid ""
 "Annuity factors can not be displayed: Payment method is missing in merchant "
 "configuration."
@@ -1368,11 +1368,11 @@ msgstr ""
 "Delbetalningsfaktorerna kan inte visas: Betalningsmetoden saknas i butikens "
 "inställningar."
 
-#: resursbankgateway.php:2959
+#: resursbankgateway.php:2978
 msgid "Annuity factors can not be displayed for the moment"
 msgstr "Delbetalningsfaktorerna kan för närvarande inte visas"
 
-#: resursbankgateway.php:3023
+#: resursbankgateway.php:3042
 msgid ""
 "It seems this order has already been finalized from an external system - if "
 "your order is finished you may update it here aswell"
@@ -1380,76 +1380,76 @@ msgstr ""
 "Det ser ut som att ordern redan har blivit debiterad från ett externt system "
 "- om din order är klar kan du uppdatera den härifrån också"
 
-#: resursbankgateway.php:3109
+#: resursbankgateway.php:3128
 msgid "The order is booked"
 msgstr "Ordern är bokad"
 
-#: resursbankgateway.php:3112
+#: resursbankgateway.php:3131
 msgid "The order is debited"
 msgstr "Ordern är debiterad"
 
-#: resursbankgateway.php:3114
+#: resursbankgateway.php:3133
 msgid "The order is partially debited"
 msgstr "Ordern är delvis debiterad"
 
-#: resursbankgateway.php:3117
+#: resursbankgateway.php:3136
 msgid "The order is credited"
 msgstr "Ordern är krediterad"
 
-#: resursbankgateway.php:3119
+#: resursbankgateway.php:3138
 msgid "The order is annulled"
 msgstr "Ordern är annullerad"
 
-#: resursbankgateway.php:3153
+#: resursbankgateway.php:3172
 msgid "Payment ID"
 msgstr "Betalnings-id"
 
-#: resursbankgateway.php:3156
+#: resursbankgateway.php:3175
 msgid "Payment method ID"
 msgstr "Betalmetodens id"
 
-#: resursbankgateway.php:3159
+#: resursbankgateway.php:3178
 msgid "Store ID"
 msgstr "Butiks-ID (Store ID)"
 
-#: resursbankgateway.php:3162
+#: resursbankgateway.php:3181
 msgid "Payment method name"
 msgstr "Betalmetodens namn"
 
-#: resursbankgateway.php:3165
+#: resursbankgateway.php:3184
 msgid "Payment method type"
 msgstr "Betalmetodens typ"
 
-#: resursbankgateway.php:3168
+#: resursbankgateway.php:3187
 msgid "Payment amount"
 msgstr "Orderbelopp"
 
-#: resursbankgateway.php:3171
+#: resursbankgateway.php:3190
 msgid "Payment limit"
 msgstr "Betalningens limit"
 
-#: resursbankgateway.php:3174
+#: resursbankgateway.php:3193
 msgid "Fraud"
 msgstr "Bedrägeri"
 
-#: resursbankgateway.php:3177
+#: resursbankgateway.php:3196
 msgid "Frozen"
 msgstr "Frusen"
 
-#: resursbankgateway.php:3180
+#: resursbankgateway.php:3199
 msgid "Customer name"
 msgstr "Kundens namn"
 
-#: resursbankgateway.php:3183
+#: resursbankgateway.php:3202
 msgid "Delivery address"
 msgstr "Leveransadress"
 
-#: resursbankgateway.php:3408
+#: resursbankgateway.php:3427
 msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
 msgstr ""
 "Borttagning av orderrad: Resurs Bank API anropades för ta bort orderrader"
 
-#: resursbankgateway.php:3952
+#: resursbankgateway.php:3971
 msgid "There are currently no payment methods available"
 msgstr "Det finns för närvarande inga betalningsmetoder tillgängliga"
 

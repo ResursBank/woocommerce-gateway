@@ -2928,7 +2928,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			/** @var $flow \Resursbank\RBEcomPHP\ResursBank */
 			$flow           = initializeResursFlow();
-			$annuityMethod = trim(resursOption( "resursAnnuityMethod" ));
+			$annuityMethod = trim(getResursOption( "resursAnnuityMethod" ));
 			$annuityFactorsOverride = null;
 			$annuityDurationOverride = null;
 

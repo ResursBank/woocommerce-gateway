@@ -262,7 +262,7 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'label'       => __( 'Enabled', 'woocommerce' ),
 					'default'     => 'true'
 				),
-				'showPaymentIdInOrderList'                  => array(
+				'showPaymentIdInOrderList'             => array(
 					'title'       => __( 'Show Resurs Bank payment ids in order view', 'WC_Payment_Gateway' ),
 					'description' => __( 'Do you need to show order references in the order list view? This makes it happen!', 'WC_Payment_Gateway' ),
 					'type'        => 'checkbox',
@@ -334,7 +334,7 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'type'        => 'text',
 					'default'     => 'https://google.com/?test+landingpage'
 				),
-				'devFlags'                => array(
+				'devFlags'                             => array(
 					'title'       => __( 'Special flags (for testing only)', 'WC_Payment_Gateway' ),
 					'description' => __( 'Running in test, you can set up special sets of flags here (comma separated) to test parts of the plugin that is otherwise impossible.', 'WC_Payment_Gateway' ),
 					'type'        => 'text',
@@ -359,6 +359,24 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'default'     => 'false',
 					'description' => __( 'Resurs Checkout Feature: If your plugin is running in test mode, you might want to study the behaviour of the standard customer form fields when communicating with the iframe', 'WC_Payment_Gateway' ),
 					'desc_tip'    => true,
+				),
+				'resursCurrentAnnuityFactors'          => array(
+					'title'       => __( 'Annuity factor config', 'WC_Payment_Gateway' ),
+					'description' => __( 'Annuity factor config', 'WC_Payment_Gateway' ),
+					'type'        => 'text',
+					'default'     => 'https://google.com/?test+landingpage'
+				),
+				'resursAnnuityDuration'                => array(
+					'title'       => __( 'Annuity factor duration', 'WC_Payment_Gateway' ),
+					'description' => __( 'Annuity factor duration', 'WC_Payment_Gateway' ),
+					'type'        => 'text',
+					'default'     => 'https://google.com/?test+landingpage'
+				),
+				'resursAnnuityMethod'                  => array(
+					'title'       => __( 'Current chosen payment method for annuity factors', 'WC_Payment_Gateway' ),
+					'description' => __( 'Current chosen payment method for annuity factors', 'WC_Payment_Gateway' ),
+					'type'        => 'text',
+					'default'     => 'https://google.com/?test+landingpage'
 				),
 			);
 		} else if ( $formSectionName == "paymentmethods" ) {
