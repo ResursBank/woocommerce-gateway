@@ -608,6 +608,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                                 <th class="sort"></th>
                                 <th class="name"><?php echo __( 'Method', 'WC_Payment_Gateway' ) ?></th>
                                 <th class="title"><?php echo __( 'Title', 'WC_Payment_Gateway' ) ?></th>
+                                <th class="annuityfactor"><?php echo __( 'AnnuityFactor', 'WC_Payment_Gateway' ) ?></th>
 
 								<?php
 								// Having special configured contries?
@@ -622,7 +623,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 									?>
                                     <th class="id"><?php echo __( 'ID', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="fee"><?php echo __( 'Fee', 'WC_Payment_Gateway' ) ?></th>
-                                    <th class="annuityfactor"><?php echo __( 'AnnuityFactor', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="status"><?php echo __( 'Enable/Disable', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="process">&nbsp;</th>
 								<?php } ?>
@@ -682,6 +682,44 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                                     </td>
                                     <td class="title" width="300px"><?php echo $maTitle ?></td>
 
+                                    <td id="annuity_<?php echo $curId;?>">
+		                                <?php
+		                                // Future safe if
+		                                if ($methodArray->type == "REVOLVING_CREDIT" || $methodArray->specificType == "REVOLVING_CREDIT") {
+			                                ?>
+			                                <?php if ( strtolower( $annuityMethod ) == strtolower( $curId ) ) {
+				                                // Clickables must be separated as the selector needs to be editable
+				                                ?>
+                                                <span class="status-enabled tips"
+                                                      data-tip="<?php echo __( 'Enabled', 'woocommerce' ) ?>"
+                                                      onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
+				                                <?php
+				                                $annuityFactors  = $this->flow->getAnnuityFactors( $methodArray->id );
+				                                $selectorOptions = "";
+				                                if ( is_array( $annuityFactors ) && count( $annuityFactors ) ) {
+					                                foreach ( $annuityFactors as $factor ) {
+						                                $selected = "";
+						                                if ( $annuityDuration == $factor->duration ) {
+							                                $selected = "selected";
+						                                }
+						                                $selectorOptions .= '<option value="' . $factor->duration . '" ' . $selected . '>' . $factor->paymentPlanName . '</option>';
+					                                }
+				                                }
+				                                $selector = '<select onchange="runResursAdminCallback(\'annuityDuration\', \'' . $curId . '\', this.value)">' . $selectorOptions . '</select>';
+				                                ?>
+				                                <?php echo $selector; ?>
+				                                <?php
+			                                } else {
+				                                ?>
+                                                <span class="status-disabled tips"
+                                                      data-tip="<?php echo __( 'Disabled', 'woocommerce' ) ?>"
+                                                      onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
+				                                <?php
+			                                }
+		                                }
+		                                ?>
+                                    </td>
+
 									<?php
 									// Having special configured contries?
 									if ($hasCountries) {
@@ -697,36 +735,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 											$priceValue = $this->getOptionByNamespace( "price", "woocommerce_resurs_bank_nr_" . $curId );
 											echo $priceValue;
 											?></td>
-
-
-                                        <td id="annuity_<?php echo $curId;?>" class="status">
-											<?php if (strtolower($annuityMethod) == strtolower($curId) ) {
-												// Clickables must be separated as the selector needs to be editable
-												?>
-                                                <span class="status-enabled tips" data-tip="<?php echo __( 'Enabled', 'woocommerce' ) ?>" onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
-												<?php
-												$annuityFactors = $this->flow->getAnnuityFactors($methodArray->id);
-												$selectorOptions = "";
-												if (is_array($annuityFactors) && count($annuityFactors)) {
-													foreach ($annuityFactors as $factor) {
-														$selected = "";
-														if ($annuityDuration == $factor->duration) {
-															$selected = "selected";
-														}
-														$selectorOptions .= '<option value="'.$factor->duration.'" '.$selected.'>'.$factor->paymentPlanName.'</option>';
-													}
-												}
-												$selector = '<select onchange="runResursAdminCallback(\'annuityDuration\', \''.$curId.'\', this.value)">'.$selectorOptions.'</select>';
-												?>
-												<?php echo $selector ?>
-												<?php
-											} else {
-												?>
-                                                <span class="status-disabled tips" data-tip="<?php echo __( 'Disabled', 'woocommerce' ) ?>" onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
-												<?php
-											}
-											?>
-                                        </td>
 
 										<?php if ( ! $isEnabled ) { ?>
                                             <td id="status_<?php echo $curId; ?>" class="status" style="cursor: pointer;"
