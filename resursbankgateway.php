@@ -2963,7 +2963,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$costOfPurchase = admin_url( 'admin-ajax.php' ) . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
 							$onclick        = 'window.open(\'' . $costOfPurchase . '\')';
 							$displayAnnuity .= '<div class="resursPartPaymentInfo">';
-							$displayAnnuity .= '<span>' . __( 'Pay off from', 'WC_Payment_Gateway' ) . ' ' . $payFromAnnuity . ' ' . __( 'per month', 'WC_Payment_Gateway' ) . '</span> | ';
+							$displayAnnuity .= '<span>' . __( 'Part pay from', 'WC_Payment_Gateway' ) . ' ' . $payFromAnnuity . ' ' . __( 'per month', 'WC_Payment_Gateway' ) . '</span> | ';
 							$displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __( 'Info', 'WC_Payment_Gateway' ) . '</span>';
 							$displayAnnuity .= '</div>';
 						}
