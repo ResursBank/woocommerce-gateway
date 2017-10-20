@@ -690,7 +690,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				$this->sslDriverError[] = "SSL Failure: HTTPS extension can not be found";
 			}
 			// Initial setup
-			$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB+cUrl ' . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate . ')';
+			$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB-NetCurl-' . TORNELIB_NETCURL_RELEASE . " +TorneLIB+cUrl-" . $this->TorneCurlVersion . ')';
 			if ( function_exists( 'curl_version' ) ) {
 				$CurlVersionRequest = curl_version();
 				$this->CurlVersion  = $CurlVersionRequest['version'];
@@ -1200,9 +1200,9 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		public function setUserAgent( $CustomUserAgent = "" ) {
 			if ( ! empty( $CustomUserAgent ) ) {
 				$this->CustomUserAgent .= preg_replace( "/\s+$/", '', $CustomUserAgent );
-				$this->CurlUserAgent   = $this->CustomUserAgent . " +TorneLIB-NetCurl-" . TORNELIB_NETCURL_RELEASE . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate;
+				$this->CurlUserAgent   = $this->CustomUserAgent . " +TorneLIB-NetCurl-" . TORNELIB_NETCURL_RELEASE . " +TorneLIB+cUrl-" . $this->TorneCurlVersion;
 			} else {
-				$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB-NetCurl-' . TORNELIB_NETCURL_RELEASE . " +TorneLIB+cUrl " . $this->TorneCurlVersion . '/' . $this->TorneCurlReleaseDate . ')';
+				$this->CurlUserAgent = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; +TorneLIB-NetCurl-' . TORNELIB_NETCURL_RELEASE . " +TorneLIB+cUrl-" . $this->TorneCurlVersion . ')';
 			}
 		}
 
