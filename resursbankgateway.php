@@ -487,18 +487,21 @@ function woocommerce_gateway_resurs_bank_init() {
 								} catch ( Exception $e ) {
 									$errorMessage = $e->getMessage();
 								}
-							} else if ($_REQUEST['run'] == "annuityDuration") {
+							} else if ($_REQUEST['run'] == 'annuityDuration') {
 								$data = isset($_REQUEST['data']) ? $_REQUEST['data'] : null;
 								if (!empty($data)) {
 									setResursOption("resursAnnuityDuration", $data);
 								}
-							} else if ($_REQUEST['run'] == "annuityToggle") {
+							} else if ($_REQUEST['run'] == 'annuityToggle') {
 								$priorAnnuity = getResursOption("resursAnnuityMethod");
 								$annuityFactors = $this->flow->getAnnuityFactors($arg);
 								setResursOption("resursCurrentAnnuityFactors", $annuityFactors);
 								$selectorOptions = "";
+								// Also kill self
+								$scriptit = 'resursRemoveAnnuityElements(\''.$arg.'\')';
 								if ($priorAnnuity == $arg) {
-									$responseHtml = '<span class="status-disabled tips" data-tip="' . __( 'Disabled', 'woocommerce' ) . '">-</span>';
+								    $selector = "";
+									$responseHtml = '<span id="annuityClick_'.$arg.'" class="status-disabled tips" data-tip="' . __( 'Disabled', 'woocommerce' ) . '" onclick="runResursAdminCallback(\'annuityToggle\', \''.$arg.'\');'.$scriptit.';">-</span>' . "\n" . $selector;
 									setResursOption("resursAnnuityMethod", "");
 									setResursOption("resursAnnuityDuration", "");
 									$isEnabled = "no";
@@ -515,8 +518,8 @@ function woocommerce_gateway_resurs_bank_init() {
 										setResursOption("resursAnnuityDuration", $firstDuration);
 									}
 									$isEnabled = "yes";
-									$selector = '<select onchange="runResursAdminCallback(\'annuityDuration\', \''.$arg.'\', this.value)">'.$selectorOptions.'</select>';
-									$responseHtml = '<span class="status-enabled tips" data-tip="' . __( 'Enabled', 'woocommerce' ) . '" onclick="runResursAdminCallback(\'annuityToggle\', \''.$arg.'\')">-</span>' . "\n" . $selector;
+									$selector = '<select class="resursConfigSelectShort" id="annuitySelector_'.$arg.'" onchange="runResursAdminCallback(\'annuityDuration\', \''.$arg.'\', this.value)">'.$selectorOptions.'</select>';
+									$responseHtml = '<span id="annuityClick_'.$arg.'" class="status-enabled tips" data-tip="' . __( 'Enabled', 'woocommerce' ) . '" onclick="runResursAdminCallback(\'annuityToggle\', \''.$arg.'\');'.$scriptit.';">-</span>' . "\n" . $selector;
 								}
 								$responseArray['valueSet'] = $isEnabled;
 								$responseArray['element']  = "annuity_" . $arg;

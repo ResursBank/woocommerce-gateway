@@ -459,3 +459,17 @@ function resetRbFeeValue(targetColumn, sourceField) {
         }, {"feeId": feeId, "feeValue": sourceField.value});
     }
 }
+
+function resursRemoveAnnuityElements(notThisElement) {
+    var skipThis = "annuitySelector" + notThisElement;
+    $RB("select[id*='annuitySelector']").each(function(i,e) {
+        if (typeof e.id !== "undefined") {
+            if (skipThis !=  e.id) {
+                $RB('#' + e.id).remove();
+                var curElementId = e.id.substr(e.id.indexOf('_')+1);
+                $RB('#annuityClick_' + curElementId).removeClass("status-enabled");
+                $RB('#annuityClick_' + curElementId).addClass("status-disabled");
+            }
+        }
+    });
+}

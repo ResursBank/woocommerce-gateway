@@ -624,8 +624,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                                     <th class="id"><?php echo __( 'ID', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="fee"><?php echo __( 'Fee', 'WC_Payment_Gateway' ) ?></th>
                                     <th class="status"><?php echo __( 'Enable/Disable', 'WC_Payment_Gateway' ) ?></th>
-                                    <th class="process">&nbsp;</th>
 								<?php } ?>
+                                <th class="process"> </th>
                             </tr>
                             </thead>
                             <tbody>
@@ -686,13 +686,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		                                <?php
 		                                // Future safe if
 		                                if ($methodArray->type == "REVOLVING_CREDIT" || $methodArray->specificType == "REVOLVING_CREDIT") {
+			                                $scriptit = 'resursRemoveAnnuityElements(\''.$curId.'\')';
+
 			                                ?>
 			                                <?php if ( strtolower( $annuityMethod ) == strtolower( $curId ) ) {
 				                                // Clickables must be separated as the selector needs to be editable
 				                                ?>
                                                 <span class="status-enabled tips"
+                                                      id="annuityClick_<?php echo $curId; ?>"
                                                       data-tip="<?php echo __( 'Enabled', 'woocommerce' ) ?>"
-                                                      onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
+                                                      onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>');<?php echo $scriptit;?>">-</span>
 				                                <?php
 				                                $annuityFactors  = $this->flow->getAnnuityFactors( $methodArray->id );
 				                                $selectorOptions = "";
@@ -705,15 +708,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 						                                $selectorOptions .= '<option value="' . $factor->duration . '" ' . $selected . '>' . $factor->paymentPlanName . '</option>';
 					                                }
 				                                }
-				                                $selector = '<select onchange="runResursAdminCallback(\'annuityDuration\', \'' . $curId . '\', this.value)">' . $selectorOptions . '</select>';
+				                                $selector = '<select class="resursConfigSelectShort" id="annuitySelector_'.$curId.'" onchange="runResursAdminCallback(\'annuityDuration\', \'' . $curId . '\', this.value)">' . $selectorOptions . '</select>';
 				                                ?>
 				                                <?php echo $selector; ?>
 				                                <?php
 			                                } else {
 				                                ?>
                                                 <span class="status-disabled tips"
+                                                      id="annuityClick_<?php echo $curId; ?>"
                                                       data-tip="<?php echo __( 'Disabled', 'woocommerce' ) ?>"
-                                                      onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>')">-</span>
+                                                      onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>');<?php echo $scriptit; ?>">-</span>
 				                                <?php
 			                                }
 		                                }
@@ -751,8 +755,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 										}
 
 										?>
-                                        <td id="process_<?php echo $curId; ?>"></td>
 									<?php } ?>
+                                    <td id="process_<?php echo $curId; ?>"></td>
                                 </tr>
 								<?php
 							}
