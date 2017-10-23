@@ -451,6 +451,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 						$demoShopFlow               = initializeResursFlow();
 						$demoShopFlow->setSimplifiedPsp(true);
 						$countryBasedPaymentMethods = array();
+						if (isset( $_REQUEST['reset'] )) {
+							foreach ( $countryCredentialArray as $countryId => $countryCredentials ) {
+								delete_transient("resursMethods" . $countryId);
+							}
+                        }
 						foreach ( $countryCredentialArray as $countryId => $countryCredentials ) {
 							if ( isset( $countryCredentials['login'] ) && isset( $countryCredentials['password'] ) ) {
 								// To unslow this part of the plugin, we'd run transient methods storage
@@ -469,6 +474,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 									set_transient( 'resursMethods' . $countryId, $countryBasedPaymentMethods[ $countryId ] );
 								}
 								$this->paymentMethods = array_merge( $this->paymentMethods, $countryBasedPaymentMethods[ $countryId ] );
+								//foreach ($countryBasedPaymentMethods[ $countryId ] as $oArr) {
+								//      $this->paymentMethods[] = $oArr;
+								//}
+
 								set_transient("resursAllMethods", $this->paymentMethods);
 							}
 						}
@@ -634,6 +643,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 							$sortByDescription = array();
 							foreach ( $this->paymentMethods as $methodArray ) {
 								$description                       = $methodArray->description;
+								if (isResursDemo() && isset($methodArray->country)) {
+									$description .= " [" . $methodArray->country . "]";
+								}
 								$sortByDescription[ $description ] = $methodArray;
 							}
 							ksort( $sortByDescription );
