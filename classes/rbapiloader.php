@@ -2128,6 +2128,7 @@ class ResursBank {
 					$this->curlStats['calls'] = 1;
 				}
 				$this->curlStats['calls'] ++;
+				$this->curlStats['internals'] = $this->CURL->getDebugData();
 			}
 			if ( ! $getResponseCode ) {
 				return $ParsedResponse;
