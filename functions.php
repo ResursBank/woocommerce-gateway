@@ -531,6 +531,11 @@ if ( is_admin() ) {
 			$minLimit     = $payment_method->minLimit;
 			$maxLimit     = $payment_method->maxLimit;
 
+			$isPsp = "false";
+			if ($payment_method->customerType == "PAYMENT_PROVIDER" || $payment_method->type == "PAYMENT_PROVIDER") {
+			    $isPsp = "true";
+            }
+
 			//$icon_name = strtolower($method_name);
 			$icon_name = "resurs-standard";
 			//$icon_name = str_replace(array('å', 'ä', 'ö', ' '), array('a', 'a', 'o', '_'), $icon_name);
@@ -572,6 +577,7 @@ if ( is_admin() ) {
                 \$this->id           = '{$class_name}';
                 \$this->id_short           = '{$payment_method->id}';
                 \$this->has_icon();
+                \$this->isPsp = {$isPsp};
                 \$this->method_title = '{$method_name}';
                 if (!isResursHosted()) {
                     \$this->has_fields   = true;
@@ -668,6 +674,9 @@ if ( is_admin() ) {
             public function is_available() {
                 // No title means no activity
                 if (empty(\$this->title)) {
+                    return false;
+                }
+                if (!isResursOmni() && \$this->isPsp === true) {
                     return false;
                 }
                 if (!\$this->overRideIsAvailable) {
