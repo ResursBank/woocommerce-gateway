@@ -21,7 +21,7 @@
  *
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
  *
- * @version 6.0.12
+ * @version 6.0.13
  */
 
 namespace Resursbank\RBEcomPHP;
@@ -435,7 +435,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 	 * Class Tornevall_cURL
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.11
+	 * @version 6.0.12
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIBv5
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php-netcurl/browse Sources of TorneLIB
 	 * @link https://docs.tornevall.net/x/KwCy Network & Curl v5 and v6 Library usage
@@ -471,8 +471,6 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		//// PUBLIC CONFIG THAT SHOULD GO PRIVATE
 		/** @var array Default paths to the certificates we are looking for */
 		private $sslPemLocations = array( '/etc/ssl/certs/cacert.pem', '/etc/ssl/certs/ca-certificates.crt' );
-		/** @var bool For debugging only */
-		public $_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION = false;
 		/** @var array Interfaces to use */
 		public $IpAddr = array();
 		/** @var bool If more than one ip is set in the interfaces to use, this will make the interface go random */
@@ -515,7 +513,17 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		private $CurlSession = null;
 		/** @var null URL that was set to communicate with */
 		private $CurlURL = null;
+		/** @var array Flags controller to change behaviour on internal function */
 		private $internalFlags = array();
+		private $debugData = array(
+			'data' => array(
+				'info' => array()
+			),
+			'soapData' => array(
+				'info' => array()
+			),
+			'calls' => 0
+		);
 
 
 		//// SSL AUTODETECTION CAPABILITIES
@@ -735,6 +743,10 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			}
 
 			return null;
+		}
+
+		public function getDebugData() {
+			return $this->debugData;
 		}
 
 		/**
@@ -1646,7 +1658,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 									}
 								}
 								// For unit testing
-								if ( $this->TargetEnvironment == TORNELIB_CURL_ENVIRONMENT::ENVIRONMENT_TEST && isset( $this->_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION ) && $this->_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION === true ) {
+								if ( $this->TargetEnvironment == TORNELIB_CURL_ENVIRONMENT::ENVIRONMENT_TEST && $this->hasFlag('_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION') && $this->isFlag('_DEBUG_TCURL_UNSET_LOCAL_PEM_LOCATION') ) {
 									// Enforce wrong certificate location
 									$this->hasCertFile = false;
 									$this->useCertFile = null;
@@ -2526,6 +2538,8 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				$this->CurlURL = $url;
 			}
 
+			$this->debugData['calls'] ++;
+
 			if (is_null($this->CurlSession)) {
 				$this->init();
 			}
@@ -2734,7 +2748,19 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 				$Soap->setSoapTryOnce($this->SoapTryOnce);
 				try {
 					$getSoapResponse = $Soap->getSoap();
+					$this->debugData['soapdata']['url'][] = array(
+						'url'=>$this->CurlURL,
+						'opt'=>$this->getCurlOptByKeys(),
+						'success' => true,
+						'exception' => null
+					);
 				} catch ( \Exception $getSoapResponseException ) {
+					$this->debugData['soapdata']['url'][] = array(
+						'url'=>$this->CurlURL,
+						'opt'=>$this->getCurlOptByKeys(),
+						'success' => false,
+						'exception' => $getSoapResponseException
+					);
 					throw new \Exception( $this->ModuleName . " exception from soapClient: " . $getSoapResponseException->getMessage(), $getSoapResponseException->getCode() );
 				}
 
@@ -2743,7 +2769,15 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 
 			$returnContent = curl_exec( $this->CurlSession );
 
-			if ( curl_errno( $this->CurlSession ) ) {
+			if ( curl_errno( $this->CurlSession ) )  {
+
+				$this->debugData['data']['url'][] = array(
+					'url'=>$this->CurlURL,
+					'opt'=>$this->getCurlOptByKeys(),
+					'success' => false,
+					'exception' => curl_error($this->CurlSession)
+				);
+
 				if ( $this->canStoreSessionException ) {
 					$this->sessionsExceptions[] = array(
 						'Content'     => $returnContent,
@@ -2782,6 +2816,13 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 					return $this->executeCurl( $this->CurlURL, $postData, $CurlMethod );
 				}
 				throw new \Exception( $this->ModuleName . " exception from PHP/CURL at " . __FUNCTION__ . ": " . curl_error( $this->CurlSession ), curl_errno( $this->CurlSession ) );
+			} else {
+				$this->debugData['data']['url'][] = array(
+					'url'=>$this->CurlURL,
+					'opt'=>$this->getCurlOptByKeys(),
+					'success' => true,
+					'exception' => null
+				);
 			}
 
 			return $returnContent;
