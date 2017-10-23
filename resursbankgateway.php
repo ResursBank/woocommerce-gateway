@@ -2960,12 +2960,25 @@ function woocommerce_gateway_resurs_bank_init() {
 						} else {
 							$annuityDuration = getResursOption("resursAnnuityDuration");
 						}
-						$payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice, $annuityFactors, $annuityDuration);
-						if ($payFrom >= 150) {
+						$payFrom      = $flow->getAnnuityPriceByDuration( $annuityFactorPrice, $annuityFactors, $annuityDuration );
+						$currentCountry = getResursOption('country');
+						if ($currentCountry != "FI") {
+						    $paymentLimit = 150;
+                        } else {
+						    $paymentLimit = 15;
+                        }
+                        $realPaymentLimit = $paymentLimit;
+						if ( isResursTest()	) {
+							$paymentLimit = 1;
+						}
+						if ($payFrom >= $paymentLimit) {
 							$payFromAnnuity = wc_price( $payFrom );
 							$costOfPurchase = admin_url( 'admin-ajax.php' ) . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
 							$onclick        = 'window.open(\'' . $costOfPurchase . '\')';
 							$displayAnnuity .= '<div class="resursPartPaymentInfo">';
+							if (isResursTest()) {
+								$displayAnnuity .= '<div style="font-size: 11px !important; font-color:#990000 !important; font-style: italic; padding:0px !important; margin: 0px !important;">' . __( 'Test enabled: In production, this information is shown when the minimum amount is above', 'WC_Payment_Gateway') . " <b>" . $realPaymentLimit . "</b></div>";
+							}
 							$displayAnnuity .= '<span>' . __( 'Part pay from', 'WC_Payment_Gateway' ) . ' ' . $payFromAnnuity . ' ' . __( 'per month', 'WC_Payment_Gateway' ) . '</span> | ';
 							$displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __( 'Info', 'WC_Payment_Gateway' ) . '</span>';
 							$displayAnnuity .= '</div>';
