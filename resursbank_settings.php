@@ -709,7 +709,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                                                       data-tip="<?php echo __( 'Enabled', 'woocommerce' ) ?>"
                                                       onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>');<?php echo $scriptit;?>">-</span>
 				                                <?php
-				                                $annuityFactors  = $this->flow->getAnnuityFactors( $methodArray->id );
+                                                $annuityFactors = null;
+                                                $selector = null;
+                                                try {
+	                                                $annuityFactors = $this->flow->getAnnuityFactors( $methodArray->id );
+                                                } catch (\Exception $annuityException) {
+                                                    $selector = $annuityException->getMessage();
+                                                }
 				                                $selectorOptions = "";
 				                                if ( is_array( $annuityFactors ) && count( $annuityFactors ) ) {
 					                                foreach ( $annuityFactors as $factor ) {
@@ -720,7 +726,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 						                                $selectorOptions .= '<option value="' . $factor->duration . '" ' . $selected . '>' . $factor->paymentPlanName . '</option>';
 					                                }
 				                                }
-				                                $selector = '<select class="resursConfigSelectShort" id="annuitySelector_'.$curId.'" onchange="runResursAdminCallback(\'annuityDuration\', \'' . $curId . '\', this.value)">' . $selectorOptions . '</select>';
+				                                if (is_null($selector)) {
+					                                $selector = '<select class="resursConfigSelectShort" id="annuitySelector_' . $curId . '" onchange="runResursAdminCallback(\'annuityDuration\', \'' . $curId . '\', this.value)">' . $selectorOptions . '</select>';
+				                                }
 				                                ?>
 				                                <?php echo $selector; ?>
 				                                <?php
