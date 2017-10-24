@@ -65,6 +65,18 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 = 2.1.4 =
 
     * [WOO-201] - Single product view: Support annuity factors
+    * [WOO-203] - Selectors for annuity factors not "refreshed"
+    -theme patches-
+    * [DEMOSHOP-17] - Go to shop on chosen flow
+    * [DEMOSHOP-18] - No updates in cart count
+    * [DEMOSHOP-20] - Cart shaker bug
+    * [DEMOSHOP-22] - Update theme products
+    * [DEMOSHOP-23] - Part payment with annuity factors (WOO-201)
+    * [DEMOSHOP-24] - Hide unsupported payment methods (PSP) for simplified/hosted (Via EComPHP)
+    * [DEMOSHOP-25] - Payment method adaption
+    * [DEMOSHOP-27] - Hide PSP from Simplified (DEMOSHOP-24 continued)
+    * [DEMOSHOP-28] - Can't check out simplfied after plugin 2.1.3
+
 
 = 2.1.3 =
 
