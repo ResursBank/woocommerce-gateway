@@ -14,13 +14,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
-/**
+ *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- *
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
- *
+ * @package TorneLIB
  * @version 6.0.13
  */
 
@@ -35,7 +32,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 	 * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
 	 *
 	 * Class TorneLIB_Network
-	 * @version 6.0.2
+	 * @version 6.0.3
 	 * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
@@ -240,6 +237,37 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 		 */
 		public function getProxyHeaders() {
 			return $this->clientAddressList;
+		}
+
+		/**
+		 * Return correct data on https-detection
+		 *
+		 * @param bool $returnProtocol
+		 *
+		 * @return bool|string
+		 * @since 6.0.3
+		 */
+		public function getProtocol( $returnProtocol = false ) {
+			if ( isset( $_SERVER['HTTPS'] ) ) {
+				if ( $_SERVER['HTTPS'] == "on" ) {
+					if ( ! $returnProtocol ) {
+						return true;
+					} else {
+						return "https";
+					}
+				} else {
+					if ( ! $returnProtocol ) {
+						return false;
+					} else {
+						return "http";
+					}
+				}
+			}
+			if ( ! $returnProtocol ) {
+				return false;
+			} else {
+				return "http";
+			}
 		}
 
 		/**
@@ -885,8 +913,29 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 			}
 			return false;
 		}
+		/**
+		 * @param string $flagKey
+		 * @return bool
+		 * @since 6.0.13 Consider using unsetFlag
+		 */
 		public function removeFlag($flagKey = '') {
 			return $this->unsetFlag($flagKey);
+		}
+
+		/**
+		 * @param string $flagKey
+		 * @return bool
+		 * @since 6.0.13 Consider using unsetFlag
+		 */
+		public function deleteFlag($flagKey = '') {
+			return $this->unsetFlag($flagKey);
+		}
+
+		/**
+		 * @since 6.0.13
+		 */
+		public function clearAllFlags() {
+			$this->internalFlags = array();
 		}
 
 		/**

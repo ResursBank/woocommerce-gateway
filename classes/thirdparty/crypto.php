@@ -1,13 +1,30 @@
 <?php
 
+/**
+ * Copyright 2017 Tomas Tornevall & Tornevall Networks
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @package TorneLIB
+ * @version 6.0.3
+ *
+ * Crypto-IO Library. Anything that changes in those folders, will render version increase.
+ */
 namespace Resursbank\RBEcomPHP;
 
 if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_Crypto' ) ) {
 	/**
 	 * Class TorneLIB_Crypto
-	 *
-	 * @package TorneLIB
-	 * @version 6.0.1
 	 */
 	class TorneLIB_Crypto {
 
