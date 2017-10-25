@@ -91,7 +91,6 @@ function woocommerce_gateway_resurs_bank_init() {
 			if ( function_exists( 'wp_get_current_user' ) ) {
 				wp_get_current_user();
 			} else {
-				/** @noinspection PhpDeprecationInspection */
 				get_currentuserinfo();
 			}
 

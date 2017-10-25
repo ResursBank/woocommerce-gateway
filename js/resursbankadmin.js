@@ -181,9 +181,9 @@ function resursProtectedFieldToggle(currentField) {
             $RB('#' + currentField + "_spinner").show("medium");
         }
     } else {
+        $RB('#' + currentField + "_spinner").hide("medium");
         $RB('#' + currentField).toggle("medium");
         $RB('#' + currentField + "_hidden").toggle("medium");
-        $RB('#' + currentField + "_spinner").toggle("medium");
     }
 }
 function runResursAdminCallback(callbackName) {
