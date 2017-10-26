@@ -10,7 +10,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.1
- * @version 1.1.25
+ * @version 1.1.26
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -223,9 +223,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.25";
+	private $version = "1.1.26";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171024";
+	private $lastUpdate = "20171025";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
@@ -486,9 +486,16 @@ class ResursBank {
 	);
 	private $curlSslDisable = false;
 
-	/** @var string The current directory of RB Classes */
+	/**
+	 * @var string The current directory of RB Classes
+	 * @deprecated Removed in 1.2
+	 */
 	private $classPath = "";
-	/** @var array Files to look for in class directories, to find RB */
+
+	/**
+	 * @var array Files to look for in class directories, to find RB
+	 * @deprecated Removed in 1.2
+	 */
 	private $classPathFiles = array(
 		'/simplifiedshopflowservice-client/Resurs_SimplifiedShopFlowService.php',
 		'/configurationservice-client/Resurs_ConfigurationService.php',
@@ -878,10 +885,7 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	private function getSslValidation() {
-		if ($this->curlSslDisable) {
-			$this->CURL->setSslUnverified( true );
-			$this->CURL->setCertAuto( false, false );
-		}
+		return $this->curlSslDisable;
 	}
 
 	/**
@@ -1542,7 +1546,9 @@ class ResursBank {
 		for ( $i = 0; $i < $max; $i ++ ) {
 			$charListId = rand( 0, count( $characterListArray ) - 1 );
 			// Set $numchars[ $charListId ] to a zero a value if not set before. This might render ugly notices about undefined offsets in some cases.
-			if (!isset($numchars[ $charListId ])) {$numchars[ $charListId ] = 0;}
+			if ( ! isset( $numchars[ $charListId ] ) ) {
+				$numchars[ $charListId ] = 0;
+			}
 			$numchars[ $charListId ] ++;
 			$chars[] = $characterListArray[ $charListId ]{mt_rand( 0, ( strlen( $characterListArray[ $charListId ] ) - 1 ) )};
 		}
@@ -2086,36 +2092,22 @@ class ResursBank {
 			} catch (\Exception $serviceRequestException) {
 				// Try to fetch previous exception (This is what we actually want)
 				$previousException = $serviceRequestException->getPrevious();
-				if (isset($previousException->detail) && is_object($previousException->detail)) {
-					// TODO: Update when NetCurl 6.0.5 releases
+				$previousExceptionMessage = $previousException->getMessage();
+				$previousExceptionCOde = $previousException->getCode();
+				if (!empty($previousExceptionMessage)) {
+					$exceptionMessage = $previousExceptionMessage;
+					$exceptionCode = $previousExceptionCOde;
+				} else {
+					$exceptionCode    = $serviceRequestException->getCode();
+					$exceptionMessage = $serviceRequestException->getMessage();
 				}
-				$exceptionCode    = $serviceRequestException->getCode();
-				$exceptionMessage = $serviceRequestException->getMessage();
-				$soapObject       = $Service->getSoap();
-				$soapLibResponse  = $soapObject->getLibResponse();
-				if ( isset( $soapLibResponse['code'] ) && intval( $exceptionCode ) == 0 && $soapLibResponse['code'] > 0 ) {
-					// Fetch any internal errors
-					$exceptionCode = $soapLibResponse['code'];
-					try {
-						$soapBody = $this->CURL->ParseContent( $soapLibResponse['body'], false, "xml" );
-						// If the parsed object is an object and has an xpath-method available, there are great chances that we can extract something more from it
-						if ( is_object( $soapBody ) && method_exists( $soapBody, "xpath" ) ) {
-							$getSoapFault = $soapBody->xpath( "//soap:Fault/detail/*" );
-							if ( is_array( $getSoapFault ) && isset( $getSoapFault[0] ) ) {
-								$internalSoapFault = $getSoapFault[0];
-								if ( is_object( $internalSoapFault ) && isset( $internalSoapFault->errorTypeId ) ) {
-									$errorTypeId = intval( $internalSoapFault->errorTypeId );
-									// Make sure this is not zero
-									if ( $errorTypeId ) {
-										$exceptionCode = $errorTypeId;
-									}
-									if ( $internalSoapFault->userErrorMessage ) {
-										$exceptionMessage = $internalSoapFault->userErrorMessage;
-									}
-								}
-							}
-						}
-					} catch ( \Exception $soapFaultExtractionException ) {
+				if (isset($previousException->detail) && is_object($previousException->detail) && isset($previousException->detail->ECommerceError) && is_object($previousException->detail->ECommerceError)) {
+					$objectDetails = $previousException->detail->ECommerceError;
+					if (isset($objectDetails->errorTypeId) && intval($objectDetails->errorTypeId) > 0) {
+						$exceptionCode = $objectDetails->errorTypeId;
+					}
+					if (isset($previousException->detail->userErrorMessage)) {
+						$exceptionMessage = $objectDetails->userErrorMessage;
 					}
 				}
 				// Cast internal soap errors into a new, since the exception code is lost
@@ -2159,10 +2151,8 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function setPushCustomerUserAgent($enableCustomerUserAgent = false) {
-		if ( class_exists( '\Resursbank\RBEcomPHP\TorneLIB_Crypto' ) ) {
-			$this->T_CRYPTO = new TorneLIB_Crypto();
-		}
-		if (!empty($this->T_CRYPTO)) {
+		$this->T_CRYPTO = new TorneLIB_Crypto();
+		if ( ! empty( $this->T_CRYPTO ) ) {
 			$this->customerUserAgentPush = $enableCustomerUserAgent;
 		}
 	}
@@ -4600,8 +4590,10 @@ class ResursBank {
 		// Using this function to validate that card data info is properly set up during the deprecation state in >= 1.0.2/1.1.1
 		if ( $myFlow == ResursMethodTypes::METHOD_SIMPLIFIED ) {
 			$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
-			if ( $paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo->specificType == "NEWCARD" || $paymentMethodInfo->specificType == "REVOLVING_CREDIT" ) {
-				$this->validateCardData($paymentMethodInfo->specificType);
+			if ( isset($paymentMethodInfo) && is_object($paymentMethodInfo) ) {
+				if (isset($paymentMethodInfo->specificType) && $paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo->specificType == "NEWCARD" || $paymentMethodInfo->specificType == "REVOLVING_CREDIT") {
+					$this->validateCardData( $paymentMethodInfo->specificType );
+				}
 			}
 			$myFlowResponse  = $this->postService( 'bookPayment', $this->Payload );
 			$this->resetPayload();
@@ -5253,6 +5245,14 @@ class ResursBank {
 	 */
 	public function getPayload() {
 		$this->preparePayload();
+		// Making sure payloads are returned as they should look
+		if (isset($this->Payload)) {
+			if (!is_array($this->Payload)) {
+				$this->Payload = array();
+			}
+		} else {
+			$this->Payload = array();
+		}
 		return $this->Payload;
 	}
 
@@ -6770,6 +6770,7 @@ class ResursBank {
 
 	/**
 	 * Clean up payload after usage
+	 * @since 1.1.22
 	 */
 	private function resetPayload() {
 		$this->SpecLines = array();
