@@ -3105,7 +3105,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
                     <div style="padding: 30px;border:none;" id="resursInfo">
                         <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url( __FILE__ ) . '/img/rb_logo.png' . '"></span>
                         <fieldset>
-                        '.__('Following error ocurred when we tried to fetch information about the payment', 'WC_Payment_Gateway').'<br>
+                        <b>'.__('Following error ocurred when we tried to fetch information about the payment', 'WC_Payment_Gateway').'</b><br>
                         <br>
                         '.$errorMessage.'<br>
                     </fieldset>
