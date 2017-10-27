@@ -166,6 +166,7 @@
     margin: 0px !important;
     border-spacing: 0px !important;
     word-spacing: 0px !important;
+    word-wrap: break-word;
     line-height: 0.4em !important;
 }
 
