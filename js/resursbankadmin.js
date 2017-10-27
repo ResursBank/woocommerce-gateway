@@ -305,15 +305,15 @@ function showResursCallbackArray(cbArrayResponse) {
                 callbackListSize++;
             });
             if (callbackListSize > 0) {
-                var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0">';
-                callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
+                var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0" width="100%">';
+                callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic rbCallbackStaticLeft">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
                 if (useCacheNote && isCached) {
                     callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td></tr>';
                 }
                 $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                     // uriTemplates must not be null
                     if (cbName !== "" && typeof cbObj !== "undefined") {
-                        callbackContent += '<tr><th class="rbCallbackTableStatic" width="25%">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" ' + (isCached ? 'style="font-style:italic !important;"' : "") + ' width="75%">' + cbObj + "</td></tr>";
+                        callbackContent += '<tr><th class="rbCallbackTableStatic rbCallbackStaticLeft">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" ' + (isCached ? 'style="font-style:italic !important;"' : "") + ' width="75%">' + cbObj + "</td></tr>";
                     }
                 });
                 callbackContent += "</table><br>";
