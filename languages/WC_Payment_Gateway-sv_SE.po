@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2017-10-27 08:23+0200\n"
-"PO-Revision-Date: 2017-10-27 08:24+0200\n"
+"POT-Creation-Date: 2017-10-27 08:29+0200\n"
+"PO-Revision-Date: 2017-10-27 08:30+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -962,13 +962,13 @@ msgstr "Spara ovanstående data med hjälp av knappen nedan"
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
 
-#: resursbank_settings.php:888 resursbankgateway.php:3225
-#: resursbankgateway.php:3228
+#: resursbank_settings.php:888 resursbankgateway.php:3228
+#: resursbankgateway.php:3231
 msgid "Yes"
 msgstr "Ja"
 
-#: resursbank_settings.php:888 resursbankgateway.php:3225
-#: resursbankgateway.php:3228
+#: resursbank_settings.php:888 resursbankgateway.php:3228
+#: resursbankgateway.php:3231
 msgid "No"
 msgstr "Nej"
 
@@ -1045,7 +1045,7 @@ msgstr "Artikelbeskrivning saknas"
 msgid "Shipping"
 msgstr "Frakt"
 
-#: resursbankgateway.php:1143 resursbankgateway.php:3287
+#: resursbankgateway.php:1143 resursbankgateway.php:3290
 msgid "Read more"
 msgstr "Läs mer"
 
@@ -1400,81 +1400,95 @@ msgstr ""
 "Det ser ut som att ordern redan har blivit debiterad från ett externt system "
 "- om din order är klar kan du uppdatera den härifrån också"
 
-#: resursbankgateway.php:3105
+#: resursbankgateway.php:3099
+msgid "Referenced data don't exist"
+msgstr "Datat du försöker hämta finns inte"
+
+#: resursbankgateway.php:3100
+msgid ""
+"This error might occur when for example a payment doesn't exist at Resurs "
+"Bank. Normally this happens when payments have failed or aborted before it "
+"can be completed"
+msgstr ""
+"Detta felet kan uppstå när exempelvis en betalning inte existerar hos Resurs "
+"Bank. Normalt sett händer detta när betalningar har misslyckats eller "
+"avbrutits innan de hunnit bli färdigbehandlade."
+
+#: resursbankgateway.php:3108
 msgid ""
 "Following error ocurred when we tried to fetch information about the payment"
 msgstr "Följande fel uppstod när vi försökte hämta information om betalningen"
 
-#: resursbankgateway.php:3159
+#: resursbankgateway.php:3162
 msgid "The order is booked"
 msgstr "Ordern är bokad"
 
-#: resursbankgateway.php:3162
+#: resursbankgateway.php:3165
 msgid "The order is debited"
 msgstr "Ordern är debiterad"
 
-#: resursbankgateway.php:3164
+#: resursbankgateway.php:3167
 msgid "The order is partially debited"
 msgstr "Ordern är delvis debiterad"
 
-#: resursbankgateway.php:3167
+#: resursbankgateway.php:3170
 msgid "The order is credited"
 msgstr "Ordern är krediterad"
 
-#: resursbankgateway.php:3169
+#: resursbankgateway.php:3172
 msgid "The order is annulled"
 msgstr "Ordern är annullerad"
 
-#: resursbankgateway.php:3203
+#: resursbankgateway.php:3206
 msgid "Payment ID"
 msgstr "Betalnings-id"
 
-#: resursbankgateway.php:3206
+#: resursbankgateway.php:3209
 msgid "Payment method ID"
 msgstr "Betalmetodens id"
 
-#: resursbankgateway.php:3209
+#: resursbankgateway.php:3212
 msgid "Store ID"
 msgstr "Butiks-ID (Store ID)"
 
-#: resursbankgateway.php:3212
+#: resursbankgateway.php:3215
 msgid "Payment method name"
 msgstr "Betalmetodens namn"
 
-#: resursbankgateway.php:3215
+#: resursbankgateway.php:3218
 msgid "Payment method type"
 msgstr "Betalmetodens typ"
 
-#: resursbankgateway.php:3218
+#: resursbankgateway.php:3221
 msgid "Payment amount"
 msgstr "Orderbelopp"
 
-#: resursbankgateway.php:3221
+#: resursbankgateway.php:3224
 msgid "Payment limit"
 msgstr "Betalningens limit"
 
-#: resursbankgateway.php:3224
+#: resursbankgateway.php:3227
 msgid "Fraud"
 msgstr "Bedrägeri"
 
-#: resursbankgateway.php:3227
+#: resursbankgateway.php:3230
 msgid "Frozen"
 msgstr "Frusen"
 
-#: resursbankgateway.php:3230
+#: resursbankgateway.php:3233
 msgid "Customer name"
 msgstr "Kundens namn"
 
-#: resursbankgateway.php:3233
+#: resursbankgateway.php:3236
 msgid "Delivery address"
 msgstr "Leveransadress"
 
-#: resursbankgateway.php:3458
+#: resursbankgateway.php:3461
 msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
 msgstr ""
 "Borttagning av orderrad: Resurs Bank API anropades för ta bort orderrader"
 
-#: resursbankgateway.php:4002
+#: resursbankgateway.php:4005
 msgid "There are currently no payment methods available"
 msgstr "Det finns för närvarande inga betalningsmetoder tillgängliga"
 
@@ -1495,6 +1509,20 @@ msgstr ""
 #: staticflows/flow_omni.php:176
 msgid "Custom test environment URL"
 msgstr "Anpassad URL till testmiljö"
+
+#~ msgid ""
+#~ "This error might occur when for example a payment doesn't exist at Resurs "
+#~ "bank. Normally this happens when payments have failed or aborted before "
+#~ "it can be completed"
+#~ msgstr ""
+#~ "Detta felet kan uppstå när exempelvis en betalning inte existerar hos "
+#~ "Resurs Bank."
+
+#~ msgid ""
+#~ "This error might occur when for example a payment doesn't exist. Normally "
+#~ "this happens when payments have failed or aborted before it can be "
+#~ "completed"
+#~ msgstr "Detta felet kan uppstå när en betalning exempelvi sinte exist"
 
 #~ msgid "Resurs Bank web services username"
 #~ msgstr "Användarnamn för Resurs Bank Webservices"

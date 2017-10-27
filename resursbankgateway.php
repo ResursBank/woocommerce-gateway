@@ -3093,7 +3093,26 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 			try {
 				$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
 			} catch (\Exception $e) {
-				return;
+			    $errorMessage = $e->getMessage();
+			    if ($e->getCode() == 8) {
+			        // REFERENCED_DATA_DONT_EXISTS
+                    $errorMessage = __("Referenced data don't exist", 'WC_Payment_Gateway') . "<br>\n<br>\n";
+                    $errorMessage .= __("This error might occur when for example a payment doesn't exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed");
+                }
+			    echo '
+                <div class="clear">&nbsp;</div>
+                <div class="order_data_column_container resurs_orderinfo_container resurs_orderinfo_text">
+                    <div style="padding: 30px;border:none;" id="resursInfo">
+                        <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url( __FILE__ ) . '/img/rb_logo.png' . '"></span>
+                        <fieldset>
+                        '.__('Following error ocurred when we tried to fetch information about the payment', 'WC_Payment_Gateway').'<br>
+                        <br>
+                        '.$errorMessage.'<br>
+                    </fieldset>
+                    </div>
+                </div>
+			    ';
+			    return;
 			}
 			$currentWcStatus   = $order->get_status();
 			$notIn             = array( "completed", "cancelled", "refunded" );
