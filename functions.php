@@ -129,7 +129,7 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 				'login'                                => array(
 					'title'       => __( 'Web services username', 'WC_Payment_Gateway' ),
 					'type'        => 'text',
-					'description' => __( 'Resurs Bank web services username', 'WC_Payment_Gateway' ),
+					'description' => __( 'Web services username, received from Resurs Bank', 'WC_Payment_Gateway' ),
 					'default'     => '',
 					'desc_tip'    => true,
 				),
@@ -137,7 +137,7 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'title'       => __( 'Web services password', 'WC_Payment_Gateway' ),
 					'type'        => 'password',
 					'default'     => '',
-					'description' => __( 'Resurs Bank web services password', 'WC_Payment_Gateway' ),
+					'description' => __( 'Web services password, received from Resurs Bank', 'WC_Payment_Gateway' ),
 					'desc_tip'    => true,
 				),
 				'baseLiveURL'                          => array(
