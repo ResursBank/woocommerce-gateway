@@ -3097,7 +3097,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 			    if ($e->getCode() == 8) {
 			        // REFERENCED_DATA_DONT_EXISTS
                     $errorMessage = __("Referenced data don't exist", 'WC_Payment_Gateway') . "<br>\n<br>\n";
-                    $errorMessage .= __("This error might occur when for example a payment doesn't exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed");
+                    $errorMessage .= __("This error might occur when for example a payment doesn't exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed", 'WC_Payment_Gateway');
                 }
 			    echo '
                 <div class="clear">&nbsp;</div>
