@@ -1,26 +1,45 @@
 <?php
 
 /**
- * Resurs Bank Passthrough API - A pretty silent ShopFlowSimplifier for Resurs Bank.
- * Compatible with simplifiedFlow, hostedFlow and Resurs Checkout.
- * Requirements: WSDL stubs from WSDL2PHPGenerator (deprecated edition)
- * Important notes: As the WSDL files are generated, it is highly important to run tests before release.
- *
- * Last update: See the lastUpdate variable
- * @package RBEcomPHP
- * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
- * @version 1.0-beta
- * @branch 1.0
- * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
- * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
- * @license Apache License
- */
-
-/**
  * Class ResursExceptions Exception handling for EComPHP
  */
-abstract class ResursExceptions
+abstract class RESURS_EXCEPTIONS
 {
+	const ECOMMERCEERROR_ILLEGAL_ARGUMENT = 1;
+	const ECOMMERCEERROR_INTERNAL_ERROR = 3;
+	const ECOMMERCEERROR_NOT_ALLOWED = 4;
+	const ECOMMERCEERROR_REFERENCED_DATA_DONT_EXISTS = 8;
+	const ECOMMERCEERROR_NOT_ALLOWED_IN_ORDER_STATE = 9;
+	const ECOMMERCEERROR_CREDITAPPLICATION_FAILED = 10;
+	const ECOMMERCEERROR_NOT_IMPLEMENTED = 11;
+	const ECOMMERCEERROR_INVALID_CREDITAPPLICATION_SUBMISSION = 14;
+	const ECOMMERCEERROR_SIGNING_REQUIRED = 15;
+	const ECOMMERCEERROR_AUTHORIZATION_FAILED = 17;
+	const ECOMMERCEERROR_APPLICATION_VALIDATION_ERROR = 18;
+	const ECOMMERCEERROR_OBJECT_WITH_ID_ALREADY_EXIST = 19;
+	const ECOMMERCEERROR_NOT_ALLOWED_IN_PAYMENT_STATE = 20;
+	const ECOMMERCEERROR_CUSTOMER_CONFIGURATION_EXCEPTION = 21;
+	const ECOMMERCEERROR_SERVICE_CONFIGURATION_EXCEPTION = 22;
+	const ECOMMERCEERROR_INVALID_CREDITING = 23;
+	const ECOMMERCEERROR_LIMIT_PER_TIME_EXCEEDED = 24;
+	const ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE = 25;
+	const ECOMMERCEERROR_INVALID_FINALIZATION = 26;
+	const ECOMMERCEERROR_FORM_PARSING = 27;
+	const ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID = 28;
+	const ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID = 29;
+	const ECOMMERCEERROR_INVALID_IDENTIFICATION = 30;
+	const ECOMMERCEERROR_TO_MANY_TOKENS = 31;
+	const ECOMMERCEERROR_TOO_MANY_TOKENS = 31; // EComPHP typo fix
+	const ECOMMERCEERROR_CUSTOMER_ALREADY_HAVE_VALID_CARD = 32;
+	const ECOMMERCEERROR_CUSTOMER_HAS_NO_VALID_CARD = 33;
+	const ECOMMERCEERROR_CUSTOMER_HAS_MORE_THAN_ONE_VALID_CARD = 34;
+	const ECOMMERCEERROR_INVALID_AUTHENTICATION = 35;
+	const ECOMMERCEERROR_ANNUL_FAILED = 36;
+	const ECOMMERCEERROR_CUSTOMER_HAS_NO_VALID_ACCOUNT = 37;
+	const ECOMMERCEERROR_LEGACY_EXCEPTION = 99; // V3LegacyModeException
+	const ECOMMERCEERROR_WEAK_PASSWORD = 502;
+	const ECOMMERCEERROR_NOT_AUTHORIZED = 503;
+
 	/**
 	 * Miscellaneous exceptions
 	 */
@@ -31,6 +50,7 @@ abstract class ResursExceptions
 	const REGEX_COUNTRYCODE_MISSING = 1004;
 	const REGEX_CUSTOMERTYPE_MISSING = 1004;
 	const FORMFIELD_CANHIDE_EXCEPTION = 1005;
+	const UNKOWN_SOAP_EXCEPTION_CODE_ZERO = 1006;
 
 	/*
 	 * SSL/HTTP Exceptions
@@ -69,7 +89,7 @@ abstract class ResursExceptions
 	const CREATEPAYMENT_NO_ID_SET = 7008;
 }
 
-class ResursException extends \Exception {
+class RESURS_EXCEPTION_CLASS extends \Exception {
 	private $fromFunction = null;
 	public function __construct($message = 'Unknown exception', $code = 0, $fromFunction = '', \Exception $previous = null) {
 		$this->fromFunction = $fromFunction;
@@ -90,3 +110,15 @@ class ResursException extends \Exception {
 		return $this->fromFunction;
 	}
 }
+
+/**
+ * Class ResursExceptions
+ * @deprecated Use RESURS_EXCEPTIONS
+ */
+abstract class ResursExceptions extends RESURS_EXCEPTIONS {}
+
+/**
+ * Class ResursException
+ * @deprecated Use RESURS_EXCEPTION_CLASS
+ */
+class ResursException extends RESURS_EXCEPTION_CLASS {}
