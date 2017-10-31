@@ -502,6 +502,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 			}
 		} catch ( Exception $e ) {
 			$paymentMethodsError = $e->getMessage();
+			if (preg_match("/simplifiedshopflowservice/i", $paymentMethodsError)) {
+			    $paymentMethodsError = __('The service can not be reached for the moment. Please try again later. You should also make sure that your credentials are really correct - especially when switching between test and production mode', 'WC_Payment_Gateway');
+			}
 		}
 
 		?>
