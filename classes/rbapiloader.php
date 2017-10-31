@@ -27,7 +27,6 @@ if ( ! defined( 'RB_API_PATH' ) ) {
 require_once(RB_API_PATH . '/thirdparty/network.php');
 require_once(RB_API_PATH . '/thirdparty/crypto.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursTypeClasses.php');
-require_once(RB_API_PATH . '/rbapiloader/ResursEnvironments.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursException.php');
 
 if (file_exists(__DIR__ . "/../../vendor/autoload.php")) {
@@ -225,7 +224,7 @@ class ResursBank {
 	/** @var string The version of this gateway */
 	private $version = "1.1.26";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171030";
+	private $lastUpdate = "20171031";
 	/** @var string URL to git storage */
 	private $gitUrl = "https://bitbucket.org/resursbankplugins/resurs-ecomphp";
 	/** @var string This. */
@@ -2060,13 +2059,14 @@ class ResursBank {
 	}
 
 	/**
-	 * Enforce another method than the simplified flow
+	 * Enforce another flow than the simplified flow
 	 *
 	 * @param int $flowType
 	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
-	 * @deprecated Use setPreferredPaymentFlowService
+	 * @deprecated 1.0.26 Use setPreferredPaymentFlowService
+	 * @deprecated 1.1.26 Use setPreferredPaymentFlowService
 	 */
 	public function setPreferredPaymentService( $flowType = RESURS_FLOW_TYPES::FLOW_NOT_SET ) {
 		$this->setPreferredPaymentFlowService($flowType);
@@ -2077,7 +2077,8 @@ class ResursBank {
 	 * @return RESURS_FLOW_TYPES
 	 * @since 1.0.0
 	 * @since 1.1.0
-	 * @deprecated getPreferredPaymentFlowService
+	 * @deprecated 1.0.26 Use getPreferredPaymentFlowService
+	 * @deprecated 1.1.26 Use getPreferredPaymentFlowService
 	 */
 	public function getPreferredPaymentService() {
 		return $this->getPreferredPaymentFlowService();
@@ -2108,8 +2109,11 @@ class ResursBank {
 	}
 
 	/**
-	 *
+	 * Return the current set by user preferred payment flow service
 	 * @return RESURS_FLOW_TYPES
+	 * @since 1.0.26
+	 * @since 1.1.26
+	 * @since 1.2.0
 	 */
 	public function getPreferredPaymentFlowService() {
 		return $this->enforceService;
@@ -7131,17 +7135,18 @@ class ResursBank {
 	 * @since 1.1.26
 	 * @since 1.2.0
 	 */
-	private function getOrderStatusByPaymentStatuses($paymentData = array()) {
+	private function getOrderStatusByPaymentStatuses( $paymentData = array() ) {
 		$resursTotalAmount = $paymentData->totalAmount;
-		if ($this->canDebit($paymentData) && $this->getIsDebited($paymentData) && $resursTotalAmount > 0) {
+		if ( ! $this->canDebit( $paymentData ) && $this->getIsDebited( $paymentData ) && $resursTotalAmount > 0 ) {
 			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
 		}
-		if ($this->getIsAnnulled($paymentData) && $this->getIsCredited($paymentData) && $resursTotalAmount == 0) {
-			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CANCELLED;
+		if ( $this->getIsAnnulled( $paymentData ) && ! $this->getIsCredited( $paymentData ) && $resursTotalAmount == 0 ) {
+			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
 		}
-		if ($this->getIsCredited($paymentData) && $resursTotalAmount == 0) {
-			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_REFUND;
+		if ( $this->getIsCredited( $paymentData ) && $resursTotalAmount == 0 ) {
+			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
 		}
+
 		// Return generic
 		return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
 	}
@@ -7158,34 +7163,37 @@ class ResursBank {
 	 * @since 1.1.26
 	 * @since 1.2.0
 	 */
-	public function getOrderStatusByPayment($paymentIdOrPaymentObject = '', $byCallbackEvent = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackEventDataArrayOrString = array()) {
+	public function getOrderStatusByPayment( $paymentIdOrPaymentObject = '', $byCallbackEvent = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackEventDataArrayOrString = array() ) {
 
-		if (is_string($paymentIdOrPaymentObject)) {
+		if ( is_string( $paymentIdOrPaymentObject ) ) {
 			$paymentData = $this->getPayment( $paymentIdOrPaymentObject );
-		} else if (is_object($paymentIdOrPaymentObject)) {
+		} else if ( is_object( $paymentIdOrPaymentObject ) ) {
 			$paymentData = $paymentIdOrPaymentObject;
 		} else {
-			throw new \Exception("Payment data object or id is not valid", 500);
+			throw new \Exception( "Payment data object or id is not valid", 500 );
 		}
 
-		// Analyzed during a callback event, which have higher priority than a regular control
+		// If nothing else suits us, this will be used
+		$preAnalyzePayment = $this->getOrderStatusByPaymentStatuses( $paymentData );
 
+		// Analyzed during a callback event, which have higher priority than a regular control
 		switch ( $byCallbackEvent ) {
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET:
 				break;
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_ANNULMENT:
-				return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CANCELLED;
+				return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_AUTOMATIC_FRAUD_CONTROL:
-				if (is_string($callbackEventDataArrayOrString)) {
+				if ( is_string( $callbackEventDataArrayOrString ) ) {
+					// Thawed means not frozen
 					if ( $callbackEventDataArrayOrString == "THAWED" ) {
 						return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
-					} else {
-						return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
 					}
 				}
-				break;
+
+				return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_BOOKED:
-				if ( $paymentData->frozen ) {
+				// Frozen set, but not true OR frozen not set at all - Go processing
+				if ( ( isset( $paymentData->frozen ) && ! $paymentData->frozen ) || ! isset( $paymentData->frozen ) ) {
 					return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
 				} else {
 					return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
@@ -7196,14 +7204,39 @@ class ResursBank {
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UNFREEZE:
 				return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE:
-				return $this->getOrderStatusByPaymentStatuses($paymentData);
+				return $this->getOrderStatusByPaymentStatuses( $paymentData );
 			default:    // RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET
 				break;
 		}
 
 		// case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE
-		$returnThisAfterAll = $this->getOrderStatusByPaymentStatuses($paymentData);
+		$returnThisAfterAll = $preAnalyzePayment;
 
 		return $returnThisAfterAll;
+	}
+
+	/**
+	 * @param $returnCode
+	 *
+	 * @return string
+	 * @since 1.0.26
+	 * @since 1.1.26
+	 * @since 1.2.0
+	 */
+	public function getOrderStatusStringByReturnCode($returnCode = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
+		switch ($returnCode) {
+			case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
+				return "pending";
+			case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
+				return "processing";
+			case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
+				return "completed";
+			case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
+				return "annul";
+			case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
+				return "credit";
+			default:
+				return "";
+		}
 	}
 }

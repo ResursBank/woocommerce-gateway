@@ -117,11 +117,29 @@ abstract class RESURS_PAYMENT_STATUS_RETURNCODES {
 	const PAYMENT_PENDING = 10;     // Waiting for callback or frozen
 	const PAYMENT_PROCESSING = 20;  // Booked, waiting for next action
 	const PAYMENT_COMPLETED = 30;   // Fully finalized (debited)
-	const PAYMENT_CANCELLED = 40;   // Fully annulled
-	const PAYMENT_REFUND = 50;      // Fully credited
+	const PAYMENT_ANNULLED = 40;    // Fully annulled
+	const PAYMENT_CREDITED = 50;    // Fully credited
+
+	// Fallback statuses
+	const PAYMENT_CANCELLED = 40;   // Fully annulled (this is practically a prestashop based name)
+	const PAYMENT_REFUND = 50;      // Fully credited (this is practically a prestashop based name)
+}
+
+abstract class RESURS_ENVIRONMENTS {
+	const ENVIRONMENT_PRODUCTION = 0;
+	const ENVIRONMENT_TEST = 1;
+	const ENVIRONMENT_NOT_SET = 2;
 }
 
 ///
+
+/**
+ * Class ResursEnvironments
+ * @since 1.0.0
+ * @deprecated Use RESURS_ENVIRONMENTS
+ */
+abstract class ResursEnvironments extends RESURS_ENVIRONMENTS {
+}
 
 /**
  * Class ResursCallbackReachability
