@@ -459,6 +459,13 @@ function woocommerce_gateway_resurs_bank_init() {
 								$myBool       = false;
 								$failSetup    = true;
 								$errorMessage = $e->getMessage();
+								$prevError = $e->getPrevious();
+								if (!empty($prevError)) {
+								    $errorMessage = $prevError->getMessage();
+                                }
+                                if (preg_match("/simplifiedshopflowservice/i", $errorMessage)) {
+								    $errorMessage = __('Could not update settings from service. Are you sure that your credentials are correct?', 'WC_Payment_Gateway');
+                                }
 							}
 						}
 						if ( isset( $newPaymentMethodsList['error'] ) && ! empty( $newPaymentMethodsList['error'] ) ) {
