@@ -17,6 +17,11 @@ require_once( 'classes/rbapiloader.php' );
 include( 'functions.php' );
 //include('resursbank_settings.php');
 
+use \Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
+use \Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
+use \Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
+use \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
+
 if ( function_exists( 'add_action' ) ) {
 	add_action( 'plugins_loaded', 'woocommerce_gateway_resurs_bank_init' );
 	add_action( 'admin_notices', 'resurs_bank_admin_notice' );
@@ -146,6 +151,14 @@ function woocommerce_gateway_resurs_bank_init() {
 					),
 				),
 				'BOOKED'                  => array(
+					'uri_components'    => array(
+						'paymentId' => 'paymentId',
+					),
+					'digest_parameters' => array(
+						'paymentId' => 'paymentId',
+					),
+				),
+                'UPDATE'                  => array(
 					'uri_components'    => array(
 						'paymentId' => 'paymentId',
 					),
@@ -429,11 +442,11 @@ function woocommerce_gateway_resurs_bank_init() {
 							$flowEnv  = getServerEnv();
 							if ( ! empty( $envVal ) ) {
 								if ( $envVal == "test" ) {
-									$flowEnv = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST;
+									$flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
 								} else if ( $envVal == "live" ) {
-									$flowEnv = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION;
+									$flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
 								} else if ( $envVal == "production" ) {
-									$flowEnv = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION;
+									$flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
 								}
 								$newFlow = initializeResursFlow( $testUser, $testPass, $flowEnv );
 							} else {
@@ -577,7 +590,6 @@ function woocommerce_gateway_resurs_bank_init() {
 									try {
 										$salt = uniqid( mt_rand(), true );
 										set_transient( 'resurs_bank_digest_salt', $salt );
-										$this->flow->unSetCallback( \Resursbank\RBEcomPHP\ResursCallbackTypes::UPDATE );
 										$regCount                             = 0;
 										$responseArray['registeredCallbacks'] = 0;
 										$rList                                = array();
@@ -696,14 +708,10 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			$check_digest = sha1( $check_digest );
 			$check_digest = strtoupper( $check_digest );
-			// Trying to fetch the correct order id first, via WP_Query, and then jumping over to our own function if that fails.
-			/*$args = array(
-				'post_type'  => 'shop_order',
-				'meta_key'   => 'paymentId',
-				'meta_value' => $request['paymentId'],
-			);
-			$my_query = new WP_Query( $args );
-			$orderId  = isset( $my_query->posts[0]->ID ) ? $my_query->posts[0]->ID : "";*/
+			$resursPaymentData = null;
+			try {
+				$resursPaymentData = $this->flow->getPayment( $request['paymentId'] );
+			} catch (\Exception $ignorePaymentExceptions) {}
 			$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
 			$order   = new WC_Order( $orderId );
 			if ( $request['digest'] !== $check_digest ) {
@@ -711,23 +719,24 @@ function woocommerce_gateway_resurs_bank_init() {
 				header( 'HTTP/1.1 406 Digest not accepted', true, 406 );
 				exit;
 			}
+
+			$currentStatus = $order->get_status();
 			switch ( $event_type ) {
 				case 'UNFREEZE':
 					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
-					$order->update_status( 'processing' );
+                    $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'], RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UNFREEZE);
 					$order->add_order_note( __( 'The Resurs Bank event UNFREEZE received', 'WC_Payment_Gateway' ) );
 					ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 					break;
 				case 'AUTOMATIC_FRAUD_CONTROL':
 					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
+					$this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'], RESURS_CALLBACK_TYPES::CALLBACK_TYPE_AUTOMATIC_FRAUD_CONTROL, $request['result']);
 					switch ( $request['result'] ) {
 						case 'THAWED':
-							$order->update_status( 'processing' );
 							$order->add_order_note( __( 'The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED', 'WC_Payment_Gateway' ) );
 							ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 							break;
 						case 'FROZEN':
-							$order->update_status( 'on-hold' );
 							$order->add_order_note( __( 'The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN', 'WC_Payment_Gateway' ) );
 							ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 							break;
@@ -744,24 +753,21 @@ function woocommerce_gateway_resurs_bank_init() {
 					if ( ! isWooCommerce3() ) {
 						$order->cancel_order( __( 'ANNULMENT event received from Resurs Bank', 'WC_Payment_Gateway' ) );
 					}
-					/*
-					 * Send hooks to thirdparties after handled self, in case of issues with the hook.
-					 */
+					// Not running suggestedMethod here as we have anoter procedure to cancel orders
 					ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 					break;
 				case 'FINALIZATION':
 					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
-					$order->update_status( 'completed' );
+					$this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'], RESURS_CALLBACK_TYPES::CALLBACK_TYPE_FINALIZATION);
 					$order->add_order_note( __( 'FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway' ) );
 					$order->payment_complete();
 					ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 					break;
 				case 'BOOKED':
-					$currentStatus = $order->get_status();
 					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
-					// If the order has been cancelled, you can't book it (170309 - WOO-86)
+
 					if ( $currentStatus != "cancelled" ) {
-						$order->update_status( 'processing' );
+						$this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'], RESURS_CALLBACK_TYPES::CALLBACK_TYPE_BOOKED);
 						$order->add_order_note( __( 'BOOKED event received from Resurs Bank', 'WC_Payment_Gateway' ) );
 						ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
 					}
@@ -801,6 +807,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 				}*/
 				case 'UPDATE':
+					$this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'], RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE);
+					$order->add_order_note( __( 'UPDATE event received from Resurs Bank', 'WC_Payment_Gateway' ) );
 					break;
 				default:
 					break;
@@ -808,6 +816,51 @@ function woocommerce_gateway_resurs_bank_init() {
 			header( 'HTTP/1.1 204 Accepted' );
 			die();
 		}
+
+		private function synchroniceResursOrderStatus($currentStatus, $newStatus, $woocommerceOrder, $suggestedStatusCode) {
+		    if ($currentStatus != $newStatus) {
+			    $woocommerceOrder->update_status( $newStatus );
+			    $woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank current order status', 'WC_Payment_Gateway' ) . " (".$this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ")");
+			    return true;
+		    }
+			$woocommerceOrder->add_order_note( __( 'Request order status update upon Resurs Bank current payment order status, left unchanged since the order is already updated', 'WC_Payment_Gateway' ) . " (".$this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ")");
+		    return false;
+        }
+
+		private function updateOrderByResursPaymentStatus($woocommerceOrder, $currentWcStatus = '', $paymentIdOrPaymentObject = '', $byCallbackEvent = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackEventDataArrayOrString = array()) {
+			/** @var $suggestedStatus RESURS_PAYMENT_STATUS_RETURNCODES */
+			$suggestedStatus = $this->flow->getOrderStatusByPayment($paymentIdOrPaymentObject, $byCallbackEvent, $callbackEventDataArrayOrString);
+
+			switch ($suggestedStatus) {
+                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING:
+	                $this->synchroniceResursOrderStatus($currentWcStatus, 'processing', $woocommerceOrder, $suggestedStatus);
+	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Processing)");
+	                return $suggestedStatus;
+                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_REFUND:
+	                $this->synchroniceResursOrderStatus($currentWcStatus, 'refunded', $woocommerceOrder, $suggestedStatus);
+	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Refund)");
+                    return $suggestedStatus;
+                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED:
+	                $this->synchroniceResursOrderStatus($currentWcStatus, 'completed', $woocommerceOrder, $suggestedStatus);
+	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Completed)");
+                    return $suggestedStatus;
+                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
+	                $this->synchroniceResursOrderStatus($currentWcStatus, 'on-hold', $woocommerceOrder, $suggestedStatus);
+	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Pending)");
+                    return $suggestedStatus;
+                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CANCELLED:
+	                $woocommerceOrder->update_status( 'cancelled' );
+	                if ( ! isWooCommerce3() ) {
+		                $woocommerceOrder->cancel_order( __( 'Resurs Bank annulled the order', 'WC_Payment_Gateway' ));
+	                }
+	                return $suggestedStatus;
+                default:
+	                $this->synchroniceResursOrderStatus($currentWcStatus, 'on-hold', $woocommerceOrder, $suggestedStatus);
+	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Generic_Payment_Status - on-hold)");
+                    break;
+            }
+			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+        }
 
 		/**
 		 * Register a callback event (EComPHP)
@@ -1087,7 +1140,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			global $woocommerce;
 			/** @var \Resursbank\RBEcomPHP\ResursBank */
 			$flow = initializeResursFlow();
-			$flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
+			$flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 			$flow->Include = array();
 		}
 
@@ -1398,7 +1451,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						$bookDataArray['customer']['type'] = $_REQUEST['ssnCustomerType'];
 					}
 					$bookDataArray['paymentData']['preferredId'] = $preferredId;
-					$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
+					$this->flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 					$failBooking   = false;
 					$hostedFlowUrl = null;
 
@@ -1414,7 +1467,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$failBooking = true;
 						}
 					}
-					$jsonObject = $this->flow->getBookedJsonObject( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_HOSTED );
+					$jsonObject = $this->flow->getBookedJsonObject( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 					$successUrl = null;
 					$failUrl    = null;
 					if ( isset( $jsonObject->successUrl ) ) {
@@ -3718,12 +3771,12 @@ if ( ! function_exists( 'r_wc_get_order_item_type_by_item_id' ) ) {
  *
  * @return ResursBank
  */
-function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_NOT_SET ) {
+function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET ) {
 	global $current_user;
 	$username       = resursOption( "login" );
 	$password       = resursOption( "password" );
 	$useEnvironment = getServerEnv();
-	if ( $setEnvironment !== \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_NOT_SET ) {
+	if ( $setEnvironment !== RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET ) {
 		$useEnvironment = $setEnvironment;
 	}
 	if ( ! empty( $overrideUser ) ) {
@@ -3780,7 +3833,7 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
 		//$initFlow->convertObjects      = true;
 		//$initFlow->convertObjectsOnGet = true;
 		$initFlow->setClientName( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
-		$initFlow->setEnvironment( \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION );
+		$initFlow->setEnvironment( RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION );
 		try {
 			$getResponse = $initFlow->getAddress( $ssn, $customerType, $ip );
 
@@ -3800,19 +3853,19 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
  * @return int
  */
 function getServerEnv() {
-	$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST;
+	$useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
 
 	$serverEnv    = getResursOption('serverEnv');
 	$demoshopMode = getResursOption('demoshopMode');
 
 	if ( $serverEnv == 'live' ) {
-		$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_PRODUCTION;
+		$useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
 	}
 	/*
      * Prohibit production mode if this is a demoshop
      */
 	if ( $serverEnv == 'test' || $demoshopMode == "true" ) {
-		$useEnvironment = \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST;
+		$useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
 	}
 
 	return $useEnvironment;
@@ -3824,7 +3877,7 @@ function getServerEnv() {
  */
 function isResursTest() {
 	$currentEnv = getServerEnv();
-	if ( $currentEnv === \Resursbank\RBEcomPHP\ResursEnvironments::ENVIRONMENT_TEST ) {
+	if ( $currentEnv === RESURS_ENVIRONMENTS::ENVIRONMENT_TEST ) {
 		return true;
 	}
 
@@ -4065,7 +4118,7 @@ function isWooCommerce3() {
 	return hasWooCommerce( "3.0.0" );
 }
 
-if ( isset( $_REQUEST['wc-api'] ) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && isset( $_REQUEST['paymentId'] ) ) {
+/*if ( isset( $_REQUEST['wc-api'] ) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && isset( $_REQUEST['paymentId'] ) ) {
 	if ( isset( $_REQUEST['paymentId'] ) && isset( $_REQUEST['event-type'] ) ) {
 		$cbPaymentId       = $_REQUEST['paymentId'];
 		$eventType         = $_REQUEST['event-type'];
@@ -4076,5 +4129,5 @@ if ( isset( $_REQUEST['wc-api'] ) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && 
 			die();
 		}
 	}
-}
+}*/
 isResursSimulation();
