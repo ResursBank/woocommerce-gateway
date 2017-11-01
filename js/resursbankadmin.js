@@ -14,7 +14,9 @@ $RB(document).ready(function ($) {
         }
     }
     if (jQuery('#woocommerce_resurs-bank_flowtype').length > 0) {
-        adminResursChangeFlowByCountry(document.getElementById('woocommerce_resurs-bank_country'));
+        if (jQuery('#woocommerce_resurs-bank_country').val() == "DK") {
+            adminResursChangeFlowByCountry(document.getElementById('woocommerce_resurs-bank_country'));
+        }
     }
 
     // TODO: This might come back when stuff are cleared out
