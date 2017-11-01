@@ -397,11 +397,6 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			$event_type = $request['event-type'];
 
-			/*if ($event_type == 'BOOKED' && $_SERVER['REQUEST_METHOD'] == "GET") {
-				header( 'HTTP/1.1 407 Event BOOKED only accepting POST', true, 407 );
-				die("Event BOOKED only accepting POST");
-			}*/
-
 			if ( $event_type == "TEST" ) {
 				set_transient( 'resurs_callbacks_received', time() );
 				set_transient( 'resurs_callbacks_content', $_REQUEST );
@@ -772,8 +767,15 @@ function woocommerce_gateway_resurs_bank_init() {
 					break;
 				case 'BOOKED':
 					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
-
 					if ( $currentStatus != "cancelled" ) {
+						$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
+						if ( $optionReduceOrderStock ) {
+							if (isWooCommerce3()) {
+								wc_reduce_stock_levels($order->get_id());
+							} else {
+								$order->reduce_order_stock();
+							}
+						}
 						$this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'], RESURS_CALLBACK_TYPES::CALLBACK_TYPE_BOOKED);
 						$order->add_order_note( __( 'BOOKED event received from Resurs Bank', 'WC_Payment_Gateway' ) );
 						ThirdPartyHooksSetPaymentTrigger( "callback", $request['paymentId'], $orderId, $event_type );
@@ -1545,7 +1547,11 @@ function woocommerce_gateway_resurs_bank_init() {
 					$order->update_status( 'processing' );
 					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
 					if ( $optionReduceOrderStock ) {
-						$order->reduce_order_stock();
+					    if (isWooCommerce3()) {
+						    wc_reduce_stock_levels($order_id);
+					    } else {
+						    $order->reduce_order_stock();
+                        }
 					}
 					WC()->cart->empty_cart();
 
@@ -1947,7 +1953,13 @@ function woocommerce_gateway_resurs_bank_init() {
 							/*
                              * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
                              */
-							$order->reduce_order_stock();
+							if ( $optionReduceOrderStock ) {
+								if (isWooCommerce3()) {
+									wc_reduce_stock_levels($order_id);
+								} else {
+									$order->reduce_order_stock();
+								}
+							}
 						}
 						$getRedirectUrl = $this->get_return_url( $order );
 						$order->update_status( 'processing', __( 'The payment are signed and booked', 'WC_Payment_Gateway' ) );
