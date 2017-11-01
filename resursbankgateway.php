@@ -1166,6 +1166,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$this->flow     = initializeResursFlow();
 			$currentCountry = getResursOption( 'country' );
 			$regExRules     = array();
+			$minMaxError = null;
 
 			$cart             = $woocommerce->cart;
 			$paymentSpec      = $this->get_payment_spec( $cart );
@@ -1175,7 +1176,6 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
 			$timeDiff = time() - $resursTemporaryPaymentMethodsTime;
-
 
 			$countryCredentialArray = array();
 			$hasCountry = false;
@@ -1205,111 +1205,115 @@ function woocommerce_gateway_resurs_bank_init() {
 			$read_more = ( ! empty( $translation ) && isset( $translation['read_more'] ) && ! empty( $translation['read_more'] ) ) ? $translation['read_more'] : __( 'Read more', 'WC_Payment_Gateway' );
 
 			if ( ! $sessionHasErrors ) {
-				foreach ( $methodList as $methodIndex => $method ) {
-					$id           = $method->id;
-					$min          = $method->minLimit;
-					$max          = $method->maxLimit;
-					$customerType = $method->customerType;
-					$specificType = $method->specificType;
-					//$description = $method->description;
+			    if (is_array($methodList)) {
+				    foreach ( $methodList as $methodIndex => $method ) {
+					    $id           = $method->id;
+					    $min          = $method->minLimit;
+					    $max          = $method->maxLimit;
+					    $customerType = $method->customerType;
+					    $specificType = $method->specificType;
+					    //$description = $method->description;
 
-					$inheritFields = array(
-						'applicant-email-address'    => 'billing_email',
-						'applicant-mobile-number'    => 'billing_phone_field',
-						'applicant-telephone-number' => 'billing_phone_field'
-					);
-					$labels        = array(
-						'contact-government-id'      => __( 'Contact government id', 'WC_Payment_Gateway' ),
-						'applicant-government-id'    => __( 'Applicant government ID', 'WC_Payment_Gateway' ),
-						'applicant-full-name'        => __( 'Applicant full name', 'WC_Payment_Gateway' ),
-						'applicant-email-address'    => __( 'Applicant email address', 'WC_Payment_Gateway' ),
-						'applicant-telephone-number' => __( 'Applicant telephone number', 'WC_Payment_Gateway' ),
-						'applicant-mobile-number'    => __( 'Applicant mobile number', 'WC_Payment_Gateway' ),
-						'card-number'                => __( 'Card number', 'WC_Payment_Gateway' ),
-					);
-					// Appears to happen when LEGAL are chosen
-					$labelsLegal = array(
-						'applicant-government-id' => __( 'Company government ID', 'WC_Payment_Gateway' ),
-					);
-					$minMaxError = false;
-					if ( $totalAmount >= $min && $totalAmount <= $max ) {
-						try {
-							$regExRules = $this->flow->getRegEx( '', $currentCountry, $customerType );
-						} catch ( Exception $e ) {
-							echo $e->getMessage();
-						}
-						if ( strtolower( $id ) == strtolower( $payment_id ) ) {
-							// When boths customer types are allowed, this is going arrayified.
-							// In that case, select the one that the customer has chosen. Default is NATURAL
-							if ( ! isset( $_REQUEST['ssnCustomerType'] ) ) {
-								$_REQUEST['ssnCustomerType'] = "NATURAL";
-							}
-							$customerTypeTest = $_REQUEST['ssnCustomerType'];
-							if ( is_array( $customerType ) && in_array( $customerTypeTest, $customerType ) ) {
-								$customerType = $customerTypeTest;
-							}
-							$requiredFormFields = $this->flow->getTemplateFieldsByMethodType( $method, $customerType, $specificType );
-							$buttonCssClasses   = "btn btn-info active";
-							$ajaxUrl            = admin_url( 'admin-ajax.php' );
-							if ( ! isResursHosted() ) {
-								$fieldGenHtml .= '<div>' . $method_class->description . '</div>';
-								foreach ( $requiredFormFields['fields'] as $fieldName ) {
-									$doDisplay           = "block";
-									$streamLineBehaviour = getResursOption( "streamlineBehaviour" );
-									if ( $streamLineBehaviour ) {
-										if ( $this->flow->canHideFormField( $fieldName ) ) {
-											$doDisplay = "none";
-										}
-										/*
-										 * As we do get the applicant government id from the getaddress field, we don't have to show that here.
-										 */
-										if ( $fieldName == "applicant-government-id" ) {
-											/*
-											 * But only if it is enabled
+					    $inheritFields = array(
+						    'applicant-email-address'    => 'billing_email',
+						    'applicant-mobile-number'    => 'billing_phone_field',
+						    'applicant-telephone-number' => 'billing_phone_field'
+					    );
+					    $labels        = array(
+						    'contact-government-id'      => __( 'Contact government id', 'WC_Payment_Gateway' ),
+						    'applicant-government-id'    => __( 'Applicant government ID', 'WC_Payment_Gateway' ),
+						    'applicant-full-name'        => __( 'Applicant full name', 'WC_Payment_Gateway' ),
+						    'applicant-email-address'    => __( 'Applicant email address', 'WC_Payment_Gateway' ),
+						    'applicant-telephone-number' => __( 'Applicant telephone number', 'WC_Payment_Gateway' ),
+						    'applicant-mobile-number'    => __( 'Applicant mobile number', 'WC_Payment_Gateway' ),
+						    'card-number'                => __( 'Card number', 'WC_Payment_Gateway' ),
+					    );
+					    // Appears to happen when LEGAL are chosen
+					    $labelsLegal = array(
+						    'applicant-government-id' => __( 'Company government ID', 'WC_Payment_Gateway' ),
+					    );
+					    $minMaxError = false;
+					    if ( $totalAmount >= $min && $totalAmount <= $max ) {
+						    try {
+							    $regExRules = $this->flow->getRegEx( '', $currentCountry, $customerType );
+						    } catch ( Exception $e ) {
+							    echo $e->getMessage();
+						    }
+						    if ( strtolower( $id ) == strtolower( $payment_id ) ) {
+							    // When boths customer types are allowed, this is going arrayified.
+							    // In that case, select the one that the customer has chosen. Default is NATURAL
+							    if ( ! isset( $_REQUEST['ssnCustomerType'] ) ) {
+								    $_REQUEST['ssnCustomerType'] = "NATURAL";
+							    }
+							    $customerTypeTest = $_REQUEST['ssnCustomerType'];
+							    if ( is_array( $customerType ) && in_array( $customerTypeTest, $customerType ) ) {
+								    $customerType = $customerTypeTest;
+							    }
+							    $requiredFormFields = $this->flow->getTemplateFieldsByMethodType( $method, $customerType, $specificType );
+							    $buttonCssClasses   = "btn btn-info active";
+							    $ajaxUrl            = admin_url( 'admin-ajax.php' );
+							    if ( ! isResursHosted() ) {
+								    $fieldGenHtml .= '<div>' . $method_class->description . '</div>';
+								    foreach ( $requiredFormFields['fields'] as $fieldName ) {
+									    $doDisplay           = "block";
+									    $streamLineBehaviour = getResursOption( "streamlineBehaviour" );
+									    if ( $streamLineBehaviour ) {
+										    if ( $this->flow->canHideFormField( $fieldName ) ) {
+											    $doDisplay = "none";
+										    }
+										    /*
+											 * As we do get the applicant government id from the getaddress field, we don't have to show that here.
 											 */
-											$optionGetAddress = getResursOption( "getAddress" );
-											if ( $optionGetAddress ) {
-												$doDisplay = "none";
-											}
-										}
-									}
-									$setLabel = $labels[ $fieldName ];
-									if ( isset( $labelsLegal[ $fieldName ] ) && ! empty( $labelsLegal[ $fieldName ] ) && $customerType != "NATURAL" ) {
-										$setLabel = $labelsLegal[ $fieldName ];
-									}
-									$fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
-									$fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $setLabel . '</label>';
-									$fieldGenHtml .= '<input onkeyup="rbFormChange(\'' . $fieldName . '\', this)" id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
-									$fieldGenHtml .= '</div>';
-								}
+										    if ( $fieldName == "applicant-government-id" ) {
+											    /*
+												 * But only if it is enabled
+												 */
+											    $optionGetAddress = getResursOption( "getAddress" );
+											    if ( $optionGetAddress ) {
+												    $doDisplay = "none";
+											    }
+										    }
+									    }
+									    $setLabel = $labels[ $fieldName ];
+									    if ( isset( $labelsLegal[ $fieldName ] ) && ! empty( $labelsLegal[ $fieldName ] ) && $customerType != "NATURAL" ) {
+										    $setLabel = $labelsLegal[ $fieldName ];
+									    }
+									    $fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
+									    $fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $setLabel . '</label>';
+									    $fieldGenHtml .= '<input onkeyup="rbFormChange(\'' . $fieldName . '\', this)" id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
+									    $fieldGenHtml .= '</div>';
+								    }
 
-								/*
-								 * MarGul Change
-								 * Use translations for the Read More Button. Also added a fixed width and height on the onClick button.
-								 */
-								if ( class_exists( "CountryHandler" ) ) {
-									$translation = CountryHandler::getDictionary();
-								} else {
-									$translation = array();
-								}
-								$costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-								if ( $specificType != "CARD" ) {
-									$fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
-								}
-								// Fix: There has been an echo here, instead of a fieldGenHtml
-								$fieldGenHtml .= '<input type="hidden" value="' . $id . '" class="resurs-bank-payment-method">';
-							} else {
-								$costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-								$fieldGenHtml   = $this->description . "<br><br>";
-								if ( $specificType != "CARD" ) {
-									$fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
-								}
-							}
-						}
-					} else {
-						$minMaxError = true;
-					}
-				}
+								    /*
+									 * MarGul Change
+									 * Use translations for the Read More Button. Also added a fixed width and height on the onClick button.
+									 */
+								    if ( class_exists( "CountryHandler" ) ) {
+									    $translation = CountryHandler::getDictionary();
+								    } else {
+									    $translation = array();
+								    }
+								    $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+								    if ( $specificType != "CARD" ) {
+									    $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
+								    }
+								    // Fix: There has been an echo here, instead of a fieldGenHtml
+								    $fieldGenHtml .= '<input type="hidden" value="' . $id . '" class="resurs-bank-payment-method">';
+							    } else {
+								    $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+								    $fieldGenHtml   = $this->description . "<br><br>";
+								    if ( $specificType != "CARD" ) {
+									    $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
+								    }
+							    }
+						    }
+					    } else {
+						    $minMaxError = true;
+					    }
+				    }
+			    } else {
+			        $fieldGenHtml = __('Something went wrong while trying to get the required form fields for the payment methods', 'WC_Payment_Gateway');
+                }
 			} else {
 				$fieldGenHtml = __( 'Something went wrong during communication with Resurs Bank', 'WC_Payment_Gateway' ) . "<br><br>\n<i>" . $sessionErrorMessage . "</i>";
 			}
@@ -1317,9 +1321,9 @@ function woocommerce_gateway_resurs_bank_init() {
 				echo $fieldGenHtml;
 			}
 			if ( isResursTest() ) {
-				if ( $minMaxError ) {
+				/*if ( isset($minMaxError) ) {
 					echo '<div style="font-style:italic">' . __( 'Your environment is currently in test mode and the payment amount is lower or higher that the payment method allows.<br>In production mode, this payment method will be hidden.', 'WC_Payment_Gateway' ) . "</div>";
-				}
+				}*/
 			}
 		}
 
@@ -2652,8 +2656,51 @@ function woocommerce_gateway_resurs_bank_init() {
 				$company     = $translation['company'];
 			}
 			// Here we use the translated or not translated values for Private and Company radiobuttons
-			echo '<input type="radio" id="ssnCustomerType" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . $private . " ";
-			echo '<input type="radio" id="ssnCustomerType" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . $company;
+			$resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
+			$timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+			if ( $timeDiff >= 3600 ) {
+                /** @var $theFlow \Resursbank\RBEcomPHP\ResursBank */
+                $theFlow = initializeResursFlow();
+                $methodList = $theFlow->getPaymentMethods();
+				set_transient( "resursTemporaryPaymentMethodsTime", time(), 3600 );
+				set_transient( "resursTemporaryPaymentMethods", serialize( $methodList ), 3600 );
+			} else {
+				$methodList = unserialize( get_transient( "resursTemporaryPaymentMethods" ) );
+			}
+			$naturalCount = 0;
+			$legalCount = 0;
+			if (is_array($methodList)) {
+			    foreach ($methodList as $method) {
+                    $customerType = $method->customerType;
+                    if (is_array($customerType)) {
+                        if (in_array("NATURAL",$customerType)) {
+                            $naturalCount++;
+                        }
+                        if (in_array("LEGAL",$customerType)) {
+                            $legalCount++;
+                        }
+                    } else {
+                        if ($customerType == "NATURAL") {
+                            $naturalCount++;
+                        }
+                        if ($customerType == "LEGAL") {
+                            $legalCount++;
+                        }
+                    }
+                }
+            }
+
+            $viewNatural = "display:;";
+            $viewLegal = "display:;";
+            if ($naturalCount > 0 && !$legalCount) {
+                $viewNatural = "display: none;";
+            }
+            if (!$naturalCount && $legalCount) {
+                $viewLegal = "display: none;";
+            }
+
+            if ($naturalCount) {echo '<span id="ssnCustomerRadioNATURAL" style="'.$viewNatural.'"><input type="radio" id="ssnCustomerType" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . $private . "</span> ";}
+			if ($legalCount) {echo '<span id="ssnCustomerRadioLEGAL" style="'.$viewLegal.'"><input type="radio" id="ssnCustomerType" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . $company . "</span>";}
 			echo '<input type="hidden" id="resursSelectedCountry" value="' . $selectedCountry . '">';
 			woocommerce_form_field( 'ssn_field', array(
 				'type'        => 'text',
@@ -2840,7 +2887,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			'couldNotSetNewFee'      => __( 'Unable to set new fee', 'WC_Payment_Gateway' ),
 			'newFeeHasBeenSet'       => __( 'Fee has been saved', 'WC_Payment_Gateway' ),
 			'callbacks_pending'      => __( 'Waiting for callback', 'WC_Payment_Gateway' ),
-			'callbacks_not_received' => __( 'Callback not yes received', 'WC_Payment_Gateway' ),
+			'callbacks_not_received' => __( 'Callback not yet received', 'WC_Payment_Gateway' ),
 			'callbacks_slow'         => nl2br( __( 'It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.', 'WC_Payment_Gateway' ) )
 		);
 		wp_localize_script( 'resursBankAdminScript', 'adminJs', $adminJs );

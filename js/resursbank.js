@@ -532,10 +532,47 @@ function ResursRegexMatch(objectBound, regEx) {
 function preSetResursMethods(customerType, returnedObjects) {
     var hideElm;
     var showElm;
+    var hasLegal = false;
+    var hasNatural = false;
+    var disableGetAddressOptions = "";
+    var keepGetAddressOption = "";
 
     if (typeof returnedObjects["errorstring"] !== "undefined") {
         console.log(returnedObjects["errorstring"]);
         return;
+    }
+
+    if (typeof returnedObjects["legal"] !== "undefined") {
+        if (returnedObjects["legal"].length > 0) {
+            hasLegal = true;
+        }
+    }
+    if (typeof returnedObjects["natural"] !== "undefined") {
+        if (returnedObjects["natural"].length > 0) {
+            hasNatural = true;
+        }
+    }
+    if (!hasLegal) {
+        disableGetAddressOptions = "LEGAL";
+        keepGetAddressOption = "NATURAL";
+    }
+    if (!hasNatural) {
+        disableGetAddressOptions = "NATURAL";
+        keepGetAddressOption = "LEGAL";
+    }
+
+    if (disableGetAddressOptions != "") {
+        // Make sure the options are removed if there is just one bulk of payment methods
+        $RB('[id="ssnCustomerType"]').each(
+            function (i,d) {
+                if (d.value == disableGetAddressOptions) {
+                    if ($RB('#ssnCustomerRadio' + disableGetAddressOptions).length > 0) {
+                        $RB('#ssnCustomerRadio' + disableGetAddressOptions).remove();
+                        $RB('#ssnCustomerRadio' + keepGetAddressOption).hide();
+                    }
+                }
+            }
+        );
     }
 
     // Only invoke if there are multiple customer types
