@@ -13,6 +13,9 @@ $RB(document).ready(function ($) {
             doUpdateResursCallbacks();
         }
     }
+    if (jQuery('#woocommerce_resurs-bank_flowtype').length > 0) {
+        adminResursChangeFlowByCountry(document.getElementById('woocommerce_resurs-bank_country'));
+    }
 
     // TODO: This might come back when stuff are cleared out
     /*
