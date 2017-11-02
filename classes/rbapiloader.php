@@ -2137,7 +2137,7 @@ class ResursBank {
 		$serviceNameUrl = $this->getServiceUrl( $serviceName );
 		$soapBody = null;
 		if (!empty($serviceNameUrl) && !is_null($this->CURL)) {
-			$Service = $this->CURL->doGet( $serviceNameUrl );
+			$Service        = $this->CURL->doGet( $serviceNameUrl );
 			try {
 				$RequestService = $Service->$serviceName( $resursParameters );
 			} catch (\Exception $serviceRequestException) {
@@ -4770,7 +4770,20 @@ class ResursBank {
 			} else {
 				$this->defaultUnitMeasure = "st";
 			}
+		} else {
+			$this->defaultUnitMeasure = $unitMeasure;
 		}
+	}
+
+	/**
+	 * Returns current set unitmeasure (st, kpl, etc)
+	 * @return string
+	 * @since 1.0.26
+	 * @since 1.1.26
+	 * @since 1.2.0
+	 */
+	public function getDefaultUnitMeasure() {
+		return $this->defaultUnitMeasure;
 	}
 
 	/**
@@ -6914,7 +6927,7 @@ class ResursBank {
 	 * @since 1.1.22
 	 * @since 1.2.0
 	 */
-	public function paymentCredit( $paymentId = "", $customPayloadItemList = array()) {
+	public function paymentCredit( $paymentId = "", $customPayloadItemList = array() ) {
 		$afterShopObject = $this->getAfterShopObjectByPayload( $paymentId, $customPayloadItemList, RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_CREDIT );
 		$this->aftershopPrepareMetaData( $paymentId );
 		$afterShopResponseCode = $this->postService( "creditPayment", $afterShopObject, true );
@@ -6972,6 +6985,7 @@ class ResursBank {
 
 				// Clean up selected rows from the credit element and keep those rows than still can be annulled and matches the orderRow-request
 				$newAnnulObject = $this->objectsIntoArray($this->removeFromArray($validatedAnnulmentObject, $currentOrderLines, true));
+
 				if (count($newCreditObject)) {$this->paymentCredit( $paymentId, $newCreditObject );}
 				if (count($newAnnulObject)) {$this->paymentAnnul( $paymentId, $newAnnulObject );}
 			} else {
