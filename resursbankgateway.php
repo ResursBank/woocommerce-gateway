@@ -3117,6 +3117,45 @@ function woocommerce_gateway_resurs_bank_init() {
 		echo $displayAnnuity;
 	}
 
+	/**
+     * This function allows partial refunding based on amount rather than article numbers.
+     *
+     * Written experimental for the future - eventually - since the logcis allows a lot more than we have time to fix right now.
+     * For exampel, in this function we also need to figure out how much that is actually left to annul or credit before sending the actions.
+     * If we try to credit more than is authorized or credit a part of the payment that is already annulled, the credit will fail.
+     *
+	 * @param string $refundId
+	 * @param array $refundArgs
+	 *
+	 * @return bool
+	 */
+	function resurs_order_refund($refundId = '', $refundArgs = array()) {
+	    $refundStatus = false;
+	    $refundObject = new WC_Order_Refund($refundId);
+	    $amount = $refundObject->get_amount();
+	    $reason = $refundObject->get_reason();
+	    $itemCount = $refundObject->get_item_count();
+	    $parent = $refundObject->get_parent_id();;
+		$resursId = wc_get_payment_id_by_order_id($parent);
+
+		/** @var $refundFlow Resursbank\RBEcomPHP\ResursBank */
+		$refundFlow = initializeResursFlow();
+
+	    if (!$itemCount && $amount >= 0 && $parent > 0 && !empty($resursId)) {
+	        try {
+		        $refundFlow->addOrderLine( $reason, __( 'Refund', 'WC_Payment_Gateway' ), $amount);
+		        // totalAmount / limit
+		        if ($refundFlow->getIsDebited($resursId)) {
+			        $refundStatus = $refundFlow->paymentCredit( $resursId );
+		        } else {
+			        $refundStatus = $refundFlow->paymentDebited( $resursId );
+                }
+	        } catch (\Exception $refundException) {
+            }
+        }
+        return $refundStatus;
+    }
+	//add_action( 'woocommerce_refund_created', 'resurs_order_refund' );
 
 	add_filter( 'woocommerce_get_settings_pages', 'rb_settings_pages' );
 	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway' );
