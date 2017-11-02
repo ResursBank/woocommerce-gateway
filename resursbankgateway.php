@@ -3926,7 +3926,9 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 	$country = getResursOption( "country" );
 	$initFlow->setCountryByCountryCode( $country );
-
+	if ($initFlow->getCountry() == "FI") {
+	    $initFlow->setDefaultUnitMeasure("kpl");
+    }
 	return $initFlow;
 }
 
