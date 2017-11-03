@@ -1422,17 +1422,28 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			/* Since we need to figure out */
 			$methodSpecification = $this->getTransientMethod( $shortMethodName );
+            $useCustomerType = "";
+
+			if (!is_array($methodSpecification->customerType)) {
+				if ( $methodSpecification->customerType == "NATURAL" ) {
+                    $useCustomerType = "NATURAL";
+				} else if ( $methodSpecification->customerType == "LEGAL" ) {
+                    $useCustomerType = "LEGAL";
+				}
+			} else {
+			    $useCustomerType = "NATURAL";
+            }
 
 			$bookDataArray['specLine'] = $paymentSpec;
 			$bookDataArray['customer'] = array(
 				'governmentId' => ( isset( $_REQUEST['applicant-government-id'] ) ? $_REQUEST['applicant-government-id'] : "" ),
 				'phone'        => ( isset( $_REQUEST['applicant-telephone-number'] ) ? $_REQUEST['applicant-telephone-number'] : "" ),
 				'email'        => ( isset( $_REQUEST['applicant-email-address'] ) ? $_REQUEST['applicant-email-address'] : "" ),
-				'type'         => ( isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : "" )
+				'type'         => ( isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : $useCustomerType )
 			);
 			if ( isset( $methodSpecification->specificType ) && ( $methodSpecification->specificType == "REVOLVING_CREDIT" || $methodSpecification->specificType == "CARD" ) ) {
 				$bookDataArray['customer']['governmentId'] = isset( $_REQUEST['applicant-government-id'] ) ? $_REQUEST['applicant-government-id'] : "";
-				$bookDataArray['customer']['type']         = isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : "";
+				$bookDataArray['customer']['type']         = isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : $useCustomerType;
 				if ( $methodSpecification->specificType == "REVOLVING_CREDIT" ) {
 					$this->flow->setCardData();
 				} else {
@@ -1463,6 +1474,9 @@ function woocommerce_gateway_resurs_bank_init() {
 					}
 					if ( isset( $_REQUEST['ssnCustomerType'] ) ) {
 						$bookDataArray['customer']['type'] = $_REQUEST['ssnCustomerType'];
+					}
+					if (empty($bookDataArray['customer']['type'])) {
+						$bookDataArray['customer']['type'] = $useCustomerType;
 					}
 					$bookDataArray['paymentData']['preferredId'] = $preferredId;
 					$this->flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
