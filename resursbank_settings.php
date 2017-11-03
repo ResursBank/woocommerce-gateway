@@ -1,9 +1,6 @@
 <?php
 
-/**
- * Running this configuration engine before it has been completed may break the former version of the plugin.
- *
- */
+// Running this configuration engine before it has been completed may break the former version of the plugin.
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -74,7 +71,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	public function resurs_settings_tab( $settings_tabs ) {
 		//$settings_tabs[$this->id] = __('Resurs Bank Administration', 'WC_Payment_Gateway');
 		$images                     = plugin_dir_url( __FILE__ ) . "img/";
-		$settings_tabs[ $this->id ] = '<img src="' . $images . 'resurs-standard.png">';
+		if (hasWooCommerce('3.2.2', '<')) {
+			$settings_tabs[ $this->id ] = '<img src="' . $images . 'resurs-standard.png">';
+		} else {
+			// From v3.2.2 and up, all tabs are html-escaped and can not contain images anymore
+			$settings_tabs[ $this->id ] = 'Resurs Bank';
+        }
 
 		return $settings_tabs;
 	}

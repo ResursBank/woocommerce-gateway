@@ -18,6 +18,15 @@ $RB(document).ready(function ($) {
             adminResursChangeFlowByCountry(document.getElementById('woocommerce_resurs-bank_country'));
         }
     }
+    if (jQuery('.nav-tab').length > 0) {
+        jQuery('.nav-tab').each(function(i, elm) {
+            if (elm.innerHTML == "Resurs Bank") {
+                if (typeof adminJs["resursBankTabLogo"] !== "undefined") {
+                    elm.innerHTML = '<img src="'+adminJs["resursBankTabLogo"]+'">';
+                }
+            }
+        });
+    }
 
     // TODO: This might come back when stuff are cleared out
     /*

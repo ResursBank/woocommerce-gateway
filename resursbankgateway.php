@@ -4,7 +4,7 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.2.2
+ * WC Tested up to: 3.2.3
  * Version: 2.1.5
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
@@ -2867,6 +2867,9 @@ function woocommerce_gateway_resurs_bank_init() {
 	 * @return null        Returns null current page is not correct
 	 */
 	function admin_enqueue_script( $hook ) {
+		$images                     = plugin_dir_url( __FILE__ ) . "img/";
+        $resursLogo = $images . "resurs-standard.png";
+
 		wp_enqueue_style( 'resursInternal', plugin_dir_url( __FILE__ ) . 'css/resursinternal.css', array(), RB_WOO_VERSION . ( defined( 'RB_ALWAYS_RELOAD_JS' ) && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "" ) );
 		wp_enqueue_script( 'resursBankAdminScript', plugin_dir_url( __FILE__ ) . 'js/resursbankadmin.js', array(), RB_WOO_VERSION . ( defined( 'RB_ALWAYS_RELOAD_JS' ) && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "" ) );
 
@@ -2889,7 +2892,8 @@ function woocommerce_gateway_resurs_bank_init() {
 			'newFeeHasBeenSet'       => __( 'Fee has been saved', 'WC_Payment_Gateway' ),
 			'callbacks_pending'      => __( 'Waiting for callback', 'WC_Payment_Gateway' ),
 			'callbacks_not_received' => __( 'Callback not yet received', 'WC_Payment_Gateway' ),
-			'callbacks_slow'         => nl2br( __( 'It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.', 'WC_Payment_Gateway' ) )
+			'callbacks_slow'         => nl2br( __( 'It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.', 'WC_Payment_Gateway' ) ),
+			'resursBankTabLogo'      => $resursLogo
 		);
 		wp_localize_script( 'resursBankAdminScript', 'adminJs', $adminJs );
 		$configUrl = home_url( "/" );
@@ -4222,8 +4226,8 @@ function hasWooCommerce( $versionRequest = "2.0.0", $operator = ">=" ) {
 	}
 }
 
-function isWooCommerce3() {
-	return hasWooCommerce( "3.0.0" );
+function isWooCommerce3($checkVersion = '3.0.0') {
+	return hasWooCommerce( $checkVersion );
 }
 
 /*if ( isset( $_REQUEST['wc-api'] ) && $_REQUEST['wc-api'] == "WC_Resurs_Bank" && isset( $_REQUEST['paymentId'] ) ) {
