@@ -855,7 +855,7 @@ function woocommerce_gateway_resurs_bank_init() {
 	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Completed)");
                     return $suggestedStatus;
                 case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
-	                $this->synchroniceResursOrderStatus($currentWcStatus, 'on-hold', $woocommerceOrder, $suggestedStatus);
+	                $this->synchroniceResursOrderStatus($currentWcStatus, 'pending', $woocommerceOrder, $suggestedStatus);
 	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Pending)");
                     return $suggestedStatus;
                 case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CANCELLED:
