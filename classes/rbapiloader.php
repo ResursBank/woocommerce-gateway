@@ -7184,6 +7184,9 @@ class ResursBank {
 	 */
 	private function getOrderStatusByPaymentStatuses( $paymentData = array() ) {
 		$resursTotalAmount = $paymentData->totalAmount;
+		if ( $this->canDebit( $paymentData ) ) {
+			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
+		}
 		if ( ! $this->canDebit( $paymentData ) && $this->getIsDebited( $paymentData ) && $resursTotalAmount > 0 ) {
 			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
 		}

@@ -63,7 +63,7 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
-= 2.1.5 =
+= 2.1.6 (unreleased) =
 
     * [WOO-201] - Single product view: Support annuity factors
     * [WOO-203] - Selectors for annuity factors not "refreshed"
@@ -77,6 +77,11 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
     * [DEMOSHOP-25] - Payment method adaption
     * [DEMOSHOP-27] - Hide PSP from Simplified (DEMOSHOP-24 continued)
     * [DEMOSHOP-28] - Can't check out simplified after plugin 2.1.3
+
+
+= 2.1.5 (hotfix) =
+
+    * [WOO-210] Turning off getAddress fields with hosted flow activated, causes loss of customerType when checking out
 
 
 = 2.1.3 =
