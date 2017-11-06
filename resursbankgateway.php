@@ -638,7 +638,12 @@ function woocommerce_gateway_resurs_bank_init() {
 							} else if ( $_REQUEST['run'] == 'cleanRbMethods' ) {
 								$numDel     = 0;
 								$numConfirm = 0;
-								// Make sure that the clobs does not return anything else than an array.
+								try {
+									$wpdb->query( "DELETE FROM " . $wpdb->options . " WHERE option_name LIKE '%resursTemporaryPaymentMethods%'" );
+								} catch ( \Exception $dbException ) {
+
+								}
+								// Make sure that the globs does not return anything else than an array.
 								$globIncludes = glob( plugin_dir_path( __FILE__ ) . 'includes/*.php' );
 								if (is_array($globIncludes)) {
 									foreach ( $globIncludes as $filename ) {
@@ -1344,7 +1349,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				return;
 			}
 			$order       = new WC_Order( $order_id );
-			$preferredId = $this->flow->getPreferredId( 25 );
+			$preferredId = $this->flow->getPreferredPaymentId( 25 );
 			update_post_meta( $order_id, 'paymentId', $preferredId );
 			$customer  = $woocommerce->customer;
 			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
