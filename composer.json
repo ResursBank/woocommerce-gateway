@@ -1,0 +1,5 @@
+{
+    "require": {
+        "resursbank/ecomphp": "dev-develop/composerize"
+    }
+}
