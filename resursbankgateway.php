@@ -14,10 +14,10 @@
 
 define( 'RB_WOO_VERSION', "2.1.5" );
 define( 'RB_ALWAYS_RELOAD_JS', true );
-require_once( 'classes/rbapiloader.php' );
-include( 'functions.php' );
-//include('resursbank_settings.php');
 
+require_once(__DIR__ . '/vendor/autoload.php');
+
+include( 'functions.php' );
 use \Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use \Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
 use \Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
@@ -287,7 +287,7 @@ function woocommerce_gateway_resurs_bank_init() {
                      * the session instead.
                      */
 					if ( isset( WC()->session ) && $setSessionEnable ) {
-						$omniRef        = $this->flow->getPreferredId( 25, "RC" );
+						$omniRef        = $this->flow->getPreferredPaymentId( 25, "RC" );
 						$newOmniRef     = $omniRef;
 						$currentOmniRef = WC()->session->get( 'omniRef' );
 						$omniId         = WC()->session->get( "omniid" );
