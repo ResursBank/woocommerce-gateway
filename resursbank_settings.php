@@ -159,6 +159,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		update_option( $section . "_settings", $saveArray );
 	}
 
+	/**
+	 * @param $optionKey
+	 * @param $namespace
+	 *
+	 * @return bool|null
+	 */
 	private function getOptionByNamespace( $optionKey, $namespace ) {
 		$useNamespace = $namespace;
 		if ( ! preg_match( "/_settings$/i", $namespace ) ) {
@@ -178,12 +184,24 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		return $returnedOption;
 	}
 
+	/**
+	 * @param string $settingKey
+	 *
+	 * @return mixed
+	 */
 	private function getFormSettings( $settingKey = '' ) {
 		if ( isset( $this->oldFormFields[ $settingKey ] ) ) {
 			return $this->oldFormFields[ $settingKey ];
 		}
 	}
 
+	/**
+	 * @param string $settingKey
+	 * @param string $namespace
+	 * @param string $scriptLoader
+	 *
+	 * @return string
+	 */
 	private function setCheckBox( $settingKey = '', $namespace = 'woocommerce_resurs-bank_settings', $scriptLoader = "" ) {
 		$properNameSpace = $namespace;
 		if ( ! preg_match( "/_settings$/", $namespace ) ) {
@@ -229,6 +247,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		return $returnCheckbox;
 	}
 
+	/**
+	 * @param string $settingKey
+	 * @param string $namespace
+	 * @param string $scriptLoader
+	 *
+	 * @return string
+	 */
 	private function setHidden( $settingKey = '', $namespace = '', $scriptLoader = "" ) {
 		$UseValue     = $this->getOptionByNamespace( $settingKey, $namespace );
 		$formSettings = $this->getFormSettings( $settingKey );
@@ -244,6 +269,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		return $returnHiddenValue;
 	}
 
+	/**
+	 * @param string $settingKey
+	 * @param string $namespace
+	 * @param string $scriptLoader
+	 *
+	 * @return string
+	 */
 	private function setTextBox( $settingKey = '', $namespace = '', $scriptLoader = "" ) {
 		$UseValue      = $this->getOptionByNamespace( $settingKey, $namespace );
 		$formSettings  = $this->getFormSettings( $settingKey );
@@ -302,6 +334,15 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		return $returnTextBox;
 	}
 
+	/**
+	 * @param string $settingKey
+	 * @param string $namespace
+	 * @param array $optionsList
+	 * @param string $scriptLoader
+	 * @param int $listCount
+	 *
+	 * @return string
+	 */
 	private function setDropDown( $settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1 ) {
 		$formSettings = $this->getFormSettings( $settingKey );
 		if ( is_null( $optionsList ) ) {
@@ -346,10 +387,15 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		return $returnDropDown;
 	}
 
+	/**
+	 * @param string $separatorTitle
+	 * @param string $setClass
+	 *
+	 * @return string
+	 */
 	private function setSeparator( $separatorTitle = "", $setClass = "configSeparateTitle" ) {
 		return '<tr><th colspan="2" class="resursConfigSeparator"><div class=" ' . $setClass . '">' . $separatorTitle . '</div></th></tr>';
 	}
-
 
 	/**
 	 * @param $temp_class_files
@@ -903,6 +949,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		<?php
 	}
 
+	/**
+	 * @return array
+	 */
 	private function getTaxRatesArray() {
 		global $wpdb;
 		$rate_select = array();
