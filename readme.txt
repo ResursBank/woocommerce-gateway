@@ -61,10 +61,28 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
+The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
-= 2.1.6 (unreleased) =
+= 2.1.5 =
 
+    * [WOO-94] - Update text for config settings
+    * [WOO-138] - How to handle denied orders?
+    * [WOO-159] - If payment methods exists only for NATURAL, hide LEGAL fields (including getAddress for SE)
+    * [WOO-194] - Woocommerce internal function for reducing order stock is deprecated
+    * [WOO-202] - Improve message
+    * [WOO-204] - Status rules for plugin (getOrderStatusByPayment)
+    * [WOO-205] - Include UPDATE callback
+    * [WOO-206] - Abstract classes renamed in ECom 1.1.26
+    * [WOO-208] - "Major update warnings"
+    * [WOO-98] - WooCom/DK has three available flows when loaded as "first choice"
+    * [WOO-100] - Error message are shown on backurl when no error occured during payment
+    * [WOO-125] - Error msg shipping
+    * [WOO-183] - password spinner not hiding after password change (reload never stop)
+    * [WOO-203] - Selectors for annuity factors not "refreshed"
+    * [WOO-207] - Reduce order stock not put in correct callback receiver
+    * [WOO-209] - Resurs logotype in navtabs are escaped WooCommerce 3.2.2 due to image tag
+    * [WOO-210] - Turning off getAddress fields with hosted flow activated, causes loss of customerType when checking out
     * [WOO-201] - Single product view: Support annuity factors
     * [WOO-203] - Selectors for annuity factors not "refreshed"
     -theme patches-
@@ -79,8 +97,9 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
     * [DEMOSHOP-28] - Can't check out simplified after plugin 2.1.3
 
 
-= 2.1.5 (hotfix) =
+= 2.1.4 =
 
+    * [WOO-201] - Single product view: Support annuity factors
     * [WOO-210] Turning off getAddress fields with hosted flow activated, causes loss of customerType when checking out
 
 
@@ -89,21 +108,6 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
     * [WOO-198] - Support multiple credentials i demoshop mode (special templates only)
     * [WOO-199] - Test plugin with WooCommerce 3.2.0
 
-
-= 2.1.2 =
-
-    * [WOO-189] - PSP methods are half way supported in simple/hosted flow, but should be excluded from listing
-    * [WOO-190] - Aftershop functions should add notices in shop admin
-    * [WOO-197] - EComPHP change of behaviour in getPaymentMethods
-    * [WOO-195] - Not an actual bug: error setting certificate verify locations (allow, in test, setting SSL validation state disabled)
-    * EComPHP 1.1.22 added, with refactored afterShop support
-
-
-= 2.1.1 =
-
-    * [WOO-193] - Reduce order stock disappeared from wp-admin (hotfix)
-    * [WOO-191] - Callback update registrator runs on pages that does not belong to the function
-    * [WOO-192] - getPaymentInvoices can't handle prepared objects
 
 
 == Upgrade Notice ==
