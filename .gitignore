@@ -4,4 +4,4 @@ Makefile
 node_modules
 /staticflows/index.php
 composer.lock
-cleanup
+deploy

@@ -1,4 +1,7 @@
 {
+    "config": {
+        "preferred-install": "dist"
+    },
     "require": {
         "resursbank/ecomphp": "dev-develop/composerize"
     }
