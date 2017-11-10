@@ -5,4 +5,3 @@ node_modules
 /staticflows/index.php
 composer.lock
 cleanup
-/vendor/**/.git
