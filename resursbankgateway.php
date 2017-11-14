@@ -915,8 +915,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 				$uriTemplate  .= '&ts=' . strftime( "%y%m%d%H%M", time() );
 				$callbackType = $this->flow->getCallbackTypeByString( $type );
-				$this->flow->setCallbackDigest( get_transient( 'resurs_bank_digest_salt' ) );
-				$this->flow->setCallback( $callbackType, $uriTemplate );
+				$this->flow->setCallbackDigestSalt( get_transient( 'resurs_bank_digest_salt' ) );
+				$this->flow->setRegisterCallback( $callbackType, $uriTemplate );
 			} catch ( Exception $e ) {
 				throw new Exception( $e );
 			}
