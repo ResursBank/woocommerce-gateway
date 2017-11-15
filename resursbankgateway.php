@@ -595,7 +595,7 @@ function woocommerce_gateway_resurs_bank_init() {
 											$myBool = true;
 										}
 										set_transient( 'resurs_callbacks_sent', time() );
-										$triggeredTest                         = $this->flow->testCallback();
+										$triggeredTest                         = $this->flow->triggerCallback();
 										$responseArray['registeredCallbacks']  = $regCount;
 										$responseArray['registeredTemplates']  = $rList;
 										$responseArray['testTriggerActive']    = $triggeredTest;
