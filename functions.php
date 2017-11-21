@@ -865,13 +865,14 @@ if ( is_admin() ) {
                         //\$payment_fee = get_option( 'woocommerce_' . \$payment_method . '_settings' )['price'];
                         \$payment_fee_tax_pct = (float)getResursOption('pricePct');
                         \$payment_fee_total = (float)\$payment_fee * ( ( \$payment_fee_tax_pct / 100 ) + 1 );
-    
                         \$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
-    
-                        \$payment_fee_tax_class_rates = \$woocommerce->cart->tax->get_rates( \$payment_fee_tax_class );
-    
-                        \$payment_fee_tax = \$woocommerce->cart->tax->calc_tax(\$payment_fee, \$payment_fee_tax_class_rates);
-    
+                        \$payment_fee_tax_class_rates = WC_Tax::get_rates(\$payment_fee_tax_class);
+                        \$payment_fee_tax = WC_Tax::calc_tax(\$payment_fee, \$payment_fee_tax_class_rates);
+
+                        // TODO: WC_Cart->tax is deprecated since 2.3 - REMOVE THOSE LINES!
+                        //\$payment_fee_tax_class_rates = \$woocommerce->cart->tax->get_rates( \$payment_fee_tax_class );
+                        //\$payment_fee_tax = \$woocommerce->cart->tax->calc_tax(\$payment_fee, \$payment_fee_tax_class_rates);
+
                         if ( false === empty( get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'] ) ) {
                             \$fee_title = get_option( 'woocommerce_{$class_name}_settings' )['priceDescription'];
                         } else {
