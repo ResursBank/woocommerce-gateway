@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Static Payment Flow: OmniCheckout
  *
@@ -484,7 +483,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 
 				/**
 				 * @var  $code
-				 * @var  $coupon WC_Coupon
+				 * @var  WC_Coupon $coupon
 				 */
 				foreach ( $coupons as $code => $coupon ) {
 					$post = get_post( ( ! isWooCommerce3() ? $coupon->id : $coupon->get_id() ) );

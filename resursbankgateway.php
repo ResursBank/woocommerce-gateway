@@ -4,7 +4,7 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.2.3
+ * WC Tested up to: 3.2.4
  * Version: 2.2.0
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
@@ -340,7 +340,12 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 		}
 
+		/**
+         * Are we in omni mode?
+		 * @return bool
+		 */
 		function isResursOmni() {
+		    // Returned from somewhere else
 			return isResursOmni();
 		}
 
@@ -443,8 +448,10 @@ function woocommerce_gateway_resurs_bank_init() {
 							} catch ( Exception $e ) {
 								$myBool       = false;
 								$failSetup    = true;
+                                /** @var $errorMessage */
 								$errorMessage = $e->getMessage();
-								$prevError = $e->getPrevious();
+								/** @var $prevError \Exception */
+								$prevError    = $e->getPrevious();
 								if (!empty($prevError)) {
 								    $errorMessage = $prevError->getMessage();
                                 }
@@ -819,10 +826,10 @@ function woocommerce_gateway_resurs_bank_init() {
 		}
 
 		/**
-		 * @param $currentStatus
-		 * @param $newStatus
-		 * @param $woocommerceOrder
-		 * @param $suggestedStatusCode
+		 * @param string $currentStatus
+		 * @param string $newStatus
+		 * @param WC_Order $woocommerceOrder
+		 * @param RESURS_PAYMENT_STATUS_RETURNCODES $suggestedStatusCode
 		 *
 		 * @return bool
 		 */
@@ -837,7 +844,7 @@ function woocommerce_gateway_resurs_bank_init() {
         }
 
 		/**
-		 * @param $woocommerceOrder
+		 * @param WC_Order $woocommerceOrder
 		 * @param string $currentWcStatus
 		 * @param string $paymentIdOrPaymentObject
 		 * @param int $byCallbackEvent
@@ -886,7 +893,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * @param  string $type The callback type to be registered
 		 * @param  array $options The parameters for the SOAP request
 		 *
-		 * @return bool|mixed|string|void
+		 * @return bool|mixed|string
 		 * @throws Exception
 		 */
 		public function register_callback( $type, $options ) {
@@ -960,22 +967,21 @@ function woocommerce_gateway_resurs_bank_init() {
 			return true;
 		}
 
+		// Payment spec functions is a part of the bookPayment functions
 		/**
-		 * Payment spec functions is a part of the bookPayment functions
-		 */
-
-		/**
-		 * Get specLines for startPaymentSession
-		 *
-		 * @param  array $cart WooCommerce cart containing order items
+         * Get specLines for initiated payment session
+         *
+		 * @param WC_Cart $cart WooCommerce cart containing order items
 		 *
 		 * @return array       The specLines for startPaymentSession
 		 */
 		protected static function get_spec_lines( $cart ) {
 			$spec_lines = array();
 			foreach ( $cart as $item ) {
+			    /** @var WC_Product $data */
 				$data     = $item['data'];
-				$_tax     = new WC_Tax();//looking for appropriate vat for specific product
+				/** @var WC_Tax $_tax */
+				$_tax     = new WC_Tax();  //looking for appropriate vat for specific product
 				$rates    = array();
 				$taxClass = $data->get_tax_class();
 				$rates    = @array_shift( $_tax->get_rates( $taxClass ) );
@@ -984,7 +990,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				} else {
 					$vatPct = 0;
 				}
-
 				$priceExTax     = ( ! isWooCommerce3() ? $data->get_price_excluding_tax() : wc_get_price_excluding_tax( $data ) );
 				$totalVatAmount = ( $priceExTax * ( $vatPct / 100 ) );
 				$setSku         = $data->get_sku();
@@ -1015,7 +1020,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		/**
 		 * Get and convert payment spec from cart, convert it to Resurs Specrows
 		 *
-		 * @param $cart WC_Cart Order items
+		 * @param WC_Cart $cart Order items
 		 * @param bool $specLinesOnly Return only the array of speclines
 		 *
 		 * @return array The paymentSpec for startPaymentSession
@@ -1023,8 +1028,10 @@ function woocommerce_gateway_resurs_bank_init() {
 		protected static function get_payment_spec( $cart, $specLinesOnly = false ) {
 			global $woocommerce;
 
-			$payment_fee_tax_pct = (float) getResursOption( 'pricePct' );
-			$spec_lines          = self::get_spec_lines( $cart->get_cart() );
+			//$payment_fee_tax_pct = (float) getResursOption( 'pricePct' );
+            /** @var WC_Cart $currentCart */
+			$currentCart         = $cart->get_cart();
+			$spec_lines          = self::get_spec_lines( $currentCart );
 			$shipping            = (float) $cart->shipping_total;
 			$shipping_tax        = (float) $cart->shipping_tax_total;
 			$shipping_total      = (float) ( $shipping + $shipping_tax );
@@ -1175,6 +1182,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$currentCountry = getResursOption( 'country' );
 			$regExRules     = array();
 			$minMaxError = null;
+			$methodList = null;
 
 			$cart             = $woocommerce->cart;
 			$paymentSpec      = $this->get_payment_spec( $cart );
@@ -1414,9 +1422,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				'forceSigning' => false
 			);
 
-			/*
-             * Payment defaults
-             */
+            // Defaults
 			$bookDataArray['paymentData'] = array(
 				'waitForFraudControl' => resursOption( 'waitForFraudControl' ),
 				'annulIfFrozen'       => resursOption( 'annulIfFrozen' ),
@@ -1466,7 +1472,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				$bookDataArray['customer']['cellPhone'] = $_REQUEST['applicant-mobile-number'];
 			}
 			$supportProviderMethods = true;
-			$emulateHostedFlow      = false;
 			try {
 				if ( isResursHosted() ) {
 					if ( isset( $_REQUEST['ssn_field'] ) && ! empty( $_REQUEST['ssn_field'] ) ) {
@@ -1648,10 +1653,10 @@ function woocommerce_gateway_resurs_bank_init() {
 		}
 
 		/**
-		 *
+		 * Prepare the order for the checkout
 		 */
 		public function prepare_omni_order() {
-			/** @var $resursOrder WC_Checkout What will be created if successful, and what will report undefined variable if unsuccessful */
+			/** @var WC_Checkout $resursOrder What will be created if successful, and what will report undefined variable if unsuccessful */
 			$resursOrder = null;
 
 			/*
@@ -1838,7 +1843,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$returnResult['session']           = WC()->session;
 							$returnResult['hasInternalErrors'] = $hasInternalErrors;
 							if ( $orderId > 0 && ! $hasInternalErrors ) {
-                                /** @var $omniClass WC_Gateway_ResursBank_Omni */
+                                /** @var WC_Gateway_ResursBank_Omni $omniClass */
 								$omniClass = new WC_Gateway_ResursBank_Omni();
 								$order->set_payment_method( $omniClass );
 								$order->set_address( $wooBillingAddress, 'billing' );
@@ -2024,8 +2029,8 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 
 			if ( ( empty( $bookedPaymentId ) && ! $bookSigned ) && ! $isHostedFlow ) {
-				/* This is where we land where $bookSigned gets false, normally when there is an exception at the bookSignedPayment level */
-				/* Before leaving this process, we'll check if something went wrong and the booking is already there */
+				// This is where we land where $bookSigned gets false, normally when there is an exception at the bookSignedPayment level
+                // Before leaving this process, we'll check if something went wrong and the booking is already there
 				$hasGetPaymentErrors        = false;
 				$exceptionMessage           = null;
 				$getPaymentExceptionMessage = null;
@@ -2408,6 +2413,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$flow                = initializeResursFlow();
 			$methodsHasErrors    = false;
 			$methodsErrorMessage = null;
+			$paymentMethods = null;
 
 			$resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
 			$timeDiff = time() - $resursTemporaryPaymentMethodsTime;
@@ -2506,7 +2512,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			$new_status       = get_term_by( 'slug', sanitize_title( $new_status_slug ), 'shop_order_status' );
 			$order_total      = $order->get_total();
 			$order_fees       = $order->get_fees();
-			
+
 			/** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
 			$resursFlow       = initializeResursFlow();
 			$flowErrorMessage = null;
@@ -3052,6 +3058,11 @@ function woocommerce_gateway_resurs_bank_init() {
 		return $gateways;
 	}
 
+	/**
+	 * @param $columns
+	 *
+	 * @return array
+	 */
 	function resurs_order_column_header( $columns ) {
 		$new_columns = array();
 		foreach ( $columns as $column_name => $column_info ) {
@@ -3064,6 +3075,9 @@ function woocommerce_gateway_resurs_bank_init() {
 		return $new_columns;
 	}
 
+	/**
+	 * @param $column
+	 */
 	function resurs_order_column_info( $column ) {
 		global $post;
 		if ( $column == "resurs_order_id" ) {
@@ -3179,7 +3193,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		        if ($refundFlow->getIsDebited($resursId)) {
 			        $refundStatus = $refundFlow->paymentCredit( $resursId );
 		        } else {
-			        $refundStatus = $refundFlow->paymentDebited( $resursId );
+			        $refundStatus = $refundFlow->paymentAnnul( $resursId );
                 }
 	        } catch (\Exception $refundException) {
             }
@@ -3253,11 +3267,12 @@ function resurs_no_debit_debited() {
  * Hook into WooCommerce OrderAdmin fetch payment data from Resurs Bank.
  * This hook are tested from WooCommerce 2.1.5 up to WooCommcer 2.5.2
  *
- * @param null $order
+ * @param WC_Order $order
  * @param null $orderDataInfoAfter
  */
 function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 	global $orderInfoShown;
+	$resursPaymentInfo = null;
 	$showOrderInfoAfterOption = getResursOption( "showOrderInfoAfter", "woocommerce_resurs-bank_settings" );
 	$showOrderInfoAfter       = ! empty( $showOrderInfoAfterOption ) ? $showOrderInfoAfterOption : "AO";
 	if ( $showOrderInfoAfter != $orderDataInfoAfter ) {
@@ -3526,11 +3541,8 @@ function ThirdPartyHooks( $type = '', $content = '', $addonData = array() ) {
 
 	// If the hook is basedon sending payment data info ...
 	if ( in_array( strtolower( $type ), $paymentInfoHooks ) ) {
-		/*
-         * ... then prepare the necessary data without revealing the full getPayment()-object.
-         *
-         * This is for making data available for any payment bridging needed for external systems to synchronize payment statuses if needed.
-         */
+        // ... then prepare the necessary data without revealing the full getPayment()-object.
+        // This is for making data available for any payment bridging needed for external systems to synchronize payment statuses if needed.
 		$sendHookContent['id']         = isset( $content->id ) ? $content->id : '';
 		$sendHookContent['fraud']      = isset( $content->fraud ) ? $content->fraud : '';
 		$sendHookContent['frozen']     = isset( $content->frozen ) ? $content->frozen : '';
@@ -3926,7 +3938,7 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
 	if (isResursTest() && $sslHandler) {
 		$initFlow->setDebug(true);
-		$initFlow->setSslValidation(false, false);
+		$initFlow->setSslValidation(false);
 	}
 	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
@@ -3976,7 +3988,7 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
 	if ( ! empty( $username ) && ! empty( $password ) ) {
 	    /** @var \Resursbank\RBEcomPHP\ResursBank $initFlow */
 		$initFlow                      = new ResursBank( $username, $password );
-		$initFlow->setClientName( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
+		$initFlow->setUserAgent( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
 		$initFlow->setEnvironment( RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION );
 		try {
 			$getResponse = $initFlow->getAddress( $ssn, $customerType, $ip );
@@ -4204,13 +4216,12 @@ function resurs_omnicheckout_payment_gateways_check( $paymentGatewaysCheck ) {
 	global $woocommerce;
 	$paymentGatewaysCheck = $woocommerce->payment_gateways->get_available_payment_gateways();
 	if ( ! count( $paymentGatewaysCheck ) ) {
-		/* If there is no active payment gateways except for omniCheckout, the warning of no available payment gateways has to be suppressed */
+		// If there is no active payment gateways except for omniCheckout, the warning of no available payment gateways has to be suppressed
 		if ( isResursOmni() ) {
 			return null;
 		}
 
 		return __( 'There are currently no payment methods available', 'WC_Payment_Gateway' );
-		//return null;
 	}
 
 	return $paymentGatewaysCheck;
@@ -4267,6 +4278,7 @@ function isResursDemo() {
  * @param string $operator
  *
  * @return bool
+ * @throws \Exception
  */
 function hasWooCommerce( $versionRequest = "2.0.0", $operator = ">=" ) {
 	if ( version_compare( WOOCOMMERCE_VERSION, $versionRequest, $operator ) ) {
