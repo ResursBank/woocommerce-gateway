@@ -1501,14 +1501,16 @@ function woocommerce_gateway_resurs_bank_init() {
 						return;
 					} else {
 						try {
-							$hostedBookPayment = $this->flow->createPayment( $shortMethodName, $bookDataArray );
-							$hostedFlowUrl     = $hostedBookPayment;
+							$this->flow->setRequiredExecute(true);
+							$this->flow->createPayment( $shortMethodName, $bookDataArray );
+							$hostedFlowPayload = $this->flow->getPayload();
+							$hostedFlowUrl     = $this->flow->Execute();
 						} catch ( \Exception $hostedException ) {
 							$hostedFlowBookingFailure = true;
 							wc_add_notice( $hostedException->getMessage(), 'error' );
 						}
 					}
-					$hostedFlowPayload = $this->flow->getPayload();
+
 					//$successUrl = isset($hostedFlowPayload['successUrl']) ? $hostedFlowPayload['successUrl'] : null;
 					//$backUrl = isset($hostedFlowPayload['backUrl']) ? $hostedFlowPayload['backUrl'] : null;
                     // Failurl is currently the only needed variable from the payload
