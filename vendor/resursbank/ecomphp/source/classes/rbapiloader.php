@@ -1481,39 +1481,54 @@ class ResursBank {
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
-	public function getNextInvoiceNumber( $initInvoice = true, $firstInvoiceNumber = 1 ) {
+	public function getNextInvoiceNumber( $initInvoice = true, $firstInvoiceNumber = null ) {
 		$this->InitializeServices();
-		$invoiceNumber = 0;
-		if ( $initInvoice ) {
-			try {
-				$invoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
-			} catch ( \Exception $e ) {
+		// Initial invoice number
+		$currentInvoiceNumber = 0;
+		$invoiceInvokation = false;
 
+		// Get the current from e-commerce
+		try {
+			$currentInvoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
+		} catch ( \Exception $e ) {
+			if (is_null($firstInvoiceNumber) && $initInvoice) {
+				$firstInvoiceNumber = 1;
 			}
 		}
+
+		// Continue look at initinvoice, but this time take a look at the requested $firstInvoiceNumber
 		if ( $initInvoice ) {
-			try {
-				if (is_numeric( $invoiceNumber ) && $invoiceNumber > 0) {
-					$this->postService( "setInvoiceSequence", array( 'nextInvoiceNumber' => $firstInvoiceNumber ) );
-				} else {
-					$this->postService( "setInvoiceSequence" );
-				}
-				$invoiceNumber = $firstInvoiceNumber;
-			} catch ( \Exception $e ) {
-				// If the initialization failed, due to an already set invoice number, we will fall back to the last one
-				$invoiceNumber = $this->postService( "peekInvoiceSequence", array( 'nextInvoiceNumber' => null ) )->nextInvoiceNumber;
-			}
-		}
-		if (!intval($invoiceNumber)) {
-			try {
+			// If the requested invoice number is a numeric and over 0, set it as next invoice number
+			if (!is_null($firstInvoiceNumber) && is_numeric( $firstInvoiceNumber ) && $firstInvoiceNumber > 0) {
 				$this->postService( "setInvoiceSequence", array( 'nextInvoiceNumber' => $firstInvoiceNumber ) );
-				$invoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
-			} catch (\Exception $e) {
+				$invoiceInvokation = true;
+			}
+		}
+
+		// If $invoiceInvokation is true, we'll know that something happened under this run
+		if ($invoiceInvokation) {
+			// So in that case, request it again
+			try {
+				$currentInvoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
+			} catch ( \Exception $e ) {
 
 			}
 		}
 
-		return $invoiceNumber;
+		return $currentInvoiceNumber;
+	}
+
+	/**
+	 * Nullify invoice sequence
+	 *
+	 * @return array
+	 * @since 1.0.27
+	 * @since 1.1.27
+	 * @since 1.2.0
+	 */
+	public function resetInvoiceNumber() {
+		$this->InitializeServices();
+		return $this->postService( "setInvoiceSequence" );
 	}
 
 	/**
