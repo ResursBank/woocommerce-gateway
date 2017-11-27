@@ -5,7 +5,7 @@
  *
  * @package EcomPHPTest
  * @author Resurs Bank Ecommrece <ecommerce.support@resurs.se>
- * @version 0.12
+ * @version 0.13
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @license -
  *
@@ -66,13 +66,8 @@ class ResursBankTest extends TestCase
 			}
 		}
 		register_shutdown_function( array( $this, 'shutdownSuite' ) );
-		if ( $this->environmentName === "nonmock" ) {
-			$this->username = $this->usernameNonmock;
-			$this->password = $this->passwordNonmock;
-		}
 		/* Set up default government id for bookings */
 		$this->testGovId       = $this->govIdNatural;
-		$this->testGovIdNorway = $this->govIdNaturalNorway;
 
 		/*
 		 * If HTTP_HOST is not set, Resurs Checkout will not run properly, since the iFrame requires a valid internet connection (actually browser vs http server).
@@ -96,27 +91,14 @@ class ResursBankTest extends TestCase
 	public $ignoreBookingTests = false;
 	public $ignoreSEKKItests = false;
 	public $ignoreUrlExternalValidation = false;
-	/** @var array Alerts: Array of mail-receivers */
-	public $alertReceivers = array();
-	/** @var string Alerts: Name of sender */
-	public $alertFrom = array();
-	/** @var null Ignore this */
-	public $alertMessage = null;
 	/**
 	 * Expected payment method count (SE)
 	 * @var array
 	 * @deprecated 1.1.12
 	 */
 	private $paymentMethodCount = array(
-		'mock'    => 5,
-		'nonmock' => 5
+		'mock'    => 5
 	);
-	/**
-	 * Expected payment method cound (NO)
-	 * @var array
-	 * @deprecated 1.1.12
-	 */
-	private $paymentMethodCountNorway = array( 'mock' => 3 );
 	private $paymentIdAuthed = "20170519125223-9587503794";
 	private $paymentIdAuthAnnulled = "20170519125725-8589567180";
 	private $paymentIdDebited = "20170519125216-8830457943";
@@ -141,12 +123,8 @@ class ResursBankTest extends TestCase
 	private $rb = null;
 	/** @var string Username to web services */
 	private $username = "";
-	/** @var string Similar username, but for nonmock */
-	private $usernameNonmock = "";
 	/** @var string Password to web services */
 	private $password = "";
-	/** @var string Similar password, but for nonmock */
-	private $passwordNonmock = "";
 	/** @var string Used as callback urls */
 	private $callbackUrl = "";
 	/** @var string Where to redirect signings, when done */
@@ -155,27 +133,17 @@ class ResursBankTest extends TestCase
 	private $usernameSweden = "";
 	/** @var string Default password for tests (SE) */
 	private $passwordSweden = "";
-	/** @var string Default username for tests (NO) */
-	private $usernameNorway = "";
-	/** @var string Default password for tests (NO) */
-	private $passwordNorway = "";
 	private $chosenCountry = "SE";
 	/** @var string Selected government id */
 	private $testGovId = "";
-	/** @var string Selected government id for norway */
-	private $testGovIdNorway = "";
 	/** @var string Test with natural government id */
 	private $govIdNatural = "198305147715";
-	/** @var string Test with natural government id/Norway */
-	private $govIdNaturalNorway = "180872-48794";
 	/** @var string Government id that will fail */
 	private $govIdNaturalDenied = "195012026430";
 	/** @var string Test with civic number (legal) */
 	private $govIdLegalCivic = "198305147715";
 	/** @var string getAddress should receive this full name when using LEGAL */
 	private $govIdLegalFullname = "Pilsnerbolaget HB";
-	/** @var string Test with civic number (legal/Norway) */
-	private $govIdLegalCivicNorway = "180872-48794";
 	/** @var string Used for testing card-bookings  (9000 0000 0002 5000 = 25000) */
 	private $cardNumber = "9000000000025000";
 	/** @var string Government id for the card */
@@ -188,19 +156,8 @@ class ResursBankTest extends TestCase
 	private $customerType = null;
 	/** @var array Available methods for test (SE) */
 	private $availableMethods = array();
-	/** @var array Available methods for test (NO) */
-	private $availableMethodsNorway = array();
 	/** @var bool Wait for fraud control to take place in a booking */
 	private $waitForFraudControl = false;
-	/**
-	 * Disabling of callback registrations. Created during issues in nonMock where "ombudsadmin" broke down. To avoid issues with current autotest environments
-	 * we created the ability to disable callbacks, which is a key function for orders to receive callbacks properly (due to the salt keys). With those two functions
-	 * we are able to disable new registrations of callbacks, so that we can borrow a different representative id, during errors that actually requires functioning callbacks.
-	 */
-	/** @var bool Disable callback registration in mocked environment */
-	private $disableCallbackRegMock = false;
-	/** @var bool Disable callback registration in nonmocked environment */
-	private $disableCallbackRegNonMock = false;
 
 	private $zeroSpecLine = false;
 	private $zeroSpecLineZeroTax = false;
@@ -226,32 +183,9 @@ class ResursBankTest extends TestCase
 				$this->password       = $config->sweden->password;
 				$this->passwordSweden = $this->password;
 			}
-			if ( isset( $config->norway->username ) ) {
-				$this->usernameNorway = $config->norway->username;
-			}
-			if ( isset( $config->norway->password ) ) {
-				$this->passwordNorway = $config->norway->password;
-			}
-			if ( isset( $config->nonmock->username ) ) {
-				$this->usernameNonmock = $config->nonmock->username;
-			}
-			if ( isset( $config->nonmock->password ) ) {
-				$this->passwordNonmock = $config->nonmock->password;
-			}
-			if ( isset( $config->alertReceivers ) && is_array( $config->alertReceivers ) ) {
-				$this->alertReceivers = $config->alertReceivers;
-			}
-			if ( isset( $config->alertFrom ) && is_array( $config->alertFrom ) ) {
-				$this->alertFrom = $config->alertFrom;
-			}
 			if ( isset( $config->availableMethods ) ) {
 				foreach ( $config->availableMethods as $methodId => $methodObject ) {
 					$this->availableMethods[ $methodId ] = $methodObject;
-				}
-			}
-			if ( isset( $config->availableMethodsNorway ) ) {
-				foreach ( $config->availableMethodsNorway as $methodId => $methodObject ) {
-					$this->availableMethodsNorway[ $methodId ] = $methodObject;
 				}
 			}
 			if ( isset( $config->callbackUrl ) ) {
@@ -266,32 +200,6 @@ class ResursBankTest extends TestCase
 			if ( isset( $config->failUrl ) ) {
 				$this->failUrl = $config->failUrl;
 			}
-		}
-	}
-
-	/**
-	 * Send mail alerts to defined users in case of special errors
-	 */
-	private function alertSender() {
-		$checkMessage = trim( $this->alertMessage );
-		if ( ! empty( $checkMessage ) ) {
-			//$message = 'Following problems occured during the running of PHPApi TestSuite:' . "\n" . $this->alertMessage;
-			$message = trim( $this->alertMessage );
-			foreach ( $this->alertReceivers as $receiver ) {
-				mail( $receiver, "PHPApi TestSuite Alert [" . $this->environmentName . "]", $message, "From: " . $this->alertFrom . "\nContent-Type: text/plain" );
-			}
-		}
-		//$this->alertMessage = null;
-	}
-
-	/**
-	 * Prepare a compiled message to send, on errors
-	 *
-	 * @param string $message A message to render for alerts (experimental)
-	 */
-	private function alertRender( $message = "" ) {
-		if ( ! empty( $message ) ) {
-			$this->alertMessage .= $message . "\n";
 		}
 	}
 
@@ -362,19 +270,8 @@ class ResursBankTest extends TestCase
 		$usePhoneNumber     = "0101010101";
 		$bookStatus         = null;
 
-		if ( $country == "NO" ) {
-			if ( count( $this->availableMethodsNorway ) && ! empty( $this->usernameNorway ) ) {
-				$useMethodList      = $this->availableMethodsNorway;
-				$useGovIdLegalCivic = $this->govIdLegalCivicNorway;
-				$useGovId           = $this->testGovIdNorway;
-				$usePhoneNumber     = "+4723456789";
-			} else {
-				$this->markTestIncomplete();
-			}
-		} else if ( $country == "SE" ) {
-			if ( ! count( $this->availableMethods ) || empty( $this->username ) ) {
-				$this->markTestIncomplete();
-			}
+		if ( ! count( $this->availableMethods ) || empty( $this->username ) ) {
+			$this->markTestIncomplete();
 		}
 		if ( $this->zeroSpecLine ) {
 			if ( ! $this->zeroSpecLineZeroTax ) {
@@ -449,46 +346,44 @@ class ResursBankTest extends TestCase
 		}
 
 		if ( $bookStatus == "SIGNING" ) {
-			if ( $this->environmentName === "mock" ) {
-				/* Pick up the signing url */
-				$signUrl         = $res->signingUrl;
-				$getSigningPage  = file_get_contents( $signUrl );
-				$NETWORK         = new TorneLIB_Network();
-				$signUrlHostInfo = $NETWORK->getUrlDomain( $signUrl );
-				$getUrlHost      = $signUrlHostInfo[1] . "://" . $signUrlHostInfo[0];
-				$hostUri = explode("/", isset($signUrlHostInfo[2]) ? $signUrlHostInfo[2] : null);
-				$uriPath = "";
-				if (is_array($hostUri) && count($hostUri) > 1) {
-					array_shift($hostUri);
-					if (count($hostUri) >= 2) {
-						array_pop($hostUri);
-						$uriPath = implode("/", $hostUri);
+			/* Pick up the signing url */
+			$signUrl         = $res->signingUrl;
+			$getSigningPage  = file_get_contents( $signUrl );
+			$NETWORK         = new TorneLIB_Network();
+			$signUrlHostInfo = $NETWORK->getUrlDomain( $signUrl );
+			$getUrlHost      = $signUrlHostInfo[1] . "://" . $signUrlHostInfo[0];
+			$hostUri         = explode( "/", isset( $signUrlHostInfo[2] ) ? $signUrlHostInfo[2] : null );
+			$uriPath         = "";
+			if ( is_array( $hostUri ) && count( $hostUri ) > 1 ) {
+				array_shift( $hostUri );
+				if ( count( $hostUri ) >= 2 ) {
+					array_pop( $hostUri );
+					$uriPath = implode( "/", $hostUri );
+				}
+			}
+			$mockSuccessUrl = preg_replace( "/\/$/", '', $getUrlHost . "/" . $uriPath . "/" . preg_replace( '/(.*?)\<a href=\"(.*?)\">(.*?)\>Mock success(.*)/is', '$2', $getSigningPage ) );
+			// Split up in case of test requirements
+			$getPostCurlObject = $this->CURL->doPost( $mockSuccessUrl );
+			$getSuccessContent = $this->CURL->getParsedResponse( $getPostCurlObject );
+			if ( isset( $getSuccessContent->_GET->success ) ) {
+				if ( $getSuccessContent->_GET->success == "true" ) {
+					if ( $signSuccess ) {
+						return true;
+					} else {
+						return false;
 					}
 				}
-				$mockSuccessUrl  = preg_replace( "/\/$/", '', $getUrlHost . "/" . $uriPath . "/" . preg_replace( '/(.*?)\<a href=\"(.*?)\">(.*?)\>Mock success(.*)/is', '$2', $getSigningPage ) );
-				// Split up in case of test requirements
-				$getPostCurlObject = $this->CURL->doPost( $mockSuccessUrl );
-				$getSuccessContent = $this->CURL->getParsedResponse( $getPostCurlObject );
-				if ( isset( $getSuccessContent->_GET->success ) ) {
-					if ( $getSuccessContent->_GET->success == "true" ) {
-						if ( $signSuccess ) {
-							return true;
-						} else {
-							return false;
-						}
+				if ( $getSuccessContent->_GET->success == "false" ) {
+					if ( ! $signSuccess ) {
+						return true;
+					} else {
+						return false;
 					}
-					if ( $getSuccessContent->_GET->success == "false" ) {
-						if ( ! $signSuccess ) {
-							return true;
-						} else {
-							return false;
-						}
-					}
-				} else {
-					$this->markTestIncomplete( "\$getSuccessContent does not contain any success-object." );
+				}
+			} else {
+				$this->markTestIncomplete( "\$getSuccessContent does not contain any success-object." );
 
-					return false;
-				}
+				return false;
 			}
 		} elseif ( $bookStatus == "FROZEN" ) {
 			return true;
@@ -551,7 +446,6 @@ class ResursBankTest extends TestCase
 	 * When suite is about to shut down, run a collection of functions before completion.
 	 */
 	public function shutdownSuite() {
-		$this->alertSender();
 	}
 
 
@@ -580,10 +474,21 @@ class ResursBankTest extends TestCase
 			$this->markTestSkipped();
 		}
 		$paymentMethods = $this->rb->getPaymentMethods();
-		if ( ! count( $paymentMethods ) ) {
-			$this->alertRender( "No payment methods received from ecommerce" );
-		}
 		$this->assertTrue( count( $paymentMethods ) > 0 );
+	}
+	public function testGetPaymentMethodsFail() {
+		$paymentMethods = array();
+		if ( $this->ignoreDefaultTests ) {
+			$this->markTestSkipped();
+		}
+		$fail = new ResursBank("fail", "fail");
+		try {
+			$paymentMethods = $fail->getPaymentMethods();
+		} catch (\Exception $e) {
+			$prevErr = $e->getPrevious();
+			print_R($prevErr);
+		}
+		$this->assertFalse( count( $paymentMethods ) > 0 );
 	}
 
 	/**
@@ -594,9 +499,6 @@ class ResursBankTest extends TestCase
 			$this->markTestSkipped();
 		}
 		$paymentMethods = $this->rb->getPaymentMethods();
-		if ( count( $paymentMethods ) !== $this->paymentMethodCount[ $this->environmentName ] ) {
-			$this->alertRender( "Payment method mismatch - got " . count( $paymentMethods ) . ", expected 5." );
-		}
 		$this->assertTrue( count( $paymentMethods ) === $this->paymentMethodCount[ $this->environmentName ] );
 	}
 
@@ -610,6 +512,18 @@ class ResursBankTest extends TestCase
 		$getAddressData = array();
 		try {
 			$getAddressData = $this->rb->getAddress( $this->govIdNatural, 'NATURAL', '127.0.0.1' );
+		} catch ( \Exception $e ) {
+		}
+		$this->assertTrue( ! empty( $getAddressData->fullName ) );
+	}
+
+	public function testGetAddressMockIP() {
+		if ( $this->ignoreDefaultTests ) {
+			$this->markTestSkipped();
+		}
+		$getAddressData = array();
+		try {
+			$getAddressData = $this->rb->getAddress( $this->govIdNatural, 'NATURAL', 'blablabla' );
 		} catch ( \Exception $e ) {
 		}
 		$this->assertTrue( ! empty( $getAddressData->fullName ) );
@@ -1009,6 +923,7 @@ class ResursBankTest extends TestCase
 		} catch ( \Exception $e ) {
 			$this->markTestIncomplete( "Exception: " . $e->getCode() . ": " . $e->getMessage() );
 		}
+
 		$this->CURL->setAuthentication( $this->username, $this->password );
 		$this->CURL->setLocalCookies( true );
 		$iframeRequest = $this->CURL->doGet( $iFrameUrl );
@@ -1020,16 +935,18 @@ class ResursBankTest extends TestCase
 		$Success       = false;
 		if ( ! empty( $iframePaymentReference ) && ! empty( $iFrameUrl ) && ! empty( $iframeContent ) && strlen( $iframeContent ) > 1024 ) {
 			$newReference      = $this->rb->getPreferredPaymentId( 30, "UPDATE-", true, true );
-			//$firstCheckoutUrl  = $this->rb->getCheckoutUrl() . "/checkout/payments/" . $iframePaymentReference;
-			//$secondCheckoutUrl = $this->rb->getCheckoutUrl() . "/checkout/payments/" . $newReference;
+			try {
+				$Success = $this->rb->updatePaymentReference( $iframePaymentReference, $newReference );
+			} catch (\Exception $successException) {
+				$this->markTestIncomplete( "updatePaymentReferenceException: " . $successException->getCode() . ": " . $successException->getMessage() );
+			}
 			try {
 				// Currently, this test always gets a HTTP-200 from ecommerce, regardless of successful or failing updates.
-				$Success    = $this->rb->updatePaymentReference( $iframePaymentReference, $newReference );
 				$updateCart = $this->rb->updateCheckoutOrderLines( $newReference, $orderLines );
 				$this->assertTrue( $updateCart );
 				return;
 			} catch ( \Exception $e ) {
-				$this->markTestIncomplete( "Exception: " . $e->getCode() . ": " . $e->getMessage() );
+				$this->markTestIncomplete( "updateCheckoutOrderLinesException: " . $e->getCode() . ": " . $e->getMessage() );
 			}
 		}
 		$this->assertTrue( $Success === true );
@@ -1056,12 +973,10 @@ class ResursBankTest extends TestCase
 		if ( ! empty( $iframePaymentReference ) && ! empty( $iFrameUrl ) && ! empty( $iframeContent ) && strlen( $iframeContent ) > 1024 ) {
 			$newReference = $this->rb->getPreferredPaymentId( 30, "UPDATE-", true, true );
 			try {
-				// Currently, this test always gets a HTTP-200 from ecommerce, regardless of successful or failing updates.
 				$this->rb->updatePaymentReference( $iframePaymentReference, $newReference );
 				$this->rb->updateCheckoutOrderLines( $iframePaymentReference, $orderLines );
 			} catch ( \Exception $e ) {
 				$this->assertTrue( $e->getCode() >= 400 );
-
 				return;
 			}
 		}
@@ -1085,7 +1000,6 @@ class ResursBankTest extends TestCase
 				$this->rb->updatePaymentReference( $iframePaymentReference, $newReference );
 			} catch ( \Exception $e ) {
 				$this->assertTrue( $e->getCode() >= 400 );
-
 				return;
 			}
 		}
@@ -1388,11 +1302,6 @@ class ResursBankTest extends TestCase
 			$this->markTestSkipped( "Testing of deprecated callback function is disabled on request" );
 		}
 		/* If disabled */
-		if ( $this->disableCallbackRegMock || ( $this->disableCallbackRegNonMock && $this->environmentName === "nonmock" ) ) {
-			$this->markTestSkipped( "Testing of deprecated callback function is disabled due to special circumstances" );
-
-			return;
-		}
 		$callbackArrayData = $this->renderCallbackData();
 		$callbackSetResult = array();
 		$this->rb->setCallbackDigest( $this->mkpass() );
@@ -1508,7 +1417,8 @@ class ResursBankTest extends TestCase
 				'paymentData' => array(
 					'waitForFraudControl' => false,
 					'annulIfFrozen'       => false,
-					'finalizeIfBooked'    => false
+					'finalizeIfBooked'    => false,
+					'customerIpAddress'   => '127.0.0.2'
 				),
 				'metaData'    => array(
 					'key'   => 'CustomerId',
@@ -1519,12 +1429,120 @@ class ResursBankTest extends TestCase
 				)
 			);
 			$this->rb->setSigning( $this->signUrl . '&success=true', $this->signUrl . '&success=false', false );
-			//$Payment = $this->rb->createPayment($this->availableMethods['invoice_natural'], $myPayLoad);
 			try {
+				// Using myPayLoad will lead tgo FROZEN
 				$Payment = $this->rb->createPayment( $this->availableMethods['invoice_natural'] );
 				$this->assertTrue( $Payment->bookPaymentStatus == "BOOKED" );
 			} catch ( \Exception $e ) {
 				echo __FUNCTION__ . ": " . $e->getMessage() . "\n";
+			}
+
+		} catch ( \Exception $e ) {
+			$this->markTestIncomplete( $e->getMessage() );
+		}
+	}
+	function testCreatePaymentPayloadOwnPayLoadIpManipulation1() {
+		try {
+			$this->rb->setPreferredPaymentFlowService( RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW );
+			$this->rb->setBillingByGetAddress( "198305147715" );
+			//$this->rb->setBillingAddress("Anders Andersson", "Anders", "Andersson", "Hamngatan 2", null, "Ingestans", "12345", "SE");
+			$this->rb->setCustomer( "198305147715", "0808080808", "0707070707", "test@test.com", "NATURAL" );
+			$this->addRandomOrderLine( "Art " . rand( 1024, 2048 ), "Beskrivning " . rand( 2048, 4096 ), "0.80", 25, null, 10 );
+			$useThisPaymentId = $this->rb->getPreferredPaymentId();
+			$myPayLoad = array(
+				'paymentData' => array(
+					'waitForFraudControl' => false,
+					'annulIfFrozen'       => false,
+					'finalizeIfBooked'    => false,
+					'customerIpAddress'   => "1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0"
+				),
+				'metaData'    => array(
+					'key'   => 'CustomerId',
+					'value' => 'l33tCustomer'
+				),
+				'customer'    => array(
+					'yourCustomerId' => 'DatL33tCustomer'
+				)
+			);
+			$this->rb->setSigning( $this->signUrl . '&success=true', $this->signUrl . '&success=false', false );
+			try {
+				// Using myPayLoad will lead tgo FROZEN
+				$Payment = $this->rb->createPayment( $this->availableMethods['invoice_natural'], $myPayLoad );
+				$this->assertTrue( $Payment->bookPaymentStatus == "FROZEN" );
+			} catch ( \Exception $e ) {
+				$this->assertTrue( $e->getCode() > 0 );
+			}
+
+		} catch ( \Exception $e ) {
+			$this->markTestIncomplete( $e->getMessage() );
+		}
+	}
+	function testCreatePaymentPayloadOwnPayLoadIpManipulation2() {
+		try {
+			$this->rb->setPreferredPaymentFlowService( RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW );
+			$this->rb->setBillingByGetAddress( "198305147715" );
+			//$this->rb->setBillingAddress("Anders Andersson", "Anders", "Andersson", "Hamngatan 2", null, "Ingestans", "12345", "SE");
+			$this->rb->setCustomer( "198305147715", "0808080808", "0707070707", "test@test.com", "NATURAL" );
+			$this->addRandomOrderLine( "Art " . rand( 1024, 2048 ), "Beskrivning " . rand( 2048, 4096 ), "0.80", 25, null, 10 );
+			$useThisPaymentId = $this->rb->getPreferredPaymentId();
+			$myPayLoad = array(
+				'paymentData' => array(
+					'waitForFraudControl' => false,
+					'annulIfFrozen'       => false,
+					'finalizeIfBooked'    => false,
+					'customerIpAddress'   => "abcdefghijklmno"
+				),
+				'metaData'    => array(
+					'key'   => 'CustomerId',
+					'value' => 'l33tCustomer'
+				),
+				'customer'    => array(
+					'yourCustomerId' => 'DatL33tCustomer'
+				)
+			);
+			$this->rb->setSigning( $this->signUrl . '&success=true', $this->signUrl . '&success=false', false );
+			try {
+				// Using myPayLoad will lead tgo FROZEN
+				$Payment = $this->rb->createPayment( $this->availableMethods['invoice_natural'], $myPayLoad );
+				$this->assertTrue( $Payment->bookPaymentStatus == "FROZEN" );
+			} catch ( \Exception $e ) {
+				$this->assertTrue( $e->getCode() > 0 );
+			}
+
+		} catch ( \Exception $e ) {
+			$this->markTestIncomplete( $e->getMessage() );
+		}
+	}
+	function testCreatePaymentPayloadOwnPayLoadSpoofedIpFrozenWithFraudControl() {
+		try {
+			$this->rb->setPreferredPaymentFlowService( RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW );
+			$this->rb->setBillingByGetAddress( "198305147715" );
+			//$this->rb->setBillingAddress("Anders Andersson", "Anders", "Andersson", "Hamngatan 2", null, "Ingestans", "12345", "SE");
+			$this->rb->setCustomer( "198305147715", "0808080808", "0707070707", "test@test.com", "NATURAL" );
+			$this->addRandomOrderLine( "Art " . rand( 1024, 2048 ), "Beskrivning " . rand( 2048, 4096 ), "0.80", 25, null, 10 );
+			$useThisPaymentId = $this->rb->getPreferredPaymentId();
+			$myPayLoad = array(
+				'paymentData' => array(
+					'waitForFraudControl' => false,
+					'annulIfFrozen'       => false,
+					'finalizeIfBooked'    => false,
+					'customerIpAddress'   => "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+				),
+				'metaData'    => array(
+					'key'   => 'CustomerId',
+					'value' => 'l33tCustomer'
+				),
+				'customer'    => array(
+					'yourCustomerId' => 'DatL33tCustomer'
+				)
+			);
+			$this->rb->setSigning( $this->signUrl . '&success=true', $this->signUrl . '&success=false', false );
+			try {
+				// Using myPayLoad will lead tgo FROZEN
+				$Payment = $this->rb->createPayment( $this->availableMethods['invoice_natural'], $myPayLoad );
+				$this->assertTrue( $Payment->bookPaymentStatus == "FROZEN" );
+			} catch ( \Exception $e ) {
+				$this->assertTrue( $e->getCode() > 0 );
 			}
 
 		} catch ( \Exception $e ) {
@@ -2422,4 +2440,26 @@ class ResursBankTest extends TestCase
 		$paymentId = $this->getPaymentIdFromOrderByClientChoice( 1, 1, 1000, 2000, '198209123705' );
 		$this->assertTrue($this->rb->getOrderStatusByPayment($paymentId, RESURS_CALLBACK_TYPES::CALLBACK_TYPE_AUTOMATIC_FRAUD_CONTROL, 'FROZEN') == RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING);
 	}
+
+	public function testInvoiceSequenceReset() {
+		$this->rb->getNextInvoiceNumber(true, null);
+		$this->assertTrue($this->rb->getNextInvoiceNumber());
+	}
+	function testInvoiceSequenceAndFinalize() {
+		$this->rb->getNextInvoiceNumber(true, null);
+		$paymentId = $this->getPaymentIdFromOrderByClientChoice();
+		try {
+			$successFinalize = $this->rb->paymentFinalize( $paymentId );
+			if ($successFinalize) {
+				$this->markTestIncomplete("Finalization was successful during the invoice sequence reset. You must re-run the test.");
+			}
+		} catch (\Exception $finalizeWithInitInvoiceException) {
+			$this->assertTrue($finalizeWithInitInvoiceException->getCode() == 29);
+		}
+	}
+	function testInvoiceSequenceFindByFind() {
+		$lastInvoiceNumber = $this->rb->getNextInvoiceNumberByDebits(5);
+		$this->assertTrue($lastInvoiceNumber > 1);
+	}
+
 }
