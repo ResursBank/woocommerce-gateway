@@ -13,6 +13,9 @@ First of all, the release is based on the branch develop/1.2 and is currently in
 
     composer require resursbank/ecomphp:dev-develop/composerize
 
+If you are planning to deploy a plugin bundled with this package, you can run composer with the parameter --prefer-dist
+You should also make sure that the repositories that is also downloaded together with this package is cleaned up properly: The .git directories must be removed, or a composer install is required before using it.
+
 Then you may go with something like this in your first born code:
 
     <?php
