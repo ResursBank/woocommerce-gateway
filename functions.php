@@ -682,6 +682,10 @@ if ( is_admin() ) {
                 if (!\$this->overRideIsAvailable) {
                     return false;
                 }
+                \$isEnabled = getResursOption('enabled', 'woocommerce_{$class_name}_settings');
+                if (!\$isEnabled) {
+                    return false;
+                }
                 return true;
             }
     
