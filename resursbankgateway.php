@@ -2156,8 +2156,11 @@ function woocommerce_gateway_resurs_bank_init() {
 				if ( isset( $_REQUEST[ $fieldName ] ) && isset( $regEx[ $fieldName ] ) ) {
 					$regExString       = $regEx[ $fieldName ];
 					$regExString       = str_replace( '\\\\', '\\', $regExString );
-					$fieldData         = $_REQUEST[ $fieldName ];
+					$fieldData         = isset($_REQUEST[ $fieldName ]) ? trim($_REQUEST[ $fieldName ]) : "";
 					$invalidFieldError = __( 'The field', 'WC_Payment_Gateway' ) . " " . $fieldName . " " . __( 'has invalid information', 'WC_Payment_Gateway' ) . " (" . ( ! empty( $fieldData ) ? $fieldData : __( "It can't be empty", 'WC_Payment_Gateway' ) ) . ")";
+					if ($fieldName == "card-number" && empty($fieldData)) {
+					    continue;
+                    }
 					if ( preg_match( "/email/", $fieldName ) ) {
 						if ( ! filter_var( $_REQUEST[ $fieldName ], FILTER_VALIDATE_EMAIL ) ) {
 							wc_add_notice( $invalidFieldError, 'error' );
