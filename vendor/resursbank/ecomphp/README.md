@@ -5,13 +5,13 @@ Resurs EComPHP Gateway is a simplifier for our webservices, with functionality e
 As EComPHP is continuously developed, you should take a look at our bitbucket repo to keep this information updated. It can be found at https://bitbucket.org/resursbankplugins/resurs-ecomphp
 
 
-## Composerized version
+## Using composer
 
 Did you decide to go with the experimental composer edition of EComPHP?
 
 First of all, the release is based on the branch develop/1.2 and is currently in alpha development state so we cannot guarantee anything to function. However, if you're aware of that you're on your own for the moment, you can go for this:
 
-    composer require resursbank/ecomphp:dev-develop/composerize
+    composer require resursbank/ecomphp:1.3.*
 
 If you are planning to deploy a plugin bundled with this package, you can run composer with the parameter --prefer-dist
 You should also make sure that the repositories that is also downloaded together with this package is cleaned up properly: The .git directories must be removed, or a composer install is required before using it.
@@ -25,6 +25,16 @@ Then you may go with something like this in your first born code:
         print_r($methods);
     ?>
 
+### Deploying
+
+Deployment with composer usually only requires an installation. However, if you need to bundle the composer package with all dependencies in a installation package that is not built for using composer you need to set up your package, so that the included extra repos is considered "a part of the package". Such deployment script may look like this:
+
+    #!/bin/bash
+    composer clearcache
+    rm -rf vendor composer.lock
+    composer install --prefer-dist
+    find vendor/ -type d -name .git -exec rm -rf {} \; >/dev/null 2>&1
+    find vendor/ -name .gitignore -exec rm {} \; >/dev/null 2>&1
 
 
 ## Regular requirements and dependencies

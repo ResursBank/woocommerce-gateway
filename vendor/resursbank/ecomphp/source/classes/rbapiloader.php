@@ -5,8 +5,8 @@
  *
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
- * @branch 1.2
- * @version 1.2.0
+ * @branch 1.3
+ * @version 1.3.1
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -111,9 +111,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.2.0";
+	private $version = "1.3.1";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171107";
+	private $lastUpdate = "20171206";
 	/** @var string URL to git storage */
 	private $gitUrl = "https://bitbucket.org/resursbankplugins/resurs-ecomphp";
 	/** @var string This. */
@@ -427,6 +427,7 @@ class ResursBank {
 
 	/**
 	 * @param bool $debugModeState
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -472,7 +473,6 @@ class ResursBank {
 	 *
 	 * @param $newCurlHandle
 	 *
-	 * @return Tornevall_cURL
 	 * @throws \Exception
 	 * @since 1.0.23
 	 * @since 1.1.23
@@ -549,6 +549,7 @@ class ResursBank {
 	 * Try to fetch a list of versions for EComPHP by its git tags
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.26
 	 * @since 1.1.26
 	 * @since 1.2.0
@@ -1029,7 +1030,6 @@ class ResursBank {
 	 * Retreive a full list of, by merchant, registered callbacks
 	 *
 	 * @param bool $ReturnAsArray
-	 *
 	 * @return array
 	 * @throws \Exception
 	 * @link https://test.resurs.com/docs/display/ecom/ECommerce+PHP+Library#ECommercePHPLibrary-getCallbacksByRest
@@ -1083,7 +1083,7 @@ class ResursBank {
 	 *
 	 * @param int $callbackType
 	 * @return mixed
-	 * @since 1.x.x
+	 * @throws \Exception
 	 */
 	public function getRegisteredEventCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET ) {
 		$this->InitializeServices();
@@ -1214,6 +1214,7 @@ class ResursBank {
 	 * @param int $callbackType
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
@@ -1246,6 +1247,7 @@ class ResursBank {
 	 * Trigger the registered callback event TEST if set. Returns true if trigger call was successful, otherwise false (Observe that this not necessarily is a successful completion of the callback)
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -1283,8 +1285,8 @@ class ResursBank {
 	 * Internal function to get the correct service URL for a specific call.
 	 *
 	 * @param string $ServiceName
-	 *
 	 * @return string
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
@@ -1522,6 +1524,7 @@ class ResursBank {
 	 * Nullify invoice sequence
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.27
 	 * @since 1.1.27
 	 * @since 1.2.0
@@ -1535,8 +1538,8 @@ class ResursBank {
 	 * Invoice sequence number rescuer/scanner (This function replaces old sequence numbers if there is a higher value found in the last X payments)
 	 *
 	 * @param $scanDebitCount
-	 *
 	 * @return int
+	 * @throws \Exception
 	 * @since 1.0.27
 	 * @since 1.1.27
 	 */
@@ -1714,8 +1717,8 @@ class ResursBank {
 	 * @param string $governmentId
 	 * @param string $customerType
 	 * @param string $customerIpAddress
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
@@ -1737,8 +1740,8 @@ class ResursBank {
 	 * To use the former method, look for getAnnuityFactorsDeprecated. This function might however disappear in the future.
 	 *
 	 * @param string $paymentMethodId
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 * @link https://test.resurs.com/docs/x/JQBH getAnnuityFactors() documentation
@@ -1754,6 +1757,7 @@ class ResursBank {
 	 * @param $duration
 	 *
 	 * @return float
+	 * @throws \Exception
 	 * @since 1.1.24
 	 */
 	public function getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration) {
@@ -1781,6 +1785,7 @@ class ResursBank {
 	 *
 	 * @return float
 	 * @since 1.1.24
+	 * @throws \Exception
 	 */
 	public function getAnnuityPriceByDuration($totalAmount, $paymentMethodIdOrFactorObject, $duration) {
 		$durationFactor = $this->getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration);
@@ -1793,8 +1798,8 @@ class ResursBank {
 	 * Retrieves detailed information about the payment.
 	 *
 	 * @param string $paymentId
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @link https://test.resurs.com/docs/x/moEW getPayment() documentation
 	 * @since 1.0.1
 	 * @since 1.1.1
@@ -1807,8 +1812,8 @@ class ResursBank {
 	 * Make sure a payment will always be returned correctly. If string, getPayment will run first. If array/object, it will continue to look like one.
 	 *
 	 * @param array $paymentArrayOrPaymentId
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -1832,6 +1837,7 @@ class ResursBank {
 	 * @param string $paymentKey
 	 *
 	 * @return null
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -1851,8 +1857,8 @@ class ResursBank {
 	 * @param int $pageNumber
 	 * @param int $itemsPerPage
 	 * @param null $sortBy
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @link https://test.resurs.com/docs/x/loEW
 	 * @since 1.0.1
 	 * @since 1.1.1
@@ -1874,6 +1880,7 @@ class ResursBank {
 	 * Get a list of current available payment methods, in the form of an arraylist with id's
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -1895,8 +1902,8 @@ class ResursBank {
 	 * Fetch one specific payment method only, from Resurs Bank
 	 *
 	 * @param string $specificMethodName
-	 *
 	 * @return array If not found, array will be empty
+	 * @throws \Exception
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2044,8 +2051,8 @@ class ResursBank {
 	 * @param int $totalAmount
 	 * @param array|string $paymentMethodID If paymentMethodID is set as string, we'll try to look up the links
 	 * @param string $URL
-	 *
 	 * @return array|string Returns an array if the whole method are requested, returns a string if the URL is already prepared as last parameter in
+	 * @throws \Exception
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2468,6 +2475,7 @@ class ResursBank {
 	 *
 	 * @param string $shopUrl
 	 * @param bool $validateFormat Activate URL validation
+	 * @throws \Exception
 	 *
 	 * @since 1.0.4
 	 * @since 1.1.4
@@ -2802,6 +2810,7 @@ class ResursBank {
 	 * @param string $paymentMethodName
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
@@ -2815,6 +2824,7 @@ class ResursBank {
 	 * @param string $paymentMethodName
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
@@ -3164,6 +3174,7 @@ class ResursBank {
 	 * @param string $paymentId
 	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.5
 	 * @since 1.1.5
 	 */
@@ -3597,10 +3608,10 @@ class ResursBank {
 	/**
 	 * Payload simplifier: Having data from getAddress, you want to set as billing address, this can be done from here.
 	 *
-	 * @param string$getaddressdata_or_governmentid
+	 * @param string $getaddressdata_or_governmentid
 	 * @param string $customerType
 	 * @return array
-	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -3706,6 +3717,7 @@ class ResursBank {
 	 * @param string $successUrl
 	 * @param string $failUrl
 	 * @param bool $forceSigning
+	 * @throws \Exception
 	 * @since 1.0.6
 	 * @since 1.1.6
 	 */
@@ -3723,6 +3735,7 @@ class ResursBank {
 	 *
 	 * @param string $successUrl
 	 * @param string $backUrl
+	 * @throws \Exception
 	 */
 	public function setCheckoutUrls($successUrl = '', $backUrl = '') {
 		$this->setSigning($successUrl, $backUrl);
@@ -3734,6 +3747,7 @@ class ResursBank {
 	 * Compile user defined payload with payload that may have been pre-set by other calls
 	 *
 	 * @param array $userDefinedPayload
+	 * @throws \Exception
 	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
@@ -3798,7 +3812,8 @@ class ResursBank {
 	/**
 	 * Returns the final payload
 	 *
-	 * @return mixed
+	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 * @since 1.2.0
@@ -3836,6 +3851,7 @@ class ResursBank {
 	 * Return the final payload order data array
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -3927,7 +3943,7 @@ class ResursBank {
 	 *
 	 * @param string $paymentId
 	 * @param array $orderLines
-	 * @return array
+	 * @return bool
 	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
@@ -4004,6 +4020,13 @@ class ResursBank {
 		}
 		if ( ! isset( $this->Payload['card']['cardNumber'] ) ) {
 			$this->Payload['card']['cardNumber'] = $cardNumber;
+		} else {
+			if (!empty($this->Payload['card']['cardNumber'])) {
+				$this->Payload['card']['cardNumber'] = $cardNumber;
+			} else {
+				// If this field is empty, it should not be included in the payload
+				unset($this->Payload['card']['cardNumber']);
+			}
 		}
 		if ( $cardAmount > 0 ) {
 			$this->Payload['card']['amount'] = $cardAmount;
@@ -4062,8 +4085,8 @@ class ResursBank {
 	 * Find out if a payment is creditable
 	 *
 	 * @param array $paymentArrayOrPaymentId The current payment if already requested. If this variable is sent as a string, the function will first make a getPayment automatically.
-	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function canCredit( $paymentArrayOrPaymentId = array() ) {
 		$Status = (array) $this->getPaymentContent( $paymentArrayOrPaymentId, "status" );
@@ -4079,8 +4102,8 @@ class ResursBank {
 	 * Find out if a payment is debitable
 	 *
 	 * @param array $paymentArrayOrPaymentId The current payment if already requested. If this variable is sent as a string, the function will first make a getPayment automatically.
-	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function canDebit( $paymentArrayOrPaymentId = array() ) {
 		$Status = (array) $this->getPaymentContent( $paymentArrayOrPaymentId, "status" );
@@ -4098,6 +4121,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -4111,6 +4135,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.13
 	 * @since 1.1.13
 	 * @since 1.2.0
@@ -4129,6 +4154,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.13
 	 * @since 1.1.13
 	 * @since 1.2.0
@@ -4147,6 +4173,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.13
 	 * @since 1.1.13
 	 * @since 1.2.0
@@ -4165,6 +4192,7 @@ class ResursBank {
 	 * @param $paymentIdOrPaymentObject
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -4184,6 +4212,7 @@ class ResursBank {
 	 * @param $paymentIdOrPaymentObject
 	 *
 	 * @return array
+	 * @throws \Exception
 	 */
 	public function getPaymentSpecByStatus( $paymentIdOrPaymentObject ) {
 		$usePayment         = $paymentIdOrPaymentObject;
@@ -4248,6 +4277,7 @@ class ResursBank {
 	 * @param int $renderType RESURS_AFTERSHOP_RENDER_TYPES as unique type or bitmask
 	 *
 	 * @return array
+	 * @throws \Exception
 	 */
 	public function sanitizeAfterShopSpec($paymentIdOrPaymentObjectData = '', $renderType = RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_NO_CHOICE) {
 		$returnSpecObject = null;
@@ -4425,6 +4455,7 @@ class ResursBank {
 	 * @param int $payloadType
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -4535,6 +4566,7 @@ class ResursBank {
 	 * @param array $customPayloadItemList
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function finalizePayment( $paymentId = "", $customPayloadItemList = array() ) {
 		return $this->paymentFinalize($paymentId, $customPayloadItemList);
@@ -4572,6 +4604,7 @@ class ResursBank {
 	 * @param array $customPayloadItemList
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function annulPayment( $paymentId = "", $customPayloadItemList = array() ) {
 		return $this->paymentAnnul($paymentId, $customPayloadItemList);
@@ -4609,6 +4642,7 @@ class ResursBank {
 	 * @param array $customPayloadItemList
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function creditPayment( $paymentId = "", $customPayloadItemList = array() ) {
 		return $this->paymentCredit($paymentId, $customPayloadItemList);
@@ -4682,6 +4716,7 @@ class ResursBank {
 	 * @param array $customPayloadItemList
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function cancelPayment( $paymentId = "", $customPayloadItemList = array() ) {
 		return $this->paymentCancel($paymentId, $customPayloadItemList);
@@ -4695,6 +4730,7 @@ class ResursBank {
 	 * @param string $paymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.3
 	 * @since 1.1.3
 	 */
@@ -4725,6 +4761,7 @@ class ResursBank {
 	 * @param string $paymentIdOrPaymentObject
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.11
 	 * @since 1.1.11
 	 * @since 1.2.0
@@ -4754,6 +4791,7 @@ class ResursBank {
 	 * @param array $paymentData
 	 *
 	 * @return int
+	 * @throws \Exception
 	 * @since 1.0.26
 	 * @since 1.1.26
 	 * @since 1.2.0
