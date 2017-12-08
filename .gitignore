@@ -3,4 +3,5 @@ includes/resurs*
 Makefile
 node_modules
 /staticflows/index.php
-/vendor/
+composer.lock
+deploy

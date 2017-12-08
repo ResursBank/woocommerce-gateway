@@ -20,7 +20,7 @@
  *
  * Crypto-IO Library. Anything that changes in those folders, will render version increase.
  */
-namespace Resursbank\RBEcomPHP;
+namespace TorneLIB;
 
 if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_Crypto' ) ) {
 	/**

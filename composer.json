@@ -1,0 +1,8 @@
+{
+    "config": {
+        "preferred-install": "dist"
+    },
+    "require": {
+        "resursbank/ecomphp": "^1.3"
+    }
+}

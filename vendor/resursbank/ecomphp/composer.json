@@ -1,0 +1,25 @@
+{
+  "name": "resursbank/ecomphp",
+  "description": "ECommerce Library for Resurs Bank shop flows",
+  "license": "Apache-2.0",
+  "require": {
+    "php": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~7.0.0|~7.1.0|~7.2.0",
+    "ext-soap": "*",
+    "ext-curl": "*",
+    "tornevall/tornelib-php-netcurl": "^6.0"
+  },
+  "authors": [
+    {
+      "name": "Tomas Tornevall",
+      "email": "tomas.tornevall@resurs.se"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "source/classes/rbapiloader.php"
+    ],
+    "psr-4": {
+      "\\Resursbank\\RBEcomPHP\\": "source/classes/rbapiloader.php"
+    }
+  }
+}

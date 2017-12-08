@@ -21,7 +21,7 @@
  * @version 6.0.14
  */
 
-namespace Resursbank\RBEcomPHP;
+namespace TorneLIB;
 
 if ( ! defined( 'TORNELIB_NETCURL_RELEASE' ) ) {
 	define( 'TORNELIB_NETCURL_RELEASE', '6.0.14' );

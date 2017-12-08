@@ -1,0 +1,27 @@
+{
+  "sweden": {
+    "username": "",
+    "password": ""
+  },
+  "norway": {
+    "username": "",
+    "password": ""
+  },
+  "alertReceivers": [],
+  "alertFrom": [],
+  "availableMethods": {
+    "invoice_legal": "invoice_legal",
+    "invoice_natural": "invoice_natural",
+    "card": "card",
+    "card_new": "card_new"
+  },
+  "availableMethodsNorway": {
+    "invoice_natural": "invoice_natural",
+    "card": "card",
+    "card_new": "card_new"
+  },
+  "callbackUrl": "https://test.resurs.com/signdummy/index.php?isCallback=1",
+  "signUrl": "https://test.resurs.com/signdummy/index.php?isSigningUrl=1",
+  "callbackUrlBackup": "http://signdummy.ecommerceweb.se/index.php?isCallback=1",
+  "signUrlBackup": "http://signdummy.ecommerceweb.se/index.php?isSigningUrl=1"
+}

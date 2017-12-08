@@ -2,15 +2,11 @@
 /**
  * Resurs Bank Passthrough API - A pretty silent ShopFlowSimplifier for Resurs Bank.
  * Compatible with simplifiedFlow, hostedFlow and Resurs Checkout.
- * Requirements: WSDL stubs from WSDL2PHPGenerator (deprecated edition)
- * Important notes: As the WSDL files are generated, it is highly important to run tests before release.
- * Differences between 1.0 and 1.1 is primarily the namespacing, to be compatible with Magento Marketplace.
  *
- * Last update: See the lastUpdate variable
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
- * @branch 1.1
- * @version 1.1.26
+ * @branch 1.3
+ * @version 1.3.1
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -24,19 +20,16 @@ namespace Resursbank\RBEcomPHP;
 if ( ! defined( 'RB_API_PATH' ) ) {
 	define( 'RB_API_PATH', __DIR__ );
 }
-require_once(RB_API_PATH . '/thirdparty/network.php');
-require_once(RB_API_PATH . '/thirdparty/crypto.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursTypeClasses.php');
 require_once(RB_API_PATH . '/rbapiloader/ResursException.php');
 
 if (file_exists(__DIR__ . "/../../vendor/autoload.php")) {
 	require_once(__DIR__ . '/../../vendor/autoload.php');
 }
-
-use Resursbank\RBEcomPHP\CURL_POST_AS;
-use Resursbank\RBEcomPHP\Tornevall_cURL;
-use Resursbank\RBEcomPHP\TorneLIB_Network;
-use Resursbank\RBEcomPHP\TorneLIB_Crypto;
+use \TorneLIB\TorneLIB_Crypto;
+use \TorneLIB\TorneLIB_Network;
+use \TorneLIB\Tornevall_cURL;
+use \TorneLIB\CURL_POST_AS;
 
 /**
  * Class ResursBank Primary class for EComPHP
@@ -57,71 +50,16 @@ class ResursBank {
 	///// Debugging, helpers and development
 	/** @var bool Activation of debug mode */
 	private $debug = false;
-	/**
-	 * Last error received
-	 * @var
-	 * @deprecated 1.0.1
-	 * @deprecated 1.0.1
-	 */
-	public $lastError;
-	/**
-	 * If set to true, EComPHP will throw on wsdl initialization (default is false, since snapshot 20160405, when Omni got implemented )
-	 *
-	 * @var bool
-	 * @deprecated 1.0.1
-	 * @deprecated 1.0.1
-	 */
-	public $throwOnInit = false;
-
-	/// PHP Support
-	/**
-	 * User activation flag
-	 * @var bool
-	 * @deprecated Removed in 1.2
-	 */
-	private $allowObsoletePHP = false;
 
 	///// Environment and API
 	/** @var int Current targeted environment - default is always test, as we don't like that mistakes are going production */
 	public $current_environment = self::ENVIRONMENT_TEST;
 	/** @var null The username used with the webservices */
-	private $username = null;
+	public $username = null;
 	/** @var null The password used with the webservices */
-	private $password = null;
-
-	/**
-	 * If set to true, we're trying to convert received object data to standard object classes so they don't get incomplete on serialization.
-	 *
-	 * Only a few calls are dependent on this since most of the objects don't need this.
-	 * Related to issue #63127
-	 *
-	 * @var bool
-	 * @deprecated 1.0.1
-	 * @deprecated 1.0.1
-	 */
-	public $convertObjects = false;
-	/**
-	 * Converting objects when a getMethod is used with ecommerce. This is only activated when convertObjects are active
-	 *
-	 * @var bool
-	 * @deprecated 1.0.1
-	 * @deprecated 1.0.1
-	 */
-	public $convertObjectsOnGet = true;
-
+	public $password = null;
 
 	/// Web Services (WSDL) available in case of needs to call services directly
-	/**
-	 * Auto configuration loader
-	 *
-	 * This API was set to primary use Resurs simplified shopflow. By default, this service is loaded automatically, together with the configurationservice which is used for setting up callbacks, etc. If you need other services, like aftershop, you should add it when your API is loading like this for example:<br>
-	 * $API->Include[] = 'AfterShopFlowService';
-	 *
-	 * @var array Simple array with a list of which interfaces that should be automatically loaded on init. Default: ConfigurationService, SimplifiedShopFlowService
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public $Include = array( 'ConfigurationService', 'SimplifiedShopFlowService', 'AfterShopFlowService' );
 
 	/**
 	 * Which services we do support (picked up automatically from $ServiceRequestList)
@@ -136,6 +74,7 @@ class ResursBank {
 	public $developerWebService = null;
 	/** @var null Object simplifiedShopFlowService (this is what is primary used by this gateway) */
 	public $simplifiedShopFlowService = null;
+	/** @var null Object afterShopFlowService */
 	public $afterShopFlowService = null;
 	/** @var null Object shopFlowService (Deprecated) */
 	public $shopFlowService = null;
@@ -143,15 +82,6 @@ class ResursBank {
 	public $serviceReturn;
 
 	///// Shop related
-	/** @var bool */
-	/**
-	 * In tests being made with newer wsdl stubs, extended customer are surprisingly always best practice. It is however settable from here if we need to avoid this.
-	 *
-	 * @var bool
-	 * @deprecated 1.0.2 No longer in use as everything uses extended customer
-	 * @deprecated 1.1.2 No longer in use as everything uses extended customer
-	 */
-	public $alwaysUseExtendedCustomer = true;
 	/** @var bool Always append amount data and ending urls (cost examples) */
 	public $alwaysAppendPriceLast = false;
 	/** @var bool If set to true, EComPHP will ignore totalVatAmounts in specrows, and recalculate the rows by itself */
@@ -178,61 +108,12 @@ class ResursBank {
 	/** @var bool Enable the possibility to push over User-Agent from customer into header (debugging related) */
 	private $customerUserAgentPush = false;
 
-
-	///// Public SSL handlers
-	/**
-	 * Autodetecting of SSL capabilities section
-	 *
-	 * Default settings: Always disabled, to let the system handle this automatically.
-	 * If there are problems reaching wsdl or connecting to https://test.resurs.com, set $testssl to true
-	 *
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	/**
-	 * PHP 5.6.0 or above only: If defined, try to guess if there is valid certificate bundles when using for example https links (used with openssl).
-	 * This function tries to detect whether sslVerify should be used or not. The default value of this setting is normally false, since there should be no problems in a correctly installed environment.
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	public $testssl = false;
-	/**
-	 * Sets "verify SSL certificate in production required" if true (and if true, unverified SSL certificates will throw an error in production) - for auto-testing certificates only
-	 *
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	public $sslVerifyProduction = true;
-	/**
-	 * Do not test certificates on older PHP-version (< 5.6.0) if this is false
-	 *
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	public $testssldeprecated = false;
-	/**
-	 * Default paths to the certificates we are looking for
-	 *
-	 * @var array
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	public $sslPemLocations = array(
-		'/etc/ssl/certs/cacert.pem',
-		'/etc/ssl/certs/ca-certificates.crt',
-		'/usr/local/ssl/certs/cacert.pem'
-	);
-
-
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.1.26";
+	private $version = "1.3.1";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171103";
+	private $lastUpdate = "20171206";
 	/** @var string URL to git storage */
 	private $gitUrl = "https://bitbucket.org/resursbankplugins/resurs-ecomphp";
 	/** @var string This. */
@@ -241,21 +122,6 @@ class ResursBank {
 	private $realClientName = "EComPHP";
 
 	///// Package related
-
-	/**
-	 * For backwards compatibility - If this extension are being used in an environment where namespaces are set up, this will be flagged true here
-	 * @var bool
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	private $hasNameSpace = false;
-	/**
-	 * For backwards compatibility - If this extension has the full wsdl package included, this will be flagged true here
-	 * @var bool
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	private $hasWsdl = false;
 	/** @var bool Internal "handshake" control that defines if the module has been initiated or not */
 	private $hasServicesInitialization = false;
 	/** @var bool Future functionality to backtrace customer ip address to something else than REMOTE_ADDR (if proxified) */
@@ -293,7 +159,7 @@ class ResursBank {
 	private $T_CRYPTO;
 	/**
 	 * The payload rendered out from CreatePayment()
-	 * @var
+	 * @var array
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
@@ -308,19 +174,11 @@ class ResursBank {
 	private $PaymentMethod;
 	/**
 	 * Payment spec (orderlines)
-	 * @var
+	 * @var array
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
 	private $SpecLines = array();
-
-	/**
-	 * Simple web engine built on CURL, used for hosted flow
-	 * @var null
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private $simpleWebEngine;
 
 	/// Environment URLs
 	/** @var null The chosen environment */
@@ -347,21 +205,6 @@ class ResursBank {
 	private $checkoutShopUrl = "";
 	/** @var bool Set to true via setValidateCheckoutShopUrl() if you require validation of a proper shopUrl */
 	private $validateCheckoutShopUrl = false;
-	/**
-	 * JSON string generated by toJsonByType (hosted flow)
-	 * @var string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $jsonHosted = "";
-	/**
-	 * JSON string generated by toJsonByType (Resurs Checkout flow)
-	 * @var string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	// A service that has been enforced, as the client already knows about the flow (It has rather been set through the setPreferredPaymentService()-API instead of in the regular payload)
-	private $jsonOmni = "";
 	/** @var int Default current environment. Always set to test (security reasons) */
 	private $current_environment_updated = false;
 	/** @var Store ID */
@@ -423,7 +266,6 @@ class ResursBank {
 
 	/** @var Prepared variable for execution */
 	private $createPaymentExecuteCommand;
-
 	/** @var bool Enforce the Execute() */
 	private $forceExecute = false;
 	/**
@@ -435,52 +277,6 @@ class ResursBank {
 
 	/** @var bool The choice of using rest instead of a soapclient when registering callbacks */
 	private $registerCallbacksViaRest = true;
-
-	///// Private SSL handlers
-	/**
-	 * Marks if ssl controls indicates that we have a valid SSL certificate bundle available
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	private $hasCertFile = false;
-	/**
-	 * Marks which file that is used as certificate bundle
-	 * @var string
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	private $useCertFile = "";
-	/**
-	 * Marks if the SSL certificates found has been discovered internally or by user
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	private $hasDefaultCertFile = false;
-	/**
-	 * Marks if SSL certificate bundles-checker has been runned
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	private $openSslGuessed = false;
-	/**
-	 * During tests this will be set to true if certificate directory is found
-	 *
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	private $hasCertDir = false;
-	/**
-	 * SSL Certificate verification setting. Setting this to false, we will ignore certificate errors
-	 *
-	 * @var bool
-	 * @deprecated 1.0.1 CURL library handles most of it
-	 * @deprecated 1.1.1 CURL library handles most of it
-	 */
-	private $sslVerify = true;
 
 	/// SOAP and WSDL
 	/**
@@ -494,24 +290,6 @@ class ResursBank {
 		'trace'              => 1
 	);
 	private $curlSslDisable = false;
-
-	/**
-	 * @var string The current directory of RB Classes
-	 * @deprecated Removed in 1.2
-	 */
-	private $classPath = "";
-
-	/**
-	 * @var array Files to look for in class directories, to find RB
-	 * @deprecated Removed in 1.2
-	 */
-	private $classPathFiles = array(
-		'/simplifiedshopflowservice-client/Resurs_SimplifiedShopFlowService.php',
-		'/configurationservice-client/Resurs_ConfigurationService.php',
-		'/aftershopflowservice-client/Resurs_AfterShopFlowService.php',
-		'/shopflowservice-client/Resurs_ShopFlowService.php'
-	);
-
 
 	///// ShopRelated
 	/// Customizable
@@ -556,123 +334,6 @@ class ResursBank {
 	/** @var string Default unit measure. "st" or styck for Sweden. If your plugin is not used for Sweden, use the proper unit for your country. */
 	private $defaultUnitMeasure = "st";
 
-	/**
-	 * Stored array for booked payments
-	 * @var array
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $bookData = array();
-	/**
-	 * bookedCallbackUrl that may be set in runtime on bookpayments - has to be null or a string with 1 character or more
-	 * @var string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_bookedCallbackUrl = null;
-	/**
-	 * EComPHP will set this value to true, if the library "interfered" with the cart
-	 * @var bool
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $bookPaymentCartFixed = false;
-	/**
-	 * Last booked payment state
-	 * @var string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $lastBookPayment = null;
-	/**
-	 * Payment data object
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentData = null;
-	/**
-	 * Object for speclines/specrows
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentSpeclines = null;
-	/**
-	 * Counter for a specline
-	 * @var int
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_specLineID = null;
-	/**
-	 * Order data for the payment
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentOrderData = null;
-	/**
-	 * Address data for the payment
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentAddress = null;
-	/**
-	 * Normally used if billing and delivery differs (Sent to the gateway clientside)
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentDeliveryAddress = null;
-	/**
-	 * Customer data for the payment
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentCustomer = null;
-	/**
-	 * Customer data, extended, for the payment. For example when delivery address is set
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentExtendedCustomer = null;
-	/**
-	 * Card data for the payment
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $_paymentCardData = null;
-	/**
-	 * Card data object: Card number
-	 * @var array|object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $cardDataCardNumber = null;
-	/**
-	 * Card data object: The amount applied for the customer
-	 * @var bool
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $cardDataUseAmount = false;
-	/**
-	 * Card data object: If set, you can set up your own amount to apply for
-	 * @var int
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private $cardDataOwnAmount = null;
-
-
-	/// Internal handlers for bookings -- Finish here
-
-
 	/// Resurs Checkout
 	/** @var null When using clearOcShop(), the Resurs Checkout tailing script (resizer) will be stored here */
 	private $ocShopScript = null;
@@ -688,53 +349,6 @@ class ResursBank {
 	private $templateFieldsByMethodResponse = array();
 
 
-	///// Configuration system (deprecated)
-	/**
-	 * Configuration array
-	 * @var array
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private $config;
-	/**
-	 * Set to true if you want to try to use internally cached data. This is disabled by default since it may, in a addition to performance, also be a security issue since the configuration file needs read- and write permissions
-	 * @var bool
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private $configurationInternal = false;
-	/**
-	 * For internal handling of cache, etc
-	 * @var string
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private $configurationSystem = "configuration";
-	/**
-	 * Usage of Configuration file
-	 * @var string
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private $configurationStorage = "";
-	/**
-	 * Configuration, settings, payment methods etc
-	 * @var array
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private $configurationArray = array();
-	/**
-	 * Time in seconds when cache should be considered outdated and needs to get updated with new fresh data
-	 * @var int
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private $configurationCacheTimeout = 3600;
-
-
-	///////////////////////////////////////// REFACTOR SECTION ENDS HERE
-
 	/////////// INITIALIZERS
 	/**
 	 * Constructor method for Resurs Bank WorkFlows
@@ -747,10 +361,7 @@ class ResursBank {
 	 *
 	 * @throws \Exception
 	 */
-	function __construct( $login = '', $password = '', $targetEnvironment = ResursEnvironments::ENVIRONMENT_NOT_SET ) {
-		if ( defined( 'RB_API_PATH' ) ) {
-			$this->classPath = RB_API_PATH;
-		}
+	function __construct( $login = '', $password = '', $targetEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET ) {
 		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
 			$theHost = $_SERVER['HTTP_HOST'];
 		} else {
@@ -761,10 +372,11 @@ class ResursBank {
 		$this->soapOptions['ssl_method'] = ( defined( 'SOAP_SSL_METHOD_TLS' ) ? SOAP_SSL_METHOD_TLS : false );
 
 		$this->setAuthentication($login, $password);
-		if ( $targetEnvironment != ResursEnvironments::ENVIRONMENT_NOT_SET ) {
+		if ( $targetEnvironment != RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET ) {
 			$this->setEnvironment( $targetEnvironment );
 		}
 		$this->setUserAgent();
+
 	}
 
 	/**
@@ -780,16 +392,6 @@ class ResursBank {
 	}
 
 	/**
-	 * Wsdl initialization
-	 *
-	 * @deprecated 1.0.1 Unless you don't need this, do run through InitializeServices instead.
-	 * @deprecated 1.1.1 Unless you don't need this, do run through InitializeServices instead.
-	 */
-	public function InitializeWsdl() {
-		$this->InitializeServices();
-	}
-
-	/**
 	 * Everything that communicates with Resurs Bank should go here, wheter is is web services or curl/json data. The former name of this
 	 * function is InitializeWsdl, but since we are handling nonWsdl-calls differently, but still needs some kind of compatibility in dirty
 	 * code structures, everything needs to be done from here. For now. In future version, this is probably deprecated too, as it is an
@@ -801,14 +403,31 @@ class ResursBank {
 	 * @since 1.1.1
 	 */
 	private function InitializeServices() {
-		// 1.0.4/1.1.4: No longer checking includes
-		$this->hasServicesInitialization = $this->initWsdl();
+		$this->hasServicesInitialization = true;
+		$this->testWrappers();
+		if ( $this->current_environment == self::ENVIRONMENT_TEST ) {
+			$this->environment = $this->env_test;
+		} else {
+			$this->environment = $this->env_prod;
+		}
+		if ( class_exists( '\Resursbank\RBEcomPHP\Tornevall_cURL' ) || class_exists( '\TorneLIB\Tornevall_cURL' ) ) {
+			$this->CURL = new Tornevall_cURL();
+			$this->CURL->setStoreSessionExceptions( true );
+			$this->CURL->setAuthentication( $this->soapOptions['login'], $this->soapOptions['password'] );
+			$this->CURL->setUserAgent( $this->myUserAgent );
+			$this->NETWORK = new TorneLIB_Network();
+			$this->BIT = $this->NETWORK->BIT;
+		}
+		$this->wsdlServices = array();
+		foreach ($this->ServiceRequestList as $reqType => $reqService) { $this->wsdlServices[$reqService] = true;}
+		foreach ( $this->wsdlServices as $ServiceName => $isAvailableBoolean) {$this->URLS[ $ServiceName ] = $this->environment . $ServiceName . "?wsdl";}
 		$this->getSslValidation();
-		return $this->hasServicesInitialization;
+		return true;
 	}
 
 	/**
 	 * @param bool $debugModeState
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -854,7 +473,6 @@ class ResursBank {
 	 *
 	 * @param $newCurlHandle
 	 *
-	 * @return Tornevall_cURL
 	 * @throws \Exception
 	 * @since 1.0.23
 	 * @since 1.1.23
@@ -881,7 +499,7 @@ class ResursBank {
 	 */
 	public function setSslValidation($validationEnabled = false) {
 		$this->InitializeServices();
-		if ($this->debug && $this->current_environment == ResursEnvironments::ENVIRONMENT_TEST) {
+		if ($this->debug && $this->current_environment == RESURS_ENVIRONMENTS::ENVIRONMENT_TEST) {
 			$this->curlSslDisable = true;
 		} else {
 			throw new \Exception("Can't set SSL validation in relaxed mode. Debug mode is disabled and/or test environment are not set", 403);
@@ -931,171 +549,13 @@ class ResursBank {
 	 * Try to fetch a list of versions for EComPHP by its git tags
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.26
 	 * @since 1.1.26
 	 * @since 1.2.0
 	 */
 	public function getVersionsByGitTag() {
 		return $this->NETWORK->getGitTagsByUrl( $this->gitUrl );
-	}
-
-	/**
-	 * Initializer for WSDL before calling services. Decides what username and environment to use. Default is always test.
-	 *
-	 * @throws \Exception
-	 * @deprecated 1.0.4
-	 * @deprecated 1.1.4
-	 */
-	private function initWsdl() {
-		$this->testWrappers();
-		// Make sure that the correct webservice is loading first (if necessary). The topmost service has the highest priority and will not be
-		// overwritten once loaded. For example, if ShopFlowService is loaded before the SimplifiedShopFlowService, you won't be able to use
-		// the SimplifiedShopFlowService at all.
-		// This behaviour is deprecated since 1.0.4/1.1.4 since we're removing the support of wsdl in phases.
-		$apiFileLoads   = 0;
-		$currentService = "";
-
-		// Try to autodetect wsdl location and set up new path for where they can be loaded
-		if ( ! $this->classes( $this->classPath ) ) {
-			if ( $this->classes( $this->classPath . "/classes" ) ) {
-				$this->classPath = $this->classPath . "/classes";
-			}
-			if ( $this->classes( $this->classPath . "/classes/rbwsdl" ) ) {
-				$this->classPath = $this->classPath . "/classes/rbwsdl";
-			}
-			if ( $this->classes( $this->classPath . "/rbwsdl" ) ) {
-				$this->classPath = $this->classPath . "/rbwsdl";
-			}
-			if ( $this->classes( $this->classPath . "/../rbwsdl" ) ) {
-				$this->classPath = realpath( $this->classPath . "/../rbwsdl" );
-			}
-			/*
-			 * Fail down to unsafer path.
-			 */
-			if ( $this->classes( $this->classPath . "/wsdl" ) ) {
-				$this->classPath = $this->classPath . "/wsdl";
-			}
-			if ( $this->classes( $this->classPath . "/../wsdl" ) ) {
-				$this->classPath = realpath( $this->classPath . "/../rbwsdl" );
-			}
-		}
-		if ( in_array( 'simplifiedshopflowservice', array_map( "strtolower", $this->Include ) ) && file_exists( $this->classPath . '/simplifiedshopflowservice-client/Resurs_SimplifiedShopFlowService.php' ) ) {
-			require $this->classPath . '/simplifiedshopflowservice-client/Resurs_SimplifiedShopFlowService.php';
-			$apiFileLoads ++;
-		}
-		if ( in_array( 'configurationservice', array_map( "strtolower", $this->Include ) ) && file_exists( $this->classPath . '/configurationservice-client/Resurs_ConfigurationService.php' ) ) {
-			require $this->classPath . '/configurationservice-client/Resurs_ConfigurationService.php';
-			$apiFileLoads ++;
-		}
-		if ( in_array( 'aftershopflowservice', array_map( "strtolower", $this->Include ) ) && file_exists( $this->classPath . '/aftershopflowservice-client/Resurs_AfterShopFlowService.php' ) ) {
-			require $this->classPath . '/aftershopflowservice-client/Resurs_AfterShopFlowService.php';
-			$apiFileLoads ++;
-		}
-		/**
-		 * Loads the deprecated flow as the last class, if found in our library. However, we normally don't deliver this setup in our EComPHP-package, so if we find this
-		 * the developer may have added it him/herself.
-		 */
-		if ( in_array( 'shopflowservice', array_map( "strtolower", $this->Include ) ) && file_exists( $this->classPath . '/shopflowservice-client/Resurs_ShopFlowService.php' ) ) {
-			require $this->classPath . '/shopflowservice-client/Resurs_ShopFlowService.php';
-			$apiFileLoads ++;
-		}
-		if ( $apiFileLoads >= 1 ) {
-			$this->hasWsdl = true;
-		}
-
-		// Requiring that SSL is available on the current server, will throw an exception if no HTTPS-wrapper is found.
-		if ( $this->username != null ) {
-			$this->soapOptions['login'] = $this->username;
-		}
-		if ( $this->password != null ) {
-			$this->soapOptions['password'] = $this->password;
-		}
-		if ( $this->current_environment == self::ENVIRONMENT_TEST ) {
-			$this->environment = $this->env_test;
-		} else {
-			$this->environment = $this->env_prod;
-		}
-		$this->soapOptions = $this->sslGetOptionsStream( $this->soapOptions, array( 'http' => array( "user_agent" => $this->myUserAgent ) ) );
-
-		if ( $this->hasWsdl ) {
-			/*
-			 * 1.0 vs 1.1: Keeping backwards compatibility in the major version of rbapiloader by looking for namespaced classes.
-			 */
-			try {
-				// 1.0
-				if ( class_exists( 'Resurs_SimplifiedShopFlowService' ) ) {
-					$currentService                  = "simplifiedShopFlowService";
-					$this->simplifiedShopFlowService = new Resurs_SimplifiedShopFlowService( $this->soapOptions, $this->environment . "SimplifiedShopFlowService?wsdl" );
-				}
-				// 1.1
-				if ( class_exists( '\Resursbank\RBEcomPHP\Resurs_SimplifiedShopFlowService' ) ) {
-					$this->hasNameSpace              = true;
-					$currentService                  = "simplifiedShopFlowService";
-					$this->simplifiedShopFlowService = new Resurs_SimplifiedShopFlowService( $this->soapOptions, $this->environment . "SimplifiedShopFlowService?wsdl" );
-				}
-				// 1.0
-				if ( class_exists( 'Resurs_ConfigurationService' ) ) {
-					$currentService             = "configurationService";
-					$this->configurationService = new Resurs_ConfigurationService( $this->soapOptions, $this->environment . "ConfigurationService?wsdl" );
-				}
-				// 1.1
-				if ( class_exists( '\Resursbank\RBEcomPHP\Resurs_ConfigurationService' ) ) {
-					$this->hasNameSpace         = true;
-					$currentService             = "configurationService";
-					$this->configurationService = new Resurs_ConfigurationService( $this->soapOptions, $this->environment . "ConfigurationService?wsdl" );
-				}
-
-				// 1.0
-				if ( class_exists( 'Resurs_AfterShopFlowService' ) ) {
-					$currentService             = "afterShopFlowService";
-					$this->afterShopFlowService = new Resurs_AfterShopFlowService( $this->soapOptions, $this->environment . "AfterShopFlowService?wsdl" );
-				}
-				// 1.1
-				if ( class_exists( '\Resursbank\RBEcomPHP\Resurs_AfterShopFlowService' ) ) {
-					$this->hasNameSpace         = true;
-					$currentService             = "afterShopFlowService";
-					$this->afterShopFlowService = new Resurs_AfterShopFlowService( $this->soapOptions, $this->environment . "AfterShopFlowService?wsdl" );
-				}
-
-				// 1.0
-				if ( class_exists( 'Resurs_ShopFlowService' ) ) {
-					$currentService        = "shopFlowService";
-					$this->shopFlowService = new Resurs_ShopFlowService( $this->soapOptions, $this->environment . "ShopFlowService?wsdl" );
-				}
-				// 1.1
-				if ( class_exists( '\Resursbank\RBEcomPHP\Resurs_ShopFlowService' ) ) {
-					$this->hasNameSpace = true;
-					$currentService        = "shopFlowService";
-					$this->shopFlowService = new Resurs_ShopFlowService( $this->soapOptions, $this->environment . "ShopFlowService?wsdl" );
-				}
-			} catch ( \Exception $e ) {
-				/** Adds the $currentService to the message, to show which service that failed */
-				throw new \Exception( __FUNCTION__ . ": " . $e->getMessage() . "\nStuck on service: " . $currentService, \RESURS_EXCEPTIONS::WSDL_APILOAD_EXCEPTION, $e );
-			}
-		}
-
-		if ( class_exists( '\Resursbank\RBEcomPHP\Tornevall_cURL' ) ) {
-			$this->CURL = new \Resursbank\RBEcomPHP\Tornevall_cURL();
-			$this->CURL->setStoreSessionExceptions( true );
-			$this->CURL->setAuthentication( $this->soapOptions['login'], $this->soapOptions['password'] );
-			$this->CURL->setUserAgent( $this->myUserAgent );
-			$this->NETWORK = new \Resursbank\RBEcomPHP\TorneLIB_Network();
-			$this->BIT = $this->NETWORK->BIT;
-		}
-		// Prepare services URL in case of nonWsdl mode.
-		// This makes the throwing on "no available services" unnecessary
-		if ( count( $this->Include ) < 1 ) {
-			$this->hasWsdl = false;
-		}
-		$this->wsdlServices = array();
-		foreach ( $this->ServiceRequestList as $reqType => $reqService ) {
-			$this->wsdlServices[ $reqService ] = true;
-		}
-		foreach ( $this->wsdlServices as $ServiceName => $isAvailableBoolean ) {
-			$this->URLS[ $ServiceName ] = $this->environment . $ServiceName . "?wsdl";
-		}
-
-		return true;
 	}
 
 	/**
@@ -1115,6 +575,18 @@ class ResursBank {
 		if ($this->customerUserAgentPush && isset($_SERVER['HTTP_USER_AGENT'])) {
 			$this->myUserAgent .= " +CLI-" . $this->T_CRYPTO->base64_compress($_SERVER['HTTP_USER_AGENT']);
 		}
+	}
+
+	/**
+	 * Get current user agent info IF has been forced to set (returns null if we are using default)
+	 *
+	 * @return string
+	 * @since 1.0.26
+	 * @since 1.1.26
+	 * @since 1.2.0
+	 */
+	public function getUserAgent() {
+		return $this->myUserAgent;
 	}
 
 	/**
@@ -1210,155 +682,15 @@ class ResursBank {
 		return false;
 	}
 
-	/**
-	 * Find classes
-	 *
-	 * @param string $path
-	 *
-	 * @return bool
-	 * @deprecated Not in use internally
-	 */
-	private function classes( $path = '' ) {
-		foreach ( $this->classPathFiles as $file ) {
-			if ( file_exists( $path . "/" . $file ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-
-	/////////// INTERNAL CALL FORWARDER (REQUIRES WSDL)
-
-	/**
-	 * Method calls that should be passed directly to a webservice
-	 *
-	 * Unknown calls passed through __call(), so that we may cover functions unsupported by the gateway.
-	 * This stub-gateway processing is also checking if the methods really exist in the stubs and passing them over is they do.
-	 *
-	 * NOTE: If you're going nonWsdl, this method might go deprecated as curl works differently
-	 *
-	 * GETTING DATA AS ARRAYS (DEPRECATED)
-	 * This method takes control of responses and returns the object "return" if it exists.
-	 * The function also supports array, by adding "Array" to the end of the method).
-	 *
-	 * @param null $func
-	 * @param array $args
-	 *
-	 * @return array|null
-	 * @throws \Exception
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function __call( $func = null, $args = array() ) {
-		// Initializing wsdl if not done is required here
-		$this->InitializeServices();
-
-		$returnObject        = null;
-		$this->serviceReturn = null;
-		$returnAsArray       = false;
-		$classfunc           = null;
-		$funcArgs            = null;
-		$returnContent       = null;
-		//if (isset($args[0]) && is_array($args[0])) {}
-		$classfunc = "resurs_" . $func;
-		if ( preg_match( "/Array$/", $func ) ) {
-			$func          = preg_replace( "/Array$/", '', $func );
-			$classfunc     = preg_replace( "/Array$/", '', $classfunc );
-			$returnAsArray = true;
-		}
-		if ( $this->hasWsdl ) {
-			$useNameSpace = "";
-			foreach ( get_declared_classes() as $className ) {
-				if ( preg_match( "/rbecomphp/i", $className ) && preg_match( "/resursbank/i", $className ) ) {
-					$useNameSpace = "\\Resursbank\\RBEcomPHP\\";
-					break;
-				}
-			}
-			try {
-				$reflectionClassName = "{$useNameSpace}{$classfunc}";
-				$reflection          = new \ReflectionClass( $reflectionClassName );
-				$instance            = $reflection->newInstanceArgs( $args );
-				// Check availability, fetch and stop on first match
-				if ( ! isset( $returnObject ) && in_array( $func, get_class_methods( "{$useNameSpace}Resurs_SimplifiedShopFlowService" ) ) ) {
-					$this->serviceReturn = "SimplifiedShopFlowService";
-					$returnObject        = $this->simplifiedShopFlowService->$func( $instance );
-				}
-				if ( ! isset( $returnObject ) && in_array( $func, get_class_methods( "{$useNameSpace}Resurs_ConfigurationService" ) ) ) {
-					$this->serviceReturn = "ConfigurationService";
-					$returnObject        = $this->configurationService->$func( $instance );
-				}
-				if ( ! isset( $returnObject ) && in_array( $func, get_class_methods( "{$useNameSpace}Resurs_AfterShopFlowService" ) ) ) {
-					$this->serviceReturn = "AfterShopFlowService";
-					$returnObject        = $this->afterShopFlowService->$func( $instance );
-				}
-				if ( ! isset( $returnObject ) && in_array( $func, get_class_methods( "{$useNameSpace}Resurs_ShopFlowService" ) ) ) {
-					$this->serviceReturn = "ShopFlowService";
-					$returnObject        = $this->shopFlowService->$func( $instance );
-				}
-			} catch ( \Exception $e ) {
-				throw new \Exception( __FUNCTION__ . "/" . $func . "/" . $classfunc . ": " . $e->getMessage(), \RESURS_EXCEPTIONS::WSDL_PASSTHROUGH_EXCEPTION );
-			}
-		}
-		try {
-			if ( isset( $returnObject ) && ! empty( $returnObject ) && isset( $returnObject->return ) && ! empty( $returnObject->return ) ) {
-				/* Issue #63127 - make some dataobjects storable */
-				if ( $this->convertObjectsOnGet && preg_match( "/^get/i", $func ) ) {
-					$returnContent = $this->getDataObject( $returnObject->return );
-				} else {
-					$returnContent = $returnObject->return;
-				}
-				if ( $returnAsArray ) {
-					return $this->parseReturn( $returnContent );
-				}
-			} else {
-				/* Issue #62975: Fixes empty responses from requests not containing a return-object */
-				if ( empty( $returnObject ) ) {
-					if ( $returnAsArray ) {
-						return array();
-					}
-				} else {
-					if ( $returnAsArray ) {
-						return $this->parseReturn( $returnContent );
-					} else {
-						return $returnObject;
-					}
-				}
-			}
-
-			return $returnContent;
-		} catch ( \Exception $returnObjectException ) {
-		}
-		if ( $returnAsArray ) {
-			return $this->parseReturn( $returnObject );
-		}
-
-		return $returnObject;
-	}
-
-
 
 	/////////// Standard getters and setters
-
-	/**
-	 * Allow older/obsolete PHP Versions (Follows the obsolete php versions rules - see the link for more information).
-	 *
-	 * @param bool $activate
-	 *
-	 * @link https://test.resurs.com/docs/x/TYNM#ECommercePHPLibrary-ObsoletePHPversions
-	 * @deprecated Removed in 1.2
-	 */
-	public function setObsoletePhp( $activate = false ) {
-		$this->allowObsoletePHP = $activate;
-	}
 
 	/**
 	 * Define current environment
 	 *
 	 * @param int $environmentType
 	 */
-	public function setEnvironment( $environmentType = ResursEnvironments::ENVIRONMENT_TEST ) {
+	public function setEnvironment( $environmentType = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST ) {
 		$this->current_environment         = $environmentType;
 		$this->current_environment_updated = true;
 	}
@@ -1394,18 +726,6 @@ class ResursBank {
 			$this->soapOptions['password'] = $password;
 			$this->password                = $password; // For use with initwsdl
 		}
-	}
-
-	/**
-	 * Function to enable/disabled SSL Peer/Host verification, if problems occur with certificates
-	 *
-	 * @param bool|true $enabledFlag
-	 *
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function setSslVerify( $enabledFlag = true ) {
-		$this->sslVerify = $enabledFlag;
 	}
 
 	/**
@@ -1463,33 +783,6 @@ class ResursBank {
 			'http_accept' => $expectedHttpAcceptCode,
 			'http_error'  => $expectedHttpErrorCode
 		);
-	}
-
-	/**
-	 * TestCerts - Test if your webclient has certificates available (make sure the $testssldeprecated are enabled if you want to test older PHP-versions - meaning older than 5.6.0)
-	 * @return bool
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function TestCerts() {
-		return $this->openssl_guess();
-	}
-
-	/**
-	 * Get a timestamp for when the last cache of a call was requested and saved from Ecommerce
-	 *
-	 * @param $cachedArrayName
-	 *
-	 * @return int
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function getLastCall( $cachedArrayName ) {
-		if ( isset( $this->configurationArray['lastUpdate'] ) && isset( $this->configurationArray['lastUpdate'][ $cachedArrayName ] ) ) {
-			return time() - intval( $this->configurationArray['lastUpdate'][ $cachedArrayName ] );
-		}
-
-		return time(); /* If nothing is set, indicate that it has been a long time since last call was made... */
 	}
 
 
@@ -1737,7 +1030,6 @@ class ResursBank {
 	 * Retreive a full list of, by merchant, registered callbacks
 	 *
 	 * @param bool $ReturnAsArray
-	 *
 	 * @return array
 	 * @throws \Exception
 	 * @link https://test.resurs.com/docs/display/ecom/ECommerce+PHP+Library#ECommercePHPLibrary-getCallbacksByRest
@@ -1791,7 +1083,7 @@ class ResursBank {
 	 *
 	 * @param int $callbackType
 	 * @return mixed
-	 * @since 1.x.x
+	 * @throws \Exception
 	 */
 	public function getRegisteredEventCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET ) {
 		$this->InitializeServices();
@@ -1922,6 +1214,7 @@ class ResursBank {
 	 * @param int $callbackType
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
@@ -1951,52 +1244,10 @@ class ResursBank {
 	}
 
 	/**
-	 * Simplifed callback registrator. Also handles re-registering of callbacks in case of already found in system.
-	 *
-	 * @param int $callbackType
-	 * @param string $callbackUriTemplate
-	 * @param array $callbackDigest If no parameters are set, this will be handled automatically.
-	 * @param null $basicAuthUserName
-	 * @param null $basicAuthPassword
-	 *
-	 * @return bool
-	 * @throws \Exception
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function setCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackUriTemplate = "", $callbackDigest = array(), $basicAuthUserName = null, $basicAuthPassword = null ) {
-		return $this->setRegisterCallback( $callbackType, $callbackUriTemplate, $callbackDigest, $basicAuthUserName, $basicAuthPassword );
-	}
-
-	/**
-	 * Simplifies removal of callbacks even when they does not exist at first.
-	 *
-	 * @param int $callbackType
-	 *
-	 * @return bool
-	 * @throws \Exception
-	 * @deprecated 1.0.1 Use unregisterEventCallback instead
-	 * @deprecated 1.1.1 Use unregisterEventCallback instead
-	 */
-	public function unSetCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET ) {
-		return $this->unregisterEventCallback( $callbackType );
-	}
-
-	/**
-	 * Trigger registered callback event TEST
-	 *
-	 * @return bool
-	 * @deprecated 1.0.1 Use triggerCallback() instead
-	 * @deprecated 1.1.1 Use triggerCallback() instead
-	 */
-	public function testCallback() {
-		return $this->triggerCallback();
-	}
-
-	/**
 	 * Trigger the registered callback event TEST if set. Returns true if trigger call was successful, otherwise false (Observe that this not necessarily is a successful completion of the callback)
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -2004,7 +1255,7 @@ class ResursBank {
 		$this->InitializeServices();
 		$envUrl = $this->env_test;
 		$curEnv = $this->getEnvironment();
-		if ($curEnv == ResursEnvironments::ENVIRONMENT_PRODUCTION) {
+		if ($curEnv == RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION) {
 			$envUrl = $this->env_prod;
 		}
 		$serviceUrl = $envUrl . "DeveloperWebService?wsdl";
@@ -2034,17 +1285,17 @@ class ResursBank {
 	 * Internal function to get the correct service URL for a specific call.
 	 *
 	 * @param string $ServiceName
-	 *
 	 * @return string
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
 	public function getServiceUrl( $ServiceName = '' ) {
+		$this->InitializeServices();
 		$properService = "";
 		if ( isset( $this->ServiceRequestList[ $ServiceName ] ) && isset( $this->URLS[ $this->ServiceRequestList[ $ServiceName ] ] ) ) {
 			$properService = $this->URLS[ $this->ServiceRequestList[ $ServiceName ] ];
 		}
-
 		return $properService;
 	}
 
@@ -2214,7 +1465,7 @@ class ResursBank {
 	 * @since 1.1.13
 	 * @since 1.2.0
 	 */
-	public function setPushCustomerUserAgent($enableCustomerUserAgent = false) {
+	public function setPushCustomerUserAgent( $enableCustomerUserAgent = false ) {
 		$this->T_CRYPTO = new TorneLIB_Crypto();
 		if ( ! empty( $this->T_CRYPTO ) ) {
 			$this->customerUserAgentPush = $enableCustomerUserAgent;
@@ -2232,27 +1483,85 @@ class ResursBank {
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
-	public function getNextInvoiceNumber( $initInvoice = true, $firstInvoiceNumber = 1 ) {
+	public function getNextInvoiceNumber( $initInvoice = true, $firstInvoiceNumber = null ) {
 		$this->InitializeServices();
-		$invoiceNumber = 0;
+		// Initial invoice number
+		$currentInvoiceNumber = 0;
+		$invoiceInvokation = false;
+
+		// Get the current from e-commerce
+		try {
+			$currentInvoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
+		} catch ( \Exception $e ) {
+			if (is_null($firstInvoiceNumber) && $initInvoice) {
+				$firstInvoiceNumber = 1;
+			}
+		}
+
+		// Continue look at initinvoice, but this time take a look at the requested $firstInvoiceNumber
 		if ( $initInvoice ) {
-			try {
-				$invoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
-			} catch ( \Exception $e ) {
-
-			}
-		}
-		if ( is_numeric( $invoiceNumber ) && $invoiceNumber > 0 && $initInvoice ) {
-			try {
+			// If the requested invoice number is a numeric and over 0, set it as next invoice number
+			if (!is_null($firstInvoiceNumber) && is_numeric( $firstInvoiceNumber ) && $firstInvoiceNumber > 0) {
 				$this->postService( "setInvoiceSequence", array( 'nextInvoiceNumber' => $firstInvoiceNumber ) );
-				$invoiceNumber = $firstInvoiceNumber;
-			} catch ( \Exception $e ) {
-				// If the initialization failed, due to an already set invoice number, we will fall back to the last one
-				$invoiceNumber = $this->postService( "peekInvoiceSequence", array( 'nextInvoiceNumber' => null ) )->nextInvoiceNumber;
+				$invoiceInvokation = true;
 			}
 		}
 
-		return $invoiceNumber;
+		// If $invoiceInvokation is true, we'll know that something happened under this run
+		if ($invoiceInvokation) {
+			// So in that case, request it again
+			try {
+				$currentInvoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
+			} catch ( \Exception $e ) {
+
+			}
+		}
+
+		return $currentInvoiceNumber;
+	}
+
+	/**
+	 * Nullify invoice sequence
+	 *
+	 * @return array
+	 * @throws \Exception
+	 * @since 1.0.27
+	 * @since 1.1.27
+	 * @since 1.2.0
+	 */
+	public function resetInvoiceNumber() {
+		$this->InitializeServices();
+		return $this->postService( "setInvoiceSequence" );
+	}
+
+	/**
+	 * Invoice sequence number rescuer/scanner (This function replaces old sequence numbers if there is a higher value found in the last X payments)
+	 *
+	 * @param $scanDebitCount
+	 * @return int
+	 * @throws \Exception
+	 * @since 1.0.27
+	 * @since 1.1.27
+	 */
+	public function getNextInvoiceNumberByDebits( $scanDebitCount = 10 ) {
+		$list               = $this->findPayments( array( 'statusSet' => 'IS_DEBITED' ), 1, $scanDebitCount, array(
+			'ascending'   => false,
+			'sortColumns' => 'FINALIZED_TIME'
+		) );
+		$lastHighestInvoice = 0;
+		foreach ( $list as $payments ) {
+			$id        = $payments->paymentId;
+			$invoices  = $this->getPaymentInvoices( $id );
+			foreach ($invoices as $multipleDebitCheck) {
+				if ( $multipleDebitCheck >= $lastHighestInvoice ) {
+					$lastHighestInvoice = $multipleDebitCheck;
+				}
+			}
+		}
+		$properInvoiceNumber = intval( $lastHighestInvoice ) + 1;
+		$this->getNextInvoiceNumber( true, $properInvoiceNumber );
+
+		return $properInvoiceNumber;
 	}
 
 	/**
@@ -2297,7 +1606,7 @@ class ResursBank {
 	 */
 	public function sanitizePaymentMethods($paymentMethods = array()) {
 		$realPaymentMethods = array();
-		$paymentSevice = $this->getPreferredPaymentFlowService();
+		$paymentSevice = $this->getPreferredPaymentService();
 		if (is_array($paymentMethods) && count($paymentMethods)) {
 			foreach ( $paymentMethods as $paymentMethodIndex => $paymentMethodData ) {
 				$type      = $paymentMethodData->type;
@@ -2408,8 +1717,8 @@ class ResursBank {
 	 * @param string $governmentId
 	 * @param string $customerType
 	 * @param string $customerIpAddress
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
@@ -2431,8 +1740,8 @@ class ResursBank {
 	 * To use the former method, look for getAnnuityFactorsDeprecated. This function might however disappear in the future.
 	 *
 	 * @param string $paymentMethodId
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 * @link https://test.resurs.com/docs/x/JQBH getAnnuityFactors() documentation
@@ -2448,6 +1757,7 @@ class ResursBank {
 	 * @param $duration
 	 *
 	 * @return float
+	 * @throws \Exception
 	 * @since 1.1.24
 	 */
 	public function getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration) {
@@ -2475,6 +1785,7 @@ class ResursBank {
 	 *
 	 * @return float
 	 * @since 1.1.24
+	 * @throws \Exception
 	 */
 	public function getAnnuityPriceByDuration($totalAmount, $paymentMethodIdOrFactorObject, $duration) {
 		$durationFactor = $this->getAnnuityFactorByDuration($paymentMethodIdOrFactorObject, $duration);
@@ -2487,8 +1798,8 @@ class ResursBank {
 	 * Retrieves detailed information about the payment.
 	 *
 	 * @param string $paymentId
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @link https://test.resurs.com/docs/x/moEW getPayment() documentation
 	 * @since 1.0.1
 	 * @since 1.1.1
@@ -2501,8 +1812,8 @@ class ResursBank {
 	 * Make sure a payment will always be returned correctly. If string, getPayment will run first. If array/object, it will continue to look like one.
 	 *
 	 * @param array $paymentArrayOrPaymentId
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -2526,6 +1837,7 @@ class ResursBank {
 	 * @param string $paymentKey
 	 *
 	 * @return null
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -2545,8 +1857,8 @@ class ResursBank {
 	 * @param int $pageNumber
 	 * @param int $itemsPerPage
 	 * @param null $sortBy
-	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @link https://test.resurs.com/docs/x/loEW
 	 * @since 1.0.1
 	 * @since 1.1.1
@@ -2568,6 +1880,7 @@ class ResursBank {
 	 * Get a list of current available payment methods, in the form of an arraylist with id's
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2589,8 +1902,8 @@ class ResursBank {
 	 * Fetch one specific payment method only, from Resurs Bank
 	 *
 	 * @param string $specificMethodName
-	 *
 	 * @return array If not found, array will be empty
+	 * @throws \Exception
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2638,7 +1951,6 @@ class ResursBank {
 	 * Set store id for the payload
 	 *
 	 * @param null $storeId
-	 *
 	 * @since 1.0.7
 	 * @since 1.1.7
 	 */
@@ -2739,8 +2051,8 @@ class ResursBank {
 	 * @param int $totalAmount
 	 * @param array|string $paymentMethodID If paymentMethodID is set as string, we'll try to look up the links
 	 * @param string $URL
-	 *
 	 * @return array|string Returns an array if the whole method are requested, returns a string if the URL is already prepared as last parameter in
+	 * @throws \Exception
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2869,7 +2181,6 @@ class ResursBank {
 	 * While generating a getCostOfPurchase where $returnBody is true, this function adds custom html before the returned html-code from Resurs Bank
 	 *
 	 * @param string $htmlData
-	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2881,7 +2192,6 @@ class ResursBank {
 	 * While generating a getCostOfPurchase where $returnBody is true, this function adds custom html after the returned html-code from Resurs Bank
 	 *
 	 * @param string $htmlData
-	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -2993,89 +2303,6 @@ class ResursBank {
 	}
 
 	/**
-	 * Convert a object to a data object
-	 *
-	 * @param array $d
-	 * @param bool $forceConversion
-	 * @param bool $preventConversion
-	 *
-	 * @return array|mixed|null
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	private function getDataObject( $d = array(), $forceConversion = false, $preventConversion = false ) {
-		if ( $preventConversion ) {
-			return $d;
-		}
-		if ( $this->convertObjects || $forceConversion ) {
-			/**
-			 * If json_decode and json_encode exists as function, do it the simple way.
-			 * http://php.net/manual/en/function.json-encode.php
-			 */
-			if ( function_exists( 'json_decode' ) && function_exists( 'json_encode' ) ) {
-				return json_decode( json_encode( $d ) );
-			}
-			$newArray = array();
-			if ( is_array( $d ) || is_object( $d ) ) {
-				foreach ( $d as $itemKey => $itemValue ) {
-					if ( is_array( $itemValue ) ) {
-						$newArray[ $itemKey ] = (array) $this->getDataObject( $itemValue );
-					} elseif ( is_object( $itemValue ) ) {
-						$newArray[ $itemKey ] = (object) (array) $this->getDataObject( $itemValue );
-					} else {
-						$newArray[ $itemKey ] = $itemValue;
-					}
-				}
-			}
-		} else {
-			return $d;
-		}
-
-		return $newArray;
-	}
-
-	/**
-	 * ResponseObjectArrayParser. Translates a return-object to a clean array
-	 *
-	 * @param null $returnObject
-	 *
-	 * @return array
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function parseReturn( $returnObject = null ) {
-		$hasGet = false;
-		if ( is_array( $returnObject ) ) {
-			$parsedArray = array();
-			foreach ( $returnObject as $arrayName => $objectArray ) {
-				$classMethods = get_class_methods( $objectArray );
-				if ( is_array( $classMethods ) ) {
-					foreach ( $classMethods as $classMethodId => $classMethod ) {
-						if ( preg_match( "/^get/i", $classMethod ) ) {
-							$hasGet        = true;
-							$field         = lcfirst( preg_replace( "/^get/i", '', $classMethod ) );
-							$objectContent = $objectArray->$classMethod();
-							if ( is_array( $objectContent ) ) {
-								$parsedArray[ $arrayName ][ $field ] = $this->parseReturn( $objectContent );
-							} else {
-								$parsedArray[ $arrayName ][ $field ] = $objectContent;
-							}
-						}
-					}
-				}
-			}
-			/* Failver test */
-			if ( ! $hasGet && ! count( $parsedArray ) ) {
-				return $this->objectsIntoArray( $returnObject );
-			}
-
-			return $parsedArray;
-		}
-
-		return array(); /* Fail with empty array, if there is no recursive array  */
-	}
-
-	/**
 	 * Convert objects to array data
 	 *
 	 * @param $arrObjData
@@ -3173,7 +2400,7 @@ class ResursBank {
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
-	protected function getVersionFull( $getDecimals = false ) {
+	public function getVersionFull( $getDecimals = false ) {
 		if ( ! $getDecimals ) {
 			return $this->clientName . " v" . $this->version . "-" . $this->lastUpdate;
 		}
@@ -3190,7 +2417,7 @@ class ResursBank {
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
-	protected function getVersionNumber( $getDecimals = false ) {
+	public function getVersionNumber( $getDecimals = false ) {
 		if ( ! $getDecimals ) {
 			return $this->version; // . "-" . $this->lastUpdate;
 		} else {
@@ -3204,27 +2431,13 @@ class ResursBank {
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
-	protected function getCreatedBy() {
+	public function getCreatedBy() {
 		$createdBy = $this->realClientName . "_" . $this->getVersionNumber( true );
 		if ( ! empty( $this->loggedInuser ) ) {
 			$createdBy .= "/" . $this->loggedInuser;
 		}
 
 		return $createdBy;
-	}
-
-	/**
-	 * Adds your client name to the current client name string which is used as User-Agent when communicating with ecommerce.
-	 *
-	 * @param string $clientNameString
-	 *
-	 * @deprecated 1.0.2 Use setUserAgent
-	 * @deprecated 1.1.2 Use setUserAgent
-	 */
-	public function setClientName( $clientNameString = "" ) {
-		if (!empty($clientNameString)) {
-			$this->setUserAgent( $clientNameString );
-		}
 	}
 
 	/**
@@ -3247,7 +2460,6 @@ class ResursBank {
 	 * Set a logged in username (will be merged with the client name at aftershopFlow-level)
 	 *
 	 * @param string $currentUsername
-	 *
 	 * @since 1.0.0
 	 * @since 1.1.0
 	 */
@@ -3263,6 +2475,7 @@ class ResursBank {
 	 *
 	 * @param string $shopUrl
 	 * @param bool $validateFormat Activate URL validation
+	 * @throws \Exception
 	 *
 	 * @since 1.0.4
 	 * @since 1.1.4
@@ -3290,457 +2503,6 @@ class ResursBank {
 	public function setValidateCheckoutShopUrl($validateEnabled = true) {
 		$this->validateCheckoutShopUrl = $validateEnabled;
 	}
-
-	/////////// JSON AREA (PUBLICS + PRIVATES) - IN DECISION OF DEPRECATION
-
-	/**
-	 * dataContainer array to JSON converter
-	 *
-	 * This part of EComPHP only makes sure, if the customer are using the simplifiedFlow structure in a payment method
-	 * that is not simplified, that the array gets converted to the right format. This part is ONLY needed if the plugin of the
-	 * representative doesn't do it properly.
-	 *
-	 * @param array $dataContainer
-	 * @param int $paymentMethodType
-	 * @param bool $updateCart Defines if this a cart upgrade only
-	 *
-	 * @return array|mixed|string|void
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function toJsonByType( $dataContainer = array(), $paymentMethodType = RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW, $updateCart = false ) {
-		// We need the content as is at this point since this part normally should be received as arrays
-		$newDataContainer = $this->getDataObject( $dataContainer, false, true );
-		if ( ! isset( $newDataContainer['type'] ) || empty( $newDataContainer['type'] ) ) {
-			if ( $paymentMethodType == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW ) {
-				$newDataContainer['type'] = 'hosted';
-			} else if ( $paymentMethodType == RESURS_FLOW_TYPES::METHOD_OMNI ) {
-				$newDataContainer['type'] = 'omni';
-			}
-		}
-		if ( isset( $newDataContainer['type'] ) && ! empty( $newDataContainer['type'] ) ) {
-			/**
-			 * Hosted flow ruleset
-			 */
-			if ( strtolower( $newDataContainer['type'] ) == "hosted" ) {
-				/* If the specLines are defined as simplifiedFlowSpecrows, we need to convert them to hosted speclines */
-				$hasSpecLines = false;
-				/* If there is an old array containing specLines, this has to be renamed to orderLines */
-				if ( isset( $newDataContainer['orderData']['specLines'] ) ) {
-					$newDataContainer['orderData']['orderLines'] = $newDataContainer['orderData']['specLines'];
-					unset( $newDataContainer['orderData']['specLines'] );
-					$hasSpecLines = true;
-				}
-				/* If there is a specLine defined in the parent array ... */
-				if ( isset( $newDataContainer['specLine'] ) ) {
-					/* ... then check if we miss orderLines ... */
-					if ( ! $hasSpecLines ) {
-						/* ... and add them on demand */
-						$newDataContainer['orderData']['orderLines'] = $newDataContainer['specLine'];
-					}
-					/* Then unset the old array */
-					unset( $newDataContainer['specLine'] );
-				}
-				/* If there is an address array on first level, we need to move the array to the customerArray*/
-				if ( isset( $newDataContainer['address'] ) ) {
-					$newDataContainer['customer']['address'] = $newDataContainer['address'];
-					unset( $newDataContainer['address'] );
-				}
-				/* The same rule as in the address case applies to the deliveryAddress */
-				if ( isset( $newDataContainer['deliveryAddress'] ) ) {
-					$newDataContainer['customer']['deliveryAddress'] = $newDataContainer['deliveryAddress'];
-					unset( $newDataContainer['deliveryAddress'] );
-				}
-				/* Now, let's see if there is a simplifiedFlow country applied to the customer data. In that case, we need to convert it to at countryCode. */
-				if ( isset( $newDataContainer['customer']['address']['country'] ) ) {
-					$newDataContainer['customer']['address']['countryCode'] = $newDataContainer['customer']['address']['country'];
-					unset( $newDataContainer['customer']['address']['country'] );
-				}
-				/* The same rule applied to the deliveryAddress */
-				if ( isset( $newDataContainer['customer']['deliveryAddress']['country'] ) ) {
-					$newDataContainer['customer']['deliveryAddress']['countryCode'] = $newDataContainer['customer']['deliveryAddress']['country'];
-					unset( $newDataContainer['customer']['deliveryAddress']['country'] );
-				}
-				if ( isset( $newDataContainer['signing'] ) ) {
-					if ( ! isset( $newDataContainer['successUrl'] ) && isset( $newDataContainer['signing']['successUrl'] ) ) {
-						$newDataContainer['successUrl'] = $newDataContainer['signing']['successUrl'];
-					}
-					if ( ! isset( $newDataContainer['failUrl'] ) && isset( $newDataContainer['signing']['failUrl'] ) ) {
-						$newDataContainer['failUrl'] = $newDataContainer['signing']['failUrl'];
-					}
-					if ( ! isset( $newDataContainer['forceSigning'] ) && isset( $newDataContainer['signing']['forceSigning'] ) ) {
-						$newDataContainer['forceSigning'] = $newDataContainer['signing']['forceSigning'];
-					}
-					unset( $newDataContainer['signing'] );
-				}
-				$this->jsonHosted = $this->getDataObject( $newDataContainer, true );
-			}
-
-			/**
-			 * OmniCheckout Ruleset
-			 */
-			if ( strtolower( $newDataContainer['type'] ) == "omni" ) {
-				if ( isset( $newDataContainer['specLine'] ) ) {
-					$newDataContainer['orderLines'] = $newDataContainer['specLine'];
-					unset( $newDataContainer['specLine'] );
-				}
-				if ( isset( $newDataContainer['specLines'] ) ) {
-					$newDataContainer['orderLines'] = $newDataContainer['specLines'];
-					unset( $newDataContainer['specLines'] );
-				}
-				/*
-                 * OmniFrameJS helper.
-                 */
-				if ( ! isset( $newDataContainer['shopUrl'] ) ) {
-					$newDataContainer['shopUrl'] = $this->checkoutShopUrl;
-				}
-
-				$orderlineProps = array(
-					"artNo",
-					"vatPcs",
-					"vatPct",
-					"unitMeasure",
-					"quantity",
-					"description",
-					"unitAmountWithoutVat"
-				);
-				/**
-				 * Sanitizing orderlines in case it's an orderline conversion from a simplified shopflow.
-				 */
-				if ( isset( $newDataContainer['orderLines'] ) && is_array( $newDataContainer['orderLines'] ) ) {
-					$orderLineClean = array();
-					/*
-                     * Single Orderline Compatibility: When an order line is not properly sent to the handler, it has to be converted to an indexed array first,
-                     */
-					if ( $newDataContainer['type'] == "omni" ) {
-						unset( $newDataContainer['paymentData'], $newDataContainer['customer'] );
-					}
-					if ( isset( $newDataContainer['orderLines']['artNo'] ) ) {
-						$singleOrderLine                = $newDataContainer['orderLines'];
-						$newDataContainer['orderLines'] = array( $singleOrderLine );
-					}
-					unset( $newDataContainer['customer'], $newDataContainer['paymentData'] );
-					foreach ( $newDataContainer['orderLines'] as $orderLineId => $orderLineArray ) {
-						if ( is_array( $orderLineArray ) ) {
-							foreach ( $orderLineArray as $orderLineArrayKey => $orderLineArrayValue ) {
-								if ( ! in_array( $orderLineArrayKey, $orderlineProps ) ) {
-									unset( $orderLineArray[ $orderLineArrayKey ] );
-								}
-							}
-							$orderLineClean[] = $orderLineArray;
-						}
-					}
-					$newDataContainer['orderLines'] = $orderLineClean;
-				}
-				if ( isset( $newDataContainer['address'] ) ) {
-					unset( $newDataContainer['address'] );
-				}
-				if ( isset( $newDataContainer['uniqueId'] ) ) {
-					unset( $newDataContainer['uniqueId'] );
-				}
-				if ( isset( $newDataContainer['signing'] ) ) {
-					if ( ! isset( $newDataContainer['successUrl'] ) && isset( $newDataContainer['signing']['successUrl'] ) ) {
-						$newDataContainer['successUrl'] = $newDataContainer['signing']['successUrl'];
-					}
-					if ( ! isset( $newDataContainer['backUrl'] ) && isset( $newDataContainer['signing']['failUrl'] ) ) {
-						$newDataContainer['backUrl'] = $newDataContainer['signing']['failUrl'];
-					}
-					unset( $newDataContainer['signing'] );
-				}
-				if ( isset( $newDataContainer['customer']['phone'] ) ) {
-					if ( ! isset( $newDataContainer['customer']['mobile'] ) || ( isset( $newDataContainer['customer']['mobile'] ) && empty( $newDataContainer['customer']['mobile'] ) ) ) {
-						$newDataContainer['customer']['mobile'] = $newDataContainer['customer']['phone'];
-					}
-					unset( $newDataContainer['customer']['phone'] );
-				}
-				if ( $updateCart ) {
-					/*
-                     * Return orderLines only, if this function is called as an updateCart.
-                     */
-					$newDataContainer = array(
-						'orderLines' => is_array( $newDataContainer['orderLines'] ) ? $newDataContainer['orderLines'] : array()
-					);
-				}
-				$this->jsonOmni = $newDataContainer;
-			}
-		}
-		if ( isset( $newDataContainer['type'] ) ) {
-			unset( $newDataContainer['type'] );
-		}
-		if ( isset( $newDataContainer['uniqueId'] ) ) {
-			unset( $newDataContainer['uniqueId'] );
-		}
-		$returnJson = $this->toJson( $newDataContainer );
-
-		return $returnJson;
-	}
-
-	/**
-	 * @param int $method
-	 *
-	 * @return stdClass|string
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function getBookedJsonObject( $method = RESURS_FLOW_TYPES::FLOW_NOT_SET ) {
-		$returnObject = new \stdClass();
-		if ( $method == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
-			return $returnObject;
-		} elseif ( $method == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW ) {
-			return $this->jsonHosted;
-		} else {
-			return $this->jsonOmni;
-		}
-	}
-
-	/**
-	 * Convert array to json
-	 *
-	 * @param array $jsonData
-	 *
-	 * @return array|mixed|string|void
-	 * @throws \Exception
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	private function toJson( $jsonData = array() ) {
-		if ( is_array( $jsonData ) || is_object( $jsonData ) ) {
-			$jsonData = json_encode( $jsonData );
-			if ( json_last_error() ) {
-				throw new \Exception( __FUNCTION__ . ": " . json_last_error_msg(), json_last_error() );
-			}
-		}
-
-		return $jsonData;
-	}
-
-	/**
-	 * Create a simple engine for cURL, for use with for example hosted flow.
-	 *
-	 * @param string $url
-	 * @param string $jsonData
-	 * @param int $curlMethod POST, GET, DELETE, etc
-	 *
-	 * @return mixed
-	 * @throws \Exception
-	 * @deprecated 1.0.1 As this is a posting function, this has been set to go through the CURL library
-	 * @deprecated 1.1.1 As this is a posting function, this has been set to go through the CURL library
-	 */
-	private function createJsonEngine( $url = '', $jsonData = "", $curlMethod = RESURS_CURL_METHODS::METHOD_POST ) {
-		if ( empty( $this->CURL ) ) {
-			$this->InitializeServices();
-		}
-		$CurlLibResponse = null;
-		$this->CURL->setAuthentication( $this->username, $this->password );
-		$this->CURL->setUserAgent( $this->myUserAgent );
-
-		if ( $curlMethod == RESURS_CURL_METHODS::METHOD_POST ) {
-			$CurlLibResponse = $this->CURL->doPost( $url, $jsonData, CURL_POST_AS::POST_AS_JSON );
-		} else if ( $curlMethod == RESURS_CURL_METHODS::METHOD_PUT ) {
-			$CurlLibResponse = $this->CURL->doPut( $url, $jsonData, CURL_POST_AS::POST_AS_JSON );
-		} else {
-			$CurlLibResponse = $this->CURL->doGet( $url, CURL_POST_AS::POST_AS_JSON );
-		}
-		if ( $CurlLibResponse['code'] >= 400 ) {
-			$useResponseCode = $CurlLibResponse['code'];
-			if ( is_object( $CurlLibResponse['parsed'] ) ) {
-				$ResursResponse = $CurlLibResponse['parsed'];
-				if ( isset( $ResursResponse->error ) ) {
-					if ( isset( $ResursResponse->status ) ) {
-						$useResponseCode = $ResursResponse->status;
-					}
-					throw new \Exception( $ResursResponse->error, $useResponseCode );
-				}
-				/*
-                 * Must handle ecommerce errors too.
-                 */
-				if ( isset( $ResursResponse->errorCode ) ) {
-					if ( $ResursResponse->errorCode > 0 ) {
-						throw new \Exception( isset( $ResursResponse->description ) && ! empty( $ResursResponse->description ) ? $ResursResponse->description : "Unknown error in " . __FUNCTION__, $ResursResponse->errorCode );
-					} else if ( $CurlLibResponse['code'] >= 500 ) {
-						/*
-                         * If there are any internal server errors returned, the errorCode tend to be unset (0) and therefore not trigged. In this case, as the server won't do anything good anyway, we should throw an exception
-                         */
-						throw new \Exception( isset( $ResursResponse->description ) && ! empty( $ResursResponse->description ) ? $ResursResponse->description : "Unknown error in " . __FUNCTION__, $ResursResponse->errorCode );
-					}
-				}
-			} else {
-				throw new \Exception( ! empty( $CurlLibResponse['body'] ) ? $CurlLibResponse['body'] : "Unknown error from server in " . __FUNCTION__, $CurlLibResponse['code'] );
-			}
-		} else {
-			/*
-             * Receiving code 200 here is flawless
-             */
-			return $CurlLibResponse;
-		}
-	}
-
-
-	/////// SSL Related deprecations
-
-	/**
-	 * Generate a correctified stream context depending on what happened in openssl_guess(), which also is running in this operation.
-	 *
-	 * Function created for moments when ini_set() fails in openssl_guess() and you don't want to "recalculate" the location of a valid certificates.
-	 * This normally occurs in improper configured environments (where this bulk of functions actually also has been tested in).
-	 * Recommendation of Usage: Do not copy only those functions, use the full version of tornevall_curl.php since there may be dependencies in it.
-	 *
-	 * @return array
-	 * @link http://developer.tornevall.net/apigen/TorneLIB-5.0/class-TorneLIB.Tornevall_cURL.html sslStreamContextCorrection() is a part of TorneLIB 5.0, described here
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function sslStreamContextCorrection() {
-		if ( ! $this->openSslGuessed ) {
-			$this->openssl_guess( true );
-		}
-		$caCert    = $this->getCertFile();
-		$sslVerify = true;
-		$sslSetup  = array();
-		if ( isset( $this->sslVerify ) ) {
-			$sslVerify = $this->sslVerify;
-		}
-		if ( ! empty( $caCert ) ) {
-			$sslSetup = array(
-				'cafile'            => $caCert,
-				'verify_peer'       => $sslVerify,
-				'verify_peer_name'  => $sslVerify,
-				'verify_host'       => $sslVerify,
-				'allow_self_signed' => true
-			);
-		}
-
-		return $sslSetup;
-	}
-
-	/**
-	 * Automatically generates stream_context and appends it to whatever you need it for.
-	 *
-	 * Example:
-	 *  $appendArray = array('http' => array("user_agent" => "MyUserAgent"));
-	 *  $this->soapOptions = sslGetDefaultStreamContext($this->soapOptions, $appendArray);
-	 *
-	 * @param array $optionsArray
-	 * @param array $selfContext
-	 *
-	 * @return array
-	 * @link http://developer.tornevall.net/apigen/TorneLIB-5.0/class-TorneLIB.Tornevall_cURL.html sslGetOptionsStream() is a part of TorneLIB 5.0, described here
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function sslGetOptionsStream( $optionsArray = array(), $selfContext = array() ) {
-		$streamContextOptions = array();
-		$sslCorrection        = $this->sslStreamContextCorrection();
-		if ( count( $sslCorrection ) ) {
-			$streamContextOptions['ssl'] = $this->sslStreamContextCorrection();
-		}
-		foreach ( $selfContext as $contextKey => $contextValue ) {
-			$streamContextOptions[ $contextKey ] = $contextValue;
-		}
-		$optionsArray['stream_context'] = stream_context_create( $streamContextOptions );
-
-		return $optionsArray;
-	}
-
-	/**
-	 * SSL Cerificate Handler
-	 *
-	 * This method tries to handle SSL Certification locations where PHP can't handle that part itself. In some environments (normally customized), PHP sometimes have
-	 * problems with finding certificates, in case for example where they are not placed in standard locations. When running the testing, we will also try to set up
-	 * a correct location for the certificates, if any are found somewhere else.
-	 *
-	 * The default configuration for this method is to not run any test, since there should be no problems of running in properly installed environments.
-	 * If there are known problems in the environment that is being used, you can try to set $testssl to true.
-	 *
-	 * At first, the variable $testssl is used to automatically try to find out if there is valid certificate bundles installed on the running system. In PHP 5.6.0 and higher
-	 * this procedure is simplified with the help of openssl_get_cert_locations(), which gives us a default path to installed certificates. In this case we will first look there
-	 * for the certificate bundle. If we do fail there, or if your system is running something older, the testing are running in guessing mode.
-	 *
-	 * The method is untested in Windows server environments when using OpenSSL.
-	 *
-	 * @param bool $forceTesting Force testing even if $testssl is disabled
-	 *
-	 * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.Tornevall_cURL.html openssl_guess() is a part of TorneLIB 5.0, described here
-	 * @return bool
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	private function openssl_guess( $forceTesting = false ) {
-		$pemLocation = "";
-		if ( ini_get( 'open_basedir' ) == '' ) {
-			if ( $this->testssl || $forceTesting ) {
-				$this->openSslGuessed = true;
-				if ( version_compare( PHP_VERSION, "5.6.0", ">=" ) && function_exists( "openssl_get_cert_locations" ) ) {
-					$locations = openssl_get_cert_locations();
-					if ( is_array( $locations ) ) {
-						if ( isset( $locations['default_cert_file'] ) ) {
-							/* If it exists don't bother */
-							if ( file_exists( $locations['default_cert_file'] ) ) {
-								$this->hasCertFile        = true;
-								$this->useCertFile        = $locations['default_cert_file'];
-								$this->hasDefaultCertFile = true;
-							}
-							if ( file_exists( $locations['default_cert_dir'] ) ) {
-								$this->hasCertDir = true;
-							}
-							/* Sometimes certificates are located in a default location, which is /etc/ssl/certs - this part scans through such directories for a proper cert-file */
-							if ( ! $this->hasCertFile && is_array( $this->sslPemLocations ) && count( $this->sslPemLocations ) ) {
-								/* Loop through suggested locations and set a cafile if found */
-								foreach ( $this->sslPemLocations as $pemLocation ) {
-									if ( file_exists( $pemLocation ) ) {
-										ini_set( 'openssl.cafile', $pemLocation );
-										$this->useCertFile = $pemLocation;
-										$this->hasCertFile = true;
-									}
-								}
-							}
-						}
-					}
-					/* On guess, disable verification if failed */
-					if ( ! $this->hasCertFile ) {
-						$this->setSslVerify( false );
-					}
-				} else {
-					/* If we run on other PHP versions than 5.6.0 or higher, try to fall back into a known directory */
-					if ( $this->testssldeprecated ) {
-						if ( ! $this->hasCertFile && is_array( $this->sslPemLocations ) && count( $this->sslPemLocations ) ) {
-							/* Loop through suggested locations and set a cafile if found */
-							foreach ( $this->sslPemLocations as $pemLocation ) {
-								if ( file_exists( $pemLocation ) ) {
-									ini_set( 'openssl.cafile', $pemLocation );
-									$this->useCertFile = $pemLocation;
-									$this->hasCertFile = true;
-								}
-							}
-						}
-						if ( ! $this->hasCertFile ) {
-							$this->setSslVerify( false );
-						}
-					}
-				}
-			}
-		} else {
-			// Assume there is a valid certificate if jailed by open_basedir
-			$this->hasCertFile = true;
-
-			return true;
-		}
-
-		return $this->hasCertFile;
-	}
-
-	/**
-	 * Return the current certificate bundle file, chosen by autodetection
-	 * @return string
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function getCertFile() {
-		return $this->useCertFile;
-	}
-
-
-
 
 	/////////// LONG LIFE DEPRECATION (Belongs to the deprecated shopFlow emulation, used by the wooCommerce plugin amongst others)
 
@@ -3775,10 +2537,6 @@ class ResursBank {
 	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration.
 	 */
 	private function getFormTemplateRules() {
-
-		// TODO: New regex for swedish phone numbers that supports +4607[...]-typos (see the extra 0)
-		// ^((0|\\+46||0046)[ |-]?(200|20|70|73|76|74|1-9{0,2})([ |-]?[0-9]){5,8})?$
-
 		$formTemplateRules = array(
 			'NATURAL' => array(
 				'fields' => array(
@@ -4052,6 +2810,7 @@ class ResursBank {
 	 * @param string $paymentMethodName
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
@@ -4065,6 +2824,7 @@ class ResursBank {
 	 * @param string $paymentMethodName
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
@@ -4073,243 +2833,8 @@ class ResursBank {
 	}
 
 
-
-
-	/////////// DEPRECATED STUFF
-
-	/**
-	 * Configuration storage: Find out if we have internal configuration enabled. The config file supports serialized (php) data and json-encoded content, but saves all data serialized.
-	 *
-	 * @return bool
-	 * @throws \Exception
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private function hasConfiguration() {
-		if ( version_compare( PHP_VERSION, '5.3.0', "<" ) ) {
-			if ( ! $this->allowObsoletePHP ) {
-				throw new \Exception( __FUNCTION__ . ": PHP 5.3 or later are required for this module to work. If you feel safe with running this with an older version, you can use the function setObsoletePhp()", 500 );
-			}
-		}
-		/* Internally stored configuration - has to be activated on use */
-		if ( $this->configurationInternal ) {
-			if ( defined( 'RB_API_CONFIG' ) && file_exists( RB_API_CONFIG . "/" . $this->configurationSystem ) ) {
-				$this->configurationStorage = RB_API_CONFIG . "/" . $this->configurationSystem . "/config.data";
-			} elseif ( file_exists( __DIR__ . "/" . $this->configurationSystem ) ) {
-				$this->configurationStorage = __DIR__ . "/" . $this->configurationSystem . "/config.data";
-			}
-			/* Initialize configuration storage if exists */
-			if ( ! empty( $this->configurationStorage ) && ! file_exists( $this->configurationStorage ) ) {
-				$defaults = array(
-					'system' => array(
-						'representative' => $this->username
-					)
-				);
-
-				@file_put_contents( $this->configurationStorage, serialize( $defaults ), LOCK_EX );
-				if ( ! file_exists( $this->configurationStorage ) ) {
-					/* Disable internal configuration during this call, if no file has been found after initialization */
-					$this->configurationInternal = false;
-
-					return false;
-				}
-			}
-		}
-		if ( $this->configurationInternal ) {
-			$this->config = file_get_contents( $this->configurationStorage );
-			$getArray     = @unserialize( $this->config );
-			if ( ! is_array( $getArray ) ) {
-				$getArray = @json_decode( $this->config, true );
-			}
-			if ( ! is_array( $getArray ) ) {
-				$this->configurationInternal = false;
-
-				return false;
-			} else {
-				$this->configurationArray = $getArray;
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * If configuration file exists, this is the place where we're updating the content of it.
-	 *
-	 * @param string $arrayName The name of the array we're going to save
-	 * @param array $arrayContent The content of the array
-	 *
-	 * @return bool If save is successful, we return true
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private function updateConfig( $arrayName, $arrayContent = array() ) {
-		/* Make sure that the received array is really an array, since objects from ecom may be trashed during serialziation */
-		$arrayContent = $this->objectsIntoArray( $arrayContent );
-		if ( $this->configurationInternal && ! empty( $arrayName ) ) {
-			$this->configurationArray[ $arrayName ]               = $arrayContent;
-			$this->configurationArray['lastUpdate'][ $arrayName ] = time();
-			$serialized                                           = @serialize( $this->configurationArray );
-			if ( file_exists( $this->configurationStorage ) ) {
-				@file_put_contents( $this->configurationStorage, $serialized, LOCK_EX );
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns an array with stored configuration (if stored configuration are enabled)
-	 * @return array
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function getConfigurationCache() {
-		return $this->configurationArray;
-	}
-
-	/**
-	 * Special set up for internal tests putting tests outside mock but still in test
-	 * @deprecated 1.0.1 As this has not been used for a long time it will be removed in a future release
-	 * @deprecated 1.1.1 As this has not been used for a long time it will be removed in a future release
-	 */
-	public function setNonMock() {
-		$this->env_test = "https://test.resurs.com/ecommerce/ws/V4/";
-	}
-
-	/**
-	 * Get the list of Resurs Bank payment methods from cache, instead of live (Cache function needs to be active)
-	 *
-	 * @return array
-	 * @throws \Exception
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function getPaymentMethodsCache() {
-		if ( $this->hasConfiguration() ) {
-			if ( isset( $this->configurationArray['getPaymentMethods'] ) && is_array( $this->configurationArray['getPaymentMethods'] ) && count( $this->configurationArray ) && ! $this->cacheExpired( 'getPaymentMethods' ) ) {
-				return $this->configurationArray['getPaymentMethods'];
-			} else {
-				return $this->objectsIntoArray( $this->getPaymentMethods() );
-			}
-		}
-		throw new \Exception( __FUNCTION__ . ": Can not fetch payment methods from cache. You must enable internal caching first.", \RESURS_EXCEPTIONS::PAYMENT_METHODS_CACHE_DISABLED );
-	}
-
-	/**
-	 * Test if a stored configuration (cache) has expired and needs to be renewed.
-	 *
-	 * @param $cachedArrayName
-	 *
-	 * @return bool
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	private function cacheExpired( $cachedArrayName ) {
-		if ( $this->getLastCall( $cachedArrayName ) >= $this->configurationCacheTimeout ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Get annuityfactors from payment method through cache, instead of live (Cache function needs to be active)
-	 *
-	 * @param string $paymentMethod Given payment method
-	 *
-	 * @return array
-	 * @throws \Exception
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function getAnnuityFactorsCache( $paymentMethod ) {
-		if ( $this->hasConfiguration() ) {
-			if ( isset( $this->configurationArray['getAnnuityFactors'] ) && isset( $this->configurationArray['getAnnuityFactors'][ $paymentMethod ] ) && is_array( $this->configurationArray['getAnnuityFactors'] ) && is_array( $this->configurationArray['getAnnuityFactors'][ $paymentMethod ] ) && count( $this->configurationArray['getAnnuityFactors'][ $paymentMethod ] ) && ! $this->cacheExpired( 'getPaymentMethods' ) ) {
-				return $this->configurationArray['getAnnuityFactors'][ $paymentMethod ];
-			} else {
-				return $this->objectsIntoArray( $this->getAnnuityFactors( $paymentMethod ) );
-			}
-		} else {
-			throw new \Exception( __FUNCTION__ . ": Can not fetch annuity factors from cache. You must enable internal caching first.", \RESURS_EXCEPTIONS::ANNUITY_FACTORS_CACHE_DISABLED );
-		}
-	}
-
-	/**
-	 * getAnnuityFactors Displays
-	 *
-	 * Retrieves the annuity factors for a given payment method. The duration is given is months. While this makes most sense for payment methods that consist of part payments (i.e. new account), it is possible to use for all types. It returns a list of with one annuity factor per payment plan of the payment method. There are typically between three and six payment plans per payment method. If no payment method are given to this function, the first available method will be used (meaning this function will also make a getPaymentMethods()-request which will delay the primary call a bit).
-	 * @link https://test.resurs.com/docs/display/ecom/Get+Annuity+Factors Ecommerce Docs for getAnnuityFactors
-	 *
-	 * @param string $paymentMethodId
-	 *
-	 * @return mixed
-	 * @throws \Exception
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function getAnnuityFactorsDeprecated( $paymentMethodId = '' ) {
-		$this->InitializeServices();
-		$firstMethod = array();
-		if ( empty( $paymentMethodId ) || is_null( $paymentMethodId ) ) {
-			$methodsAvailable = $this->getPaymentMethods();
-			if ( is_array( $methodsAvailable ) && count( $methodsAvailable ) ) {
-				$firstMethod     = array_pop( $methodsAvailable );
-				$paymentMethodId = isset( $firstMethod->id ) ? $firstMethod->id : null;
-				if ( empty( $paymentMethodId ) ) {
-					throw new \Exception( __FUNCTION__ . ": getAnnuityFactorsException  No available payment method", \RESURS_EXCEPTIONS::ANNUITY_FACTORS_METHOD_UNAVAILABLE );
-				}
-			}
-		}
-		$annuityParameters = new resurs_getAnnuityFactors( $paymentMethodId );
-		$return            = $this->getDataObject( $this->simplifiedShopFlowService->getAnnuityFactors( $annuityParameters )->return );
-		if ( $this->configurationInternal ) {
-			$CurrentAnnuityFactors                     = isset( $this->configurationArray['getAnnuityFactors'] ) ? $this->configurationArray['getAnnuityFactors'] : array();
-			$CurrentAnnuityFactors[ $paymentMethodId ] = $return;
-			$this->updateConfig( 'getAnnuityFactors', $CurrentAnnuityFactors );
-		}
-
-		return $return;
-	}
-
-
-
-
 	/////////// PRIMARY INTERNAL SHOPFLOW SECTION
 	////// HELPERS
-	/**
-	 * Generates a unique "preferredId" out of a datestamp
-	 *
-	 * @param int $maxLength The maximum recommended length of a preferred id is currently 25. The order numbers may be shorter (the minimum length is 14, but in that case only the timestamp will be returned)
-	 * @param string $prefix Prefix to prepend at unique id level
-	 * @param bool $dualUniq Be paranoid and sha1-encrypt the first random uniq id first.
-	 *
-	 * @return string
-	 * @since 1.0.0
-	 * @since 1.1.0
-	 * @deprecated 1.0.13 Will be replaced with getPreferredPaymentId
-	 * @deprecated 1.1.13 Will be replaced with getPreferredPaymentId
-	 */
-	public function getPreferredId( $maxLength = 25, $prefix = "", $dualUniq = true ) {
-		return $this->getPreferredPaymentId($maxLength, $prefix, $dualUniq);
-	}
-
-	/**
-	 * Set your own order reference instead of taking the randomized one
-	 *
-	 * @param $myPreferredId
-	 *
-	 * @since 1.0.2
-	 * @since 1.1.2
-	 */
-	public function setPreferredId( $myPreferredId ) {
-		$this->preferredId = $myPreferredId;
-	}
-
 	/**
 	 * Generates a unique "preferredId" (term from simplified and referes to orderReference) out of a datestamp
 	 *
@@ -4342,84 +2867,23 @@ class ResursBank {
 		$this->preferredId = $preferredId;
 		return $this->preferredId;
 	}
-	/**
-	 * Generates a unique "preferredId" out of a datestamp
-	 *
-	 * @param int $maxLength The maximum recommended length of a preferred id is currently 25. The order numbers may be shorter (the minimum length is 14, but in that case only the timestamp will be returned)
-	 * @param string $prefix Prefix to prepend at unique id level
-	 * @param bool $dualUniq Be paranoid and sha1-encrypt the first random uniq id first.
-	 *
-	 * @return string
-	 * @deprecated 1.0.2 Use getPreferredId directly instead
-	 * @deprected 1.1.2 Use getPreferredId directly instead
-	 */
-	public function generatePreferredId( $maxLength = 25, $prefix = "", $dualUniq = true ) {
-		return $this->getPreferredId( $maxLength, $prefix, $dualUniq );
-	}
 
 	/**
-	 * Check if there is a parameter send through externals, during a bookPayment
+	 * Set your own order reference instead of taking the randomized one
 	 *
-	 * @param string $parameter
-	 * @param array $externalParameters
-	 * @param bool $getValue
+	 * @param $myPreferredId
 	 *
-	 * @return bool|null
-	 *
-	 * @deprecated 1.0.1 Switching over to a more fresh API
-	 * @deprecated 1.1.1 Switching over to a more fresh API
+	 * @since 1.0.2
+	 * @since 1.1.2
 	 */
-	private function bookHasParameter( $parameter = '', $externalParameters = array(), $getValue = false ) {
-		if ( is_array( $externalParameters ) ) {
-			if ( isset( $externalParameters[ $parameter ] ) ) {
-				if ( $getValue ) {
-					return $externalParameters[ $parameter ];
-				} else {
-					return true;
-				}
-			}
-		}
-		if ( $getValue ) {
-			return null;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Get extra parameters during a bookPayment
-	 *
-	 * @param string $parameter
-	 * @param array $externalParameters
-	 *
-	 * @return bool|null
-	 *
-	 * @deprecated 1.0.1 Switching over to a more fresh API
-	 * @deprecated 1.1.1 Switching over to a more fresh API
-	 */
-	private function getBookParameter( $parameter = '', $externalParameters = array() ) {
-		return $this->bookHasParameter( $parameter, $externalParameters );
-	}
-
-	/**
-	 * Prepare bookedCallbackUrl (Resurs Checkout)
-	 *
-	 * @param string $bookedCallbackUrl
-	 *
-	 * @deprecated 1.0.1 Never used, since we preferred to use the former callbacks instead (Recommended)
-	 * @deprecated 1.1.1 Never used, since we preferred to use the former callbacks instead (Recommended)
-	 */
-	public function setBookedCallbackUrl( $bookedCallbackUrl = "" ) {
-		if ( ! empty( $bookedCallbackUrl ) ) {
-			$this->_bookedCallbackUrl = $bookedCallbackUrl;
-		}
+	public function setPreferredId( $myPreferredId ) {
+		$this->preferredId = $myPreferredId;
 	}
 
 	/**
 	 * Set target country (optional)
 	 *
 	 * @param int $Country
-	 *
 	 * @return string Country code is returned
 	 * @since 1.0.2
 	 * @since 1.1.2
@@ -4436,7 +2900,6 @@ class ResursBank {
 		} else {
 			$this->envCountry = null;
 		}
-
 		return $this->envCountry;
 	}
 
@@ -4466,17 +2929,6 @@ class ResursBank {
 		} else {
 			$this->setCountry( RESURS_COUNTRY::COUNTRY_SE );
 		}
-	}
-
-	/**
-	 * Returns true if updateCart has interfered with the specRows (this is a good way to indicate if something went wrong with the handling)
-	 *
-	 * @return bool
-	 * @deprecated 1.0.1 Never used
-	 * @deprecated 1.1.1 Never used
-	 */
-	public function isCartFixed() {
-		return $this->bookPaymentCartFixed;
 	}
 
 	/**
@@ -4538,7 +2990,7 @@ class ResursBank {
 	 * @since 1.1.2
 	 */
 	private function renderPaymentSpec( $overrideFlow = RESURS_FLOW_TYPES::FLOW_NOT_SET ) {
-		$myFlow = $this->getPreferredPaymentFlowService();
+		$myFlow = $this->getPreferredPaymentService();
 		if ( $overrideFlow !== RESURS_FLOW_TYPES::FLOW_NOT_SET ) {
 			$myFlow = $overrideFlow;
 		}
@@ -4609,7 +3061,7 @@ class ResursBank {
 	 * The new payment creation function (replaces bookPayment)
 	 *
 	 * For EComPHP 1.0.2 there is no need for any object conversion (or external parameters). Most of the parameters is about which preferred payment flow that is used, which should
-	 * be set with the function setPreferredPaymentService() instead. If no preferred are set, we will fall back to the simplified flow.
+	 * be set with the function setPreferredPaymentFlowService() instead. If no preferred are set, we will fall back to the simplified flow.
 	 *
 	 * @param string $payment_id_or_method For ResursCheckout the payment id are preferred before the payment method
 	 * @param array $payload If there are any extra (or full) payload for the chosen payment, it should be placed here
@@ -4623,7 +3075,7 @@ class ResursBank {
 		if ( ! $this->hasServicesInitialization ) {
 			$this->InitializeServices();
 		}
-		$myFlow = $this->getPreferredPaymentFlowService();
+		$myFlow = $this->getPreferredPaymentService();
 		try {
 			if ($myFlow !== RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
 				$this->desiredPaymentMethod = $payment_id_or_method;
@@ -4659,7 +3111,7 @@ class ResursBank {
 			throw new \Exception( "The use of exshop is no longer supported", \RESURS_EXCEPTIONS::EXSHOP_PROHIBITED );
 		}
 		$error  = array();
-		$myFlow = $this->getPreferredPaymentFlowService();
+		$myFlow = $this->getPreferredPaymentService();
 		// Using this function to validate that card data info is properly set up during the deprecation state in >= 1.0.2/1.1.1
 		if ( $myFlow == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
 			$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
@@ -4722,6 +3174,7 @@ class ResursBank {
 	 * @param string $paymentId
 	 *
 	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.5
 	 * @since 1.1.5
 	 */
@@ -4767,11 +3220,11 @@ class ResursBank {
 	public function setDefaultUnitMeasure( $unitMeasure = null ) {
 		if ( is_null( $unitMeasure ) ) {
 			if ( ! empty( $this->envCountry ) ) {
-				if ( $this->envCountry == ResursCountry::COUNTRY_DK ) {
+				if ( $this->envCountry == RESURS_COUNTRY::COUNTRY_DK ) {
 					$this->defaultUnitMeasure = "st";
-				} else if ( $this->envCountry == ResursCountry::COUNTRY_NO ) {
+				} else if ( $this->envCountry == RESURS_COUNTRY::COUNTRY_NO ) {
 					$this->defaultUnitMeasure = "st";
-				} else if ( $this->envCountry == ResursCountry::COUNTRY_FI ) {
+				} else if ( $this->envCountry == RESURS_COUNTRY::COUNTRY_FI ) {
 					$this->defaultUnitMeasure = "kpl";
 				} else {
 					$this->defaultUnitMeasure = "st";
@@ -4998,7 +3451,7 @@ class ResursBank {
 			)
 		);
 		if ( is_array( $specLines ) ) {
-			$myFlow = $this->getPreferredPaymentFlowService();
+			$myFlow = $this->getPreferredPaymentService();
 			if ( $myFlowOverrider !== RESURS_FLOW_TYPES::FLOW_NOT_SET ) {
 				$myFlow = $myFlowOverrider;
 			}
@@ -5025,7 +3478,6 @@ class ResursBank {
 	 * Defines if the checkout should honor the customer field array as it is not officially supported by Resurs Bank
 	 *
 	 * @param bool $isCustomerSupported
-	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -5042,7 +3494,6 @@ class ResursBank {
 	 * before completion.
 	 *
 	 * @param bool $enableExecute
-	 *
 	 * @since 1.0.3
 	 * @since 1.1.3
 	 */
@@ -5099,7 +3550,6 @@ class ResursBank {
 	 *
 	 * @param $ArrayKey
 	 * @param array $ArrayValue
-	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -5119,7 +3569,6 @@ class ResursBank {
 	 *
 	 * @param string $addressKey
 	 * @param $addressData
-	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -5162,6 +3611,7 @@ class ResursBank {
 	 * @param string $getaddressdata_or_governmentid
 	 * @param string $customerType
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -5180,7 +3630,6 @@ class ResursBank {
 	 * Payload simplifier: Having data from getAddress, you want to set as shipping address, this can be done from here.
 	 *
 	 * @param $getAddressData
-	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -5199,7 +3648,6 @@ class ResursBank {
 	 * @param $postalArea
 	 * @param $postalCode
 	 * @param $country
-	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -5218,7 +3666,6 @@ class ResursBank {
 	 * @param $postalArea
 	 * @param $postalCode
 	 * @param $country
-	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -5270,7 +3717,7 @@ class ResursBank {
 	 * @param string $successUrl
 	 * @param string $failUrl
 	 * @param bool $forceSigning
-	 *
+	 * @throws \Exception
 	 * @since 1.0.6
 	 * @since 1.1.6
 	 */
@@ -5288,6 +3735,7 @@ class ResursBank {
 	 *
 	 * @param string $successUrl
 	 * @param string $backUrl
+	 * @throws \Exception
 	 */
 	public function setCheckoutUrls($successUrl = '', $backUrl = '') {
 		$this->setSigning($successUrl, $backUrl);
@@ -5299,6 +3747,7 @@ class ResursBank {
 	 * Compile user defined payload with payload that may have been pre-set by other calls
 	 *
 	 * @param array $userDefinedPayload
+	 * @throws \Exception
 	 *
 	 * @since 1.0.2
 	 * @since 1.1.2
@@ -5363,7 +3812,8 @@ class ResursBank {
 	/**
 	 * Returns the final payload
 	 *
-	 * @return mixed
+	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 * @since 1.2.0
@@ -5401,6 +3851,7 @@ class ResursBank {
 	 * Return the final payload order data array
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -5410,384 +3861,6 @@ class ResursBank {
 		return isset($this->Payload['orderData']) ? $this->Payload['orderData'] : array();
 	}
 
-	/**
-	 * bookPayment - Compiler for bookPayment.
-	 *
-	 * This is the entry point of the simplified version of bookPayment. The normal action here is to send a bulked array with settings for how the payment should be handled (see https://test.resurs.com/docs/x/cIZM)
-	 * Minor notice: We are currently preparing support for hosted flow by sending array('type' => 'hosted'). It is however not ready to run yet.
-	 *
-	 * @param string $paymentMethodIdOrPaymentReference
-	 * @param array $bookData
-	 * @param bool $getReturnedObjectAsStd Returning a stdClass instead of a Resurs class
-	 * @param bool $keepReturnObject Making EComPHP backwards compatible when a webshop still needs the complete object, not only $bookPaymentResult->return
-	 * @param array $externalParameters External parameters
-	 *
-	 * @return object
-	 * @throws \Exception
-	 * @link https://test.resurs.com/docs/x/cIZM bookPayment EComPHP Reference
-	 * @link https://test.resurs.com/docs/display/ecom/bookPayment bookPayment reference
-	 * @deprecated 1.1.2
-	 * @deprecated 1.0.2
-	 */
-	public function bookPayment( $paymentMethodIdOrPaymentReference = '', $bookData = array(), $getReturnedObjectAsStd = true, $keepReturnObject = false, $externalParameters = array() ) {
-		return $this->createPayment( $paymentMethodIdOrPaymentReference, $bookData );
-
-		/* If the bookData-array seems empty, we'll try to import the internally set bookData */
-		if ( is_array( $bookData ) && ! count( $bookData ) ) {
-			if ( is_array( $this->bookData ) && count( $this->bookData ) ) {
-				$bookData = $this->bookData;
-			} else {
-				throw new \Exception( __FUNCTION__ . ": There is no bookData available for the booking", \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA );
-			}
-		}
-		$returnBulk = $this->bookPaymentBulk( $paymentMethodIdOrPaymentReference, $bookData, $getReturnedObjectAsStd, $keepReturnObject, $externalParameters );
-
-		return $returnBulk;
-	}
-
-
-	/**
-	 * Booking payments as a bulk (bookPaymentBuilder)
-	 *
-	 * This is where the priary payment booking renderer resides, where all required data are precompiled for the booking.
-	 * Needs an array that is built in a similar way that is documented in the simplifiedShopFlow-reference at test.resurs.com.
-	 *
-	 * @link https://test.resurs.com/docs/x/cIZM bookPayment EComPHP Reference
-	 * @link https://test.resurs.com/docs/display/ecom/bookPayment bookPayment reference
-	 *
-	 * @param string $paymentMethodId For Resurs Checkout, you should pass the reference ID here
-	 * @param array $bookData
-	 * @param bool $getReturnedObjectAsStd Returning a stdClass instead of a Resurs class
-	 * @param bool $keepReturnObject Making EComPHP backwards compatible when a webshop still needs the complete object, not only $bookPaymentResult->return
-	 * @param array $externalParameters External parameters
-	 *
-	 * @return array|mixed|null This normally returns an object depending on your platform request
-	 * @throws \Exception
-	 * @deprecated 1.1.2
-	 * @deprecated 1.0.2
-	 */
-	private function bookPaymentBulk( $paymentMethodId = '', $bookData = array(), $getReturnedObjectAsStd = true, $keepReturnObject = false, $externalParameters = array() ) {
-		if ( empty( $paymentMethodId ) ) {
-			return new \stdClass();
-		}
-		if ( $this->enforceService == RESURS_FLOW_TYPES::METHOD_OMNI ) {
-			$bookData['type'] = "omni";
-		} else {
-			if ( isset( $bookData['type'] ) == "omni" ) {
-				$this->enforceService = RESURS_FLOW_TYPES::METHOD_OMNI;
-				$this->isOmniFlow     = true;
-			}
-		}
-		if ( $this->enforceService == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW ) {
-			$bookData['type'] = "hosted";
-		} else {
-			if ( isset( $bookData['type'] ) == "hosted" ) {
-				$this->enforceService = RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW;
-				$this->isHostedFlow   = true;
-			}
-		}
-		$skipSteps = array();
-		/* Special rule preparation for Resurs Bank hosted flow */
-		if ( $this->getBookParameter( 'type', $externalParameters ) == "hosted" || ( isset( $bookData['type'] ) && $bookData['type'] == "hosted" ) ) {
-			$this->isHostedFlow = true;
-		}
-		/* Special rule preparation for Resurs Bank Omnicheckout */
-		if ( $this->getBookParameter( 'type', $externalParameters ) == "omni" || ( isset( $bookData['type'] ) && $bookData['type'] == "omni" ) ) {
-			$this->isOmniFlow = true;
-			/*
-			 * In omnicheckout the first variable is not the payment method, it is the preferred order id
-			 */
-			if ( empty( $this->preferredId ) ) {
-				$this->preferredId = $paymentMethodId;
-			}
-		}
-		/* Make EComPHP ignore some steps that is not required in an omni checkout */
-		if ( $this->isOmniFlow ) {
-			$skipSteps['address'] = true;
-		}
-		/* Prepare for a simplified flow */
-		if ( ! $this->isOmniFlow && ! $this->isHostedFlow ) {
-			// Do not use wsdl stubs if we are targeting rest services
-			$this->InitializeServices();
-		}
-		$this->updatePaymentdata( $paymentMethodId, isset( $bookData['paymentData'] ) && is_array( $bookData['paymentData'] ) && count( $bookData['paymentData'] ) ? $bookData['paymentData'] : array() );
-		if ( isset( $bookData['specLine'] ) && is_array( $bookData['specLine'] ) ) {
-			$this->updateCart( isset( $bookData['specLine'] ) ? $bookData['specLine'] : array() );
-		} else {
-			// For omni and hosted flow, if specLine is not set
-			if ( isset( $bookData['orderLines'] ) && is_array( $bookData['orderLines'] ) ) {
-				$this->updateCart( isset( $bookData['orderLines'] ) ? $bookData['orderLines'] : array() );
-			}
-		}
-		$this->updatePaymentSpec( $this->_paymentSpeclines );
-		/* Prepare address data for hosted flow and simplified, ignore if we're on omni, where this data is not required */
-		if ( ! isset( $skipSteps['address'] ) ) {
-			if ( isset( $bookData['deliveryAddress'] ) ) {
-				$addressArray = array(
-					'address'         => $bookData['address'],
-					'deliveryAddress' => $bookData['deliveryAddress']
-				);
-				$this->updateAddress( isset( $addressArray ) ? $addressArray : array(), isset( $bookData['customer'] ) ? $bookData['customer'] : array() );
-			} else {
-				$this->updateAddress( isset( $bookData['address'] ) ? $bookData['address'] : array(), isset( $bookData['customer'] ) ? $bookData['customer'] : array() );
-			}
-		}
-		/* Prepare and collect data for a bookpayment - if the flow is simple */
-		if ( ( ! $this->isOmniFlow && ! $this->isHostedFlow ) && ( class_exists( 'Resursbank\RBEcomPHP\resurs_bookPayment' ) || class_exists( 'resurs_bookPayment' ) ) ) {
-			/* Only run this if it exists, and the plans is to go through simplified flow */
-			$bookPaymentInit = new resurs_bookPayment( $this->_paymentData, $this->_paymentOrderData, $this->_paymentCustomer, $this->_bookedCallbackUrl );
-		} else {
-			/*
-			 * If no "new flow" are detected during the handle of payment here, and the class also exists so no booking will be possible, we should
-			 * throw an execption here.
-			 */
-			if ( ! $this->isOmniFlow && ! $this->isHostedFlow ) {
-				throw new \Exception( __FUNCTION__ . ": bookPaymentClass not found, and this is neither an omni nor hosted flow", \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKPAYMENT_CLASS );
-			}
-		}
-		if ( ! empty( $this->cardDataCardNumber ) || $this->cardDataUseAmount ) {
-			$bookPaymentInit->card = $this->updateCardData();
-		}
-		if ( ! empty( $this->_paymentDeliveryAddress ) && is_object( $this->_paymentDeliveryAddress ) ) {
-			$bookPaymentInit->customer->deliveryAddress = $this->_paymentDeliveryAddress;
-		}
-		/* If the preferredId is set, check if there is a request for this varaible in the signing urls */
-		if ( isset( $this->_paymentData->preferredId ) ) {
-			// Make sure that the search and replace really works for unique id's
-			if ( ! isset( $bookData['uniqueId'] ) ) {
-				$bookData['uniqueId'] = "";
-			}
-			if ( isset( $bookData['signing']['successUrl'] ) ) {
-				$bookData['signing']['successUrl'] = str_replace( '$preferredId', $this->_paymentData->preferredId, $bookData['signing']['successUrl'] );
-				$bookData['signing']['successUrl'] = str_replace( '%24preferredId', $this->_paymentData->preferredId, $bookData['signing']['successUrl'] );
-				if ( isset( $bookData['uniqueId'] ) ) {
-					$bookData['signing']['successUrl'] = str_replace( '$uniqueId', $bookData['uniqueId'], $bookData['signing']['successUrl'] );
-					$bookData['signing']['successUrl'] = str_replace( '%24uniqueId', $bookData['uniqueId'], $bookData['signing']['successUrl'] );
-				}
-			}
-			if ( isset( $bookData['signing']['failUrl'] ) ) {
-				$bookData['signing']['failUrl'] = str_replace( '$preferredId', $this->_paymentData->preferredId, $bookData['signing']['failUrl'] );
-				$bookData['signing']['failUrl'] = str_replace( '%24preferredId', $this->_paymentData->preferredId, $bookData['signing']['failUrl'] );
-				if ( isset( $bookData['uniqueId'] ) ) {
-					$bookData['signing']['failUrl'] = str_replace( '$uniqueId', $bookData['uniqueId'], $bookData['signing']['failUrl'] );
-					$bookData['signing']['failUrl'] = str_replace( '%24uniqueId', $bookData['uniqueId'], $bookData['signing']['failUrl'] );
-				}
-			}
-		}
-		/* If this request actually belongs to an omni flow, let's handle the incoming data differently */
-		if ( $this->isOmniFlow ) {
-			/* Prepare a frame for omni checkout */
-			try {
-				$preOmni = $this->prepareOmniFrame( $bookData, $paymentMethodId, ResursCheckoutCallTypes::METHOD_PAYMENTS );
-				if ( isset( $preOmni->html ) ) {
-					$this->omniFrame = $preOmni->html;
-				}
-			} catch ( \Exception $omniFrameException ) {
-				throw new \Exception( __FUNCTION__ . "/prepareOmniFrame: " . $omniFrameException->getMessage(), $omniFrameException->getCode() );
-			}
-			if ( isset( $this->omniFrame->faultCode ) ) {
-				throw new \Exception( __FUNCTION__ . "/prepareOmniFrame-bookPaymentOmniFrame: " . ( isset( $this->omniFrame->description ) ? $this->omniFrame->description : "Unknown error received from Resurs Bank OmniAPI" ), $this->omniFrame->faultCode );
-			}
-
-			return $this->omniFrame;
-		}
-		/* Now, if this is a request for hosted flow, handle the completed data differently */
-		if ( $this->isHostedFlow ) {
-			$bookData['orderData'] = $this->objectsIntoArray( $this->_paymentOrderData );
-			try {
-				$hostedResult = $this->bookPaymentHosted( $paymentMethodId, $bookData, $getReturnedObjectAsStd, $keepReturnObject );
-			} catch ( \Exception $hostedException ) {
-				throw new \Exception( __FUNCTION__ . ": " . $hostedException->getMessage(), $hostedException->getCode() );
-			}
-			if ( isset( $hostedResult->location ) ) {
-				return $hostedResult->location;
-			} else {
-				throw new \Exception( __FUNCTION__ . "/bookPaymentHosted: Can not find location in hosted flow", 404 );
-			}
-		}
-		/* If this request was not about an omni flow, let's continue prepare the signing data */
-		if ( isset( $bookData['signing'] ) ) {
-			$bookPaymentInit->signing = $bookData['signing'];
-		}
-		try {
-			$bookPaymentResult = $this->simplifiedShopFlowService->bookPayment( $bookPaymentInit );
-		} catch ( \Exception $bookPaymentException ) {
-			if ( isset( $bookPaymentException->faultstring ) ) {
-				throw new \Exception( $bookPaymentException->faultstring, 500 );
-			}
-			throw new \Exception( __FUNCTION__ . ": " . $bookPaymentException->getMessage(), $bookPaymentException->getCode() );
-		}
-		if ( $getReturnedObjectAsStd ) {
-			if ( isset( $bookPaymentResult->return ) ) {
-				/* Set up a globally reachable result for the last booked payment */
-				$this->lastBookPayment = $bookPaymentResult->return;
-				if ( ! $keepReturnObject ) {
-					return $this->getDataObject( $bookPaymentResult->return );
-				} else {
-					return $this->getDataObject( $bookPaymentResult );
-				}
-			} else {
-				throw new \Exception( __FUNCTION__ . ": bookPaymentResult does not contain a return object", 500 );
-			}
-		}
-
-		return $bookPaymentResult;
-	}
-
-	/**
-	 * @param string $parameter
-	 * @param null $object
-	 *
-	 * @return object
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private function getBookedParameter( $parameter = '', $object = null ) {
-		if ( is_null( $object ) && is_object( $this->lastBookPayment ) ) {
-			$object = $this->lastBookPayment;
-		}
-		if ( isset( $object->return ) ) {
-			$object = $object->return;
-		}
-		if ( is_object( $object ) || is_array( $object ) ) {
-			if ( isset( $object->$parameter ) ) {
-				return $object->$parameter;
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Get the booked payment status
-	 *
-	 * @param null $lastBookPayment
-	 *
-	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function getBookedStatus( $lastBookPayment = null ) {
-		$bookStatus = $this->getBookedParameter( 'bookPaymentStatus', $lastBookPayment );
-		if ( ! empty( $bookStatus ) ) {
-			return $bookStatus;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Get the booked payment id out of a payment
-	 *
-	 * @param null $lastBookPayment
-	 *
-	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function getBookedPaymentId( $lastBookPayment = null ) {
-		$paymentId = $this->getBookedParameter( 'paymentId', $lastBookPayment );
-		if ( ! empty( $paymentId ) ) {
-			return $paymentId;
-		} else {
-			$id = $this->getBookedParameter( 'id', $lastBookPayment );
-			if ( ! empty( $id ) ) {
-				return $id;
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Extract the signing url from the booking
-	 *
-	 * @param null $lastBookPayment
-	 *
-	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function getBookedSigningUrl( $lastBookPayment = null ) {
-		return $this->getBookedParameter( 'signingUrl', $lastBookPayment );
-	}
-
-
-	////// RESURSCHECKOUT -- FORMERLY KNOWN AS OMNICHECKOUT
-
-	/**
-	 * @param array $bookData
-	 * @param string $orderReference
-	 * @param int $omniCallType
-	 *
-	 * @return mixed
-	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function prepareOmniFrame( $bookData = array(), $orderReference = "", $omniCallType = ResursCheckoutCallTypes::METHOD_PAYMENTS ) {
-		if ( empty( $this->preferredId ) ) {
-			$this->preferredId = $this->generatePreferredId();
-		}
-		if ( $this->current_environment == ResursEnvironments::ENVIRONMENT_TEST ) {
-			$this->env_omni_current = $this->env_omni_test;
-		} else {
-			$this->env_omni_current = $this->env_omni_prod;
-		}
-		if ( empty( $orderReference ) && ! isset( $bookData['orderReference'] ) ) {
-			throw new \Exception( __FUNCTION__ . ": You must proved omnicheckout with a orderReference", 500 );
-		}
-		if ( empty( $orderReference ) && isset( $bookData['orderReference'] ) ) {
-			$orderReference = $bookData['orderReference'];
-		}
-		if ( $omniCallType == ResursCheckoutCallTypes::METHOD_PAYMENTS ) {
-			$omniSubPath = "/checkout/payments/" . $orderReference;
-		}
-		if ( $omniCallType == ResursCheckoutCallTypes::METHOD_CALLBACK ) {
-			$omniSubPath = "/callbacks/";
-			throw new \Exception( __FUNCTION__ . ": METHOD_CALLBACK for OmniCheckout is not yet implemented" );
-		}
-		$omniReferenceUrl = $this->env_omni_current . $omniSubPath;
-		try {
-			$bookDataJson          = $this->toJsonByType( $bookData, RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT );
-			$this->simpleWebEngine = $this->createJsonEngine( $omniReferenceUrl, $bookDataJson );
-			$omniErrorResult       = $this->omniError( $this->simpleWebEngine );
-			// Compatibility fixed for PHP 5.3
-			if ( ! empty( $omniErrorResult ) ) {
-				$omniErrNo = $this->omniErrNo( $this->simpleWebEngine );
-				throw new \Exception( __FUNCTION__ . ": " . $omniErrorResult, $omniErrNo );
-			}
-		} catch ( \Exception $jsonException ) {
-			throw new \Exception( __FUNCTION__ . ": " . $jsonException->getMessage(), $jsonException->getCode() );
-		}
-
-		return $this->simpleWebEngine['parsed'];
-	}
-
-	/**
-	 * getOmniFrame: Only used to fix ocShop issues
-	 *
-	 * This can also be done directly from bookPayment by the use of booked payment result (response->html).
-	 *
-	 * @param array $omniResponse
-	 * @param bool $ocShopInternalHandle Make EComPHP will try to find and strip the script tag for the iframe resizer, if this is set to true
-	 *
-	 * @return mixed|null|string
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function getOmniFrame( $omniResponse = array(), $ocShopInternalHandle = false ) {
-		/*
-		 * As we are using TorneLIB Curl Library, the Resurs Checkout iframe will be loaded properly without those checks.
-		 */
-		if ( is_string( $omniResponse ) && ! empty( $omniResponse ) ) {
-			if ( isset( $omniResponse ) ) {
-				return $this->clearOcShop( $this->omniFrame, $ocShopInternalHandle );
-			}
-		}
-
-		return null;
-	}
 
 	/**
 	 * Remove script from the iframe-source
@@ -5820,24 +3893,6 @@ class ResursBank {
 	}
 
 	/**
-	 * @param string $iframeString
-	 *
-	 * @return null
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function getIframeSrc( $iframeString = "" ) {
-		if ( is_string( $iframeString ) && preg_match( "/iframe src=\"(.*?)/i", $iframeString ) ) {
-			preg_match_all( "/iframe src=\"(.*?)\"/", $iframeString, $iframeData );
-			if ( isset( $iframeData[1] ) && isset( $iframeData[1][0] ) ) {
-				return $iframeData[1][0];
-			}
-		}
-
-		return null;
-	}
-
-	/**
 	 * Get the iframe resizer URL if requested from a site
 	 *
 	 * @return string
@@ -5860,103 +3915,22 @@ class ResursBank {
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
-	public function getCheckoutUrl( $EnvironmentRequest = ResursEnvironments::ENVIRONMENT_TEST, $getCurrentIfSet = true ) {
+	public function getCheckoutUrl( $EnvironmentRequest = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST, $getCurrentIfSet = true ) {
 		/*
 		 * If current_environment is set, override incoming variable
 		 */
 		if ( $getCurrentIfSet && $this->current_environment_updated ) {
-			if ( $this->current_environment == ResursEnvironments::ENVIRONMENT_PRODUCTION ) {
+			if ( $this->current_environment == RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION ) {
 				return $this->env_omni_prod;
 			} else {
 				return $this->env_omni_test;
 			}
 		}
-		if ( $EnvironmentRequest == ResursEnvironments::ENVIRONMENT_PRODUCTION ) {
+		if ( $EnvironmentRequest == RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION ) {
 			return $this->env_omni_prod;
 		} else {
 			return $this->env_omni_test;
 		}
-	}
-
-	/**
-	 * Retrieve the correct omnicheckout url depending chosen environment
-	 *
-	 * @param int $EnvironmentRequest
-	 * @param bool $getCurrentIfSet
-	 *
-	 * @return string
-	 * @deprecated 1.0.1
-	 * @deprecated 1.1.1
-	 */
-	public function getOmniUrl( $EnvironmentRequest = ResursEnvironments::ENVIRONMENT_TEST, $getCurrentIfSet = true ) {
-		return $this->getCheckoutUrl( $EnvironmentRequest, $getCurrentIfSet );
-	}
-
-	/**
-	 * Return a string containing the last error for the current session. Returns null if no errors occured
-	 *
-	 * @param array $omniObject
-	 *
-	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private function omniError( $omniObject = array() ) {
-		if ( isset( $omniObject ) && isset( $omniObject->exception ) && isset( $omniObject->message ) ) {
-			return $omniObject->message;
-		} else if ( isset( $omniObject ) && isset( $omniObject->error ) && ! empty( $omniObject->error ) ) {
-			return $omniObject->error;
-		}
-
-		return "";
-	}
-
-	/**
-	 * @param array $omniObject
-	 *
-	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private function omniErrNo( $omniObject = array() ) {
-		if ( isset( $omniObject ) && isset( $omniObject->exception ) && isset( $omniObject->status ) ) {
-			return $omniObject->status;
-		} else if ( isset( $omniObject ) && isset( $omniObject->error ) && ! empty( $omniObject->error ) ) {
-			if ( isset( $omniObject->status ) ) {
-				return $omniObject->status;
-			}
-		}
-
-		return "";
-	}
-
-	/**
-	 * @param $jsonData
-	 * @param string $paymentId
-	 *
-	 * @return mixed
-	 * @throws \Exception
-	 * @deprecated 1.0.8
-	 * @deprecated 1.1.8
-	 */
-	public function omniUpdateOrder( $jsonData, $paymentId = '' ) {
-		return $this->setCheckoutFrameOrderLines( $paymentId, $jsonData );
-	}
-
-	/**
-	 * Update the Checkout iframe
-	 *
-	 * @param string $paymentId
-	 * @param array $orderLines
-	 *
-	 * @return array
-	 * @throws \Exception
-	 * @since 1.0.8
-	 * @since 1.1.8
-	 * @deprecated Use updateCheckoutOrderLines() instead
-	 */
-	public function setCheckoutFrameOrderLines( $paymentId = '', $orderLines = array() ) {
-		$this->updateCheckoutOrderLines($paymentId, $orderLines);
 	}
 
 	/**
@@ -5969,7 +3943,6 @@ class ResursBank {
 	 *
 	 * @param string $paymentId
 	 * @param array $orderLines
-	 *
 	 * @return bool
 	 * @throws \Exception
 	 * @since 1.0.22
@@ -6013,371 +3986,21 @@ class ResursBank {
 		return false;
 	}
 
+
 	////// HOSTED FLOW
 
 	/**
 	 * @return string
 	 */
 	public function getHostedUrl() {
-		if ( $this->current_environment == ResursEnvironments::ENVIRONMENT_TEST ) {
+		if ( $this->current_environment == RESURS_ENVIRONMENTS::ENVIRONMENT_TEST ) {
 			return $this->env_hosted_test;
 		} else {
 			return $this->env_hosted_prod;
 		}
 	}
 
-	/**
-	 * Book payment through hosted flow
-	 *
-	 * A bookPayment method that utilizes the data we get from a regular bookPayment and converts it to hostedFlow looking data.
-	 * Warning: This method is not yet finished.
-	 *
-	 * @param string $paymentMethodId
-	 * @param array $bookData
-	 * @param bool $getReturnedObjectAsStd Returning a stdClass instead of a Resurs class
-	 * @param bool $keepReturnObject Making EComPHP backwards compatible when a webshop still needs the complete object, not only $bookPaymentResult->return
-	 *
-	 * @return array|mixed|object
-	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private function bookPaymentHosted( $paymentMethodId = '', $bookData = array(), $getReturnedObjectAsStd = true, $keepReturnObject = false ) {
-		if ( $this->current_environment == ResursEnvironments::ENVIRONMENT_TEST ) {
-			$this->env_hosted_current = $this->env_hosted_test;
-		} else {
-			$this->env_hosted_current = $this->env_hosted_prod;
-		}
-		/**
-		 * Missing fields may be caused by a conversion of the simplified flow, so we'll try to fill that in here
-		 */
-		if ( empty( $this->preferredId ) ) {
-			$this->preferredId = $this->generatePreferredId();
-		}
-		if ( ! isset( $bookData['paymentData']['paymentMethodId'] ) ) {
-			$bookData['paymentData']['paymentMethodId'] = $paymentMethodId;
-		}
-		if ( ! isset( $bookData['paymentData']['preferredId'] ) || ( isset( $bookData['paymentData']['preferredId'] ) && empty( $bookData['paymentData']['preferredId'] ) ) ) {
-			$bookData['paymentData']['preferredId'] = $this->preferredId;
-		}
-		/**
-		 * Some of the paymentData are not located in the same place as simplifiedShopFlow. This part takes care of that part.
-		 */
-		if ( isset( $bookData['paymentData']['waitForFraudControl'] ) ) {
-			$bookData['waitForFraudControl'] = $bookData['paymentData']['waitForFraudControl'];
-		}
-		if ( isset( $bookData['paymentData']['annulIfFrozen'] ) ) {
-			$bookData['annulIfFrozen'] = $bookData['paymentData']['annulIfFrozen'];
-		}
-		if ( isset( $bookData['paymentData']['finalizeIfBooked'] ) ) {
-			$bookData['finalizeIfBooked'] = $bookData['paymentData']['finalizeIfBooked'];
-		}
-		$jsonBookData          = $this->toJsonByType( $bookData, RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
-		$this->simpleWebEngine = $this->createJsonEngine( $this->env_hosted_current, $jsonBookData );
-		$hostedErrorResult     = $this->hostedError( $this->simpleWebEngine );
-		// Compatibility fixed for PHP 5.3
-		if ( ! empty( $hostedErrorResult ) ) {
-			$hostedErrNo = $this->hostedErrNo( $this->simpleWebEngine );
-			throw new \Exception( __FUNCTION__ . ": " . $hostedErrorResult, $hostedErrNo );
-		}
-
-		return $this->simpleWebEngine['parsed'];
-	}
-
-	/**
-	 * Return a string containing the last error for the current session. Returns null if no errors occured
-	 *
-	 * @param array $hostedObject
-	 *
-	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private function hostedError( $hostedObject = array() ) {
-		if ( isset( $hostedObject ) && isset( $hostedObject->exception ) && isset( $hostedObject->message ) ) {
-			return $hostedObject->message;
-		}
-
-		return "";
-	}
-
-	/**
-	 * @param array $hostedObject
-	 *
-	 * @return string
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private function hostedErrNo( $hostedObject = array() ) {
-		if ( isset( $hostedObject ) && isset( $hostedObject->exception ) && isset( $hostedObject->status ) ) {
-			return $hostedObject->status;
-		}
-
-		return "";
-	}
-
-
 	////// MASTER SHOPFLOWS - THE OTHER ONES
-
-	/**
-	 * Prepare a payment by setting it up
-	 *
-	 * customerIpAddress has a failover: If we don't receive a proper customer ip, we will try to check if there is a REMOTE_ADDR set by the server. If neither of those values are set, we will finally fail over to 127.0.0.1
-	 * preferredId is set to a internally generated id instead of null, unless you apply your own (if set to null, Resurs Bank decides what order number to be used)
-	 *
-	 * @param $paymentMethodId
-	 * @param array $paymentDataArray
-	 *
-	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function updatePaymentdata( $paymentMethodId, $paymentDataArray = array() ) {
-		$this->InitializeServices();
-		if ( empty( $this->preferredId ) ) {
-			$this->preferredId = $this->generatePreferredId();
-		}
-		if ( ! is_object( $this->_paymentData ) && ( class_exists( 'Resursbank\RBEcomPHP\resurs_paymentData' ) || class_exists( 'resurs_paymentData' ) ) ) {
-			$this->_paymentData = new resurs_paymentData( $paymentMethodId );
-		} else {
-			// If there are no wsdl-classes loaded, we should consider a default stdClass as object
-			$this->_paymentData = new \stdClass();
-		}
-		$this->_paymentData->preferredId         = isset( $paymentDataArray['preferredId'] ) && ! empty( $paymentDataArray['preferredId'] ) ? $paymentDataArray['preferredId'] : $this->preferredId;
-		$this->_paymentData->paymentMethodId     = $paymentMethodId;
-		$this->_paymentData->customerIpAddress   = ( isset( $paymentDataArray['customerIpAddress'] ) && ! empty( $paymentDataArray['customerIpAddress'] ) ? $paymentDataArray['customerIpAddress'] : ( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1' ) );
-		$this->_paymentData->waitForFraudControl = isset( $paymentDataArray['waitForFraudControl'] ) && ! empty( $paymentDataArray['waitForFraudControl'] ) ? $paymentDataArray['waitForFraudControl'] : false;
-		$this->_paymentData->annulIfFrozen       = isset( $paymentDataArray['annulIfFrozen'] ) && ! empty( $paymentDataArray['annulIfFrozen'] ) ? $paymentDataArray['annulIfFrozen'] : false;
-		$this->_paymentData->finalizeIfBooked    = isset( $paymentDataArray['finalizeIfBooked'] ) && ! empty( $paymentDataArray['finalizeIfBooked'] ) ? $paymentDataArray['finalizeIfBooked'] : false;
-	}
-
-	/**
-	 * Creation of specrows lands here
-	 *
-	 * @param array $speclineArray
-	 *
-	 * @return null
-	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function updateCart( $speclineArray = array() ) {
-		if ( ! $this->isOmniFlow && ! $this->isHostedFlow ) {
-			if ( ! class_exists( 'Resursbank\RBEcomPHP\resurs_specLine' ) && ! class_exists( 'resurs_specLine' ) ) {
-				throw new \Exception( __FUNCTION__ . ": Class specLine does not exist", \RESURS_EXCEPTIONS::UPDATECART_NOCLASS_EXCEPTION );
-			}
-		}
-		$this->InitializeServices();
-		$realSpecArray = array();
-		if ( isset( $speclineArray['artNo'] ) ) {
-			// If this require parameter is found first in the array, it's a single specrow.
-			// In that case, push it out to be a multiple.
-			array_push( $realSpecArray, $speclineArray );
-		} else {
-			$realSpecArray = $speclineArray;
-		}
-		// Handle the specrows as they were many.
-		foreach ( $realSpecArray as $specIndex => $speclineArray ) {
-			$quantity                   = ( isset( $speclineArray['quantity'] ) && ! empty( $speclineArray['quantity'] ) ? $speclineArray['quantity'] : 1 );
-			$unitAmountWithoutVat       = ( is_numeric( floatval( $speclineArray['unitAmountWithoutVat'] ) ) ? $speclineArray['unitAmountWithoutVat'] : 0 );
-			$vatPct                     = ( isset( $speclineArray['vatPct'] ) && ! empty( $speclineArray['vatPct'] ) ? $speclineArray['vatPct'] : 0 );
-			$totalVatAmountInternal     = ( $unitAmountWithoutVat * ( $vatPct / 100 ) ) * $quantity;
-			$totalAmountInclTax         = round( ( $unitAmountWithoutVat * $quantity ) + $totalVatAmountInternal, $this->bookPaymentRoundDecimals );
-			$totalAmountInclTaxInternal = $totalAmountInclTax;
-
-			if ( ! $this->bookPaymentInternalCalculate ) {
-				if ( isset( $speclineArray['totalVatAmount'] ) && ! empty( $speclineArray['totalVatAmount'] ) ) {
-					$totalVatAmount = $speclineArray['totalVatAmount'];
-					// Controls the totalVatAmount
-					if ( $totalVatAmount != $totalVatAmountInternal ) {
-						$totalVatAmount             = $totalVatAmountInternal;
-						$this->bookPaymentCartFixed = true;
-					}
-					if ( $totalAmountInclTax != $totalAmountInclTaxInternal ) {
-						$this->bookPaymentCartFixed = true;
-						$totalAmountInclTax         = $totalAmountInclTaxInternal;
-					}
-					$totalAmountInclTax = ( $unitAmountWithoutVat * $quantity ) + $totalVatAmount;
-				} else {
-					$totalVatAmount = $totalVatAmountInternal;
-				}
-			} else {
-				$totalVatAmount = $totalVatAmountInternal;
-			}
-			$this->_specLineID ++;
-			/*
-             * When the class for resurs_SpecLine is missing (e.g. during omni/hosted), the variables below must be set in a different way.
-             * In this function we'll let the array right through without any class definition.
-             *
-             * id
-             * artNo
-             * description
-             * quantity
-             * unitMeasure
-             * unitAmountWithoutVat
-             * vatPct
-             * totalVatAmount
-             * totalAmount
-             */
-			if ( class_exists( 'Resursbank\RBEcomPHP\resurs_specLine' ) || class_exists( 'resurs_specLine' ) ) {
-				$this->_paymentSpeclines[] = new resurs_specLine(
-					$this->_specLineID,
-					$speclineArray['artNo'],
-					$speclineArray['description'],
-					$speclineArray['quantity'],
-					( isset( $speclineArray['unitMeasure'] ) && ! empty( $speclineArray['unitMeasure'] ) ? $speclineArray['unitMeasure'] : $this->defaultUnitMeasure ),
-					$unitAmountWithoutVat,
-					$vatPct,
-					$totalVatAmount,
-					$totalAmountInclTax
-				);
-			} else {
-				if ( is_array( $speclineArray ) ) {
-					$this->_paymentSpeclines[] = $speclineArray;
-				}
-			}
-		}
-
-		return $this->_paymentSpeclines;
-	}
-
-	/**
-	 * Update payment specs and prepeare specrows
-	 *
-	 * @param array $specLineArray
-	 *
-	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function updatePaymentSpec( $specLineArray = array() ) {
-		$this->InitializeServices();
-		if ( class_exists( 'Resursbank\RBEcomPHP\resurs_paymentSpec' ) || class_exists( 'resurs_paymentSpec' ) ) {
-			$totalAmount    = 0;
-			$totalVatAmount = 0;
-			if ( is_array( $specLineArray ) && count( $specLineArray ) ) {
-				foreach ( $specLineArray as $specRow => $specRowArray ) {
-					$totalAmount    += ( isset( $specRowArray->totalAmount ) ? $specRowArray->totalAmount : 0 );
-					$totalVatAmount += ( isset( $specRowArray->totalVatAmount ) ? $specRowArray->totalVatAmount : 0 );
-				}
-			}
-			$this->_paymentOrderData                 = new resurs_paymentSpec( $specLineArray, $totalAmount, 0 );
-			$this->_paymentOrderData->totalVatAmount = floatval( $totalVatAmount );
-		}
-	}
-
-	/**
-	 * Prepare customer address data
-	 *
-	 * Note: Customer types LEGAL needs to be defined as $custeromArray['type'] = "LEGAL", if the booking is about LEGAL customers, since we need to extend the address data for such customers.
-	 *
-	 * @param array $addressArray
-	 * @param array $customerArray
-	 *
-	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	public function updateAddress( $addressArray = array(), $customerArray = array() ) {
-		$this->InitializeServices();
-		$address               = null;
-		$resursDeliveryAddress = null;
-		$customerGovId         = isset( $customerArray['governmentId'] ) && ! empty( $customerArray['governmentId'] ) ? $customerArray['governmentId'] : "";
-		$customerContactGovId  = isset( $customerArray['contactGovernmentId'] ) && ! empty( $customerArray['contactGovernmentId'] ) ? $customerArray['contactGovernmentId'] : "";
-		$customerType          = isset( $customerArray['type'] ) && ! empty( $customerArray['type'] ) ? $customerArray['type'] : "NATURAL";
-		if ( count( $addressArray ) ) {
-			if ( isset( $addressArray['address'] ) ) {
-				$address = new resurs_address( $addressArray['address']['fullName'], $addressArray['address']['firstName'], $addressArray['address']['lastName'], ( isset( $addressArray['address']['addressRow1'] ) ? $addressArray['address']['addressRow1'] : null ), ( isset( $addressArray['address']['addressRow2'] ) ? $addressArray['address']['addressRow2'] : null ), $addressArray['address']['postalArea'], $addressArray['address']['postalCode'], $addressArray['address']['country'] );
-				if ( isset( $addressArray['deliveryAddress'] ) ) {
-					$resursDeliveryAddress = new resurs_address( $addressArray['deliveryAddress']['fullName'], $addressArray['deliveryAddress']['firstName'], $addressArray['deliveryAddress']['lastName'], ( isset( $addressArray['deliveryAddress']['addressRow1'] ) ? $addressArray['deliveryAddress']['addressRow1'] : null ), ( isset( $addressArray['deliveryAddress']['addressRow2'] ) ? $addressArray['deliveryAddress']['addressRow2'] : null ), $addressArray['deliveryAddress']['postalArea'], $addressArray['deliveryAddress']['postalCode'], $addressArray['deliveryAddress']['country'] );
-				}
-			} else {
-				$address = new resurs_address( $addressArray['fullName'], $addressArray['firstName'], $addressArray['lastName'], ( isset( $addressArray['addressRow1'] ) ? $addressArray['addressRow1'] : null ), ( isset( $addressArray['addressRow2'] ) ? $addressArray['addressRow2'] : null ), $addressArray['postalArea'], $addressArray['postalCode'], $addressArray['country'] );
-			}
-		}
-		if ( count( $customerArray ) ) {
-			$customer              = new resurs_customer( $address, $customerArray['phone'], $customerArray['email'], $customerArray['type'] );
-			$this->_paymentAddress = $address;
-			if ( ! empty( $customerGovId ) ) {
-				$customer->governmentId = $customerGovId;
-			} else if ( ! empty( $customerContactGovId ) ) {
-				$customer->governmentId = $customerContactGovId;
-			}
-			$customer->type = $customerType;
-			if ( ! empty( $resursDeliveryAddress ) || $customerArray['type'] == "LEGAL" || $this->alwaysUseExtendedCustomer === true ) {
-				if ( isset( $resursDeliveryAddress ) && is_array( $resursDeliveryAddress ) ) {
-					$this->_paymentDeliveryAddress = $resursDeliveryAddress;
-				}
-				$extendedCustomer               = new resurs_extendedCustomer( $resursDeliveryAddress, $customerArray['phone'], $customerArray['email'], $customerArray['type'] );
-				$this->_paymentExtendedCustomer = $extendedCustomer;
-				/* #59042 => #59046 (Additionaldata should be empty) */
-				if ( empty( $this->_paymentExtendedCustomer->additionalData ) ) {
-					unset( $this->_paymentExtendedCustomer->additionalData );
-				}
-				if ( $customerArray['type'] == "LEGAL" ) {
-					$extendedCustomer->contactGovernmentId = $customerArray['contactGovernmentId'];
-				}
-				if ( ! empty( $customerArray['cellPhone'] ) ) {
-					$extendedCustomer->cellPhone = $customerArray['cellPhone'];
-				}
-			}
-			$this->_paymentCustomer = $customer;
-			if ( isset( $extendedCustomer ) ) {
-				if ( ! empty( $customerGovId ) ) {
-					$extendedCustomer->governmentId = $customerGovId;
-				} else if ( ! empty( $customerContactGovId ) ) {
-					$extendedCustomer->governmentId = $customerContactGovId;
-				}
-				$extendedCustomer->phone   = $customerArray['phone'];
-				$extendedCustomer->type    = $customerType;
-				$extendedCustomer->address = $address;
-				$this->_paymentCustomer    = $extendedCustomer;
-			}
-		}
-	}
-
-	/**
-	 * Internal handler for carddata
-	 * @throws \Exception
-	 * @deprecated 1.0.2
-	 * @deprecated 1.1.2
-	 */
-	private function updateCardData() {
-		$amount                 = null;
-		$this->_paymentCardData = new resurs_cardData();
-		if ( ! isset( $this->cardDataCardNumber ) ) {
-			if ( $this->cardDataUseAmount && $this->cardDataOwnAmount ) {
-				$this->_paymentCardData->amount = $this->cardDataOwnAmount;
-			} else {
-				$this->_paymentCardData->amount = $this->_paymentOrderData->totalAmount;
-			}
-		} else {
-			if ( isset( $this->cardDataCardNumber ) && ! empty( $this->cardDataCardNumber ) ) {
-				$this->_paymentCardData->cardNumber = $this->cardDataCardNumber;
-			}
-		}
-		if ( ! empty( $this->cardDataCardNumber ) && ! empty( $this->cardDataUseAmount ) ) {
-			throw new \Exception( __FUNCTION__ . ": Card number and amount can not be set at the same time", \RESURS_EXCEPTIONS::UPDATECARD_DOUBLE_DATA_EXCEPTION );
-		}
-
-		return $this->_paymentCardData;
-	}
-
-	/**
-	 * Prepare API for cards. Make sure only one of the parameters are used. Cardnumber cannot be combinad with amount.
-	 *
-	 * @param null $cardNumber
-	 * @param bool|false $useAmount Set to true when using new cards
-	 * @param bool|false $setOwnAmount If customer applies for a new card specify the credit amount that is applied for. If $setOwnAmount is not null, this amount will be used instead of the specrow data
-	 *
-	 * @throws \Exception
-	 * @deprecated 1.0.2 Use setCardData instead
-	 * @deprecated 1.1.2 Use setCardData instead
-	 */
-	public function prepareCardData( $cardNumber = null, $useAmount = false, $setOwnAmount = null ) {
-		$this->setCardData( $cardNumber, $setOwnAmount );
-	}
-
 	/**
 	 * Set up payload with simplified card data.
 	 *
@@ -6396,7 +4019,7 @@ class ResursBank {
 			$this->Payload['card'] = array();
 		}
 		if ( ! isset( $this->Payload['card']['cardNumber'] ) ) {
-			$this->Payload['card']['cardNumber'] = $cardNumber;
+			$this->Payload['card']['cardNumber'] = trim( $cardNumber );
 		}
 		if ( $cardAmount > 0 ) {
 			$this->Payload['card']['amount'] = $cardAmount;
@@ -6412,7 +4035,7 @@ class ResursBank {
 	 */
 	private function validateCardData($specificType = "") {
 		// Keeps compatibility with card data sets
-		if ( isset( $this->Payload['orderData']['totalAmount'] ) && $this->getPreferredPaymentFlowService() == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
+		if ( isset( $this->Payload['orderData']['totalAmount'] ) && $this->getPreferredPaymentService() == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
 			$cardInfo = isset( $this->Payload['card'] ) ? $this->Payload['card'] : array();
 			if ( ( isset( $cardInfo['cardNumber'] ) && empty( $cardInfo['cardNumber'] ) ) || ! isset( $cardInfo['cardNumber'] ) ) {
 				if ( ( isset( $cardInfo['amount'] ) && empty( $cardInfo['amount'] ) ) || ! isset( $cardInfo['amount'] ) ) {
@@ -6422,6 +4045,13 @@ class ResursBank {
 				}
 			}
 		}
+
+		if ( isset( $this->Payload['card']['cardNumber'] ) ) {
+			if ( empty( $this->Payload['card']['cardNumber'] ) ) {
+				unset( $this->Payload['card']['cardNumber'] );
+			}
+		}
+
 		if (isset($this->Payload['customer'])) {
 			// CARD + (NEWCARD, REVOLVING_CREDIT)
 			$mandatoryExtendedCustomerFields = array('governmentId', 'address', 'phone', 'email', 'type');
@@ -6455,8 +4085,8 @@ class ResursBank {
 	 * Find out if a payment is creditable
 	 *
 	 * @param array $paymentArrayOrPaymentId The current payment if already requested. If this variable is sent as a string, the function will first make a getPayment automatically.
-	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function canCredit( $paymentArrayOrPaymentId = array() ) {
 		$Status = (array) $this->getPaymentContent( $paymentArrayOrPaymentId, "status" );
@@ -6472,8 +4102,8 @@ class ResursBank {
 	 * Find out if a payment is debitable
 	 *
 	 * @param array $paymentArrayOrPaymentId The current payment if already requested. If this variable is sent as a string, the function will first make a getPayment automatically.
-	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function canDebit( $paymentArrayOrPaymentId = array() ) {
 		$Status = (array) $this->getPaymentContent( $paymentArrayOrPaymentId, "status" );
@@ -6481,6 +4111,7 @@ class ResursBank {
 		if ( in_array( "DEBITABLE", $Status ) ) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -6490,6 +4121,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 */
@@ -6503,6 +4135,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.13
 	 * @since 1.1.13
 	 * @since 1.2.0
@@ -6521,6 +4154,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.13
 	 * @since 1.1.13
 	 * @since 1.2.0
@@ -6539,6 +4173,7 @@ class ResursBank {
 	 * @param array $paymentArrayOrPaymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.13
 	 * @since 1.1.13
 	 * @since 1.2.0
@@ -6557,6 +4192,7 @@ class ResursBank {
 	 * @param $paymentIdOrPaymentObject
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -6576,6 +4212,7 @@ class ResursBank {
 	 * @param $paymentIdOrPaymentObject
 	 *
 	 * @return array
+	 * @throws \Exception
 	 */
 	public function getPaymentSpecByStatus( $paymentIdOrPaymentObject ) {
 		$usePayment         = $paymentIdOrPaymentObject;
@@ -6640,6 +4277,7 @@ class ResursBank {
 	 * @param int $renderType RESURS_AFTERSHOP_RENDER_TYPES as unique type or bitmask
 	 *
 	 * @return array
+	 * @throws \Exception
 	 */
 	public function sanitizeAfterShopSpec($paymentIdOrPaymentObjectData = '', $renderType = RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_NO_CHOICE) {
 		$returnSpecObject = null;
@@ -6817,6 +4455,7 @@ class ResursBank {
 	 * @param int $payloadType
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
@@ -6881,7 +4520,7 @@ class ResursBank {
 	 * Identical to paymentFinalize but used for testing errors
 	 */
 	public function paymentFinalizeTest() {
-		if (defined('TEST_OVERRIDE_AFTERSHOP_PAYLOAD') && $this->current_environment == ResursEnvironments::ENVIRONMENT_TEST) {
+		if (defined('TEST_OVERRIDE_AFTERSHOP_PAYLOAD') && $this->current_environment == RESURS_ENVIRONMENTS::ENVIRONMENT_TEST) {
 			$this->postService( "finalizePayment", unserialize( TEST_OVERRIDE_AFTERSHOP_PAYLOAD ) );
 		}
 	}
@@ -6921,6 +4560,19 @@ class ResursBank {
 	}
 
 	/**
+	 * Shadow function for paymentFinalize
+	 *
+	 * @param string $paymentId
+	 * @param array $customPayloadItemList
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public function finalizePayment( $paymentId = "", $customPayloadItemList = array() ) {
+		return $this->paymentFinalize($paymentId, $customPayloadItemList);
+	}
+
+	/**
 	 * Aftershop Payment Annulling (ANNUL)
 	 *
 	 * Make sure that you are running this with try-catches in cases where failures may occur.
@@ -6946,6 +4598,19 @@ class ResursBank {
 	}
 
 	/**
+	 * Shadow function for paymentAnnul
+	 *
+	 * @param string $paymentId
+	 * @param array $customPayloadItemList
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public function annulPayment( $paymentId = "", $customPayloadItemList = array() ) {
+		return $this->paymentAnnul($paymentId, $customPayloadItemList);
+	}
+
+	/**
 	 * Aftershop Payment Crediting (CREDIT)
 	 *
 	 * Make sure that you are running this with try-catches in cases where failures may occur.
@@ -6968,6 +4633,19 @@ class ResursBank {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Shadow function for paymentCredit
+	 *
+	 * @param string $paymentId
+	 * @param array $customPayloadItemList
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public function creditPayment( $paymentId = "", $customPayloadItemList = array() ) {
+		return $this->paymentCredit($paymentId, $customPayloadItemList);
 	}
 
 	/**
@@ -7032,81 +4710,16 @@ class ResursBank {
 	}
 
 	/**
-	 * Automatically cancel (credit or annul) a payment with "best practice".
-	 *
-	 * Since the rendered container only returns payment data if the rows are available for the current requested action, this function will try to both credit a payment and annul it depending on the status.
+	 * Shadow function for paymentCancel
 	 *
 	 * @param string $paymentId
-	 * @param array $clientPaymentSpec
-	 * @param array $cancelParams
-	 * @param bool $quantityMatch
-	 * @param bool $useSpecifiedQuantity If set to true, the quantity set clientside will be used rather than the exact quantity from the spec in getPayment (This requires that $quantityMatch is set to false)
+	 * @param array $customPayloadItemList
 	 *
 	 * @return bool
 	 * @throws \Exception
-	 * @deprecated 1.0.22
-	 * @deprecated 1.1.22
 	 */
-	public function cancelPayment( $paymentId = "", $clientPaymentSpec = array(), $cancelParams = array(), $quantityMatch = true, $useSpecifiedQuantity = false ) {
-		return $this->paymentCancel($paymentId, $clientPaymentSpec);
-	}
-
-	/**
-	 * Finalize payment by payment ID. Finalizes an order based on the order content.
-	 *
-	 * @param string $paymentId
-	 * @param array $clientPaymentSpec (Optional) paymentspec if only specified lines are being finalized
-	 * @param array $finalizeParams
-	 * @param bool $quantityMatch (Optional) Match quantity. If false, quantity will be ignored during finalization and all client specified paymentspecs will match
-	 * @param bool $useSpecifiedQuantity If set to true, the quantity set clientside will be used rather than the exact quantity from the spec in getPayment (This requires that $quantityMatch is set to false)
-	 *
-	 * @return bool True if successful
-	 * @throws \Exception
-	 * @deprecated 1.0.22
-	 * @deprecated 1.1.22
-	 */
-	public function finalizePayment( $paymentId = "", $clientPaymentSpec = array(), $finalizeParams = array(), $quantityMatch = true, $useSpecifiedQuantity = false ) {
-		return $this->paymentFinalize($paymentId, $clientPaymentSpec);
-	}
-
-	/**
-	 * Credit a payment
-	 *
-	 * If you need fully automated credits (where payment specs are sorted automatically) you should use cancelPayment
-	 *
-	 * @param string $paymentId
-	 * @param array $clientPaymentSpec
-	 * @param array $creditParams
-	 * @param bool $quantityMatch
-	 * @param bool $useSpecifiedQuantity
-	 *
-	 * @return bool
-	 * @throws \Exception
-	 * @deprecated 1.0.22
-	 * @deprecated 1.1.22
-	 */
-	public function creditPayment( $paymentId = "", $clientPaymentSpec = array(), $creditParams = array(), $quantityMatch = true, $useSpecifiedQuantity = false ) {
-		return $this->paymentCredit($paymentId, $clientPaymentSpec);
-	}
-
-	/**
-	 * Annul a payment
-	 *
-	 * If you need fully automated annullments (where payment specs are sorted automatically) you should use cancelPayment
-	 *
-	 * @param string $paymentId
-	 * @param array $clientPaymentSpec
-	 * @param array $annulParams
-	 * @param bool $quantityMatch
-	 * @param bool $useSpecifiedQuantity If set to true, the quantity set clientside will be used rather than the exact quantity from the spec in getPayment (This requires that $quantityMatch is set to false)
-	 *
-	 * @return bool
-	 * @throws \Exception
-	 * @deprecated 1.0.22
-	 * @deprecated 1.1.22
-	 */
-	public function annulPayment( $paymentId = "", $clientPaymentSpec = array(), $annulParams = array(), $quantityMatch = true, $useSpecifiedQuantity = false ) {
-		return $this->paymentAnnul($paymentId,$clientPaymentSpec);
+	public function cancelPayment( $paymentId = "", $customPayloadItemList = array() ) {
+		return $this->paymentCancel($paymentId, $customPayloadItemList);
 	}
 
 	/**
@@ -7117,6 +4730,7 @@ class ResursBank {
 	 * @param string $paymentId
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 * @since 1.0.3
 	 * @since 1.1.3
 	 */
@@ -7134,8 +4748,6 @@ class ResursBank {
 		$Result              = $this->postService( "additionalDebitOfPayment", $additionalDataArray, true );
 		if ( $Result >= 200 && $Result <= 250 ) {
 			// Reset orderData for each addition
-			//$this->Payload['orderData'] = array();
-			//$this->SpecLines            = array();
 			$this->resetPayload();
 			return true;
 		} else {
@@ -7149,6 +4761,7 @@ class ResursBank {
 	 * @param string $paymentIdOrPaymentObject
 	 *
 	 * @return array
+	 * @throws \Exception
 	 * @since 1.0.11
 	 * @since 1.1.11
 	 * @since 1.2.0
@@ -7178,6 +4791,7 @@ class ResursBank {
 	 * @param array $paymentData
 	 *
 	 * @return int
+	 * @throws \Exception
 	 * @since 1.0.26
 	 * @since 1.1.26
 	 * @since 1.2.0
@@ -7191,10 +4805,10 @@ class ResursBank {
 			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
 		}
 		if ( $this->getIsAnnulled( $paymentData ) && ! $this->getIsCredited( $paymentData ) && $resursTotalAmount == 0 ) {
-			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
+			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CANCELLED;
 		}
 		if ( $this->getIsCredited( $paymentData ) && $resursTotalAmount == 0 ) {
-			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
+			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_REFUND;
 		}
 
 		// Return generic

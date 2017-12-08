@@ -1,11 +1,14 @@
 <?php
-
 /**
  * Static Payment Flow: OmniCheckout
  *
  * Class WC_Resurs_Bank_Omni
  */
 class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
+
+    /** @var $flow Resursbank\RBEcomPHP\ResursBank */
+    protected $flow;
+    private $omniSuccessUrl;
 
 	/**
 	 * WC_Resurs_Bank_Omni constructor (simplified)
@@ -22,7 +25,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			$this->iFrameLocation = "afterCheckoutForm";
 		}
 
-		/** @var flow \Resursbank\RBEcomPHP\ResursBank */
 		$this->flow           = initializeResursFlow();
 		$this->omniSuccessUrl = "";
 
@@ -63,7 +65,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	}
 
 	public function resurs_omnicheckout_form_location() {
-		global $resursIframeCount, $woocommerce;
+		global $resursIframeCount;
 		if ( ! isset( $resursIframeCount ) ) {
 			$resursIframeCount = 1;
 		}
@@ -118,6 +120,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		$this->form_fields = getResursWooFormFields( null, 'resurs_bank_omnicheckout' );
 	}
 
+	/**
+	 * @param $totals
+	 */
 	public function calculate_totals( $totals ) {
 		global $woocommerce;
 	}
@@ -134,6 +139,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		}
 	}
 
+	/**
+	 * @return bool|mixed|null
+	 */
 	public function get_current_gateway() {
 		global $woocommerce;
 		$available_gateways = $woocommerce->payment_gateways->get_available_payment_gateways();
@@ -159,9 +167,15 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	public function has_icon() {
 	}
 
+	/**
+	 * @param $posted
+	 */
 	public static function interfere_checkout_process( $posted ) {
 	}
 
+	/**
+	 * @return string
+	 */
 	protected function resurs_omnicheckout_create_frame() {
 		$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_CHECKOUT );
 		$this->flow->Include = array();
@@ -169,7 +183,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		//$shopUrl = home_url('');
 		$omniRef = WC()->session->get( 'omniRef' );
 		try {
-			$flowBook  = $this->flow->bookPayment( $omniRef, $bookDataOmni );
+			$flowBook  = $this->flow->createPayment( $omniRef, $bookDataOmni );
 			$flowFrame = is_string( $flowBook ) ? $flowBook : "";
 			$flowFrame .= '<noscript><b>' . __( 'OmniCheckout will not work properly without Javascript functions enabled', 'WC_Payment_Gateway' ) . '</b></noscript>';
 			if ( isset( $_SESSION['customTestUrl'] ) && ! empty( $_SESSION['customTestUrl'] ) ) {
@@ -208,10 +222,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	 * @return array
 	 */
 	private function createReturnUrls() {
-		global $woocommerce;
 		$returnArray = array();
 		try {
-			//$omniBack = $woocommerce->cart->get_cart_url();
 			$omniBack    = $this->createResursOmniSuccessUrl( true );
 			$omniSuccess = $this->createResursOmniSuccessUrl();
 			$returnArray = array(
@@ -225,6 +237,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		return $returnArray;
 	}
 
+	/**
+	 * @param bool $isFailing
+	 *
+	 * @return string
+	 */
 	private function createResursOmniSuccessUrl( $isFailing = false ) {
 		$this->omniSuccessUrl = home_url( '/' );
 		if ( isResursSimulation() ) {
@@ -285,6 +302,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		return $fields;
 	}
 
+	/**
+	 * @param $array
+	 *
+	 * @return mixed
+	 */
 	public static function interfere_update_order_review( $array ) {
 		$currentOmniRef = null;
 		$doUpdateIframe = false;
@@ -303,12 +325,13 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 
 			if ( isset( $paymentSpec['totalAmount'] ) && $doUpdateIframe ) {
 				$paymentSpecAmount = $paymentSpec['totalAmount'];
+				/** @var \Resursbank\RBEcomPHP\ResursBank $flow */
 				$flow              = initializeResursFlow();
-				$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
+				$omniUpdateResponse = $flow->updateCheckoutOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
 				if ( omniOption( "omniFrameNotReloading" ) ) {
 					$array['#omniActions'] = '<script>document.location.reload(true);</script>';
 				} else {
-					$omniUpdateResponse = $flow->setCheckoutFrameOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
+					$omniUpdateResponse = $flow->updateCheckoutOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
 				}
 
 				if ( isset( $omniUpdateResponse['code'] ) ) {
@@ -373,7 +396,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	/**
 	 * Get and convert payment spec from cart, convert it to Resurs Specrows
 	 *
-	 * @param $cart WooCommerce Cart containing order items
+	 * @param $cart WC_Cart Order Items
 	 * @param bool $specLinesOnly Return only the array of speclines
 	 *
 	 * @return array The paymentSpec for startPaymentSession
@@ -391,8 +414,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		 */
 		$shipping_tax_pct = ( ! is_nan( @round( $shipping_tax / $shipping, 2 ) * 100 ) ? @round( $shipping_tax / $shipping, 2 ) * 100 : 0 );
 
-		if ( false === empty( $shipping ) ) {
-		}    //
 		$spec_lines[]    = array(
 			'id'                   => 'frakt',
 			'artNo'                => '00_frakt',
@@ -407,7 +428,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		);
 		$payment_method  = $woocommerce->session->chosen_payment_method;
 		$payment_options = get_option( 'woocommerce_' . $payment_method . '_settings' );
-		//$payment_fee = get_option('woocommerce_' . $payment_method . '_settings')['price'];
 		$payment_fee           = getResursOption( 'price', 'woocommerce_' . $payment_method . '_settings' );
 		$payment_fee           = (float) ( isset( $payment_fee ) ? $payment_fee : '0' );
 		$payment_fee_tax_class = get_option( 'woocommerce_resurs-bank_settings' )['priceTaxClass'];
@@ -415,7 +435,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			$payment_fee_tax_class_rates = $cart->tax->get_rates( $payment_fee_tax_class );
 			$payment_fee_tax             = $cart->tax->calc_tax( $payment_fee, $payment_fee_tax_class_rates, false, true );
 		} else {
-			// ->tax has been deprecated since WC 2.3
+			// tax has been deprecated since WC 2.3
 			$payment_fee_tax_class_rates = WC_Tax::get_rates( $payment_fee_tax_class );
 			$payment_fee_tax             = WC_Tax::calc_tax( $payment_fee, $payment_fee_tax_class_rates, false, true );
 		}
@@ -432,12 +452,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		$ResursFeeName = "";
 		$fees          = $cart->get_fees();
 		if ( is_array( $fees ) ) {
-			//$resursPriceDescription = sanitize_title($payment_options['priceDescription']);
+			/** @var $fee WC_Cart_Fees */
 			foreach ( $fees as $fee ) {
-				/*
-				 * Ignore this fee if it matches the Resurs description.
-				 */
-				//if ($fee == $resursPriceDescription) { continue; }
 				if ( $fee->tax > 0 ) {
 					$rate = ( $fee->tax / $fee->amount ) * 100;
 				} else {
@@ -465,10 +481,12 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 				$coupon_values     = $cart->coupon_discount_amounts;
 				$coupon_tax_values = $cart->coupon_discount_tax_amounts;
 
+				/**
+				 * @var  $code
+				 * @var  WC_Coupon $coupon
+				 */
 				foreach ( $coupons as $code => $coupon ) {
 					$post = get_post( ( ! isWooCommerce3() ? $coupon->id : $coupon->get_id() ) );
-					//$taxify = ($coupon_tax_values[$code] / $coupon_values[$code]*100);
-
 					$couponId     = ( ! isWooCommerce3() ? $coupon->id : $coupon->get_id() );
 					$couponCode   = ( ! isWooCommerce3() ? $coupon->id : $coupon->get_code() );
 					$spec_lines[] = array(
@@ -524,6 +542,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	}
 }
 
+/**
+ * @param $page_id
+ *
+ * @return int
+ */
 function omni_terms_page( $page_id ) {
 	if ( isResursOmni() ) {
 		return 0;
@@ -533,6 +556,11 @@ function omni_terms_page( $page_id ) {
 }
 
 if ( hasResursOmni() ) {
+	/**
+	 * @param $methods
+	 *
+	 * @return array
+	 */
 	function woocommerce_add_resurs_bank_omnicheckout( $methods ) {
 		$optionEnabled = getResursOption( 'enabled' );
 		if ( ! $optionEnabled ) {
@@ -554,6 +582,11 @@ if ( hasResursOmni() ) {
 	add_filter( 'woocommerce_update_order_review_fragments', 'WC_Gateway_ResursBank_Omni::interfere_update_order_review', 0, 1 );
 }
 
+/**
+ * @param string $key
+ *
+ * @return bool|mixed|void
+ */
 function omniOption( $key = "" ) {
 	$response = get_option( 'woocommerce_resurs_bank_omnicheckout_settings' )[ $key ];
 	if ( empty( $response ) ) {
