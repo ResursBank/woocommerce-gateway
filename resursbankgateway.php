@@ -4,7 +4,7 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.2.4
+ * WC Tested up to: 3.2.5
  * Version: 2.2.0
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
@@ -1351,9 +1351,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 */
 		public function process_payment( $order_id ) {
 			global $woocommerce;
-			/*
-             * Skip procedure of process_payment if the session is based on a finalizing omnicheckout.
-             */
+			// Skip procedure of process_payment if the session is based on a finalizing omnicheckout.
 			if ( defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
 				return;
 			}
@@ -1415,14 +1413,30 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			//$success_url = add_query_arg( 'uniq', '$uniqueId', $success_url );
 
+			$urlFail = html_entity_decode( $order->get_cancel_order_url() );
+			$urlSuccess = $success_url;
+
 			$bookDataArray['uniqueId'] = sha1( uniqid( microtime( true ), true ) );
 			$bookDataArray['signing']  = array(
 				'successUrl'   => $success_url,
-				'failUrl'      => html_entity_decode( $order->get_cancel_order_url() ),
+				'failUrl'      => $urlFail,
 				'forceSigning' => false
 			);
 
             // Defaults
+/*			if ( !isResursHosted() ) {
+				$bookDataArray['paymentData'] = array(
+					'waitForFraudControl' => resursOption( 'waitForFraudControl' ),
+					'annulIfFrozen'       => resursOption( 'annulIfFrozen' ),
+					'finalizeIfBooked'    => resursOption( 'finalizeIfBooked' ),
+					'preferredId'         => $preferredId
+				);
+			} else {
+				$bookDataArray['waitForFraudControl'] = resursOption( 'waitForFraudControl' );
+				$bookDataArray['annulIfFrozen']       = resursOption( 'annulIfFrozen' );
+				$bookDataArray['finalizeIfBooked']    = resursOption( 'finalizeIfBooked' );
+				$bookDataArray['paymentData']         = array('preferredId' => $preferredId);
+			}*/
 			$bookDataArray['paymentData'] = array(
 				'waitForFraudControl' => resursOption( 'waitForFraudControl' ),
 				'annulIfFrozen'       => resursOption( 'annulIfFrozen' ),
@@ -1490,7 +1504,6 @@ function woocommerce_gateway_resurs_bank_init() {
 						$bookDataArray['customer']['type'] = $useCustomerType;
 					}
 					$bookDataArray['paymentData']['preferredId'] = $preferredId;
-					$this->flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 					$hostedFlowBookingFailure   = false;
 					$hostedFlowUrl = null;
 					$hostedBookPayment = null;
@@ -1501,10 +1514,8 @@ function woocommerce_gateway_resurs_bank_init() {
 						return;
 					} else {
 						try {
-							$this->flow->setRequiredExecute(true);
-							$this->flow->createPayment( $shortMethodName, $bookDataArray );
-							$hostedFlowPayload = $this->flow->getPayload();
-							$hostedFlowUrl     = $this->flow->Execute();
+							$this->flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
+							$hostedFlowUrl = $this->flow->createPayment( $shortMethodName, $bookDataArray );
 						} catch ( \Exception $hostedException ) {
 							$hostedFlowBookingFailure = true;
 							wc_add_notice( $hostedException->getMessage(), 'error' );
@@ -1514,7 +1525,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					//$successUrl = isset($hostedFlowPayload['successUrl']) ? $hostedFlowPayload['successUrl'] : null;
 					//$backUrl = isset($hostedFlowPayload['backUrl']) ? $hostedFlowPayload['backUrl'] : null;
                     // Failurl is currently the only needed variable from the payload
-					$failUrl = isset($hostedFlowPayload['failUrl']) ? $hostedFlowPayload['failUrl'] : null;
+					//$failUrl = isset($hostedFlowPayload['failUrl']) ? $hostedFlowPayload['failUrl'] : null;
 
 					if ( ! $hostedFlowBookingFailure && ! empty( $hostedFlowUrl ) ) {
 						$order->update_status( 'pending' );
@@ -1527,7 +1538,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						$order->update_status( 'failed', __( 'An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly', 'WC_Payment_Gateway' ) );
 						return array(
 							'result'   => 'failure',
-							'redirect' => $failUrl
+							'redirect' => $urlFail
 						);
 					}
 				} else {
@@ -1553,11 +1564,10 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 			} catch ( Exception $bookPaymentException ) {
 				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
-
 				return;
 			}
 
-			$bookedStatus = isset($bookPaymentResult->bookPaymentStatus) ? $bookPaymentResult->bookPaymentStatus : null;
+			$bookedStatus = trim(isset($bookPaymentResult->bookPaymentStatus) ? $bookPaymentResult->bookPaymentStatus : null);
 			$bookedPaymentId = isset($bookPaymentResult->paymentId) ? $bookPaymentResult->paymentId : null;
 			if ( empty( $bookedPaymentId ) ) {
 				$bookedStatus = "FAILED";
@@ -1566,6 +1576,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			switch ( $bookedStatus ) {
 				case 'FINALIZED':
+					define('RB_SYNCHRONOUS_MODE', true);
 					$order->update_status( 'completed' );
 					WC()->cart->empty_cart();
 					return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
@@ -1578,7 +1589,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						    wc_reduce_stock_levels($order_id);
 					    } else {
 						    $order->reduce_order_stock();
-                        }
+                        		    }
 					}
 					WC()->cart->empty_cart();
 
@@ -2494,6 +2505,10 @@ function woocommerce_gateway_resurs_bank_init() {
 		public static function order_status_changed( $order_id, $old_status_slug, $new_status_slug ) {
 			global $woocommerce, $current_user;
 
+			if (defined('RB_SYNCHRONOUS_MODE')) {
+				return;
+			}
+
 			$order = new WC_Order( $order_id );
 			if ( ! isWooCommerce3() ) {
 				$payment_method = $order->payment_method;
@@ -2521,13 +2536,13 @@ function woocommerce_gateway_resurs_bank_init() {
 			/** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
 			$resursFlow       = initializeResursFlow();
 			$flowErrorMessage = null;
+
 			if ( $payment_id ) {
 				try {
 					$payment = $resursFlow->getPayment( $payment_id );
-				} catch ( Exception $getPaymentException ) {
+				} catch ( \Exception $getPaymentException ) {
 					return;
 				}
-
 				if ( isset( $payment ) ) {
 					if ( false === is_array( $payment->status ) ) {
 						$status = array( $payment->status );
@@ -2580,7 +2595,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				default:
 					break;
 			}
-
 
 			switch ( $new_status_slug ) {
 				case 'pending':
