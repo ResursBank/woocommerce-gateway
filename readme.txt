@@ -2,7 +2,7 @@
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 4.8.2
+Tested up to: 4.9.1
 Requires PHP: 5.4
 Stable tag: 2.2.0
 License: GPLv2 or later
@@ -63,6 +63,28 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
+
+= 2.2.0 =
+
+    * [WOO-155] - Upgrade to EComPHP 1.2.x by exchange 1.1 functions in current to those running in 1.2
+    * [WOO-168] - Support PAYMENT_PROVIDER in  simplified flow.
+    * [WOO-172] - Validate AfterShop flow functions
+    * [WOO-173] - WooCommerce order view and details from Resurs
+    * [WOO-174] - When internal aftershop is disabled show notice in order view
+    * [WOO-179] - Prevent class conflicts by renaming external library classes - put them in namespace
+    * [WOO-181] - Investigate the specrows vs tax-calculating on "show inc. or ex. tax"
+    * [WOO-191] - Callback update registrator runs on pages that does not belong to the function
+    * [WOO-216] - Allow cards without card numbers
+    * [WOO-154] - isResursDemo() might cause eternal loops on plugin activation in some systems
+    * [WOO-175] - If order is finalized from payment admin woocommerce might not get updated properly
+    * [WOO-176] - Updating cart (with discounts etc) fails
+    * [WOO-193] - Reduce order stock disappeared from wp-admin
+    * [WOO-211] - Hosted flow needs payload before cleanup to get own back/success-url
+    * [WOO-212] - Trace The WC_Cart->tax argument is deprecated since version 2.3. Use WC_Tax directly
+    * [WOO-213] - EC1.2 and invoice sequencing does not work when invoice sequence is null
+    * [WOO-214] - Backurl checkout
+    * [WOO-215] - Plugin no longer checks if payment method is enabled or disabled
+
 
 = 2.1.5 =
 
