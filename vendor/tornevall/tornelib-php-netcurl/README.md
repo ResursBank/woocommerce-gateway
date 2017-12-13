@@ -11,3 +11,26 @@ Well. Yes. Almost. The other libraries out there, are probably doing the exact s
 ## Compatibility
 
 This library should be compatible with at least PHP 5.3 up to PHP 7.2 (RC1)
+
+## Utilizing external libraries
+
+Want to test this library with an external library like Guzzle? Add this row to composer:
+
+    "guzzlehttp/guzzle": "6.3.0"
+
+Then call for this method on initiation:
+
+     $LIB->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP );
+     
+or
+   
+     $LIB->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP_STREAM );
+
+Observe that you still need curl if you are running SOAP-calls.
+
+
+## Auto detection of communicators
+
+Using this call before running calls will try to prepare for a proper communications driver. If curl is available, the internal functions will be prioritized before others as this used to be best practice. However, if curl is missing, this might help you find a proper driver automatically.
+
+    $LIB->setDriverAuto();

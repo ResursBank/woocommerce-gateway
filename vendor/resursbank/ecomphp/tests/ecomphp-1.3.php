@@ -5,7 +5,7 @@
  *
  * @package EcomPHPTest
  * @author Resurs Bank Ecommrece <ecommerce.support@resurs.se>
- * @version 0.13
+ * @version 0.14
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @license -
  *
@@ -261,8 +261,11 @@ class ResursBankTest extends TestCase
 	 * @param bool|false $bookSuccess Set to true if booking is supposed to success
 	 * @param bool|false $forceSigning Set to true if signing is forced
 	 * @param bool|true $signSuccess True=Successful signing, False=Failed signing
+	 * @param string $country
+	 * @param array $ownSpecline
 	 *
 	 * @return bool Returning true if booking went as you expected
+	 * @throws Exception
 	 */
 	private function doBookPayment( $setMethod = '', $bookSuccess = true, $forceSigning = false, $signSuccess = true, $country = 'SE', $ownSpecline = array() ) {
 		$paymentServiceSet = $this->rb->getPreferredPaymentFlowService();
@@ -503,6 +506,35 @@ class ResursBankTest extends TestCase
 		$paymentMethods = $this->rb->getPaymentMethods();
 		$this->assertTrue( count( $paymentMethods ) === $this->paymentMethodCount[ $this->environmentName ] );
 	}
+
+
+	//// INVOICE SEQUENCE TESTS MUST BE SET FIRST IN THIS TEST FLOW
+	public function testInvoiceSequenceReset() {
+		$this->rb->resetInvoiceNumber();
+		$currentInvoiceNumber = $this->rb->getNextInvoiceNumber();
+		$this->assertTrue($currentInvoiceNumber == 1);
+		// Restore invoice sequence to the latest correct so new tests can be initated without problems.
+		$this->rb->getNextInvoiceNumberByDebits(5);
+	}
+	function testInvoiceSequenceAndFinalize() {
+		$this->rb->resetInvoiceNumber();
+		$paymentId = $this->getPaymentIdFromOrderByClientChoice();
+		try {
+			$successFinalize = $this->rb->paymentFinalize( $paymentId );
+			if ($successFinalize) {
+				$this->markTestIncomplete("Finalization was successful during the invoice sequence reset. You must re-run the test.");
+			}
+		} catch (\Exception $finalizeWithInitInvoiceException) {
+			$this->assertTrue($finalizeWithInitInvoiceException->getCode() == 29);
+		}
+		// Restore invoice sequence to the latest correct so new tests can be initated without problems.
+		$this->rb->getNextInvoiceNumberByDebits(5);
+	}
+	function testInvoiceSequenceFindByFind() {
+		$lastInvoiceNumber = $this->rb->getNextInvoiceNumberByDebits(5);
+		$this->assertTrue($lastInvoiceNumber > 0);
+	}
+
 
 	/**
 	 * getAddress, NATURAL
@@ -846,8 +878,10 @@ class ResursBankTest extends TestCase
 	 * This test is incomplete.
 	 *
 	 * @param bool $returnTheFrame
+	 * @param bool $returnPaymentReference
 	 *
 	 * @return bool|null
+	 * @throws Exception
 	 */
 	private function getCheckoutFrame( $returnTheFrame = false, $returnPaymentReference = false ) {
 		$assumeThis = false;
@@ -1359,16 +1393,23 @@ class ResursBankTest extends TestCase
 	private function doMockSign( $URL, $govId, $fail = false ) {
 		$MockFormResponse   = $this->CURL->doGet( $URL );
 		$MockDomain         = $this->NETWORK->getUrlDomain( $MockFormResponse['URL'] );
-		$SignBody           = $this->CURL->getResponseBody( $this->CURL->doGet( $URL ) );
+		$MockDomainPath = null;
+		$mockDomainPathDir = null;
+		if (isset($MockDomain[2])) {
+			$MockDomainPath = explode( "/", $MockDomain[2] );
+			$mockDomainPathDir = isset($MockDomainPath[1]) && !empty($MockDomainPath[1]) ? $MockDomainPath[1] : "";
+		}
+
+		//$SignBody           = $this->CURL->getResponseBody( $this->CURL->doGet( $URL ) );
 		$MockForm           = $this->CURL->getResponseBody( $MockFormResponse );
 		$MockFormActionPath = preg_replace( "/(.*?)action=\"(.*?)\"(.*)/is", '$2', $MockForm );
 		$MockFormToken      = preg_replace( "/(.*?)resursToken\" value=\"(.*?)\"(.*)/is", '$2', $MockForm );
 		$mockFailUrl = preg_replace("/(.*?)\"\/mock\/failAuth(.*?)\"(.*)/is", '$2', $MockForm);
-		$prepareMockSuccess = $MockDomain[1] . "://" . $MockDomain[0] . $MockFormActionPath . "?resursToken=" . $MockFormToken . "&govId=" . $govId;
+		$prepareMockSuccess = $MockDomain[1] . "://" . $MockDomain[0] . "/" . $mockDomainPathDir . "/" . $MockFormActionPath . "?resursToken=" . $MockFormToken . "&govId=" . $govId;
 		$prepareMockFail = $MockDomain[1] . "://". $MockDomain[0] . "/mock/failAuth" . $mockFailUrl;
 		if (!$fail) {
 			$ValidateUrl = $this->NETWORK->getUrlDomain( $prepareMockSuccess, true );
-			if ( ! empty( $ValidateUrl[0] ) ) {
+			if ( isset($ValidateUrl[0]) && ! empty( $ValidateUrl[0] ) ) {
 				$mockSuccess = $this->CURL->getParsedResponse( $this->CURL->doGet( $prepareMockSuccess ) );
 				if ( isset( $mockSuccess->_GET->success ) ) {
 					return $mockSuccess->_GET;
@@ -1754,6 +1795,7 @@ class ResursBankTest extends TestCase
 	}
 
 	private function generateOrderByClientChoice( $orderLines = 8, $quantity = 1, $minAmount = 1000, $maxAmount = 2000, $govId = '198305147715' ) {
+		$Payment = null;
 		$this->rb->setPreferredPaymentFlowService( RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW );
 		$this->rb->setBillingByGetAddress( $govId );
 		$this->rb->setCustomer( $govId, "0808080808", "0707070707", "test@test.com", "NATURAL" );
@@ -2443,29 +2485,70 @@ class ResursBankTest extends TestCase
 		$this->assertTrue($this->rb->getOrderStatusByPayment($paymentId, RESURS_CALLBACK_TYPES::CALLBACK_TYPE_AUTOMATIC_FRAUD_CONTROL, 'FROZEN') == RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING);
 	}
 
-	public function testInvoiceSequenceReset() {
-		$this->rb->resetInvoiceNumber();
-		$currentInvoiceNumber = $this->rb->getNextInvoiceNumber();
-		$this->assertTrue($currentInvoiceNumber == 1);
-		// Restore invoice sequence to the latest correct so new tests can be initated without problems.
-		$this->rb->getNextInvoiceNumberByDebits(5);
-	}
-	function testInvoiceSequenceAndFinalize() {
-		$this->rb->resetInvoiceNumber();
-		$paymentId = $this->getPaymentIdFromOrderByClientChoice();
+	function testUnAuthorized() {
+		$newRb = new ResursBank("fail", "fail");
 		try {
-			$successFinalize = $this->rb->paymentFinalize( $paymentId );
-			if ($successFinalize) {
-				$this->markTestIncomplete("Finalization was successful during the invoice sequence reset. You must re-run the test.");
-			}
-		} catch (\Exception $finalizeWithInitInvoiceException) {
-			$this->assertTrue($finalizeWithInitInvoiceException->getCode() == 29);
+			print_R( $newRb->getPaymentMethods() );
+		} catch (\Exception $e) {
+			//echo $e->getMessage();
 		}
-		// Restore invoice sequence to the latest correct so new tests can be initated without problems.
-		$this->rb->getNextInvoiceNumberByDebits(5);
 	}
-	function testInvoiceSequenceFindByFind() {
-		$lastInvoiceNumber = $this->rb->getNextInvoiceNumberByDebits(5);
-		$this->assertTrue($lastInvoiceNumber > 0);
+
+	public function testHostedThreeFlags() {
+		$this->rb->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW);
+		$this->rb->setBillingAddress(
+			"Given Name",
+			"Given",
+			"Name",
+			"Address row 1",
+			"",
+			"Location",
+			"12345",
+			"SE"
+		);
+		$this->addRandomOrderLine();
+		$this->rb->setFinalizeIfBooked();
+		$this->rb->setAnnulIfFrozen();
+		$this->rb->setWaitForFraudControl();
+
+		$payloadResult = $this->rb->getPayload();
+		$this->assertTrue(isset($payloadResult['waitForFraudControl']) && isset($payloadResult['annulIfFrozen']) && isset($payloadResult['finalizeIfBooked']));
+	}
+
+	public function testSimplifiedThreeFlags() {
+		$this->rb->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW);
+		$this->rb->setBillingAddress(
+			"Given Name",
+			"Given",
+			"Name",
+			"Address row 1",
+			"",
+			"Location",
+			"12345",
+			"SE"
+		);
+		$this->addRandomOrderLine();
+		$this->rb->setFinalizeIfBooked();
+		$this->rb->setAnnulIfFrozen();
+		$this->rb->setWaitForFraudControl();
+
+		$payloadResult = $this->rb->getPayload();
+		$this->assertTrue(isset($payloadResult['paymentData']['waitForFraudControl']) && isset($payloadResult['paymentData']['annulIfFrozen']) && isset($payloadResult['paymentData']['finalizeIfBooked']));
+	}
+
+	public function testCheckoutFlood() {
+		$this->rb->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT);
+		$this->rb->setFlag('PREVENT_EXEC_FLOOD',true);
+		$this->rb->setFlag('PREVENT_EXEC_FLOOD_EXCEPTIONS',true);
+		$this->rb->setFlag('PREVENT_EXEC_FLOOD_TIME',300);
+		$payments = array();
+		$exceptionCode = 0;
+		try {
+			$payments[] = $this->getCheckoutFrame( true, true );
+			$payments[] = $this->getCheckoutFrame( true, true );
+		} catch (\Exception $e) {
+			$exceptionCode = $e->getCode();
+		}
+		$this->assertTrue($exceptionCode === RESURS_EXCEPTIONS::CREATEPAYMENT_TOO_FAST);
 	}
 }
