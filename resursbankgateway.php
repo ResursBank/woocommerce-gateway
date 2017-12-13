@@ -768,7 +768,9 @@ function woocommerce_gateway_resurs_bank_init() {
 					update_post_meta( $orderId, 'hasCallback' . $event_type, time() );
 					if ( $currentStatus != "cancelled" ) {
 						$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
-						if ( $optionReduceOrderStock ) {
+						$hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
+						if ( $optionReduceOrderStock && empty( $hasReduceStock ) ) {
+							update_post_meta( $orderId, 'hasReduceStock', time() );
 							if (isWooCommerce3()) {
 								wc_reduce_stock_levels($order->get_id());
 							} else {
@@ -1585,7 +1587,9 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'BOOKED':
 					$order->update_status( 'processing' );
 					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
-					if ( $optionReduceOrderStock ) {
+					$hasReduceStock = get_post_meta($order_id, 'hasReduceStock');
+					if ( $optionReduceOrderStock && empty( $hasReduceStock ) ) {
+						update_post_meta( $order_id, 'hasReduceStock', time() );
 					    if (isWooCommerce3()) {
 						    wc_reduce_stock_levels($order_id);
 					    } else {
