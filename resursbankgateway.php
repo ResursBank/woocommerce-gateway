@@ -2004,16 +2004,14 @@ function woocommerce_gateway_resurs_bank_init() {
 						$getRedirectUrl = $woocommerce->cart->get_cart_url();
 					} else {
 						$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
-						if ( $optionReduceOrderStock ) {
-							/*
-                             * While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
-                             */
-							if ( $optionReduceOrderStock ) {
-								if (isWooCommerce3()) {
-									wc_reduce_stock_levels($order_id);
-								} else {
-									$order->reduce_order_stock();
-								}
+						$hasReduceStock         = get_post_meta( $order_id, 'hasReduceStock' );
+						// While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
+						if ( $optionReduceOrderStock && empty( $hasReduceStock ) ) {
+							update_post_meta( $order_id, 'hasReduceStock', time() );
+							if ( isWooCommerce3() ) {
+								wc_reduce_stock_levels( $order_id );
+							} else {
+								$order->reduce_order_stock();
 							}
 						}
 						$getRedirectUrl = $this->get_return_url( $order );
