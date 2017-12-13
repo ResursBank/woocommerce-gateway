@@ -1577,6 +1577,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			switch ( $bookedStatus ) {
 				case 'FINALIZED':
 					define('RB_SYNCHRONOUS_MODE', true);
+					WC()->session->set( "order_awaiting_payment", true );
 					$order->update_status( 'completed' );
 					WC()->cart->empty_cart();
 					return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
@@ -1589,7 +1590,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						    wc_reduce_stock_levels($order_id);
 					    } else {
 						    $order->reduce_order_stock();
-                        		    }
+					    }
 					}
 					WC()->cart->empty_cart();
 
