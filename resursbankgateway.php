@@ -4,15 +4,15 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.2.5
- * Version: 2.2.0
+ * WC Tested up to: 3.2.6
+ * Version: 2.2.1
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', "2.2.0" );
+define( 'RB_WOO_VERSION', "2.2.1" );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 
 require_once(__DIR__ . '/vendor/autoload.php');
@@ -1425,20 +1425,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				'forceSigning' => false
 			);
 
-            // Defaults
-/*			if ( !isResursHosted() ) {
-				$bookDataArray['paymentData'] = array(
-					'waitForFraudControl' => resursOption( 'waitForFraudControl' ),
-					'annulIfFrozen'       => resursOption( 'annulIfFrozen' ),
-					'finalizeIfBooked'    => resursOption( 'finalizeIfBooked' ),
-					'preferredId'         => $preferredId
-				);
-			} else {
-				$bookDataArray['waitForFraudControl'] = resursOption( 'waitForFraudControl' );
-				$bookDataArray['annulIfFrozen']       = resursOption( 'annulIfFrozen' );
-				$bookDataArray['finalizeIfBooked']    = resursOption( 'finalizeIfBooked' );
-				$bookDataArray['paymentData']         = array('preferredId' => $preferredId);
-			}*/
 			$bookDataArray['paymentData'] = array(
 				'waitForFraudControl' => resursOption( 'waitForFraudControl' ),
 				'annulIfFrozen'       => resursOption( 'annulIfFrozen' ),
@@ -1642,6 +1628,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * @param string $methodId
 		 *
 		 * @return array
+         * @throws \Exception
 		 */
 		public function getTransientMethod( $methodId = '' ) {
 			//$methodList = get_transient('resurs_bank_payment_methods');
@@ -2092,7 +2079,9 @@ function woocommerce_gateway_resurs_bank_init() {
 				} elseif ( $bookedStatus == 'BOOKED' ) {
 					$order->update_status( 'processing', __( 'The payment are signed and booked', 'WC_Payment_Gateway' ) );
 				} elseif ( $bookedStatus == 'FINALIZED' ) {
-					$order->update_status( 'processing', __( 'The payment are signed and debited', 'WC_Payment_Gateway' ) );
+					define('RB_SYNCHRONOUS_MODE', true);
+					WC()->session->set( "order_awaiting_payment", true );
+					$order->update_status( 'completed', __( 'The payment are signed and debited', 'WC_Payment_Gateway' ) );
 				} elseif ( $bookedStatus == 'DENIED' ) {
 					$order->update_status( 'failed' );
 					wc_add_notice( __( 'The payment can not complete. Contact customer services for more information.', 'WC_Payment_Gateway' ), 'error' );
