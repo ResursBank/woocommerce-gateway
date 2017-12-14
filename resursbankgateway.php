@@ -686,7 +686,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					'response'     => $myResponse,
 					'success'      => $myBool,
 					'session'      => $mySession === true ? 1 : 0,
-					'errorMessage' => $errorMessage
+					'errorMessage' => nl2br($errorMessage)
 				);
 				$this->returnJsonResponse( $response );
 				exit;
