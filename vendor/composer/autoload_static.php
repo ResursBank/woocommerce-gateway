@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit3fb3c3f02b93736c3be8fe0ce12120d6
+class ComposerStaticInit0dd9971743aca107b94519e9507a4005
 {
     public static $files = array (
         'a2ffb7dc7e05ad2dc2ed262a34ab8f48' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/tornevall_crypto.php',
@@ -37,8 +37,8 @@ class ComposerStaticInit3fb3c3f02b93736c3be8fe0ce12120d6
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit3fb3c3f02b93736c3be8fe0ce12120d6::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit3fb3c3f02b93736c3be8fe0ce12120d6::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit0dd9971743aca107b94519e9507a4005::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit0dd9971743aca107b94519e9507a4005::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

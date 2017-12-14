@@ -6,7 +6,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.3
- * @version 1.3.2
+ * @version 1.3.3
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -111,9 +111,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.3.2";
+	private $version = "1.3.3";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171213";
+	private $lastUpdate = "20171214";
 	/** @var string URL to git storage */
 	private $gitUrl = "https://bitbucket.org/resursbankplugins/resurs-ecomphp";
 	/** @var string This. */
@@ -1481,6 +1481,7 @@ class ResursBank {
 		$serviceNameUrl = $this->getServiceUrl( $serviceName );
 		$soapBody = null;
 		if (!empty($serviceNameUrl) && !is_null($this->CURL)) {
+			$this->CURL->setFlag("SOAPWARNINGS", true);
 			$Service = $this->CURL->doGet( $serviceNameUrl );
 			try {
 				$RequestService = $Service->$serviceName( $resursParameters );
@@ -5084,11 +5085,12 @@ class ResursBank {
 				return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_BOOKED:
 				// Frozen set, but not true OR frozen not set at all - Go processing
-				if ( ( isset( $paymentData->frozen ) && ! $paymentData->frozen ) || ! isset( $paymentData->frozen ) ) {
-					return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
-				} else {
+				if ( isset( $paymentData->frozen ) && $paymentData->frozen ) {
 					return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
 				}
+				// Running in synchronous mode (finalizeIfBooked) might disturb the normal way to handle the booked callback, so we'll continue checkinging
+				// the order by statuses if this order is not frozen
+				return $this->getOrderStatusByPaymentStatuses( $paymentData );
 				break;
 			case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_FINALIZATION:
 				return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
