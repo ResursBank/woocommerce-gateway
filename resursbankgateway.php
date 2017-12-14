@@ -1566,8 +1566,15 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'FINALIZED':
 					define('RB_SYNCHRONOUS_MODE', true);
 					WC()->session->set( "order_awaiting_payment", true );
-					$order->update_status( 'completed' );
-					WC()->cart->empty_cart();
+					//$order->update_status( 'completed' );
+					try {
+						$order->set_status( 'completed', __( '', 'WC_Payment_Gateway' ), true );
+						$order->save();
+					} catch ( \Exception $e ) {
+						wc_add_notice( $e->getMessage(), 'error' );
+						return;
+					}
+    				WC()->cart->empty_cart();
 					return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
 					break;
 				case 'BOOKED':
@@ -2079,8 +2086,16 @@ function woocommerce_gateway_resurs_bank_init() {
 				} elseif ( $bookedStatus == 'BOOKED' ) {
 					$order->update_status( 'processing', __( 'The payment are signed and booked', 'WC_Payment_Gateway' ) );
 				} elseif ( $bookedStatus == 'FINALIZED' ) {
-					define('RB_SYNCHRONOUS_MODE', true);
+					//define('RB_SYNCHRONOUS_MODE', true);
 					WC()->session->set( "order_awaiting_payment", true );
+					try {
+						$order->set_status( 'completed', __( '', 'WC_Payment_Gateway' ), true );
+						$order->save();
+					} catch ( \Exception $e ) {
+						wc_add_notice( $e->getMessage(), 'error' );
+						return;
+					}
+
 					$order->update_status( 'completed', __( 'The payment are signed and debited', 'WC_Payment_Gateway' ) );
 				} elseif ( $bookedStatus == 'DENIED' ) {
 					$order->update_status( 'failed' );
