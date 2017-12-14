@@ -1568,7 +1568,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					WC()->session->set( "order_awaiting_payment", true );
 					//$order->update_status( 'completed' );
 					try {
-						$order->set_status( 'completed', __( '', 'WC_Payment_Gateway' ), true );
+						$order->set_status( 'completed', __( 'Order is debited and completed', 'WC_Payment_Gateway' ), true );
 						$order->save();
 					} catch ( \Exception $e ) {
 						wc_add_notice( $e->getMessage(), 'error' );
@@ -2089,7 +2089,7 @@ function woocommerce_gateway_resurs_bank_init() {
 					//define('RB_SYNCHRONOUS_MODE', true);
 					WC()->session->set( "order_awaiting_payment", true );
 					try {
-						$order->set_status( 'completed', __( '', 'WC_Payment_Gateway' ), true );
+						$order->set_status( 'completed', __( 'Order is debited and completed', 'WC_Payment_Gateway' ), true );
 						$order->save();
 					} catch ( \Exception $e ) {
 						wc_add_notice( $e->getMessage(), 'error' );
