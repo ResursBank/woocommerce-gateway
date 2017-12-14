@@ -5,7 +5,7 @@ namespace TorneLIB;
 if ( file_exists( __DIR__ . '/../vendor/autoload.php' ) ) {
 	require_once( __DIR__ . '/../vendor/autoload.php' );
 }
-if ( file_exists( __DIR__. "/../tornelib.php" ) ) {
+if ( file_exists( __DIR__ . "/../tornelib.php" ) ) {
 	// Work with TorneLIBv5
 	require_once( __DIR__ . '/../tornelib.php' );
 }
@@ -30,6 +30,9 @@ class Tornevall_cURLTest extends TestCase {
 
 	public $specUrlUsername;
 	public $specUrlPassword;
+	/** @var bool Enables especially special SOAP features to be tested */
+	private $skipSpecials = true;
+	private $skipTor = true;
 
 	//function tearDown() {}
 	function setUp() {
@@ -122,6 +125,7 @@ class Tornevall_cURLTest extends TestCase {
 		if ( is_array( $container ) && isset( $container['body'] ) ) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -129,6 +133,7 @@ class Tornevall_cURLTest extends TestCase {
 		if ( $this->hasBody( $container ) ) {
 			return $container['body'];
 		}
+
 		return "";
 	}
 
@@ -659,6 +664,12 @@ class Tornevall_cURLTest extends TestCase {
 	 * @link https://www.torproject.org/ Required application
 	 */
 	function testTorNetwork() {
+		$skipThis = $this->skipTor;
+		if ( $skipThis ) {
+			$this->markTestSkipped( __FUNCTION__ . " is a special test for TOR Networks. Normally this is not needed" );
+
+			return;
+		}
 		$this->pemDefault();
 		exec( "service tor status", $ubuntuService );
 		$serviceFound = false;
@@ -761,9 +772,9 @@ class Tornevall_cURLTest extends TestCase {
 	}
 
 	function testSoapError() {
-		$skipThis = true;
+		$skipThis = $this->skipSpecials;
 		if ( $skipThis ) {
-			$this->markTestSkipped( "testSoapError is a special exceptions test. Normally we do not want to run this" );
+			$this->markTestSkipped( __FUNCTION__ . " is a special exceptions test. Normally we do not want to run this" );
 
 			return;
 		}
@@ -776,72 +787,86 @@ class Tornevall_cURLTest extends TestCase {
 			$this->assertTrue( isset( $previousException->faultstring ) && ! empty( $previousException->faultstring ) && preg_match( "/unauthorized/i", $e->getMessage() ) );
 		}
 	}
+
 	function testSoapAuthErrorInitialSoapFaultsWsdl() {
-		$skipThis = true;
+		$skipThis = $this->skipSpecials;
 		if ( $skipThis ) {
-			$this->markTestSkipped( "testSoapError is a special exceptions test. Normally we do not want to run this" );
+			$this->markTestSkipped( __FUNCTION__ . " is a special exceptions test. Normally we do not want to run this" );
+
 			return;
 		}
 		$localCurl = new Tornevall_cURL();
-		$localCurl->setAuthentication("fail", "fail");
-		$localCurl->setFlag('SOAPWARNINGS');
+		$localCurl->setAuthentication( "fail", "fail" );
+		$localCurl->setFlag( 'SOAPWARNINGS' );
 		try {
-			$wsdl      = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService?wsdl' );
+			$wsdl = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService?wsdl' );
 			$wsdl->getPaymentMethods();
 		} catch ( \Exception $e ) {
 			$errorMessage = $e->getMessage();
-			$this->assertTrue( preg_match( "/401 unauthorized/i", $errorMessage ) == 1 );
+			$errorCode    = $e->getCode();
+			$this->assertTrue( $errorCode == 401 && preg_match( "/401 unauthorized/is", $errorMessage ) ? true : false );
 		}
 	}
+
 	function testSoapAuthErrorInitialSoapFaultsNoWsdl() {
-		$skipThis = true;
+		$skipThis = $this->skipSpecials;
 		if ( $skipThis ) {
-			$this->markTestSkipped( "testSoapError is a special exceptions test. Normally we do not want to run this" );
+			$this->markTestSkipped( __FUNCTION__ . " is a special exceptions test. Normally we do not want to run this" );
+
 			return;
 		}
 		$localCurl = new Tornevall_cURL();
-		$localCurl->setSoapTryOnce(false);
-		$localCurl->setAuthentication("fail", "fail");
-		$localCurl->setFlag('SOAPWARNINGS');
+		$localCurl->setSoapTryOnce( false );
+		$localCurl->setAuthentication( "fail", "fail" );
+		$localCurl->setFlag( 'SOAPWARNINGS' );
 		try {
-			$wsdl      = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService', CURL_POST_AS::POST_AS_SOAP );
+			$wsdl = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService', CURL_POST_AS::POST_AS_SOAP );
 			$wsdl->getPaymentMethods();
 		} catch ( \Exception $e ) {
 			$errorMessage = $e->getMessage();
-			$this->assertTrue( preg_match( "/401 unauthorized/i", $errorMessage ) == 1 );
+			$errorCode    = $e->getCode();
+			$this->assertTrue( $errorCode == 401 && preg_match( "/401 unauthorized/is", $errorMessage ) ? true : false );
 		}
 	}
+
 	function testSoapAuthErrorNoInitialSoapFaultsWsdl() {
-		$skipThis = true;
+		$skipThis = $this->skipSpecials;
 		if ( $skipThis ) {
-			$this->markTestSkipped( "testSoapError is a special exceptions test. Normally we do not want to run this" );
+			$this->markTestSkipped( __FUNCTION__ . " is a special exceptions test. Normally we do not want to run this" );
+
 			return;
 		}
 		$localCurl = new Tornevall_cURL();
-		$localCurl->setAuthentication("fail", "fail");
+		$localCurl->setAuthentication( "fail", "fail" );
 		try {
-			$wsdl      = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService?wsdl' );
+			$wsdl = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService?wsdl' );
 			$wsdl->getPaymentMethods();
 		} catch ( \Exception $e ) {
+			// As of 6.0.16, this is the default behaviour even when SOAPWARNINGS are not active by setFlag
 			$errorMessage = $e->getMessage();
-			$this->assertTrue( !preg_match( "/401 unauthorized/i", $errorMessage ) );
+			$errorCode    = $e->getCode();
+			$this->assertTrue( $errorCode == 401 && preg_match( "/401 unauthorized/is", $errorMessage ) ? true : false );
 		}
 	}
+
 	function testSoapAuthErrorNoInitialSoapFaultsNoWsdl() {
-		$skipThis = true;
+		$skipThis = $this->skipSpecials;
 		if ( $skipThis ) {
-			$this->markTestSkipped( "testSoapError is a special exceptions test. Normally we do not want to run this" );
+			$this->markTestSkipped( __FUNCTION__ . " is a special exceptions test. Normally we do not want to run this" );
+
 			return;
 		}
 		$localCurl = new Tornevall_cURL();
-		$localCurl->setSoapTryOnce(false);
-		$localCurl->setAuthentication("fail", "fail");
+		$localCurl->setSoapTryOnce( false );
+		$localCurl->setAuthentication( "fail", "fail" );
 		try {
-			$wsdl      = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService', CURL_POST_AS::POST_AS_SOAP );
+			$wsdl = $localCurl->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService', CURL_POST_AS::POST_AS_SOAP );
 			$wsdl->getPaymentMethods();
 		} catch ( \Exception $e ) {
+			// As of 6.0.16, this is the default behaviour even when SOAPWARNINGS are not active by setFlag
 			$errorMessage = $e->getMessage();
-			$this->assertTrue( !preg_match( "/401 unauthorized/i", $errorMessage ) );
+			$errorCode    = $e->getCode();
+			$this->assertTrue( $errorCode == 401 && preg_match( "/401 unauthorized/is", $errorMessage ) ? true : false );
 		}
 	}
 
@@ -1100,8 +1125,8 @@ class Tornevall_cURLTest extends TestCase {
 		$this->assertTrue( $this->NET->getExceptionCode( 'NETCURL_EXCEPTION_IT_DOESNT_WORK' ) == 500 );
 	}
 
-	private function hasGuzzle($useStream = false) {
-		if (!$useStream) {
+	private function hasGuzzle( $useStream = false ) {
+		if ( ! $useStream ) {
 			return $this->CURL->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP );
 		} else {
 			return $this->CURL->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP_STREAM );
@@ -1109,53 +1134,62 @@ class Tornevall_cURLTest extends TestCase {
 	}
 
 	function testEnableGuzzle() {
-		if ($this->hasGuzzle()) {
-			$info = $this->CURL->doPost("https://" . $this->Urls['tests'] . "?o=json&getjson=true&var1=HasVar1", array('var2'=>'HasPostVar1'));
+		if ( $this->hasGuzzle() ) {
+			$info = $this->CURL->doPost( "https://" . $this->Urls['tests'] . "?o=json&getjson=true&var1=HasVar1", array( 'var2' => 'HasPostVar1' ) );
 			$this->CURL->getExternalDriverResponse();
-			$parsed = $this->CURL->getParsedResponse($info);
-			$this->assertTrue($parsed->methods->_REQUEST->var1 === "HasVar1");
+			$parsed = $this->CURL->getParsedResponse( $info );
+			$this->assertTrue( $parsed->methods->_REQUEST->var1 === "HasVar1" );
 		} else {
-			$this->markTestSkipped("Can not test guzzle driver without guzzle");
+			$this->markTestSkipped( "Can not test guzzle driver without guzzle" );
 		}
 	}
+
 	function testEnableGuzzleStream() {
-		if ($this->hasGuzzle(true)) {
-			$info = $this->CURL->doPost("https://" . $this->Urls['tests'] . "?o=json&getjson=true&getVar=true", array('var1'=>'HasVar1', 'postVar'=>"true"));
+		if ( $this->hasGuzzle( true ) ) {
+			$info = $this->CURL->doPost( "https://" . $this->Urls['tests'] . "?o=json&getjson=true&getVar=true", array( 'var1'    => 'HasVar1',
+			                                                                                                            'postVar' => "true"
+			) );
 			$this->CURL->getExternalDriverResponse();
-			$parsed = $this->CURL->getParsedResponse($info);
-			$this->assertTrue($parsed->methods->_REQUEST->var1 === "HasVar1");
+			$parsed = $this->CURL->getParsedResponse( $info );
+			$this->assertTrue( $parsed->methods->_REQUEST->var1 === "HasVar1" );
 		} else {
-			$this->markTestSkipped("Can not test guzzle driver without guzzle");
+			$this->markTestSkipped( "Can not test guzzle driver without guzzle" );
 		}
 	}
+
 	function testEnableGuzzleStreamJson() {
-		if ($this->hasGuzzle(true)) {
-			$info = $this->CURL->doPost("https://" . $this->Urls['tests'] . "?o=json&getjson=true&getVar=true", array('var1'=>'HasVar1', 'postVar'=>"true", 'asJson'=>'true'), CURL_POST_AS::POST_AS_JSON);
+		if ( $this->hasGuzzle( true ) ) {
+			$info = $this->CURL->doPost( "https://" . $this->Urls['tests'] . "?o=json&getjson=true&getVar=true", array( 'var1'    => 'HasVar1',
+			                                                                                                            'postVar' => "true",
+			                                                                                                            'asJson'  => 'true'
+			), CURL_POST_AS::POST_AS_JSON );
 			$this->CURL->getExternalDriverResponse();
-			$parsed = $this->CURL->getParsedResponse($info);
-			$this->assertTrue($parsed->methods->_REQUEST->var1 === "HasVar1");
+			$parsed = $this->CURL->getParsedResponse( $info );
+			$this->assertTrue( $parsed->methods->_REQUEST->var1 === "HasVar1" );
 		} else {
-			$this->markTestSkipped("Can not test guzzle driver without guzzle");
+			$this->markTestSkipped( "Can not test guzzle driver without guzzle" );
 		}
 	}
+
 	function testEnableGuzzleWsdl() {
-		if ($this->hasGuzzle()) {
+		if ( $this->hasGuzzle() ) {
 			// Currently, this one will fail over to SimpleSoap
 			$info = $this->CURL->doGet( "http://" . $this->Urls['soap'] );
-			$this->assertTrue(is_object($info));
+			$this->assertTrue( is_object( $info ) );
 		} else {
-			$this->markTestSkipped("Can not test guzzle driver without guzzle");
+			$this->markTestSkipped( "Can not test guzzle driver without guzzle" );
 		}
 	}
+
 	function testEnableGuzzleErrors() {
-		if ($this->hasGuzzle()) {
+		if ( $this->hasGuzzle() ) {
 			try {
 				$info = $this->CURL->doPost( $this->Urls['tests'] . "&o=json&getjson=true", array( 'var1' => 'HasVar1' ) );
-			} catch (\Exception $wrapError) {
-				$this->assertTrue($wrapError->getCode() == 404);
+			} catch ( \Exception $wrapError ) {
+				$this->assertTrue( $wrapError->getCode() == 404 );
 			}
 		} else {
-			$this->markTestSkipped("Can not test guzzle driver without guzzle");
+			$this->markTestSkipped( "Can not test guzzle driver without guzzle" );
 		}
 	}
 
@@ -1163,32 +1197,33 @@ class Tornevall_cURLTest extends TestCase {
 		$driverList = array();
 		try {
 			$driverList = $this->CURL->getDrivers();
-		} catch (\Exception $e) {
+		} catch ( \Exception $e ) {
 			echo $e->getMessage();
 		}
-		$this->assertTrue(count($driverList) > 0);
+		$this->assertTrue( count( $driverList ) > 0 );
 	}
+
 	function testDriverControlNoList() {
 		$driverList = false;
 		try {
 			$driverList = $this->CURL->getAvailableDrivers();
-		} catch (\Exception $e) {
+		} catch ( \Exception $e ) {
 			echo $e->getMessage() . "\n";
 		}
-		$this->assertTrue($driverList);
+		$this->assertTrue( $driverList );
 	}
 
 	public function testGetProtocol() {
-		$oneOfThenm = TorneLIB_Network::getCurrentServerProtocol(true);
-		$this->assertTrue($oneOfThenm == "http" || $oneOfThenm == "https");
+		$oneOfThenm = TorneLIB_Network::getCurrentServerProtocol( true );
+		$this->assertTrue( $oneOfThenm == "http" || $oneOfThenm == "https" );
 	}
 
 	function testGetSupportedDrivers() {
-		$this->assertTrue(count($this->CURL->getSupportedDrivers()) > 0);
+		$this->assertTrue( count( $this->CURL->getSupportedDrivers() ) > 0 );
 	}
 
 	function testSetAutoDriver() {
 		$driverset = $this->CURL->setDriverAuto();
-		$this->assertTrue($driverset > 0);
+		$this->assertTrue( $driverset > 0 );
 	}
 }
