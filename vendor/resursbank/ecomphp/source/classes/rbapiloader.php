@@ -5088,7 +5088,7 @@ class ResursBank {
 				if ( isset( $paymentData->frozen ) && $paymentData->frozen ) {
 					return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
 				}
-				// Running in synchronous mode (finalizeIfBooked) might disturb the normal way to handle the booked callback, so we'll continue checkinging
+				// Running in synchronous mode (finalizeIfBooked) might disturb the normal way to handle the booked callback, so we'll continue checking
 				// the order by statuses if this order is not frozen
 				return $this->getOrderStatusByPaymentStatuses( $paymentData );
 				break;
