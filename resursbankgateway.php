@@ -1733,7 +1733,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$flow = initializeResursFlow();
 							try {
 								$flow->updatePaymentReference( $_REQUEST['orderRef'], $_REQUEST['orderId'] );
-								update_post_meta( $orderId, 'paymentId', $_REQUEST['orderId'] );
+								update_post_meta( $_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId'] );
 								$returnResult['success'] = true;
 								$this->returnJsonResponse( $returnResult, 200 );
 							} catch ( \Exception $e ) {
