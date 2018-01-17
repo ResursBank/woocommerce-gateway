@@ -63,10 +63,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 
 	/**
 	 * Settings tab initializer
-	 *
+     *
 	 * @param $settings_tabs
 	 *
 	 * @return mixed
+	 * @throws Exception
 	 */
 	public function resurs_settings_tab( $settings_tabs ) {
 		//$settings_tabs[$this->id] = __('Resurs Bank Administration', 'WC_Payment_Gateway');
@@ -577,6 +578,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					echo $this->setCheckBox( 'enabled', $namespace );
 					echo $this->setHidden( 'title', $namespace );
 					echo $this->setDropDown( 'priceTaxClass', $namespace, $this->getTaxRatesArray() );
+					echo $this->setCheckBox( 'postidreference', $namespace );
 					echo $this->setSeparator( __( 'API Settings', 'WC_Payment_Gateway' ) );
 					echo $this->setDropDown( 'flowtype', $namespace );
 					echo $this->setDropDown( 'country', $namespace, null, "onchange=adminResursChangeFlowByCountry(this)" );

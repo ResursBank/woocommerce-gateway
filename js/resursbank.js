@@ -182,11 +182,19 @@ $RB(document).ready(function ($) {
                             function (successData) {
                                 var errorString = "";
                                 var isSuccess = false;
-                            if (typeof successData.success !== "undefined") {
-                                if (successData.success === true) {
+                                var orderId = 0;
+                                if (typeof successData["orderId"] !== "undefined") {
+                                    orderId = successData["orderId"];
+                                }
+                                if (typeof successData.success !== "undefined") {
+                                    if (successData.success === true) {
                                         isSuccess = true;
-                                        resursCheckout.confirmOrder(true);
-                                        return true;
+                                        if (omnivars["postidreference"] == "1" && orderId > 0) {
+                                            return rbUpdatePaymentReference(resursCheckout, successData);
+                                        } else {
+                                            resursCheckout.confirmOrder(true);
+                                            return true;
+                                        }
                                     }
                                 }
                                 errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
@@ -676,4 +684,34 @@ function rbFormChange(formFieldName, o) {
             }
         }
     }
+}
+function rbUpdatePaymentReference(refobj, paymentDataObject) {
+    var resRef = "";
+    var orderId = 0;
+    if (typeof paymentDataObject["resursData"]["reqId"] !== "undefined") {
+        resRef = paymentDataObject["resursData"]["reqId"];
+        orderId = paymentDataObject["orderId"];
+    }
+
+    if (typeof omnivars.OmniRef !== "undefined") {
+        var omniRef = omnivars.OmniRef;
+        var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef + "&updateReference=true";
+        if (orderId > 0) {
+            $RB.ajax({
+                type: 'POST',
+                url: preBookUrl,
+                data: {
+                    'ref': resRef,
+                    'orderId': orderId
+                }
+            }).done(function (data) {
+                if (data.success) {
+                    return refobj.confirmOrder(true);
+                } else {
+                    handleResursCheckoutError(getResursPhrase("updatePaymentReferenceFailure") + " - " + data.errorString);
+                }
+            });
+        }
+    }
+    return false;
 }
