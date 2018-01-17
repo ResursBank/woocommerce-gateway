@@ -1177,6 +1177,9 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * level.
 		 *
 		 * @param  int $payment_id The chosen payment method
+		 * @param null $method_class
+		 *
+		 * @throws Exception
 		 */
 		public function start_payment_session( $payment_id, $method_class = null ) {
 			global $woocommerce;
@@ -1346,10 +1349,11 @@ function woocommerce_gateway_resurs_bank_init() {
 
 		/**
 		 * Proccess the payment
-		 *
+         *
 		 * @param  int $order_id WooCommerce order ID
 		 *
-		 * @return array    Null on failure, array on success
+		 * @return array|void Null on failure, array on success
+		 * @throws Exception
 		 */
 		public function process_payment( $order_id ) {
 			global $woocommerce;
@@ -1358,7 +1362,13 @@ function woocommerce_gateway_resurs_bank_init() {
 				return;
 			}
 			$order       = new WC_Order( $order_id );
-			$preferredId = $this->flow->getPreferredPaymentId( 25 );
+
+			if (getResursOption( "postidreference" )) {
+			    $preferredId = $order_id;
+            } else {
+				$preferredId = $this->flow->getPreferredPaymentId( 25 );
+            }
+
 			update_post_meta( $order_id, 'paymentId', $preferredId );
 			$customer  = $woocommerce->customer;
 			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
