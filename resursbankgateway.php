@@ -12,7 +12,7 @@
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', "2.2.1" );
+define( 'RB_WOO_VERSION', "2.2.2" );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 
 require_once(__DIR__ . '/vendor/autoload.php');
@@ -1733,6 +1733,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$flow = initializeResursFlow();
 							try {
 								$flow->updatePaymentReference( $_REQUEST['orderRef'], $_REQUEST['orderId'] );
+								update_post_meta( $orderId, 'paymentId', $_REQUEST['orderId'] );
 								$returnResult['success'] = true;
 								$this->returnJsonResponse( $returnResult, 200 );
 							} catch ( \Exception $e ) {
