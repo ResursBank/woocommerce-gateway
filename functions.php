@@ -87,6 +87,12 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'label'       => __( 'Enabled', 'woocommerce' ),
 					'description' => __( 'This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.', 'WC_Payment_Gateway' )
 				),
+				'postidreference'                              => array(
+					'title'       => __( 'Use woocommerce order ids (postid) as references', 'WC_Payment_Gateway' ),
+					'type'        => 'checkbox',
+					'label'       => __( 'Enabled', 'woocommerce' ),
+					'description' => __( 'This function tries to use the internal post id as orderid instead of the references created by the plugin ', 'WC_Payment_Gateway' )
+				),
 				'country'                              => array(
 					'title'       => __( 'Country', 'WC_Payment_Gateway' ),
 					'type'        => 'select',
