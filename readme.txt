@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.9.1
 Requires PHP: 5.4
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
+
+= 2.2.2 =
+
+    * [WOO-95] - updatePaymentReference to WooCommerce orderId
 
 = 2.2.1 =
 
