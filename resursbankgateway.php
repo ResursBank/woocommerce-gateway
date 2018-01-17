@@ -1670,10 +1670,9 @@ function woocommerce_gateway_resurs_bank_init() {
 		public function prepare_omni_order() {
 			/** @var WC_Checkout $resursOrder What will be created if successful, and what will report undefined variable if unsuccessful */
 			$resursOrder = null;
+			$updatePaymentReference = false;
 
-			/*
-             * Get incoming request.
-             */
+			// Get incoming request
 			$url_arr          = parse_url( $_SERVER["REQUEST_URI"] );
 			$url_arr['query'] = str_replace( 'amp;', '', $url_arr['query'] );
 			parse_str( $url_arr['query'], $request );
@@ -1702,9 +1701,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$errorString = "";
 			$errorCode   = "";
-			/*
-             * Generate the json-data
-             */
+			// Default json data response
 			$returnResult = array(
 				'success'     => false,
 				'errorString' => "",
@@ -1719,6 +1716,33 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$returnResult['success'] = false;
 
+			if (isset($_REQUEST['updateReference'])) {
+				if ( isset( $_REQUEST['omnicheckout_nonce'] ) ) {
+					if ( wp_verify_nonce( $_REQUEST['omnicheckout_nonce'], "omnicheckout" ) ) {
+						if ( isset( $_REQUEST['orderRef'] ) && isset( $_REQUEST['orderId'] ) ) {
+							$flow = initializeResursFlow();
+							try {
+								$flow->updatePaymentReference( $_REQUEST['orderRef'], $_REQUEST['orderId'] );
+								$returnResult['success'] = true;
+								$this->returnJsonResponse( $returnResult, 200 );
+							} catch ( \Exception $e ) {
+								$returnResult['success']     = false;
+								$returnResult['errorString'] = $e->getMessage();
+								$returnResult['errorCode']   = 500;
+								$this->returnJsonResponse( $returnResult, $returnResult['errorCode'] );
+
+							}
+						} else {
+							$returnResult['success']     = false;
+							$returnResult['errorString'] = "Order reference or orderId not set";
+							$returnResult['errorCode']   = 404;
+							$this->returnJsonResponse( $returnResult, $returnResult['errorCode'] );
+						}
+						die;
+					}
+				}
+			}
+
 			if ( ! count( $customerData ) ) {
 				$returnResult['errorString'] = "No customer data set";
 				$returnResult['errorCode']   = "404";
@@ -1728,17 +1752,14 @@ function woocommerce_gateway_resurs_bank_init() {
 			$responseCode       = 0;
 			$allowOrderCreation = false;
 
-			/*
-             * Without the nonce, no background order can prepare
-             */
+			// Without the nonce, no background order can prepare
 			if ( isset( $_REQUEST['omnicheckout_nonce'] ) ) {
 				if ( wp_verify_nonce( $_REQUEST['omnicheckout_nonce'], "omnicheckout" ) ) {
+
 					$hasInternalErrors        = false;
 					$returnResult['verified'] = true;
 
-					/*
-                     * This procedure normally works.
-                     */
+                    // This procedure normally works.
 					$testLocalOrder = wc_get_order_id_by_payment_id( $requestedPaymentId );
 					if ( ( empty( $testLocalOrder ) && $requestedUpdateOrder ) || ( ! is_numeric( $testLocalOrder ) && is_numeric( $testLocalOrder ) && $testLocalOrder != $requestedUpdateOrder ) ) {
 						$testLocalOrder = $requestedUpdateOrder;
@@ -1746,10 +1767,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 					$returnResult['resursData']['locId'] = $requestedPaymentId;
 
-					/*
-                     * If the order has already been created, the user may have been clicking more than one time in the frame,
-                     * eventually due to payment method changes.
-                     */
+					// If the order has already been created, the user may have been clicking more than one time in the frame, eventually due to payment method changes.
 					$wooBillingAddress     = array();
 					$wooDeliveryAddress    = array();
 					$resursBillingAddress  = isset( $customerData['address'] ) && is_array( $customerData['address'] ) ? $customerData['address'] : array();
@@ -1789,9 +1807,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							'phone'      => ! empty( $resursDeliveryAddress['telephone'] ) ? $resursDeliveryAddress['telephone'] : "",
 						);
 					} else {
-						/*
-                         * Helper for "sameAddress"-cases.
-                         */
+					    // Helper for "sameAddress"-cases.
 						$_POST['ship_to_different_address'] = false;
 						$wooDeliveryAddress                 = $wooBillingAddress;
 					}
@@ -2151,8 +2167,9 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * Validate the payment fields
 		 *
 		 * Never called from within this class, only by those that extends from this class and that are created in write_class_to_file
-		 *
-		 * @return boolean Whether or not the validation passed
+         *
+		 * @return bool Whether or not the validation passed
+		 * @throws Exception
 		 */
 		public function validate_fields() {
 			global $woocommerce;
@@ -2807,9 +2824,9 @@ function woocommerce_gateway_resurs_bank_init() {
 			$omniBookNonce = wp_nonce_url( $omniBookUrl, "omnicheckout", "omnicheckout_nonce" );
 
 			/** @var $flow Resursbank\RBEcomPHP\ResursBank */
-			$flow         = initializeResursFlow();
-			$sEnv         = getServerEnv();
-			$OmniUrl      = $flow->getCheckoutUrl( $sEnv );
+			$flow    = initializeResursFlow();
+			$sEnv    = getServerEnv();
+			$OmniUrl = $flow->getCheckoutUrl( $sEnv );
 
 			$isWooSession = false;
 			if ( isset( WC()->session ) ) {
@@ -2823,7 +2840,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$gateways = WC()->payment_gateways()->get_available_payment_gateways();
 
-			$OmniVars         = array(
+			$OmniVars = array(
 				'RESURSCHECKOUT_IFRAME_URL'            => $OmniUrl,
 				'RESURSCHECKOUT'                       => home_url(),
 				'OmniPreBookUrl'                       => $omniBookNonce,
@@ -2834,7 +2851,8 @@ function woocommerce_gateway_resurs_bank_init() {
 				'iframeShape'                          => getResursOption( "iframeShape", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'useStandardFieldsForShipping'         => getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" ),
-				'gatewayCount'                         => count( $gateways )
+				'gatewayCount'                         => count( $gateways ),
+				'postidreference'                      => getResursOption( "postidreference" )
 			);
 			$setSessionEnable = true;
 			$setSession       = isset( $_REQUEST['set-no-session'] ) ? $_REQUEST['set-no-session'] : null;
@@ -2844,7 +2862,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				$setSessionEnable = true;
 			}
 
-            // During the creation of new omnivars, make sure they are not duplicates from older orders.
+			// During the creation of new omnivars, make sure they are not duplicates from older orders.
 			if ( $setSessionEnable && function_exists( 'WC' ) && $isWooSession ) {
 				$currentOmniRef = WC()->session->get( 'omniRef' );
 				// The resursCreatePass variable is only set when everything was successful.
@@ -2896,6 +2914,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			'deliveryRequiresSigning'         => __( "Changing delivery address requires signing", 'WC_Payment_Gateway' ),
 			'ssnElementMissing'               => __( "I can not show errors since the element is missing", 'WC_Payment_Gateway' ),
 			'purchaseAjaxInternalFailure'     => __( "The purchase has failed, due to an internal server error: The shop could not properly update the order.", 'WC_Payment_Gateway' ),
+			'updatePaymentReferenceFailure'   => __( "The purchase was processed, but the payment reference failed to update", 'WC_Payment_Gateway' ),
 			'resursPurchaseNotAccepted'       => __( "The purchase was rejected by Resurs Bank. Please contact customer services, or try again with another payment method.", 'WC_Payment_Gateway' ),
 			'theAjaxWasNotAccepted'           => __( "Something went wrong when we tried to book your order. Please contact customer support for more information.", 'WC_Payment_Gateway' ),
 			'theAjaxWentWrong'                => __( "An internal error occured while trying to book the order. Please contact customer support for more information.", 'WC_Payment_Gateway' ),
@@ -3295,6 +3314,8 @@ function resurs_no_debit_debited() {
  *
  * @param WC_Order $order
  * @param null $orderDataInfoAfter
+ *
+ * @throws Exception
  */
 function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 	global $orderInfoShown;
