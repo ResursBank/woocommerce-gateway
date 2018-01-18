@@ -1734,6 +1734,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							try {
 								$flow->updatePaymentReference( $_REQUEST['orderRef'], $_REQUEST['orderId'] );
 								update_post_meta( $_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId'] );
+								update_post_meta( $_REQUEST['orderId'], 'paymentIdLast', $_REQUEST['orderRef'] );
 								$returnResult['success'] = true;
 								$this->returnJsonResponse( $returnResult, 200 );
 							} catch ( \Exception $e ) {
@@ -3743,6 +3744,12 @@ function resurs_remove_order_item( $item_id ) {
 function wc_get_order_id_by_payment_id( $paymentId = '' ) {
 	global $wpdb;
 	$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and meta_value = '%s'", $paymentId ) );
+	$order_id_last = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentIdLast' and meta_value = '%s'", $paymentId ) );
+
+	// If updateOrderReference-setting is enabled, also look for a prior variable, to track down the correct order based on the metadata tag paymentIdLast
+	if (getResursOption('postidreference') && !empty($order_id_last) && empty($order_id)) {
+	    return $order_id_last;
+    }
 
 	return $order_id;
 }
