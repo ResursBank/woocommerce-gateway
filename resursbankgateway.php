@@ -846,13 +846,14 @@ function woocommerce_gateway_resurs_bank_init() {
         }
 
 		/**
-		 * @param WC_Order $woocommerceOrder
+		 * @param $woocommerceOrder
 		 * @param string $currentWcStatus
 		 * @param string $paymentIdOrPaymentObject
 		 * @param int $byCallbackEvent
 		 * @param array $callbackEventDataArrayOrString
 		 *
 		 * @return int|RESURS_PAYMENT_STATUS_RETURNCODES
+		 * @throws Exception
 		 */
 		private function updateOrderByResursPaymentStatus($woocommerceOrder, $currentWcStatus = '', $paymentIdOrPaymentObject = '', $byCallbackEvent = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackEventDataArrayOrString = array()) {
 			/** @var $suggestedStatus RESURS_PAYMENT_STATUS_RETURNCODES */
