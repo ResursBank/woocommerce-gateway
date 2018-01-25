@@ -61,6 +61,8 @@ class ResursBankTest extends TestCase
 		$this->setupConfig();
 
 		$this->CURL    = new Tornevall_cURL();
+		$this->CURL->setChain(false);   // Unchain the module for backward
+
 		$this->NETWORK = new TorneLIB_Network();
 		if ( version_compare( PHP_VERSION, '5.3.0', "<" ) ) {
 			if ( ! $this->allowObsoletePHP ) {
@@ -107,6 +109,9 @@ class ResursBankTest extends TestCase
 
 	/** @var $NETWORK TorneLIB_Network */
 	private $NETWORK;
+
+	/** @var $CURL Tornevall_cURL */
+	private $CURL;
 
 	private function isSpecialAccount() {
 		$authed = $this->rb->getPayment( $this->paymentIdAuthed );
@@ -874,6 +879,9 @@ class ResursBankTest extends TestCase
 		$this->assertTrue( ( preg_match( "/amount=$amount/i", $customURL ) ? true : false ) );
 	}
 
+	/** @var string $framePaymentId */
+	//private $framePaymentId;
+
 	/**
 	 * This test is incomplete.
 	 *
@@ -898,10 +906,12 @@ class ResursBankTest extends TestCase
 			$iframeUrls    = $this->NETWORK->getUrlsFromHtml( $bookResult, 0, 1 );
 			$iFrameUrl     = array_pop( $iframeUrls );
 			$iframeContent = $this->CURL->doGet( $iFrameUrl );
-			if ( ! empty( $iframeContent['body'] ) ) {
+			$iframeBody = $this->CURL->getResponseBody();
+			if ( ! empty( $iframeBody ) ) {
 				$assumeThis = true;
 			}
 		}
+		//$this->framePaymentId = $newReferenceId;
 		if ( $returnPaymentReference ) {
 			return $this->rb->getPreferredPaymentId();
 		}
@@ -911,6 +921,8 @@ class ResursBankTest extends TestCase
 			return $iFrameUrl;
 		}
 	}
+
+	//private function getCheckoutFrameId() {}
 
 	/**
 	 * Try to fetch the iframe (Resurs Checkout). When the iframe url has been received, check if there's content.
@@ -926,7 +938,7 @@ class ResursBankTest extends TestCase
 		// If there is no https defined in the frameUrl, the test might have failed
 		if ( $UrlDomain[1] == "https" ) {
 			$FrameContent = $this->CURL->doGet( $getFrameUrl );
-			$this->assertTrue( $FrameContent['code'] == 200 && strlen( $FrameContent['body'] ) > 1024 );
+			$this->assertTrue( $this->CURL->getResponseCode() == 200 && strlen( $this->CURL->getResponseBody() ) > 1024 );
 		}
 	}
 
@@ -967,7 +979,7 @@ class ResursBankTest extends TestCase
 		$payload    = $this->rb->getPayload();
 		$orderLines = array( "orderLines" => $payload['orderLines'] );
 
-		$iframeContent = $iframeRequest['body'];
+		$iframeContent = $this->CURL->getResponseBody();;
 		$Success       = false;
 		if ( ! empty( $iframePaymentReference ) && ! empty( $iFrameUrl ) && ! empty( $iframeContent ) && strlen( $iframeContent ) > 1024 ) {
 			$newReference      = $this->rb->getPreferredPaymentId( 30, "UPDATE-", true, true );
@@ -1005,7 +1017,7 @@ class ResursBankTest extends TestCase
 		$payload    = $this->rb->getPayload();
 		$orderLines = array( "orderLines" => $payload['orderLines'] );
 
-		$iframeContent = $iframeRequest['body'];
+		$iframeContent = $this->CURL->getResponseBody($iframeRequest);
 		if ( ! empty( $iframePaymentReference ) && ! empty( $iFrameUrl ) && ! empty( $iframeContent ) && strlen( $iframeContent ) > 1024 ) {
 			$newReference = $this->rb->getPreferredPaymentId( 30, "UPDATE-", true, true );
 			try {
@@ -1029,7 +1041,7 @@ class ResursBankTest extends TestCase
 		$this->CURL->setAuthentication( $this->username, $this->password );
 		$this->CURL->setLocalCookies( true );
 		$iframeRequest = $this->CURL->doGet( $iFrameUrl );
-		$iframeContent = $iframeRequest['body'];
+		$iframeContent = $this->CURL->getResponseBody($iframeRequest);
 		if ( ! empty( $iframePaymentReference ) && ! empty( $iFrameUrl ) && ! empty( $iframeContent ) && strlen( $iframeContent ) > 1024 ) {
 			$newReference = "#" . $this->rb->getPreferredPaymentId( 30, "FAIL-", true, true );
 			try {
@@ -1392,7 +1404,7 @@ class ResursBankTest extends TestCase
 
 	private function doMockSign( $URL, $govId, $fail = false ) {
 		$MockFormResponse   = $this->CURL->doGet( $URL );
-		$MockDomain         = $this->NETWORK->getUrlDomain( $MockFormResponse['URL'] );
+		$MockDomain         = $this->NETWORK->getUrlDomain( $this->CURL->getResponseUrl() );
 		$MockDomainPath = null;
 		$mockDomainPathDir = null;
 		if (isset($MockDomain[2])) {
@@ -2021,6 +2033,7 @@ class ResursBankTest extends TestCase
 	 */
 	function testSoapErrorXPath() {
 		$CURL = new Tornevall_cURL();
+		$CURL->setChain(false);
 		$CURL->setAuthentication( $this->username, $this->password );
 		$wsdl = $CURL->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/AfterShopFlowService?wsdl' );
 		try {
@@ -2039,6 +2052,7 @@ class ResursBankTest extends TestCase
 	 */
 	function testSoapError() {
 		$CURL = new Tornevall_cURL();
+		$CURL->setChain(false);
 		$wsdl = $CURL->doGet( 'https://test.resurs.com/ecommerce-test/ws/V4/SimplifiedShopFlowService?wsdl' );
 		try {
 			$wsdl->getPaymentMethods();
@@ -2556,7 +2570,7 @@ class ResursBankTest extends TestCase
 	 * Test prevention of flooding services
 	 * @throws Exception
 	 */
-	public function testCheckoutFlood() {
+	/*public function testCheckoutFlood() {
 		$this->rb->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT);
 		$this->rb->setFlag('PREVENT_EXEC_FLOOD',true);
 		$this->rb->setFlag('PREVENT_EXEC_FLOOD_EXCEPTIONS',true);
@@ -2570,7 +2584,7 @@ class ResursBankTest extends TestCase
 			$exceptionCode = $e->getCode();
 		}
 		$this->assertTrue($exceptionCode === RESURS_EXCEPTIONS::CREATEPAYMENT_TOO_FAST);
-	}
+	}*/
 
 	/**
 	 * Test netcurl 6.0.15 SOAPWARNINGS flag
@@ -2584,5 +2598,29 @@ class ResursBankTest extends TestCase
 			$authTest = (preg_match("/401 unauthorized/i", $exceptionMessage) ? true : false);
 			$this->assertTrue( $authTest );
 		}
+	}
+
+/*	public function testHashifyGradeOrderLines() {
+		$this->rb->setMetaDataHash(true, true, "iv", "key");
+		try {
+			$paymentId = $this->getPaymentIdFromOrderByClientChoice( 3, 1, 1000, 2000, '198305147715' );
+		} catch (\Exception $paymentException) {
+			echo "hashifyGradeOrderLinesException: " . $paymentException->getMessage() . "\n";
+		}
+	}*/
+
+	public function testGetSaltKeyDeprecated() {
+		$this->assertTrue(strlen($this->rb->getSaltKey()) > 0);
+	}
+	public function testGetSaltByCrypto() {
+		$this->assertTrue(strlen($this->rb->getSaltByCrypto(3, 128)) == 128);
+	}
+	public function testWcMtRandEntropyKeyGen()  {
+		$this->assertTrue(strlen(uniqid( mt_rand(), true )) <= 35);
+	}
+	public function testLastPayload() {
+		$this->getPaymentIdFromOrderByClientChoice( 1, 1, 1000, 2000, '198101010000' );
+		$poppedPayload = $this->rb->getPayload(true);
+		$this->assertTrue(isset($poppedPayload['Payload']) && isset($poppedPayload['SpecLines']));
 	}
 }

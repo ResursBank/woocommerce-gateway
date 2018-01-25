@@ -63,4 +63,8 @@ class TorneLIB_CryptoTest extends TestCase {
 		$this->assertTrue( $uncompressedString == $this->testLongCompressString && $uncompressedStringCompressionType == "gz9" );
 	}
 
+	function testMkPass() {
+		$this->assertTrue(strlen($this->Crypto->mkpass(1, 16)) == 16);
+	}
+
 }

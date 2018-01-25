@@ -125,20 +125,29 @@ class Tornevall_cURLTest extends TestCase {
 		if ( is_array( $container ) && isset( $container['body'] ) ) {
 			return true;
 		}
+		if (is_object($container)) {
+			if (is_string($container->getResponseBody())) {
+				return true;
+			}
+		}
 
 		return false;
 	}
 
 	private function getBody( $container ) {
-		if ( $this->hasBody( $container ) ) {
-			return $container['body'];
+		if (is_object($container)) {
+			return $container->getResponseBody();
+		} else {
+			return $this->CURL->getResponseBody();
 		}
-
 		return "";
 	}
 
 	private function getParsed( $container ) {
 		if ( $this->hasBody( $container ) ) {
+			if (is_object($container)) {
+				return $container->getParsedResponse();
+			}
 			return $container['parsed'];
 		}
 
@@ -178,7 +187,7 @@ class Tornevall_cURLTest extends TestCase {
 		if ( $serviceFound ) {
 			$this->CURL->setProxy( "127.0.0.1:9050", CURLPROXY_SOCKS5 );
 			$container = $this->simpleGet();
-			$ipType    = $this->NET->getArpaFromAddr( $container['body'], true );
+			$ipType    = $this->NET->getArpaFromAddr( $this->CURL->getResponseBody($container), true );
 			$this->assertTrue( $ipType > 0 );
 
 			return;
@@ -311,8 +320,8 @@ class Tornevall_cURLTest extends TestCase {
 	 */
 	function testSimple200() {
 		$this->pemDefault();
-		$simpleContent = $this->simpleGet();
-		$this->assertTrue( is_array( $simpleContent ) && isset( $simpleContent['code'] ) && $simpleContent['code'] == 200 );
+		$this->simpleGet();
+		$this->assertTrue( $this->CURL->getResponseCode() == 200 );
 	}
 
 	/**
@@ -330,7 +339,9 @@ class Tornevall_cURLTest extends TestCase {
 		try {
 			$this->CURL->doGet( $this->Urls['selfsigned'] );
 		} catch ( \Exception $e ) {
-			$this->assertTrue( $e->getCode() == 60 || $e->getCode() == 500 || $e->getCode() === TORNELIB_NETCURL_EXCEPTIONS::NETCURL_SETSSLVERIFY_UNVERIFIED_NOT_SET );
+			// CURLE_PEER_FAILED_VERIFICATION = 51
+			// CURLE_SSL_CACERT = 60
+			$this->assertTrue( $e->getCode() == 60 || $e->getCode() == 51 || $e->getCode() == 500 || $e->getCode() === TORNELIB_NETCURL_EXCEPTIONS::NETCURL_SETSSLVERIFY_UNVERIFIED_NOT_SET );
 		}
 	}
 
@@ -339,7 +350,9 @@ class Tornevall_cURLTest extends TestCase {
 		try {
 			$this->CURL->doGet( $this->Urls['selfsigned'] );
 		} catch ( \Exception $e ) {
-			$this->assertTrue( $e->getCode() == 60 || $e->getCode() == 500 || $e->getCode() === TORNELIB_NETCURL_EXCEPTIONS::NETCURL_SETSSLVERIFY_UNVERIFIED_NOT_SET );
+			// CURLE_PEER_FAILED_VERIFICATION = 51
+			// CURLE_SSL_CACERT = 60
+			$this->assertTrue( $e->getCode() == 60 || $e->getCode() == 51 || $e->getCode() == 500 || $e->getCode() === TORNELIB_NETCURL_EXCEPTIONS::NETCURL_SETSSLVERIFY_UNVERIFIED_NOT_SET );
 		}
 	}
 
@@ -381,7 +394,7 @@ class Tornevall_cURLTest extends TestCase {
 	function testGetJson() {
 		$this->pemDefault();
 		$container = $this->urlGet( "ssl&bool&o=json&method=get" );
-		$this->assertTrue( is_object( $container['parsed']->methods->_GET ) );
+		$this->assertTrue( is_object( $this->CURL->getParsedResponse()->methods->_GET ) );
 	}
 
 	/**
@@ -390,7 +403,7 @@ class Tornevall_cURLTest extends TestCase {
 	function testGetSerialize() {
 		$this->pemDefault();
 		$container = $this->urlGet( "ssl&bool&o=serialize&method=get" );
-		$this->assertTrue( is_array( $container['parsed']['methods']['_GET'] ) );
+		$this->assertTrue( is_array( $this->CURL->getParsedResponse()['methods']['_GET'] ) );
 	}
 
 	/**
@@ -620,7 +633,7 @@ class Tornevall_cURLTest extends TestCase {
 			}
 			$this->CURL->IpAddr = $ipArray;
 			$CurlJson           = $this->CURL->doGet( $this->Urls['simplejson'] );
-			$this->assertNotEmpty( $CurlJson['parsed']->ip );
+			$this->assertNotEmpty( $this->CURL->getParsedResponse()->ip );
 		}
 	}
 
@@ -648,8 +661,8 @@ class Tornevall_cURLTest extends TestCase {
 					} catch ( \Exception $e ) {
 
 					}
-					if ( isset( $CurlJson['parsed']->ip ) && $this->NET->getArpaFromAddr( $CurlJson['parsed']->ip, true ) > 0 ) {
-						$responses[ $ip ] = $CurlJson['parsed']->ip;
+					if ( isset( $this->CURL->getParsedResponse()->ip ) && $this->NET->getArpaFromAddr( $this->CURL->getParsedResponse()->ip, true ) > 0 ) {
+						$responses[ $ip ] = $this->CURL->getParsedResponse()->ip;
 					}
 				}
 			} else {
@@ -684,7 +697,7 @@ class Tornevall_cURLTest extends TestCase {
 		} else {
 			$this->CURL->setProxy( $this->TorSetupAddress, $this->TorSetupType );
 			$CurlJson = $this->CURL->doGet( $this->Urls['simplejson'] );
-			$parsedIp = $this->NET->getArpaFromAddr( $CurlJson['parsed']->ip, true );
+			$parsedIp = $this->NET->getArpaFromAddr( $this->CURL->getParsedResponse()->ip, true );
 			$this->assertTrue( $parsedIp > 0 );
 		}
 	}
@@ -696,7 +709,7 @@ class Tornevall_cURLTest extends TestCase {
 		$this->pemDefault();
 		$redirectResponse = $this->CURL->doGet( "http://developer.tornevall.net/tests/tornevall_network/redirect.php?run" );
 		$redirectedUrls   = $this->CURL->getRedirectedUrls();
-		$this->assertTrue( intval( $redirectResponse['code'] ) >= 300 && intval( $redirectResponse['code'] ) <= 350 && count( $redirectedUrls ) );
+		$this->assertTrue( intval( $this->CURL->getResponseCode($redirectResponse) ) >= 300 && intval( $this->CURL->getResponseCode($redirectResponse) ) <= 350 && count( $redirectedUrls ) );
 	}
 
 	/**
@@ -707,7 +720,7 @@ class Tornevall_cURLTest extends TestCase {
 		$this->CURL->setEnforceFollowLocation( false );
 		$redirectResponse = $this->CURL->doGet( "http://developer.tornevall.net/tests/tornevall_network/redirect.php?run" );
 		$redirectedUrls   = $this->CURL->getRedirectedUrls();
-		$this->assertTrue( $redirectResponse['code'] >= 300 && $redirectResponse['code'] <= 350 && ! preg_match( "/rerun/i", $redirectResponse['body'] ) && count( $redirectedUrls ) );
+		$this->assertTrue( $this->CURL->getResponseCode($redirectResponse) >= 300 && $this->CURL->getResponseCode($redirectResponse) <= 350 && ! preg_match( "/rerun/i", $this->CURL->getResponseBody($redirectResponse) ) && count( $redirectedUrls ) );
 	}
 
 	function testFollowRedirectManualDisable() {
@@ -715,7 +728,7 @@ class Tornevall_cURLTest extends TestCase {
 		$this->CURL->setEnforceFollowLocation( false );
 		$redirectResponse = $this->CURL->doGet( "http://developer.tornevall.net/tests/tornevall_network/redirect.php?run" );
 		$redirectedUrls   = $this->CURL->getRedirectedUrls();
-		$this->assertTrue( $redirectResponse['code'] >= 300 && $redirectResponse['code'] <= 350 && ! preg_match( "/rerun/i", $redirectResponse['body'] ) && count( $redirectedUrls ) );
+		$this->assertTrue( $this->CURL->getResponseCode($redirectResponse) >= 300 && $this->CURL->getResponseCode($redirectResponse) <= 350 && ! preg_match( "/rerun/i", $this->CURL->getResponseBody($redirectResponse) ) && count( $redirectedUrls ) );
 	}
 
 	/**
@@ -728,7 +741,7 @@ class Tornevall_cURLTest extends TestCase {
 		$this->CURL->setCurlOpt( CURLOPT_FOLLOWLOCATION, false );  // This is the doer since there are internal protection against the above enforcer
 		$redirectResponse = $this->CURL->doGet( "http://developer.tornevall.net/tests/tornevall_network/redirect.php?run" );
 		$redirectedUrls   = $this->CURL->getRedirectedUrls();
-		$this->assertTrue( $redirectResponse['code'] >= 300 && $redirectResponse['code'] <= 350 && preg_match( "/rerun/i", $redirectResponse['body'] ) && count( $redirectedUrls ) );
+		$this->assertTrue( $this->CURL->getResponseCode($redirectResponse) >= 300 && $this->CURL->getResponseCode($redirectResponse) <= 350 && preg_match( "/rerun/i", $this->CURL->getResponseBody($redirectResponse) ) && count( $redirectedUrls ) );
 	}
 
 	/**
@@ -745,7 +758,7 @@ class Tornevall_cURLTest extends TestCase {
 			$this->pemDefault();
 			$redirectResponse = $this->CURL->doGet( "http://developer.tornevall.net/tests/tornevall_network/redirect.php?run" );
 			$redirectedUrls   = $this->CURL->getRedirectedUrls();
-			$this->assertTrue( $redirectResponse['code'] >= 300 && $redirectResponse['code'] <= 350 && ! preg_match( "/rerun/i", $redirectResponse['body'] ) && count( $redirectedUrls ) );
+			$this->assertTrue( $this->CURL->getResponseCode($redirectResponse) >= 300 && $this->CURL->getResponseCode($redirectResponse) <= 350 && ! preg_match( "/rerun/i", $this->CURL->getResponseBody($redirectResponse) ) && count( $redirectedUrls ) );
 
 			return;
 		}

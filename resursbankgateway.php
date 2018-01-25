@@ -2652,8 +2652,13 @@ function woocommerce_gateway_resurs_bank_init() {
 							$resursFlow->paymentFinalize( $payment_id );
 							wp_set_object_terms( $order_id, array( $old_status_slug ), 'shop_order_status', false );
 						} catch ( Exception $e ) {
-							$flowErrorMessage = $e->getMessage();
 							$flowCode         = $e->getCode();
+							if ($flowCode == 29) {
+							    // If the internal error code is 29 (ALREADY_EXISTS_INVOICE_ID, ref: https://test.resurs.com/docs/x/jgEF), try to repair the problem
+                                // that cuases this.
+							    $resursFlow->getNextInvoiceNumberByDebits();
+                            }
+							$flowErrorMessage = "[".__('Error', 'WC_Payment_Gateway') . " " . $flowCode . "] " . $e->getMessage();
 							$order->update_status( $old_status_slug );
 							$order->add_order_note( __( 'Finalization failed', 'WC_Payment_Gateway' ) . ": " . $flowErrorMessage );
 						}

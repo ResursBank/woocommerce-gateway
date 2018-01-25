@@ -15,7 +15,7 @@ Resurs Bank Payment Gateway for WooCommerce.
 
 Resurs Bank payment gateway for WooCommerce
 
- * Compatible with WooCommerce 5.6 up to 3.0.x - 3.2.x
+ * Compatible with WooCommerce 2.6 up to 3.2.x
  * Verified with PHP version 5.4 - 7.1
 
 

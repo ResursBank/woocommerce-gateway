@@ -6,7 +6,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.3
- * @version 1.3.3
+ * @version 1.3.4
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -27,6 +27,7 @@ if (file_exists(__DIR__ . "/../../vendor/autoload.php")) {
 	require_once(__DIR__ . '/../../vendor/autoload.php');
 }
 use \TorneLIB\TorneLIB_Crypto;
+use \TorneLIB\TorneLIB_NetBits;
 use \TorneLIB\TorneLIB_Network;
 use \TorneLIB\Tornevall_cURL;
 use \TorneLIB\CURL_POST_AS;
@@ -111,15 +112,24 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.3.3";
+	private $version = "1.3.4";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20171214";
+	private $lastUpdate = "20180125";
 	/** @var string URL to git storage */
 	private $gitUrl = "https://bitbucket.org/resursbankplugins/resurs-ecomphp";
 	/** @var string This. */
 	private $clientName = "EComPHP";
 	/** @var string Replacing $clientName on usage of setClientNAme */
 	private $realClientName = "EComPHP";
+
+	/** @var bool $metaDataHashEnabled When enabled, ECom uses Resurs metadata to add a sha1-encoded hash string, based on parts of the payload to secure the data transport */
+	private $metaDataHashEnabled = false;
+	/** @var bool $metaDataHashEncrypted When enabled, ECom will try to pack and encrypt metadata strings instead of hashing it */
+	private $metaDataHashEncrypted = false;
+	/** @var string $metaDataIv For encryption */
+	private $metaDataIv = null;
+	/** @var string $metaDataKey For encryption */
+	private $metaDataKey = null;
 
 	///// Package related
 	/** @var bool Internal "handshake" control that defines if the module has been initiated or not */
@@ -164,6 +174,14 @@ class ResursBank {
 	 * @since 1.1.1
 	 */
 	private $Payload;
+	/**
+	 * @var array
+	 * @since 1.0.31
+	 * @since 1.1.31
+	 * @since 1.2.4
+	 * @since 1.3.4
+	 */
+	private $PayloadHistory = array();
 	/**
 	 * If there is a chosen payment method, the information about it (received from Resurs Ecommerce) will be stored here
 	 * @var array $PaymentMethod
@@ -497,6 +515,7 @@ class ResursBank {
 		}
 		if ( class_exists( '\Resursbank\RBEcomPHP\Tornevall_cURL' ) || class_exists( '\TorneLIB\Tornevall_cURL' ) ) {
 			$this->CURL = new Tornevall_cURL();
+			$this->CURL->setChain(false);
 			$this->CURL->setStoreSessionExceptions( true );
 			$this->CURL->setAuthentication( $this->soapOptions['login'], $this->soapOptions['password'] );
 			$this->CURL->setUserAgent( $this->myUserAgent );
@@ -916,6 +935,7 @@ class ResursBank {
 	 * @return string
 	 */
 	public function getSaltKey( $complexity = 1, $setmax = null ) {
+
 		$retp               = null;
 		$characterListArray = array(
 			'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -967,6 +987,19 @@ class ResursBank {
 		$retp = implode( "", $chars );
 
 		return $retp;
+	}
+
+	/**
+	 * Get salt by crypto library
+	 * @param int $complexity
+	 * @param int $totalLength
+	 *
+	 * @return string
+	 * @since 1.3.4
+	 */
+	public function getSaltByCrypto($complexity = 3, $totalLength = 24) {
+		$this->T_CRYPTO = new TorneLIB_Crypto();
+		return $this->T_CRYPTO->mkpass($complexity, $totalLength);
 	}
 
 	/**
@@ -1277,7 +1310,7 @@ class ResursBank {
 			$renderCallbackUrl = $this->getServiceUrl( "registerEventCallback" );
 			// We are not using postService here, since we are dependent on the response code rather than the response itself
 			$renderedResponse = $this->CURL->doPost( $renderCallbackUrl )->registerEventCallback( $renderCallback );
-			$code             = $renderedResponse['code'];
+			$code             = $this->CURL->getResponseCode($renderedResponse);
 		}
 		if ( $code >= 200 && $code <= 250 ) {
 			if ( isset( $this->skipCallbackValidation ) && $this->skipCallbackValidation === false ) {
@@ -1312,14 +1345,16 @@ class ResursBank {
 				$serviceUrl        = $this->getCheckoutUrl() . "/callbacks";
 				$renderCallbackUrl = $serviceUrl . "/" . $callbackType;
 				$curlResponse      = $this->CURL->doDelete( $renderCallbackUrl );
-				if ( $curlResponse['code'] >= 200 && $curlResponse['code'] <= 250 ) {
+				$curlCode          = $this->CURL->getResponseCode( $curlResponse );
+				if ( $curlCode >= 200 && $curlCode <= 250 ) {
 					return true;
 				}
 			} else {
 				$this->InitializeServices();
 				// Not using postService here, since we're
 				$curlResponse = $this->CURL->doGet( $this->getServiceUrl( 'unregisterEventCallback' ) )->unregisterEventCallback( array( 'eventType' => $callbackType ) );
-				if ( $curlResponse['code'] >= 200 && $curlResponse['code'] <= 250 ) {
+				$curlCode     = $this->CURL->getResponseCode( $curlResponse );
+				if ( $curlCode >= 200 && $curlCode <= 250 ) {
 					return true;
 				}
 			}
@@ -1577,7 +1612,13 @@ class ResursBank {
 
 		// Get the current from e-commerce
 		try {
-			$currentInvoiceNumber = $this->postService( "peekInvoiceSequence" )->nextInvoiceNumber;
+			$peekSequence = $this->postService( "peekInvoiceSequence" );
+			// Check if nextInvoiceNumber is missing
+			if (isset($peekSequence->nextInvoiceNumber)) {
+				$currentInvoiceNumber = $peekSequence->nextInvoiceNumber;
+			} else {
+				$firstInvoiceNumber = 1;
+			}
 		} catch ( \Exception $e ) {
 			if (is_null($firstInvoiceNumber) && $initInvoice) {
 				$firstInvoiceNumber = 1;
@@ -1926,17 +1967,68 @@ class ResursBank {
 	}
 
 	/**
-	 * Retrieves detailed information about the payment.
+	 * Retrieves detailed information about a payment.
 	 *
 	 * @param string $paymentId
 	 * @return array|mixed|null
 	 * @throws \Exception
 	 * @link https://test.resurs.com/docs/x/moEW getPayment() documentation
+	 * @since 1.0.31
+	 * @since 1.1.31
+	 * @since 1.2.4
+	 * @since 1.3.4
+	 */
+	public function getPaymentBySoap( $paymentId = '' ) {
+		return $this->postService( "getPayment", array( 'paymentId' => $paymentId ) );
+	}
+
+	/**
+	 * getPayment - Retrieves detailed information about a payment (rewritten to primarily use rest instead of SOAP, to get more soap independence)
+	 * @param string $paymentId
+	 *
+	 * @return array|mixed|null
+	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
+	 * @since 1.0.31 Refactored from this version
+	 * @since 1.1.31 Refactored from this version
+	 * @since 1.2.4 Refactored from this version
+	 * @since 1.3.4 Refactored from this version
 	 */
 	public function getPayment( $paymentId = '' ) {
-		return $this->postService( "getPayment", array( 'paymentId' => $paymentId ) );
+		if ($this->isFlag('GET_PAYMENT_BY_SOAP')) {
+			return $this->getPaymentBySoap($paymentId);
+		}
+		return $this->CURL->getParsedResponse( $this->CURL->doGet( $this->getCheckoutUrl() . "/checkout/payments/" . $paymentId ) );
+	}
+
+	/**
+	 * @param string $paymentId
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function getMetaData( $paymentId = '') {
+		$metaDataResponse = array();
+		if (is_string($paymentId)) {
+			$payment = $this->getPayment( $paymentId );
+		} else if (is_object($paymentId)) {
+			$payment = $paymentId;
+		} else {
+			throw new \Exception("getMetaDataException: PaymentID is neither and id nor object", 500);
+		}
+		if (isset($payment) && isset($payment->metaData)) {
+			foreach ($payment->metaData as $metaIndexArray) {
+				if (isset($metaIndexArray->key) && !empty($metaIndexArray->key)) {
+					if (!isset($metaDataResponse[$metaIndexArray->key])) {
+						$metaDataResponse[ $metaIndexArray->key ] = $metaIndexArray->value;
+					} else {
+						$metaDataResponse[$metaIndexArray->key][] = $metaIndexArray->value;
+					}
+				}
+			}
+		}
+		return $metaDataResponse;
 	}
 
 	/**
@@ -2130,7 +2222,7 @@ class ResursBank {
 		} catch ( \Exception $e ) {
 			$customErrorMessage = $e->getMessage();
 		}
-		if ( ! isset( $checkPayment->id ) ) {
+		if ( ! isset( $checkPayment->id ) && ! empty( $customErrorMessage ) ) {
 			throw new \Exception( $customErrorMessage );
 		}
 		$metaDataArray    = array(
@@ -2139,10 +2231,10 @@ class ResursBank {
 			'value'     => $metaDataValue
 		);
 		$metaDataResponse = $this->CURL->doGet( $this->getServiceUrl( "addMetaData" ) )->addMetaData( $metaDataArray );
-		if ( $metaDataResponse['code'] >= 200 ) {
+		$curlCode = $this->CURL->getResponseCode($metaDataResponse);
+		if ( $curlCode >= 200 && $curlCode <= 250 ) {
 			return true;
 		}
-
 		return false;
 	}
 
@@ -3264,6 +3356,9 @@ class ResursBank {
 		}
 		$error  = array();
 		$myFlow = $this->getPreferredPaymentFlowService();
+
+		//$this->addMetaDataHash($payment_id_or_method);
+
 		// Using this function to validate that card data info is properly set up during the deprecation state in >= 1.0.2/1.1.1
 		if ( $myFlow == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
 			$paymentMethodInfo = $this->getPaymentMethodSpecific( $payment_id_or_method );
@@ -3332,6 +3427,91 @@ class ResursBank {
 	 */
 	public function bookSignedPayment( $paymentId = '' ) {
 		return $this->postService( "bookSignedPayment", array( 'paymentId' => $paymentId ) );
+	}
+
+	/**
+	 * @param $paymentId
+	 * @param int $hashLevel
+	 *
+	 * @throws \Exception
+	 */
+	public function addMetaDataHash($paymentId, $hashLevel = RESURS_METAHASH_TYPES::HASH_ORDERLINES) {
+		if (!$this->metaDataHashEnabled) {return;}
+
+		/** @var string $dataHash Output string */
+		$dataHash = null;
+		/** @var array $orderData */
+		$orderData = array();
+		/** @var array $customerData */
+		$customerData = array();
+		/** @var array $hashes Data to hash or encrypt */
+		$hashes = array();
+
+		// Set up the kind of data that can be hashed
+		$this->BIT->setBitStructure(array(
+			'ORDERLINES' => RESURS_METAHASH_TYPES::HASH_ORDERLINES,
+			'CUSTOMER' => RESURS_METAHASH_TYPES::HASH_CUSTOMER
+		));
+
+		// Fetch the payload and pick up data that can be used in the hashing
+		$payload = $this->getPayload();
+		if (isset($payload['orderData'])) { unset($payload['orderData']); }
+		if (isset($payload['customer'])) {
+			$customerData = $payload['customer'];
+		}
+
+		// Sanitize the orderlines with the simplest content available (The "minimalisticflow" gives us artNo, description, price, quantiy)
+		$orderData = $this->sanitizePaymentSpec($this->getOrderLines(), RESURS_FLOW_TYPES::FLOW_MINIMALISTIC);
+		if ($this->BIT->isBit(RESURS_METAHASH_TYPES::HASH_ORDERLINES, $hashLevel)) {
+			$hashes['orderLines'] = $orderData;
+		}
+		if ($this->BIT->isBit(RESURS_METAHASH_TYPES::HASH_CUSTOMER, $hashLevel)) {
+			$hashes['customer'] = $customerData;
+		}
+
+		if (!$this->metaDataHashEncrypted) {
+			$dataHash = sha1(json_encode($hashes));
+		} else {
+			$dataHash = $this->T_CRYPTO->aesEncrypt(json_encode($hashes), true);
+		}
+
+		if (!isset($this->Payload['metaData'])) { $this->Payload['metaData'] = array(); }
+		$this->Payload['metaData'][] = array(
+			'key' => 'ecomHash',
+			'value' => $dataHash
+		);
+	}
+
+	/**
+	 * @param bool $enable
+	 * @param bool $encryptEnable Requires RIJNDAEL/AES Encryption enabled
+	 * @param null $encryptIv
+	 * @param null $encryptKey
+	 * @throws \Exception
+	 */
+	public function setMetaDataHash($enable = true, $encryptEnable = false, $encryptIv = null, $encryptKey = null) {
+		$this->metaDataHashEnabled = $enable;
+		$this->metaDataHashEncrypted = $encryptEnable;
+		if ($encryptEnable) {
+			if (is_null($encryptIv) || is_null($encryptKey)) {
+				throw new \Exception("To encrypt your metadata, you'll need to set up encryption keys");
+			}
+			$this->metaDataIv = $encryptIv;
+			$this->metaDataKey = $encryptKey;
+			$this->T_CRYPTO->setAesIv($this->metaDataIv);
+			$this->T_CRYPTO->setAesKey($this->metaDataKey);
+		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getMetaDataHash() {
+		return $this->metaDataHashEnabled;
+	}
+
+	public function getMetaDataVerify() {
+		// TODO: Coming soon
 	}
 
 	/**
@@ -3706,6 +3886,12 @@ class ResursBank {
 				'vatPct',
 				'totalVatAmount',
 				'totalAmount'
+			),
+			'minimalistic' => array(
+				'artNo',
+				'description',
+				'unitAmountWithoutVat',
+				'quantity'
 			)
 		);
 		if ( is_array( $specLines ) ) {
@@ -3720,6 +3906,8 @@ class ResursBank {
 				$mySpecRules = $specRules['hosted'];
 			} else if ( $myFlow == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT ) {
 				$mySpecRules = $specRules['checkout'];
+			} else if ( $myFlow == RESURS_FLOW_TYPES::FLOW_MINIMALISTIC ) {
+				$mySpecRules = $specRules['minimalistic'];
 			}
 			foreach ( $specLines as $specIndex => $specArray ) {
 				foreach ( $specArray as $key => $value ) {
@@ -4070,23 +4258,30 @@ class ResursBank {
 	/**
 	 * Returns the final payload
 	 *
+	 * @param bool $history
+	 *
 	 * @return array
 	 * @throws \Exception
 	 * @since 1.0.2
 	 * @since 1.1.2
 	 * @since 1.2.0
 	 */
-	public function getPayload() {
-		$this->preparePayload();
-		// Making sure payloads are returned as they should look
-		if (isset($this->Payload)) {
-			if (!is_array($this->Payload)) {
+	public function getPayload( $history = false) {
+		if ( ! $history) {
+			$this->preparePayload();
+			// Making sure payloads are returned as they should look
+			if ( isset( $this->Payload ) ) {
+				if ( ! is_array( $this->Payload ) ) {
+					$this->Payload = array();
+				}
+			} else {
 				$this->Payload = array();
 			}
+
+			return $this->Payload;
 		} else {
-			$this->Payload = array();
+			return array_pop($this->PayloadHistory);
 		}
-		return $this->Payload;
 	}
 
 	/**
@@ -4788,6 +4983,10 @@ class ResursBank {
 	 * @since 1.1.22
 	 */
 	private function resetPayload() {
+		$this->PayloadHistory[] = array(
+			'Payload' => $this->Payload,
+			'SpecLines' => $this->SpecLines
+		);
 		$this->SpecLines = array();
 		$this->Payload = array();
 	}

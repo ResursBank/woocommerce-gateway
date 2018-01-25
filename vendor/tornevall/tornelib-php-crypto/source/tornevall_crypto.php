@@ -16,10 +16,11 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.3
+ * @version 6.0.5
  *
  * Crypto-IO Library. Anything that changes in those folders, will render version increase.
  */
+
 namespace TorneLIB;
 
 if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_Crypto' ) ) {
@@ -54,8 +55,9 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 		 * @param bool $webFriendly Set to true works best with the less complex strings as it only removes characters that could be mistaken by another character (O,0,1,l,I etc)
 		 *
 		 * @return string
+		 * @deprecated 6.0.4 Still here for people who needs it
 		 */
-		function mkpass( $complexity = 4, $setMax = 8, $webFriendly = false ) {
+		function mkpass_deprecated( $complexity = 4, $setMax = 8, $webFriendly = false ) {
 			$returnString       = null;
 			$characterListArray = array(
 				'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -112,6 +114,140 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 		}
 
 		/**
+		 * Returns a string with a chosen character list
+		 *
+		 * @param string $type
+		 *
+		 * @return mixed
+		 * @since 6.0.4
+		 */
+		private function getCharacterListArray( $type = 'upper' ) {
+			$compiledArray = array(
+				'upper'    => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+				'lower'    => 'abcdefghijklmnopqrstuvwxyz',
+				'numeric'  => '0123456789',
+				'specials' => '!@#$%*?',
+				'table'    => ''
+			);
+			for ( $i = 0; $i <= 255; $i ++ ) {
+				$compiledArray['table'] .= chr( $i );
+			}
+
+			switch ( $type ) {
+				case 'table':
+					return $compiledArray['table'];
+				case 'specials':
+					return $compiledArray['specials'];
+				case 'numeric':
+					return $compiledArray['numeric'];
+				case "lower":
+					return $compiledArray['lower'];
+				default:
+					return $compiledArray['upper'];
+			}
+		}
+
+		/**
+		 * Returns a selected character list array string as a new array
+		 *
+		 * @param string $type
+		 *
+		 * @return array|false|string[]
+		 * @since 6.0.4
+		 */
+		private function getCharactersFromList( $type = 'upper' ) {
+			return preg_split( "//", $this->getCharacterListArray( $type ), - 1, PREG_SPLIT_NO_EMPTY );
+		}
+
+		/**
+		 * Returns a random character from a selected character list
+		 *
+		 * @param array $type
+		 * @param bool $ambigous
+		 *
+		 * @return mixed|string
+		 * @since 6.0.4
+		 */
+		private function getRandomCharacterFromArray( $type = array( 'upper' ), $ambigous = false ) {
+			if ( is_string( $type ) ) {
+				$type = array( $type );
+			}
+			$getType         = $type[ rand( 0, count( $type ) - 1 ) ];
+			$characterArray  = $this->getCharactersFromList( $getType );
+			$characterLength = count( $characterArray ) - 1;
+			$chosenCharacter = $characterArray[ rand( 0, $characterLength ) ];
+			$ambigousList    = array(
+				'+',
+				'/',
+				'=',
+				'I',
+				'G',
+				'0',
+				'O',
+				'D',
+				'Q',
+				'R'
+			);
+			if ( in_array( $chosenCharacter, $ambigousList ) ) {
+				$chosenCharacter = $this->getRandomCharacterFromArray( $type, $ambigous );
+			}
+
+			return $chosenCharacter;
+		}
+
+		/**
+		 * Returns a random character based on complexity selection
+		 *
+		 * @param int $complexity
+		 * @param bool $ambigous
+		 *
+		 * @return mixed|string
+		 * @since 6.0.4
+		 */
+		private function getCharacterFromComplexity( $complexity = 4, $ambigous = false ) {
+			switch ( $complexity ) {
+				case 1:
+					return $this->getRandomCharacterFromArray( array( 'upper' ), $ambigous );
+				case 2:
+					return $this->getRandomCharacterFromArray( array( 'upper', 'lower' ), $ambigous );
+				case 3:
+					return $this->getRandomCharacterFromArray( array( 'upper', 'lower', 'numeric' ), $ambigous );
+				case 4:
+					return $this->getRandomCharacterFromArray( array(
+						'upper',
+						'lower',
+						'numeric',
+						'specials'
+					), $ambigous );
+				case 5:
+					return $this->getRandomCharacterFromArray( array( 'table' ) );
+				case 6:
+					return $this->getRandomCharacterFromArray( array( 'table' ) );
+				default:
+					return $this->getRandomCharacterFromArray( 'upper', $ambigous );
+			}
+		}
+
+		/**
+		 * Refactored generator to create a random password or string
+		 *
+		 * @param int $complexity 1=UPPERCASE, 2=UPPERCASE+lowercase, 3=UPPERCASE+lowercase+numerics, 4=UPPERCASE,lowercase+numerics+specialcharacters, 5/6=Full character set
+		 * @param int $totalLength Length of the string
+		 * @param bool $ambigous Exclude what we see as ambigous characters (this has no effect in complexity > 4)
+		 *
+		 * @return string
+		 * @since 6.0.4
+		 */
+		public function mkpass( $complexity = 4, $totalLength = 16, $ambigous = false ) {
+			$pwString = "";
+			for ( $charIndex = 0; $charIndex < $totalLength; $charIndex ++ ) {
+				$pwString .= $this->getCharacterFromComplexity( $complexity, $ambigous );
+			}
+
+			return $pwString;
+		}
+
+		/**
 		 * Set up key for aes encryption.
 		 *
 		 * @param $useKey
@@ -136,14 +272,14 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 		 * @param bool $asBase64
 		 *
 		 * @return string
-		 * @throws TorneLIB_Exception
+		 * @throws \Exception
 		 */
 		public function aesEncrypt( $decryptedContent = "", $asBase64 = true ) {
 			$useKey      = $this->aesKey;
 			$useIv       = $this->aesIv;
 			$contentData = $decryptedContent;
 			if ( $useKey == md5( md5( "TorneLIB Default IV - Please Change this" ) ) || $useIv == md5( md5( "TorneLIB Default IV - Please Change this" ) ) ) {
-				throw new TorneLIB_Exception( "Current encryption key and iv is not allowed to use.", TORNELIB_EXCEPTIONS::TORNELIB_CRYPTO_KEY_EXCEPTION, __FUNCTION__ );
+				throw new \Exception( "Current encryption key and iv is not allowed to use." );  // TODO: TORNELIB_EXCEPTIONS::TORNELIB_CRYPTO_KEY_EXCEPTION
 			}
 			if ( is_string( $decryptedContent ) ) {
 				$contentData = utf8_encode( $decryptedContent );
@@ -165,13 +301,13 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 		 * @param bool $asBase64
 		 *
 		 * @return string
-		 * @throws TorneLIB_Exception
+		 * @throws \Exception
 		 */
 		public function aesDecrypt( $encryptedContent = "", $asBase64 = true ) {
 			$useKey = $this->aesKey;
 			$useIv  = $this->aesIv;
 			if ( $useKey == md5( md5( "TorneLIB Default IV - Please Change this" ) ) || $useIv == md5( md5( "TorneLIB Default IV - Please Change this" ) ) ) {
-				throw new TorneLIB_Exception( "Current encryption key and iv is not allowed to use.", TORNELIB_EXCEPTIONS::TORNELIB_CRYPTO_KEY_EXCEPTION, __FUNCTION__ );
+				throw new \Exception( "Current encryption key and iv is not allowed to use." );  // TODO: TORNELIB_EXCEPTIONS::TORNELIB_CRYPTO_KEY_EXCEPTION
 			}
 			$contentData = $encryptedContent;
 			if ( $asBase64 ) {

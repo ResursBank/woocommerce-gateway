@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.1
+ * @version 6.0.2
  */
 
 namespace TorneLIB;
@@ -99,6 +99,7 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		 * @param array $dataArray
 		 *
 		 * @return array
+		 * @since 6.0.0
 		 */
 		private function getUtf8( $dataArray = array() ) {
 			$newArray = array();
@@ -119,22 +120,38 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		}
 
 		/**
+		 * @param array $arrayData
+		 *
+		 * @return bool
+		 * @since 6.0.2
+		 */
+		function isAssoc( array $arrayData ) {
+			if ( array() === $arrayData ) {
+				return false;
+			}
+
+			return array_keys( $arrayData ) !== range( 0, count( $arrayData ) - 1 );
+		}
+
+		/**
 		 * ServerRenderer: Render JSON data
 		 *
 		 * @param array $contentData
 		 * @param bool $renderAndDie
 		 *
 		 * @return string
+		 * @since 6.0.1
 		 */
 		public function renderJson( $contentData = array(), $renderAndDie = false ) {
 			$objectArrayEncoded = $this->getUtf8( $this->objectsIntoArray( $contentData ) );
-			$contentRendered = json_encode( $objectArrayEncoded, JSON_PRETTY_PRINT );
+			$contentRendered    = json_encode( $objectArrayEncoded, JSON_PRETTY_PRINT );
 
-			if ($renderAndDie) {
+			if ( $renderAndDie ) {
 				header( "Content-type: application/json; charset=utf-8" );
 				echo $contentRendered;
 				die;
 			}
+
 			return $contentRendered;
 		}
 
@@ -145,14 +162,16 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		 * @param bool $renderAndDie
 		 *
 		 * @return string
+		 * @since 6.0.1
 		 */
 		public function renderPhpSerialize( $contentData = array(), $renderAndDie = false ) {
-			$contentRendered = serialize($contentData);
-			if ($renderAndDie) {
-				header("Content-Type: text/plain");
+			$contentRendered = serialize( $contentData );
+			if ( $renderAndDie ) {
+				header( "Content-Type: text/plain" );
 				echo $contentRendered;
 				die;
 			}
+
 			return $contentRendered;
 		}
 
@@ -168,50 +187,60 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		 *
 		 * @return string
 		 * @throws \Exception
+		 * @since 6.0.1
 		 */
 		public function renderYaml( $contentData = array(), $renderAndDie = false ) {
 			$objectArrayEncoded = $this->getUtf8( $this->objectsIntoArray( $contentData ) );
-			if (function_exists('yaml_emit')) {
-				$contentRendered = yaml_emit($objectArrayEncoded);
-				if ($renderAndDie) {
+			if ( function_exists( 'yaml_emit' ) ) {
+				$contentRendered = yaml_emit( $objectArrayEncoded );
+				if ( $renderAndDie ) {
 					header( "Content-Type: text/plain" );
 					echo $contentRendered;
 					die;
 				}
+
 				return $contentRendered;
 			} else {
 				throw new \Exception( "yaml_emit not supported - ask your admin to install the driver", 404 );
 			}
 		}
 
+		/**
+		 * @param array $contentData
+		 * @param bool $renderAndDie
+		 *
+		 * @return mixed
+		 * @since 6.0.1
+		 */
 		public function renderXml( $contentData = array(), $renderAndDie = false ) {
-			$serializerPath = stream_resolve_include_path('XML/Serializer.php');
-			if (!empty($serializerPath)) {
-				require_once('XML/Serializer.php');
+			$serializerPath = stream_resolve_include_path( 'XML/Serializer.php' );
+			if ( ! empty( $serializerPath ) ) {
+				require_once( 'XML/Serializer.php' );
 			}
 			$objectArrayEncoded = $this->getUtf8( $this->objectsIntoArray( $contentData ) );
-			$options = array(
-				'indent' => '    ',
-				'linebreak' => "\n",
-				'encoding' => 'UTF-8',
-				'rootName' => 'TorneAPIXMLResponse',
+			$options            = array(
+				'indent'         => '    ',
+				'linebreak'      => "\n",
+				'encoding'       => 'UTF-8',
+				'rootName'       => 'TorneAPIXMLResponse',
 				'defaultTagName' => 'item'
 			);
-			if (class_exists('XML_Serializer')) {
-				$xmlSerializer = new \XML_Serializer($options);
-				$xmlSerializer->serialize($objectArrayEncoded);
+			if ( class_exists( 'XML_Serializer' ) ) {
+				$xmlSerializer = new \XML_Serializer( $options );
+				$xmlSerializer->serialize( $objectArrayEncoded );
 				$contentRendered = $xmlSerializer->getSerializedData();
 			} else {
-				$xml = new \SimpleXMLElement('<?xml version="1.0"?><data></data>');
-				$this->array_to_xml($objectArrayEncoded, $xml);
+				$xml = new \SimpleXMLElement( '<?xml version="1.0"?><data></data>' );
+				$this->array_to_xml( $objectArrayEncoded, $xml );
 				$contentRendered = $xml->asXML();
 			}
 
-			if ($renderAndDie) {
-				header("Content-Type: application/xml");
+			if ( $renderAndDie ) {
+				header( "Content-Type: application/xml" );
 				echo $contentRendered;
 				die;
 			}
+
 			return $contentRendered;
 		}
 

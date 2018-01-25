@@ -15,6 +15,8 @@ abstract class RESURS_FLOW_TYPES {
 	const FLOW_HOSTED_FLOW = 2;
 	const FLOW_RESURS_CHECKOUT = 3;
 
+	/** @var int METHOD_MINIMALISTIC Minimalistic orderLine specification, with data necessary for matching */
+	const FLOW_MINIMALISTIC = 98;
 }
 
 /**
@@ -74,6 +76,15 @@ abstract class RESURS_AFTERSHOP_RENDER_TYPES {
 	const AFTERSHOP_CREDIT = 2;
 	const AFTERSHOP_ANNUL = 4;
 	const AFTERSHOP_AUTHORIZE = 8;
+}
+
+/**
+ * Class RESURS_METAHASH_TYPES
+ */
+abstract class RESURS_METAHASH_TYPES {
+	const HASH_DISABLED = 0;
+	const HASH_ORDERLINES = 1;
+	const HASH_CUSTOMER = 2;
 }
 
 
