@@ -702,20 +702,10 @@ function woocommerce_gateway_resurs_bank_init() {
 				return;
 			}
 			$currentSalt = get_transient( 'resurs_bank_digest_salt' );
-			if ( $event_type == 'AUTOMATIC_FRAUD_CONTROL' ) {
-				$check_digest = $request['paymentId'] . $request['result'] . $currentSalt;
-			} else {
-				$check_digest = $request['paymentId'] . $currentSalt;
-			}
-			$check_digest = sha1( $check_digest );
-			$check_digest = strtoupper( $check_digest );
-			$resursPaymentData = null;
-			try {
-				$resursPaymentData = $this->flow->getPayment( $request['paymentId'] );
-			} catch (\Exception $ignorePaymentExceptions) {}
+
 			$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
 			$order   = new WC_Order( $orderId );
-			if ( $request['digest'] !== $check_digest ) {
+			if ( !$this->flow->getValidatedCallbackDigest(isset($request['paymentId']) ? $request['paymentId'] : null, $currentSalt, isset($request['digest']) ? $request['digest'] : null, isset($request['result']) ? $request['result'] : null) ) {
 				$order->add_order_note( __( 'The Resurs Bank event ' . $event_type . ' was received but not accepted (digest fault)', 'WC_Payment_Gateway' ) );
 				header( 'HTTP/1.1 406 Digest not accepted', true, 406 );
 				exit;

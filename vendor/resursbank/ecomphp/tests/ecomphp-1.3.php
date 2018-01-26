@@ -5,7 +5,7 @@
  *
  * @package EcomPHPTest
  * @author Resurs Bank Ecommrece <ecommerce.support@resurs.se>
- * @version 0.15
+ * @version 0.16
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @license -
  *
@@ -521,20 +521,9 @@ class ResursBankTest extends TestCase
 		// Restore invoice sequence to the latest correct so new tests can be initated without problems.
 		$this->rb->getNextInvoiceNumberByDebits(5);
 	}
-	function testInvoiceSequenceAndFinalize() {
-		$this->rb->resetInvoiceNumber();
-		$paymentId = $this->getPaymentIdFromOrderByClientChoice();
-		try {
-			$successFinalize = $this->rb->paymentFinalize( $paymentId );
-			if ($successFinalize) {
-				$this->markTestIncomplete("Finalization was successful during the invoice sequence reset. You must re-run the test.");
-			}
-		} catch (\Exception $finalizeWithInitInvoiceException) {
-			$this->assertTrue($finalizeWithInitInvoiceException->getCode() == 29);
-		}
-		// Restore invoice sequence to the latest correct so new tests can be initated without problems.
-		$this->rb->getNextInvoiceNumberByDebits(5);
-	}
+
+	// testInvoiceSequenceAndFinalize: Function to test invoice sequence and the finalization is no longer necessary as the functions are self healing
+
 	function testInvoiceSequenceFindByFind() {
 		$lastInvoiceNumber = $this->rb->getNextInvoiceNumberByDebits(5);
 		$this->assertTrue($lastInvoiceNumber > 0);
