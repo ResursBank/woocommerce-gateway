@@ -843,6 +843,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 					if ( isResursOmni( true ) ) {
 						echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __( 'Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes', 'WC_Payment_Gateway' ) . '</div><br><br>';
 					} else {
+
+					    $nextInvoice = null;
+					    try {
+						    $nextInvoice = $this->flow->getNextInvoiceNumberByDebits(5);
+                        } catch (\Exception $e) {
+                            $nextInvoice = $e->getMessage();
+                        }
+
 						$styleRecommended = "display: none";
 						$waitForFraud = getResursOption( "waitForFraudControl" );
 						$annulIfFrozen = getResursOption( "annulIfFrozen");
@@ -854,6 +862,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 						echo $this->setCheckBox( 'waitForFraudControl', $namespace, 'onchange="wfcComboControl(this)"' );
 						echo $this->setCheckBox( 'annulIfFrozen', $namespace, 'onchange="wfcComboControl(this)"' );
 						echo $this->setCheckBox( 'finalizeIfBooked', $namespace, 'onchange="wfcComboControl(this)"' );
+						echo $this->setSeparator("Invoice numbering");
+						echo '<tr><td colspan="2">' . __('Next invoice number to use', 'WC_Payment_Gateway') . ": " . $nextInvoice . '</td></tr>';
 					}
 				} else if ( $section == "resurs_bank_omnicheckout" ) {
 					$namespace              = "woocommerce_" . $section;
