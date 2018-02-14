@@ -67,6 +67,9 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
 = 2.2.2 =
 
     * [WOO-95] - updatePaymentReference to WooCommerce orderId
+    * [WOO-223] - getValidatedCallbackDigest()
+    * [WOO-222] - Invoice numbers are not properly updated (shown from payment admin) if the invoice sequence are primary nulled
+
 
 = 2.2.1 =
 
