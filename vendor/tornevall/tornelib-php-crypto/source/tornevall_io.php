@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.2
+ * @version 6.0.3
  */
 
 namespace TorneLIB;
@@ -24,7 +24,37 @@ namespace TorneLIB;
 if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' ) ) {
 	class TorneLIB_IO {
 
+		/**
+		 * @var TorneLIB_Crypto $CRYPTO
+		 */
+		private $CRYPTO;
+		private $ENFORCE_SIMPLEXML = false;
+
 		public function __construct() {
+		}
+
+		function setCrypto() {
+			if (empty($this->CRYPTO)) {
+				$this->CRYPTO = new TorneLIB_Crypto();
+			}
+		}
+
+		/**
+		 * Set and override compression level
+		 * @param int $compressionLevel
+		 */
+		function setCompressionLevel($compressionLevel = 9) {
+			$this->setCrypto();
+			$this->CRYPTO->setCompressionLevel($compressionLevel);
+		}
+
+		/**
+		 * Get current compressionlevel
+		 * @return mixed
+		 */
+		public function getCompressionLevel() {
+			$this->setCrypto();
+			return $this->CRYPTO->getCompressionLevel();
 		}
 
 		/**
@@ -134,17 +164,45 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		}
 
 		/**
+		 * @param string $contentString
+		 * @param int $compression
+		 * @param bool $renderAndDie
+		 *
+		 * @return string
+		 */
+		private function compressString( $contentString = '', $compression = TORNELIB_CRYPTO_TYPES::TYPE_NONE, $renderAndDie = false ) {
+			if ( $compression == TORNELIB_CRYPTO_TYPES::TYPE_GZ ) {
+				$this->setCrypto();
+				$contentString = $this->CRYPTO->base64_gzencode( $contentString );
+			} else if ( $compression == TORNELIB_CRYPTO_TYPES::TYPE_BZ2 ) {
+				$this->setCrypto();
+				$contentString = $this->CRYPTO->base64_bzencode( $contentString );
+			}
+
+			if ( $renderAndDie ) {
+				if ( $compression == TORNELIB_CRYPTO_TYPES::TYPE_GZ ) {
+					$contentString = array( 'gz' => $contentString );
+				} else if ( $compression == TORNELIB_CRYPTO_TYPES::TYPE_BZ2 ) {
+					$contentString = array( 'bz2' => $contentString );
+				}
+			}
+
+			return $contentString;
+		}
+
+		/**
 		 * ServerRenderer: Render JSON data
 		 *
 		 * @param array $contentData
 		 * @param bool $renderAndDie
+		 * @param int $compression
 		 *
 		 * @return string
 		 * @since 6.0.1
 		 */
-		public function renderJson( $contentData = array(), $renderAndDie = false ) {
+		public function renderJson( $contentData = array(), $renderAndDie = false, $compression = TORNELIB_CRYPTO_TYPES::TYPE_NONE ) {
 			$objectArrayEncoded = $this->getUtf8( $this->objectsIntoArray( $contentData ) );
-			$contentRendered    = json_encode( $objectArrayEncoded, JSON_PRETTY_PRINT );
+			$contentRendered    = $this->compressString( json_encode( $objectArrayEncoded, JSON_PRETTY_PRINT ), $compression, $renderAndDie );
 
 			if ( $renderAndDie ) {
 				header( "Content-type: application/json; charset=utf-8" );
@@ -160,12 +218,14 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		 *
 		 * @param array $contentData
 		 * @param bool $renderAndDie
+		 * @param int $compression
 		 *
 		 * @return string
 		 * @since 6.0.1
 		 */
-		public function renderPhpSerialize( $contentData = array(), $renderAndDie = false ) {
-			$contentRendered = serialize( $contentData );
+		public function renderPhpSerialize( $contentData = array(), $renderAndDie = false, $compression = TORNELIB_CRYPTO_TYPES::TYPE_NONE ) {
+			$contentRendered = $this->compressString( serialize( $contentData ), $compression, $renderAndDie );
+
 			if ( $renderAndDie ) {
 				header( "Content-Type: text/plain" );
 				echo $contentRendered;
@@ -189,10 +249,10 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		 * @throws \Exception
 		 * @since 6.0.1
 		 */
-		public function renderYaml( $contentData = array(), $renderAndDie = false ) {
+		public function renderYaml( $contentData = array(), $renderAndDie = false, $compression = TORNELIB_CRYPTO_TYPES::TYPE_NONE ) {
 			$objectArrayEncoded = $this->getUtf8( $this->objectsIntoArray( $contentData ) );
 			if ( function_exists( 'yaml_emit' ) ) {
-				$contentRendered = yaml_emit( $objectArrayEncoded );
+				$contentRendered = $this->compressString( yaml_emit( $objectArrayEncoded ), $compression, $renderAndDie );
 				if ( $renderAndDie ) {
 					header( "Content-Type: text/plain" );
 					echo $contentRendered;
@@ -206,13 +266,46 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 		}
 
 		/**
+		 * @param bool $enforceSimpleXml
+		 */
+		public function setXmlSimple($enforceSimpleXml = true) {
+			$this->ENFORCE_SIMPLEXML = $enforceSimpleXml;
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getXmlSimple() {
+			return $this->ENFORCE_SIMPLEXML;
+		}
+
+		/**
+		 * @param array $dataArray
+		 * @param SimpleXMLElement $xml
+		 *
+		 * @return mixed
+		 */
+		private function array_to_xml($dataArray = array(), $xml) {
+			foreach ($dataArray as $key => $value) {
+				$key = is_numeric($key) ? 'item' : $key;
+				if (is_array($value)) {
+					$this->array_to_xml($value, $xml->addChild($key));
+				} else {
+					$xml->addChild($key, $value);
+				}
+			}
+			return $xml;
+		}
+
+		/**
 		 * @param array $contentData
 		 * @param bool $renderAndDie
+		 * @param int $compression
 		 *
 		 * @return mixed
 		 * @since 6.0.1
 		 */
-		public function renderXml( $contentData = array(), $renderAndDie = false ) {
+		public function renderXml( $contentData = array(), $renderAndDie = false, $compression = TORNELIB_CRYPTO_TYPES::TYPE_NONE ) {
 			$serializerPath = stream_resolve_include_path( 'XML/Serializer.php' );
 			if ( ! empty( $serializerPath ) ) {
 				require_once( 'XML/Serializer.php' );
@@ -225,7 +318,7 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 				'rootName'       => 'TorneAPIXMLResponse',
 				'defaultTagName' => 'item'
 			);
-			if ( class_exists( 'XML_Serializer' ) ) {
+			if ( class_exists( 'XML_Serializer' ) && !$this->ENFORCE_SIMPLEXML ) {
 				$xmlSerializer = new \XML_Serializer( $options );
 				$xmlSerializer->serialize( $objectArrayEncoded );
 				$contentRendered = $xmlSerializer->getSerializedData();
@@ -234,6 +327,8 @@ if ( ! class_exists( 'TorneLIB_IO' ) && ! class_exists( 'TorneLIB\TorneLIB_IO' )
 				$this->array_to_xml( $objectArrayEncoded, $xml );
 				$contentRendered = $xml->asXML();
 			}
+
+			$contentRendered = $this->compressString( $contentRendered, $compression, $renderAndDie );
 
 			if ( $renderAndDie ) {
 				header( "Content-Type: application/xml" );

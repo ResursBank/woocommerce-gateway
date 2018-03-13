@@ -3,7 +3,9 @@
 use TorneLIB\TorneLIB_IO;
 use PHPUnit\Framework\TestCase;
 
-require_once( '../vendor/autoload.php' );
+if ( file_exists( __DIR__ . '/../vendor/autoload.php' ) ) {
+	require_once( __DIR__ . '/../vendor/autoload.php' );
+}
 
 class TorneLIB_IOTest extends TestCase {
 
@@ -45,23 +47,51 @@ class TorneLIB_IOTest extends TestCase {
 	}
 
 	function testRenderJsonApiLike() {
-		$this->assertTrue( strlen( $this->IO->renderJson( $this->obj ) ) >= 170 );
+		$this->assertTrue( strlen( $this->IO->renderJson( $this->obj ) ) == 170 );
 	}
 
 	function testRenderSerializedApiLike() {
-		$this->assertTrue( strlen( $this->IO->renderPhpSerialize( $this->obj ) ) >= 153 );
+		$this->assertTrue( strlen( $this->IO->renderPhpSerialize( $this->obj ) ) == 153 );
 	}
 
 	function testRenderYamlApiLike() {
+		$yamlString = null;
 		try {
 			$yamlString = $this->IO->renderYaml( $this->obj );
 		} catch ( \Exception $yamlException ) {
-
+			$this->markTestSkipped($yamlException->getMessage());
 		}
-		$this->assertTrue( strlen( $yamlString ) >= 90 );
+		$this->assertTrue( strlen( $yamlString ) == 90 );
 	}
 
 	function testRenderXmlApiLike() {
-		$this->assertTrue( strlen( $this->IO->renderXml( $this->obj ) ) >= 248 );
+		if ( class_exists( 'XML_Serializer' ) ) {
+			$this->assertTrue( strlen( $this->IO->renderXml( $this->obj ) ) == 248 );
+		} else {
+			$this->markTestSkipped("Primary class for this test (XML_Serializer) is missing on this system");
+		}
 	}
+
+	function testRenderSimpleXmlApiLike() {
+		$this->IO->setXmlSimple(true);
+		$this->assertTrue( strlen( $this->IO->renderXml( $this->obj ) ) == 156 );
+	}
+
+	function testRenderGzCompressedJsonApiLike() {
+		$this->assertTrue( strlen( $this->IO->renderJson( $this->obj, false, \TorneLIB\TORNELIB_CRYPTO_TYPES::TYPE_GZ ) ) == 123 );
+	}
+
+	function testRenderBz2CompressedJsonApiLike() {
+		if (function_exists('bzcompress')) {
+			$this->assertTrue( strlen( $this->IO->renderJson( $this->obj, false, \TorneLIB\TORNELIB_CRYPTO_TYPES::TYPE_BZ2 ) ) == 148 );
+		} else {
+			$this->markTestSkipped('bzcompress is missing on this server, could not complete test');
+		}
+	}
+
+	function testRenderGzSerializedApiLike() {
+		$this->IO->setCompressionLevel( 9 );
+		$this->assertTrue( strlen( $this->IO->renderPhpSerialize( $this->obj, false, \TorneLIB\TORNELIB_CRYPTO_TYPES::TYPE_GZ ) ) == 156 );
+	}
+
 }

@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.5
+ * @version 6.0.6
  *
  * Crypto-IO Library. Anything that changes in those folders, will render version increase.
  */
@@ -31,6 +31,7 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 
 		private $aesKey = "";
 		private $aesIv = "";
+		private $compressionLevel;
 
 		/**
 		 * TorneLIB_Crypto constructor.
@@ -38,6 +39,22 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 		function __construct() {
 			$this->setAesIv( md5( "TorneLIB Default IV - Please Change this" ) );
 			$this->setAesKey( md5( "TorneLIB Default KEY - Please Change this" ) );
+		}
+
+		/**
+		 * Set and override compression level
+		 * @param int $compressionLevel
+		 */
+		function setCompressionLevel($compressionLevel = 9) {
+			$this->compressionLevel = $compressionLevel;
+		}
+
+		/**
+		 * Get current compressionlevel
+		 * @return mixed
+		 */
+		public function getCompressionLevel() {
+			return $this->compressionLevel;
 		}
 
 		/**
@@ -328,6 +345,11 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 		 * @throws \Exception
 		 */
 		public function base64_gzencode( $data = '', $compressionLevel = - 1 ) {
+
+			if (!empty($this->compressionLevel)) {
+				$compressionLevel = $this->compressionLevel;
+			}
+
 			if ( ! function_exists( 'gzencode' ) ) {
 				throw new \Exception( "Function gzencode is missing" );
 			}
@@ -519,4 +541,13 @@ if ( ! class_exists( 'TorneLIB_Crypto' ) && ! class_exists( 'TorneLIB\TorneLIB_C
 			return base64_decode( str_pad( strtr( $data, '-_', '+/' ), strlen( $data ) % 4, '=', STR_PAD_RIGHT ) );
 		}
 	}
+}
+
+if ( ! class_exists( 'TORNELIB_CRYPTO_CRYPTOTYPES' ) && ! class_exists( 'TorneLIB\TORNELIB_CRYPTO_CRYPTOTYPES' ) ) {
+	abstract class TORNELIB_CRYPTO_TYPES {
+		const TYPE_NONE = 0;
+		const TYPE_GZ = 1;
+		const TYPE_BZ2 = 2;
+	}
+
 }

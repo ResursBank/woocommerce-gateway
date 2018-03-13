@@ -6,7 +6,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.3
- * @version 1.3.6
+ * @version 1.3.7
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -113,9 +113,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.3.6";
+	private $version = "1.3.7";
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20180126";
+	private $lastUpdate = "20180130";
 	/** @var string URL to git storage */
 	private $gitUrl = "https://bitbucket.org/resursbankplugins/resurs-ecomphp";
 	/** @var string This. */
@@ -1741,12 +1741,24 @@ class ResursBank {
 	 * @since 1.1.27
 	 */
 	public function getNextInvoiceNumberByDebits( $scanDebitCount = 10 ) {
+		/**
+		 * @since 1.3.7
+		 */
+		$currentInvoiceTest = null;
+		// Check if there is a "current" invoice ID before searching for them. This prevents errors like "Setting a invoice number lower than last number is not allowed (1)"
+		try {
+			$currentInvoiceTest = $this->getNextInvoiceNumber();
+		} catch ( \Exception $e ) {
+		}
 		$paymentScanList     = $this->findPayments( array( 'statusSet' => 'IS_DEBITED' ), 1, $scanDebitCount, array(
 			'ascending'   => false,
 			'sortColumns' => array( 'FINALIZED_TIME', 'MODIFIED_TIME', 'BOOKED_TIME' )
 		) );
 		$lastHighestInvoice  = $this->getHighestValueFromPaymentList( $paymentScanList, 0 );
 		$properInvoiceNumber = intval( $lastHighestInvoice ) + 1;
+		if ( intval( $currentInvoiceTest ) > 0 && $currentInvoiceTest > $properInvoiceNumber ) {
+			$properInvoiceNumber = $currentInvoiceTest;
+		}
 		$this->getNextInvoiceNumber( true, $properInvoiceNumber );
 
 		return $properInvoiceNumber;
