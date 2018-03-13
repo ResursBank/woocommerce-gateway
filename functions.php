@@ -500,6 +500,13 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'description' => __( 'Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function.', 'WC_Payment_Gateway' ),
 					'desc_tip'    => true,
 				),
+				'secureFieldsNotNull'         => array(
+					'title'       => __( 'Checkout form fields must not be empty', 'WC_Payment_Gateway' ),
+					'type'        => 'checkbox',
+					'default'     => 'false',
+					'description' => __( 'This setting secures that this plugin is returning an array, if WooCommerce for some passes over completely empty data (null) during the checkout process' ),
+					'desc_tip'    => true,
+				),
 				'showResursCheckoutStandardFieldsTest' => array(
 					'title'       => __( 'Keep standard customer fields open for Resurs Checkout in test', 'WC_Payment_Gateway' ),
 					'type'        => 'checkbox',
