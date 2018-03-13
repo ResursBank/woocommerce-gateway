@@ -273,7 +273,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	 */
 	public function resurs_omnicheckout_fields( $fields ) {
 		$keepFieldsHidden = getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" );
-		//$this->resetOmniCustomerFields = $fields;
 		if ( isResursOmni() && hasResursOmni() ) {
 			if ( ! defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
 				if ( ! $keepFieldsHidden ) {
@@ -294,11 +293,20 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 				if ( $cleanOmniCustomerFields && ! $keepFieldsHidden ) {
 					$fields = array();
 				}
+			} else {
+			    // Available configuration switch for future releases: secureFieldsNotNull
+                //
+			    // If wooCommerce passes over a null array to this section, the checkout will after this moment
+                // render a warning (class-wc-checkout.php, around line 559 arrays are not validated), unless error logging
+                // on screen is disabled. In production, having error logging on screen, will cause ugly warnings that will
+                // reach customers while parts of the orders might be handled as successful. By passing back something else
+                // than emptiness (null?), we might be able to save something.
+				if (!is_array($fields)) {
+				    $fields = array();
+				}
 			}
-
 			return $fields;
 		}
-
 		return $fields;
 	}
 
@@ -306,6 +314,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	 * @param $array
 	 *
 	 * @return mixed
+	 * @throws Exception
 	 */
 	public static function interfere_update_order_review( $array ) {
 		$currentOmniRef = null;
