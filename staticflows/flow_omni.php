@@ -272,6 +272,35 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 	 * @return array
 	 */
 	public function resurs_omnicheckout_fields( $fields ) {
+
+		// Flow description: During checking - if RCO is enabled - the plugin, will at this place remove all fields from the
+		// checkout page, that normally in RCO mode is handled by RCO itself. By removing those fields from the checkout page
+		// in woocommerce, there won't be double field of everything. This, however might not work properly, if we need
+		// dynamic shipping methods (which also can be handled by a special JS solution).
+
+		// When customers are clicking the RCO internal button "finish order", a constant is defined from the gateway script (OMNICHECKOUT_PROCESSPAYMENT)
+		// and the below solution is skipped and acts normally again. As woocommerce needs the default form fields to be able to
+		// process the order, the plugin will not touch anything during that process.
+
+		// WOO-225: The behaviour below can be disrupted by template modifications. For example, if you create a checkout template that
+		// from the initial moment missing the form fields for billing and shipping, resurs_omnicheckout_fields will not clean up those
+		// fields. If the template makes wooCommerce send over an empty (via $fields) collection, this method will also return it as is.
+		// For suppressed environments, this means almost nothing. PHP propably renders some warnings in some errorlogs, somewhere, instead
+		// of something proper (class-wc-checkout, line ~559). Suppressing warnings like this, makes the order process work fine regardless of
+		// such warnings.
+
+		// When doing a similar thing in a non-error-suppressed environment (meaning, error logging will be thrown to the screen user instead
+		// of a log file in the background), PHP will render this warning on screen (frontend-background-process) instead. This is caused by
+		// the mentioned section in class-wc-checkout.php, as WooCommerce is not validating the fieldset as a valid array (also see line ~192
+		// in the same file where default fields are built only on null input). In production environments this might also mean that orders will
+		// fail due to errors in the JSON-data string, as it also - except for proper data - also contains errors.
+
+		// The fix for WOO-225 is based on null-fields during the PROCESSPAYMENT-part when this section only passes over the data it receives
+		// from wooCommerce. Passing over null, also means that wooCommerce get null without a valid array. Also, in a normal flow,
+		// both billing and shipping fields are rendered by wooCommerce. If it happens for some reasons that those fields are manually removed
+		// from a layout, we can not rebuild the array either. In such cases, when arrays are broken, wooCommerce can in this moment
+		// render foreach-warnings. The patch here, will try to fix this, by at least create some default array-fields without any data.
+
 		$keepFieldsHidden = getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" );
 		if ( isResursOmni() && hasResursOmni() ) {
 			if ( ! defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
@@ -283,30 +312,31 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 						$fields['shipping'] = array();
 					}
 				}
-				/*
-				 * For omni, to handle shipping, we need to remove all fields, including the "create account"-part
-				 * to make the shipping area disappear. This is a problem, since this leads to the fact that the customer
-				 * won't be able to create an account on fly. This however, is now being handled by the configuration interface
-				 * since the behaviour from the themes may act different.
-				 */
+				// For omni, to handle shipping, we need to remove all fields, including the "create account"-part
+				// to make the shipping area disappear. This is a problem, since this leads to the fact that the customer
+				// won't be able to create an account on fly. This however, is now being handled by the configuration interface
+				// since the behaviour from the themes may act different.
+				///
 				$cleanOmniCustomerFields = ( $this->get_option( 'cleanOmniCustomerFields' ) == "true" ? 1 : 0 );
 				if ( $cleanOmniCustomerFields && ! $keepFieldsHidden ) {
 					$fields = array();
 				}
 			} else {
-			    // Available configuration switch for future releases: secureFieldsNotNull
-                //
-			    // If wooCommerce passes over a null array to this section, the checkout will after this moment
-                // render a warning (class-wc-checkout.php, around line 559 arrays are not validated), unless error logging
-                // on screen is disabled. In production, having error logging on screen, will cause ugly warnings that will
-                // reach customers while parts of the orders might be handled as successful. By passing back something else
-                // than emptiness (null?), we might be able to save something.
-				if (!is_array($fields)) {
-				    $fields = array();
+				// Available configuration switch for future releases: secureFieldsNotNull (WOO-225)
+				//
+				// If wooCommerce passes over a null array to this section, the checkout will after this moment
+				// render a warning (class-wc-checkout.php, around line 559 arrays are not validated), unless error logging
+				// on screen is disabled. In production, having error logging on screen, will cause ugly warnings that will
+				// reach customers while parts of the orders might be handled as successful. By passing back something else
+				// than emptiness (null?), we might be able to save something.
+				if ( ! is_array( $fields ) ) {
+					$fields = array();
 				}
 			}
+
 			return $fields;
 		}
+
 		return $fields;
 	}
 
