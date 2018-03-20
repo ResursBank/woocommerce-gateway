@@ -2,11 +2,12 @@
 /**
  * Resurs Bank Passthrough API - A pretty silent ShopFlowSimplifier for Resurs Bank.
  * Compatible with simplifiedFlow, hostedFlow and Resurs Checkout.
+ * Pipelines.
  *
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.3
- * @version 1.3.7
+ * @version 1.3.8
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -22,9 +23,8 @@ if ( ! defined( 'RB_API_PATH' ) ) {
 }
 require_once( RB_API_PATH . '/rbapiloader/ResursTypeClasses.php' );
 require_once( RB_API_PATH . '/rbapiloader/ResursException.php' );
-
-if ( file_exists( __DIR__ . "/../../vendor/autoload.php" ) ) {
-	require_once( __DIR__ . '/../../vendor/autoload.php' );
+if ( file_exists( RB_API_PATH . "/../../vendor/autoload.php" ) ) {
+	require_once( RB_API_PATH . '/../../vendor/autoload.php' );
 }
 
 use \TorneLIB\TorneLIB_Crypto;
@@ -32,6 +32,12 @@ use \TorneLIB\TorneLIB_NetBits;
 use \TorneLIB\TorneLIB_Network;
 use \TorneLIB\Tornevall_cURL;
 use \TorneLIB\CURL_POST_AS;
+
+/*
+ *  Global
+ */
+define('ECOMPHP_VERSION', '1.3.8');
+define('ECOMPHP_MODIFY_DATE', '20180320');
 
 /**
  * Class ResursBank Primary class for EComPHP
@@ -113,9 +119,9 @@ class ResursBank {
 	////////// Private variables
 	///// Client Specific Settings
 	/** @var string The version of this gateway */
-	private $version = "1.3.7";
+	private $version = ECOMPHP_VERSION;
 	/** @var string Identify current version release (as long as we are located in v1.0.0beta this is necessary */
-	private $lastUpdate = "20180130";
+	private $lastUpdate = ECOMPHP_MODIFY_DATE;
 	/** @var string URL to git storage */
 	private $gitUrl = "https://bitbucket.org/resursbankplugins/resurs-ecomphp";
 	/** @var string This. */
@@ -174,7 +180,7 @@ class ResursBank {
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
-	private $Payload;
+	private $Payload = array();
 	/**
 	 * @var array
 	 * @since 1.0.31
@@ -247,7 +253,7 @@ class ResursBank {
 	 */
 	private $URLS;
 	/**
-	 * @var array An index of where to find each service if no stubs are found
+	 * @var array An index of where to find each service for webservices
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
@@ -281,7 +287,7 @@ class ResursBank {
 	 */
 	private $ServiceRequestMethods = array();
 	/** @var string Validating URLs are made through a third party API and is disabled by default (Used for checking reachability of an URL) */
-	private $externalApiAddress = "https://api.tornevall.net/2.0/";
+	private $externalApiAddress = "https://api.tornevall.net/3.0/";
 	/** @var array An array that defines an url to test and which response codes (OK-200, and errors when for example a digest fails) from the webserver that is expected */
 	private $validateExternalUrl = null;
 
@@ -648,6 +654,21 @@ class ResursBank {
 	}
 
 	/**
+	 * Initialize networking functions
+	 *
+	 * @since 1.0.35
+	 * @since 1.1.35
+	 * @since 1.2.8
+	 * @since 1.3.8
+	 */
+	private function isNetWork() {
+		// When no initialization of this library has been done yet
+		if (is_null($this->NETWORK)) {
+			$this->NETWORK = new TorneLIB_Network();
+		}
+	}
+
+	/**
 	 * Returns true if your version of EComPHP is the current (based on git tags)
 	 *
 	 * @param null $testVersion
@@ -658,11 +679,25 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function getIsCurrent( $testVersion = null ) {
+		$this->isNetWork();
 		if ( is_null( $testVersion ) ) {
 			return ! $this->NETWORK->getVersionTooOld( $this->getVersionNumber( false ), $this->gitUrl );
 		} else {
 			return ! $this->NETWORK->getVersionTooOld( $testVersion, $this->gitUrl );
 		}
+	}
+
+	/**
+	 * @return mixed
+	 * @throws \Exception
+	 * @since 1.0.35
+	 * @since 1.1.35
+	 * @since 1.2.8
+	 * @since 1.3.8
+	 */
+	public function getCurrentRelease() {
+		$tags = $this->getVersionsByGitTag();
+		return array_pop($tags);
 	}
 
 	/**
@@ -675,6 +710,7 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function getVersionsByGitTag() {
+		$this->isNetWork();
 		return $this->NETWORK->getGitTagsByUrl( $this->gitUrl );
 	}
 
@@ -1750,11 +1786,18 @@ class ResursBank {
 			$currentInvoiceTest = $this->getNextInvoiceNumber();
 		} catch ( \Exception $e ) {
 		}
-		$paymentScanList     = $this->findPayments( array( 'statusSet' => 'IS_DEBITED' ), 1, $scanDebitCount, array(
-			'ascending'   => false,
-			'sortColumns' => array( 'FINALIZED_TIME', 'MODIFIED_TIME', 'BOOKED_TIME' )
-		) );
-		$lastHighestInvoice  = $this->getHighestValueFromPaymentList( $paymentScanList, 0 );
+		$paymentScanList = array();
+		$paymentScanTypes = array('IS_DEBITED', 'IS_CREDITED', 'IS_ANNULLED');
+
+		$lastHighestInvoice = 0;
+		foreach ( $paymentScanTypes as $paymentType ) {
+			$paymentScanList    = $this->findPayments( array( 'statusSet' => array( $paymentType ) ), 1, $scanDebitCount, array(
+				'ascending'   => false,
+				'sortColumns' => array( 'FINALIZED_TIME', 'MODIFIED_TIME', 'BOOKED_TIME' )
+			) );
+			$lastHighestInvoice = $this->getHighestValueFromPaymentList( $paymentScanList, $lastHighestInvoice );
+		}
+
 		$properInvoiceNumber = intval( $lastHighestInvoice ) + 1;
 		if ( intval( $currentInvoiceTest ) > 0 && $currentInvoiceTest > $properInvoiceNumber ) {
 			$properInvoiceNumber = $currentInvoiceTest;
@@ -1774,13 +1817,18 @@ class ResursBank {
 	 * @throws \Exception
 	 */
 	private function getHighestValueFromPaymentList( $paymentList = array(), $lastHighestInvoice = 0 ) {
+		if (is_object($paymentList)) {
+			$paymentList = array($paymentList);
+		}
 		if ( is_array( $paymentList ) ) {
 			foreach ( $paymentList as $payments ) {
-				$id       = $payments->paymentId;
-				$invoices = $this->getPaymentInvoices( $id );
-				foreach ( $invoices as $multipleDebitCheck ) {
-					if ( $multipleDebitCheck > $lastHighestInvoice ) {
-						$lastHighestInvoice = $multipleDebitCheck;
+				if (isset($payments->paymentId)) {
+					$id       = $payments->paymentId;
+					$invoices = $this->getPaymentInvoices( $id );
+					foreach ( $invoices as $multipleDebitCheck ) {
+						if ( $multipleDebitCheck > $lastHighestInvoice ) {
+							$lastHighestInvoice = $multipleDebitCheck;
+						}
 					}
 				}
 			}
@@ -2511,6 +2559,7 @@ class ResursBank {
 	 * @since 1.1.3
 	 */
 	public function validateExternalAddress() {
+		$this->isNetWork();
 		if ( is_array( $this->validateExternalUrl ) && count( $this->validateExternalUrl ) ) {
 			$this->InitializeServices();
 			$ExternalAPI = $this->externalApiAddress . "urltest/isavailable/";
@@ -2521,7 +2570,8 @@ class ResursBank {
 			$Expect           = $this->validateExternalUrl['http_accept'];
 			$UnExpect         = $this->validateExternalUrl['http_error'];
 			$useUrl           = $this->validateExternalUrl['url'];
-			$ExternalPostData = array( 'link' => $this->NETWORK->base64url_encode( $useUrl ), "returnEncoded" => true );
+			$base64url        = $this->base64url_encode( $useUrl );
+			$ExternalPostData = array( 'link' => $useUrl, "returnEncoded" => true );
 			try {
 				$this->CURL->doPost( $ExternalAPI, $ExternalPostData, CURL_POST_AS::POST_AS_JSON );
 				$WebResponse = $this->CURL->getParsedResponse();
@@ -2537,7 +2587,6 @@ class ResursBank {
 					throw new \Exception( "No response returned from API", 500 );
 				}
 			}
-			$base64url = $this->base64url_encode( $useUrl );
 			if ( isset( $ParsedResponse->{$base64url} ) && isset( $ParsedResponse->{$base64url}->exceptiondata->errorcode ) && ! empty( $ParsedResponse->{$base64url}->exceptiondata->errorcode ) ) {
 				return RESURS_CALLBACK_REACHABILITY::IS_NOT_REACHABLE;
 			}
@@ -2581,9 +2630,11 @@ class ResursBank {
 	 * @since 1.1.3
 	 */
 	private function getCustomerIp() {
+		$this->isNetWork();
+
 		$primaryAddress = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : "127.0.0.1";
 		// Warning: This is untested and currently returns an array instead of a string, which may break ecommerce
-		if ( $this->preferCustomerProxy && ! empty( $this->NETWORK ) && count( $this->NETWORK->getProxyHeaders() ) ) {
+		if ( $this->preferCustomerProxy && ! empty( $this->NETWORK ) && is_array( $this->NETWORK->getProxyHeaders() ) && count( $this->NETWORK->getProxyHeaders() ) ) {
 			$primaryAddress = $this->NETWORK->getProxyHeaders();
 		}
 
@@ -3085,7 +3136,7 @@ class ResursBank {
 				/*
 				 * This should probably not happen and the developers should probably also stick to objects as above.
 				 */
-				if ( count( $paymentMethodName ) ) {
+				if ( is_array( $paymentMethodName ) && count( $paymentMethodName ) ) {
 					if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ] ) ) {
 						$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ];
 					}
@@ -4293,7 +4344,7 @@ class ResursBank {
 			'failUrl'      => $failUrl,
 			'forceSigning' => $forceSigning
 		);
-		if (!is_null($backUrl)) {
+		if ( ! is_null( $backUrl ) ) {
 			$SigningPayload['backUrl'] = $backUrl;
 		}
 		$this->handlePayload( $SigningPayload );
@@ -4307,8 +4358,8 @@ class ResursBank {
 	 *
 	 * @throws \Exception
 	 */
-	public function setCheckoutUrls($successUrl = '', $backUrl = '') {
-		$this->setSigning($successUrl, $backUrl);
+	public function setCheckoutUrls( $successUrl = '', $backUrl = '' ) {
+		$this->setSigning( $successUrl, $backUrl );
 	}
 
 	//// PAYLOAD HANDLER!
@@ -4788,7 +4839,7 @@ class ResursBank {
 		$countObject         = $this->getPaymentSpecByStatus( $paymentIdOrPaymentObject );
 		$returnedCountObject = array();
 		foreach ( $countObject as $status => $theArray ) {
-			$returnedCountObject[ $status ] = count( $theArray );
+			$returnedCountObject[ $status ] = is_array($theArray) ? count( $theArray ) : 0;
 		}
 
 		return $returnedCountObject;
@@ -5062,8 +5113,9 @@ class ResursBank {
 			'paymentId' => $paymentId
 		);
 		if ( ! is_array( $customPayloadItemList ) ) {
+			// Make sure this is correct
 			$customPayloadItemList = array();
-		} // Make sure this is correct
+		}
 
 		$storedPayment       = $this->getPayment( $paymentId );
 		$paymentMethod       = $storedPayment->paymentMethodId;
@@ -5322,7 +5374,7 @@ class ResursBank {
 			// Render and check if this is customized
 			$currentOrderLines = $this->getOrderLines();
 
-			if ( count( $currentOrderLines ) ) {
+			if ( is_array( $currentOrderLines ) && count( $currentOrderLines ) ) {
 				// If it is customized, we need to render the cancellation differently to specify what's what.
 
 				// Validation object - Contains everything that CAN be credited
@@ -5336,17 +5388,17 @@ class ResursBank {
 				// Clean up selected rows from the credit element and keep those rows than still can be annulled and matches the orderRow-request
 				$newAnnulObject = $this->objectsIntoArray( $this->removeFromArray( $validatedAnnulmentObject, $currentOrderLines, true ) );
 
-				if ( count( $newCreditObject ) ) {
+				if ( is_array( $newCreditObject ) && count( $newCreditObject ) ) {
 					$this->paymentCredit( $paymentId, $newCreditObject );
 				}
-				if ( count( $newAnnulObject ) ) {
+				if ( is_array( $newAnnulObject ) && count( $newAnnulObject ) ) {
 					$this->paymentAnnul( $paymentId, $newAnnulObject );
 				}
 			} else {
-				if ( count( $creditObject ) ) {
+				if ( is_array( $creditObject ) && count( $creditObject ) ) {
 					$this->paymentCredit( $paymentId, $creditObject );
 				}
-				if ( count( $annulObject ) ) {
+				if ( is_array( $annulObject ) && count( $annulObject ) ) {
 					$this->paymentAnnul( $paymentId, $annulObject );
 				}
 			}
