@@ -114,7 +114,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		/** @var $saveAll Sets a saveAll function to active, so that we can save all settings in the same times for which the parameters can be found in oldFormFields */
 		$saveAll   = true;
 		$saveArray = array();
-		if ( count( $_POST ) && ! $saveAll ) {
+		if ( is_array( $_POST ) && count( $_POST ) && ! $saveAll ) {
 			/*
 			 * In the past, we looped through the form field to save everything in the same time, but since we're changing the way how the saves
 			 * are being made (by moving settings into different settings) we'll use postvars instead, so there is no risk of overwriting settings
@@ -346,7 +346,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 	 */
 	private function setDropDown( $settingKey = '', $namespace = '', $optionsList = array(), $scriptLoader = "", $listCount = 1 ) {
 		$formSettings = $this->getFormSettings( $settingKey );
-		if ( is_null( $optionsList ) ) {
+		if ( ! is_array( $optionsList ) ) {
 			$optionsList = array();
 		}
 		/*

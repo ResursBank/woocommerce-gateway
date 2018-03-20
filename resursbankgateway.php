@@ -4,15 +4,15 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.2.6
- * Version: 2.2.3
+ * WC Tested up to: 3.3.3
+ * Version: 2.2.4
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', "2.2.3" );
+define( 'RB_WOO_VERSION', "2.2.4" );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 
 require_once(__DIR__ . '/vendor/autoload.php');
@@ -58,7 +58,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			/*
              * Follow woocommerce options. A little.
              */
-			if ( count( $wooSpecific ) ) {
+			if ( is_array($wooSpecific) && count( $wooSpecific ) ) {
 				update_option( 'woocommerce_specific_allowed_countries', $sellTo );
 			} else {
 				update_option( 'woocommerce_specific_allowed_countries', array() );
@@ -387,6 +387,9 @@ function woocommerce_gateway_resurs_bank_init() {
 			$url_arr          = parse_url( $_SERVER["REQUEST_URI"] );
 			$url_arr['query'] = str_replace( 'amp;', '', $url_arr['query'] );
 			parse_str( $url_arr['query'], $request );
+			if ( ! is_array( $request ) ) {
+				$request = array();
+			}
 			if ( ! count( $request ) && isset( $_GET['event-type'] ) ) {
 				$request = $_GET;
 			}
@@ -1097,7 +1100,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			if ( $cart->coupons_enabled() ) {
 				$coupons = $cart->get_coupons();
-				if ( count( $coupons ) > 0 ) {
+				if ( is_array($coupons) && count( $coupons ) > 0 ) {
 					$coupon_values     = $cart->coupon_discount_amounts;
 					$coupon_tax_values = $cart->coupon_discount_tax_amounts;
 					/**
@@ -1746,6 +1749,9 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 			}
 
+			if ( ! is_array( $customerData ) ) {
+				$customerData = array();
+			}
 			if ( ! count( $customerData ) ) {
 				$returnResult['errorString'] = "No customer data set";
 				$returnResult['errorCode']   = "404";
@@ -2859,7 +2865,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				'iframeShape'                          => getResursOption( "iframeShape", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'useStandardFieldsForShipping'         => getResursOption( "useStandardFieldsForShipping", "woocommerce_resurs_bank_omnicheckout_settings" ),
 				'showResursCheckoutStandardFieldsTest' => getResursOption( "showResursCheckoutStandardFieldsTest" ),
-				'gatewayCount'                         => count( $gateways ),
+				'gatewayCount'                         => (is_array($gateways) ? count( $gateways ) : 0),
 				'postidreference'                      => getResursOption( "postidreference" )
 			);
 			$setSessionEnable = true;
@@ -3036,14 +3042,16 @@ function woocommerce_gateway_resurs_bank_init() {
 	function resurs_bank_admin_notice() {
 		global $resursGlobalNotice, $resursSelfSession;
 		if ( isset( $_SESSION['resurs_bank_admin_notice'] ) || $resursGlobalNotice === true ) {
-			if ( ! count( $_SESSION ) && count( $resursSelfSession ) ) {
-				$_SESSION = $resursSelfSession;
+			if ( is_array( $_SESSION ) ) {
+				if ( ! count( $_SESSION ) && count( $resursSelfSession ) ) {
+					$_SESSION = $resursSelfSession;
+				}
+				$notice = '<div class=' . $_SESSION['resurs_bank_admin_notice']['type'] . '>';
+				$notice .= '<p>' . $_SESSION['resurs_bank_admin_notice']['message'] . '</p>';
+				$notice .= '</div>';
+				echo $notice;
+				unset( $_SESSION['resurs_bank_admin_notice'] );
 			}
-			$notice = '<div class=' . $_SESSION['resurs_bank_admin_notice']['type'] . '>';
-			$notice .= '<p>' . $_SESSION['resurs_bank_admin_notice']['message'] . '</p>';
-			$notice .= '</div>';
-			echo $notice;
-			unset( $_SESSION['resurs_bank_admin_notice'] );
 		}
 	}
 
@@ -3164,6 +3172,9 @@ function woocommerce_gateway_resurs_bank_init() {
 					$methodList = null;
 					if (empty($annuityFactorsOverride)) {
 						$methodList = $flow->getPaymentMethodSpecific( $annuityMethod );
+					}
+					if ( ! is_array( $methodList ) ) {
+						$methodList = array();
 					}
 					// Make sure the payment method exists. If there is overriders from the demoshop here, we'd know exists on the hard coded values.
 					if (count($methodList) || !empty($annuityFactorsOverride)) {
@@ -3495,7 +3506,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . ( ! empty( $addressInfo ) ? nl2br( $addressInfo ) : "" ) . '</span>
             ';
 
-			if (count($invoices)) {
+			if ( is_array( $invoices ) && count( $invoices ) ) {
 				$renderedResursData .= '
                             <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">Invoices:</span>
                             <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . implode(", ", $invoices) . '</span>
@@ -4276,6 +4287,9 @@ function resurs_omnicheckout_order_button_html( $classButtonHtml ) {
 function resurs_omnicheckout_payment_gateways_check( $paymentGatewaysCheck ) {
 	global $woocommerce;
 	$paymentGatewaysCheck = $woocommerce->payment_gateways->get_available_payment_gateways();
+	if ( is_array( $paymentGatewaysCheck ) ) {
+		$paymentGatewaysCheck = array();
+	}
 	if ( ! count( $paymentGatewaysCheck ) ) {
 		// If there is no active payment gateways except for omniCheckout, the warning of no available payment gateways has to be suppressed
 		if ( isResursOmni() ) {
@@ -4295,6 +4309,9 @@ function resurs_omnicheckout_payment_gateways_check( $paymentGatewaysCheck ) {
 function hasPaymentGateways() {
 	global $woocommerce;
 	$paymentGatewaysCheck = $woocommerce->payment_gateways->get_available_payment_gateways();
+	if ( is_array( $paymentGatewaysCheck ) ) {
+		$paymentGatewaysCheck = array();
+	}
 	if ( count( $paymentGatewaysCheck ) > 1 ) {
 		return true;
 	}
