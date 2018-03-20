@@ -39,12 +39,12 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.0.18",
-        "version_normalized": "6.0.18.0",
+        "version": "6.0.19",
+        "version_normalized": "6.0.19.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git",
-            "reference": "486e77d645ace4ba1a3e8ecf9fb20f4be5b88dc5"
+            "reference": "898ec22e819fb418ee54ebfde7aca2fba9d65563"
         },
         "require": {
             "ext-curl": "*",
@@ -52,7 +52,7 @@
             "php": ">=5.3",
             "tornevall/tornelib-php-crypto": "^6.0"
         },
-        "time": "2018-02-14T11:18:23+00:00",
+        "time": "2018-03-20T05:20:17+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -80,17 +80,17 @@
     },
     {
         "name": "resursbank/ecomphp",
-        "version": "1.3.7",
-        "version_normalized": "1.3.7.0",
+        "version": "1.3.8",
+        "version_normalized": "1.3.8.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "beb4ca37a09392124c1526d8b09a242f3551810c"
+            "reference": "84310222ca0c0730e1947f066e12f2ef4f6d1167"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/beb4ca37a09392124c1526d8b09a242f3551810c.zip",
-            "reference": "beb4ca37a09392124c1526d8b09a242f3551810c",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/84310222ca0c0730e1947f066e12f2ef4f6d1167.zip",
+            "reference": "84310222ca0c0730e1947f066e12f2ef4f6d1167",
             "shasum": ""
         },
         "require": {
@@ -99,7 +99,7 @@
             "php": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~7.0.0|~7.1.0|~7.2.0",
             "tornevall/tornelib-php-netcurl": "^6.0"
         },
-        "time": "2018-01-30T10:27:52+00:00",
+        "time": "2018-03-20T11:37:10+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
