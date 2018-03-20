@@ -176,7 +176,7 @@ class Tornevall_cURLTest extends TestCase {
 		$this->assertTrue( $this->hasBody( $container ) );
 	}
 
-	function testSimpleGetProxy() {
+	/*function testSimpleGetProxy() {
 		$this->pemDefault();
 		exec( "service tor status", $ubuntuService );
 		$serviceFound = false;
@@ -195,8 +195,7 @@ class Tornevall_cURLTest extends TestCase {
 			return;
 		}
 		$this->markTestSkipped( "I can't test this simpleGetProxy since there are no tor service installed" );
-	}
-	// Currently failing
+	}*/
 
 	/*	function testSimpleGetWsdlProxy() {
 			$this->pemDefault();
@@ -368,7 +367,7 @@ class Tornevall_cURLTest extends TestCase {
 				$this->assertTrue( isset( $container->methods ) );
 			}
 		} catch ( \Exception $e ) {
-			$this->markTestIncomplete( "Got exception " . $e->getCode() . ": " . $e->getMessage() );
+			$this->markTestSkipped( "Got exception " . $e->getCode() . ": " . $e->getMessage() );
 		}
 	}
 
@@ -382,11 +381,11 @@ class Tornevall_cURLTest extends TestCase {
 			$this->CURL->setSslUnverified( true );
 			$container = $this->CURL->getParsedResponse( $this->CURL->doGet( $this->Urls['selfsigned'] . "/tests/tornevall_network/index.php?o=json&bool" ) );
 			// The hasErrors function should return at least one error here
-			if ( is_object( $container ) && count( $this->CURL->hasErrors() ) >= 1 ) {
+			if ( is_object( $container ) && $this->CURL->hasErrors() ) {
 				$this->assertTrue( isset( $container->methods ) );
 			}
 		} catch ( \Exception $e ) {
-			$this->markTestIncomplete( "Got exception " . $e->getCode() . ": " . $e->getMessage() );
+			$this->markTestSkipped( "Got exception " . $e->getCode() . ": " . $e->getMessage() );
 		}
 	}
 

@@ -18,7 +18,7 @@
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
  * @package TorneLIB
- * @version 6.0.18
+ * @version 6.0.19
  */
 
 
@@ -40,7 +40,7 @@
 namespace TorneLIB;
 
 if ( ! defined( 'TORNELIB_NETCURL_RELEASE' ) ) {
-	define( 'TORNELIB_NETCURL_RELEASE', '6.0.17' );
+	define( 'TORNELIB_NETCURL_RELEASE', '6.0.19' );
 }
 if ( file_exists( __DIR__ . '/../vendor/autoload.php' ) ) {
 	require_once( __DIR__ . '/../vendor/autoload.php' );
@@ -268,9 +268,11 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 			}
 			if ( $validateHost || $this->alwaysResolveHostvalidation === true ) {
 				// Make sure that the host is not invalid
-				$hostRecord = dns_get_record( $urlParsed['host'], DNS_ANY );
-				if ( ! count( $hostRecord ) ) {
-					return array( null, null, null );
+				if (filter_var($urlIn, FILTER_VALIDATE_URL)) {
+					$hostRecord = @dns_get_record( $urlParsed['host'], DNS_ANY );
+					if ( ! count( $hostRecord ) ) {
+						return array( null, null, null );
+					}
 				}
 			}
 
@@ -665,7 +667,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 	 * Class Tornevall_cURL
 	 *
 	 * @package TorneLIB
-	 * @version 6.0.17
+	 * @version 6.0.18
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIBv5
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php-netcurl/browse Sources of TorneLIB
 	 * @link https://docs.tornevall.net/x/KwCy Network & Curl v5 and v6 Library usage
@@ -709,7 +711,7 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		private $CurlReferer;
 
 		/** @var $Drivers */
-		private $Drivers;
+		private $Drivers = array();
 		private $SupportedDrivers = array(
 			'GuzzleHttp\Client' => TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP,
 			'WP_Http'           => TORNELIB_CURL_DRIVERS::DRIVER_WORDPRESS
@@ -1019,6 +1021,10 @@ if ( ! class_exists( 'Tornevall_cURL' ) && ! class_exists( 'TorneLIB\Tornevall_c
 		 */
 		public function getAvailableDrivers( $getAsList = false, $ignoreException = false ) {
 			$hasExternalDrivers = false;
+			// If this is not an array, we won't be able to count it.
+			if (!is_array($this->Drivers)) {
+				$this->Drivers = array();
+			}
 			if ( count( $this->Drivers ) ) {
 				$hasExternalDrivers = true;
 			}
