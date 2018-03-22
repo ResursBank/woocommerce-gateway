@@ -724,9 +724,9 @@ class ResursBank {
 	 */
 	public function setUserAgent( $MyUserAgent = '' ) {
 		if ( ! empty( $MyUserAgent ) ) {
-			$this->myUserAgent = $MyUserAgent . " +" . $this->getVersionFull();
+			$this->myUserAgent = $MyUserAgent . " +" . $this->getVersionFull() . (defined('PHP_VERSION') ? "/PHP-" . PHP_VERSION : "");
 		} else {
-			$this->myUserAgent = $this->getVersionFull();
+			$this->myUserAgent = $this->getVersionFull() . (defined('PHP_VERSION') ? "/PHP-" . PHP_VERSION : "");
 		}
 		if ( $this->customerUserAgentPush && isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
 			$this->myUserAgent .= " +CLI-" . $this->T_CRYPTO->base64_compress( $_SERVER['HTTP_USER_AGENT'] );
