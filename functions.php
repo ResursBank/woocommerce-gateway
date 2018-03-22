@@ -548,6 +548,7 @@ if ( is_admin() ) {
 			if ($payment_method->customerType == "PAYMENT_PROVIDER" || $payment_method->type == "PAYMENT_PROVIDER") {
 			    $isPsp = "true";
             }
+            $allowPsp = (getResursFlag('ALLOW_PSP') ? "true" : "false");
 
 			//$icon_name = strtolower($method_name);
 			$icon_name = "resurs-standard";
@@ -591,6 +592,7 @@ if ( is_admin() ) {
                 \$this->id_short           = '{$payment_method->id}';
                 \$this->has_icon();
                 \$this->isPsp = {$isPsp};
+                \$this->allowPsp = {$allowPsp};
                 \$this->method_title = '{$method_name}';
                 if (!isResursHosted()) {
                     \$this->has_fields   = true;
@@ -606,11 +608,16 @@ if ( is_admin() ) {
     
                 \$resursTemporaryMethodTime = get_transient("resursTemporaryMethodTime_" . \$this->id_short);
                 \$timeDiff = time() - \$resursTemporaryMethodTime;
+                \$maxWaitTimeDiff = 3600;
     
                 if (empty(\$this->title) || strtolower(\$this->title) == "resurs bank") {
                     \$this->flow = initializeResursFlow();
+                    if (\$this->allowPsp) {
+                        \$this->flow->setSimplifiedPsp(true);
+                        \$timeDiff = \$maxWaitTimeDiff + 1;
+                    }
                     try {
-                        if (\$timeDiff >= 3600) {
+                        if (\$timeDiff >= \$maxWaitTimeDiff) {
                             \$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
                             set_transient("resursTemporaryMethodTime_" . \$this->id_short, time(), 3600);
                             set_transient("resursTemporaryMethod_" . \$this->id_short, serialize(\$realTimePaymentMethod), 3600);
@@ -689,8 +696,10 @@ if ( is_admin() ) {
                 if (empty(\$this->title)) {
                     return false;
                 }
-                if (!isResursOmni() && \$this->isPsp === true) {
-                    return false;
+                if (\$this->allowPsp === false) {
+                    if (!isResursOmni() && \$this->isPsp === true) {
+                        return false;
+                    }
                 }
                 if (!\$this->overRideIsAvailable) {
                     return false;
