@@ -4,7 +4,7 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.3.3
+ * WC Tested up to: 3.3.4
  * Version: 2.2.4
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
@@ -14,6 +14,7 @@
 
 define( 'RB_WOO_VERSION', "2.2.4" );
 define( 'RB_ALWAYS_RELOAD_JS', true );
+define( 'RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce' );
 
 require_once(__DIR__ . '/vendor/autoload.php');
 
@@ -1020,6 +1021,7 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * @param bool $specLinesOnly Return only the array of speclines
 		 *
 		 * @return array The paymentSpec for startPaymentSession
+		 * @throws Exception
 		 */
 		protected static function get_payment_spec( $cart, $specLinesOnly = false ) {
 			global $woocommerce;
@@ -1200,7 +1202,6 @@ function woocommerce_gateway_resurs_bank_init() {
 					$hasCountry = true;
 				}
 			}
-
 			if (!$hasCountry) {
 				try {
 					if ( $timeDiff >= 3600 ) {
@@ -4012,7 +4013,8 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 		$initFlow->setDebug(true);
 		$initFlow->setSslValidation(false);
 	}
-	$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
+
+	$initFlow->setUserAgent( RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
 	$initFlow->setEnvironment( $useEnvironment );
 	$initFlow->setDefaultUnitMeasure();
 	if ( isset( $_REQUEST['testurl'] ) ) {
@@ -4060,7 +4062,9 @@ function getAddressProd( $ssn = '', $customerType = '', $ip = '' ) {
 	if ( ! empty( $username ) && ! empty( $password ) ) {
 	    /** @var \Resursbank\RBEcomPHP\ResursBank $initFlow */
 		$initFlow                      = new ResursBank( $username, $password );
-		$initFlow->setUserAgent( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
+		$initFlow->setUserAgent( RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
+		//$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
+		//$initFlow->setUserAgent( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
 		$initFlow->setEnvironment( RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION );
 		try {
 			$getResponse = $initFlow->getAddress( $ssn, $customerType, $ip );
