@@ -66,10 +66,11 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
 
 = 2.2.4 =
 
-    * [WOO-226] Counting non countables control - (first) PHP 7.2 compliant patch
+    * [WOO-226] - Counting non countables control - (first) PHP 7.2 compliant patch
+    * [WOO-230] - Show PHP version in RB-admin panel
+    * [WOO-229] - Editing payment methods that belongs to the PSP-sphere in simplified mode crashes wooAdminMethodEditor
 
 = 2.2.3 =
-
 
     * [WOO-225] - Form fields must not be empty (RCO)
 
@@ -78,35 +79,6 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
     * [WOO-95] - updatePaymentReference to WooCommerce orderId
     * [WOO-223] - getValidatedCallbackDigest()
     * [WOO-222] - Invoice numbers are not properly updated (shown from payment admin) if the invoice sequence are primary nulled
-
-
-= 2.2.1 =
-
-    * [WOO-217] - "Threeflags" compatibility for hosted lost in space
-    * [WOO-218] - Synchronous completion of an order (simplifiedFlow) no longer works properly
-    * [WOO-219] - Order stock reduces more than one time on BOOKED
-    * [WOO-220] - Synchronous completion of an order (hostedFlow) no longer works properly
-
-= 2.2.0 =
-
-    * [WOO-155] - Upgrade to EComPHP 1.2.x by exchange 1.1 functions in current to those running in 1.2
-    * [WOO-168] - Support PAYMENT_PROVIDER in  simplified flow.
-    * [WOO-172] - Validate AfterShop flow functions
-    * [WOO-173] - WooCommerce order view and details from Resurs
-    * [WOO-174] - When internal aftershop is disabled show notice in order view
-    * [WOO-179] - Prevent class conflicts by renaming external library classes - put them in namespace
-    * [WOO-181] - Investigate the specrows vs tax-calculating on "show inc. or ex. tax"
-    * [WOO-191] - Callback update registrator runs on pages that does not belong to the function
-    * [WOO-216] - Allow cards without card numbers
-    * [WOO-154] - isResursDemo() might cause eternal loops on plugin activation in some systems
-    * [WOO-175] - If order is finalized from payment admin woocommerce might not get updated properly
-    * [WOO-176] - Updating cart (with discounts etc) fails
-    * [WOO-193] - Reduce order stock disappeared from wp-admin
-    * [WOO-211] - Hosted flow needs payload before cleanup to get own back/success-url
-    * [WOO-212] - Trace The WC_Cart->tax argument is deprecated since version 2.3. Use WC_Tax directly
-    * [WOO-213] - EC1.2 and invoice sequencing does not work when invoice sequence is null
-    * [WOO-214] - Backurl checkout
-    * [WOO-215] - Plugin no longer checks if payment method is enabled or disabled
 
 
 == Upgrade Notice ==
