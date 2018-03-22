@@ -43,6 +43,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 			$this->resurs_settings_save();
 		}
 		parent::__construct();
+		if (getResursFlag('DEBUG')) {
+			$this->flow->setDebug(true);
+		}
 	}
 
 	public function get_sections() {
@@ -546,8 +549,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 				$this->UnusedPaymentClassesCleanup( $class_files );
 			} else {
 				$theMethod            = preg_replace( "/^resurs_bank_nr_(.*?)/", '$1', $section );
+				// Make sure there is an overrider on PSP
+				$this->flow->setSimplifiedPsp(true);
 				$this->paymentMethods = $this->flow->getPaymentMethodSpecific( $theMethod );
-				$methodDescription    = $this->paymentMethods->description;
+				$methodDescription    = isset($this->paymentMethods->description) ? $this->paymentMethods->description : "";
 			}
 		} catch ( Exception $e ) {
 			$paymentMethodsError = $e->getMessage();
@@ -567,7 +572,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 				echo '<h1>' . __( 'Resurs Bank Configuration', 'WC_Payment_Gateway' ) . ' - ' . $methodDescription . ' (' . $theMethod . ')</h1>';
 			} else {
 				echo '<h1>' . __( 'Resurs Bank payment gateway configuration', 'WC_Payment_Gateway' ) . '</h1>
-                    Plugin version ' . rbWcGwVersion() . ' ' . ( ! empty( $currentVersion ) ? $currentVersion : "" );
+                    v' . rbWcGwVersion() . (defined('PHP_VERSION') ? "/PHP v" . PHP_VERSION : "") . ' ' . ( ! empty( $currentVersion ) ? $currentVersion : "" );
 			}
 			?>
             <table class="form-table">
