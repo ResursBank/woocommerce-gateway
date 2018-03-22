@@ -449,6 +449,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		$shipping       = (float) $cart->shipping_total;
 		$shipping_tax   = (float) $cart->shipping_tax_total;
 		$shipping_total = (float) ( $shipping + $shipping_tax );
+
 		/*
 		 * Compatibility.
 		 */
