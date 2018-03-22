@@ -28,18 +28,6 @@ $RB(document).ready(function ($) {
         });
     }
 
-    // TODO: This might come back when stuff are cleared out
-    /*
-     if (jQuery('#paymentMethodName').length > 0) {
-     var methodName = jQuery('#paymentMethodName').html();
-     var iconFieldName = "#woocommerce_" + methodName + "_icon";
-     var iconField = jQuery(iconFieldName);
-     if (iconField.length > 0) {
-     iconField.after('<br><img src="' + iconField.val() + '">');
-     }
-     }
-     */
-
     var $el, $ps, $up, totalHeight;
     jQuery(".resurs-read-more-box .button").click(function () {
         jQuery('.resurs-read-more-box')
