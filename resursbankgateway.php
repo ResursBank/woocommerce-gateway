@@ -3174,11 +3174,16 @@ function woocommerce_gateway_resurs_bank_init() {
 					if (empty($annuityFactorsOverride)) {
 						$methodList = $flow->getPaymentMethodSpecific( $annuityMethod );
 					}
-					if ( ! is_array( $methodList ) ) {
+
+					if ( ! is_array( $methodList ) && !is_object($methodList) ) {
 						$methodList = array();
 					}
+					$allowAnnuity = false;
+					if ((is_array($methodList) && count($methodList)) || is_object($methodList)) {
+					    $allowAnnuity = true;
+                    }
 					// Make sure the payment method exists. If there is overriders from the demoshop here, we'd know exists on the hard coded values.
-					if (count($methodList) || !empty($annuityFactorsOverride)) {
+					if ($allowAnnuity || !empty($annuityFactorsOverride)) {
 						if (!empty($annuityFactorsOverride)) {
 							$annuityFactors  = $annuityFactorsOverride;
 						} else {
