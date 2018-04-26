@@ -391,6 +391,15 @@ function updateResursCallbacksResult(resultResponse) {
             $RB('#callbacksRequireUpdate').hide();
         }
         runResursAdminCallback("getMyCallbacks", "showResursCallbackArray");
+    } else {
+        if (typeof resultResponse["response"] !== "undefined") {
+            var successCheck = typeof resultResponse["response"]["setMyCallbacksResponse"] !== "undefined" ? resultResponse["response"]["setMyCallbacksResponse"] : null;
+            if (typeof successCheck["errorstring"] !== "undefined" && successCheck["errorstring"] != "") {
+                $RB('#callbackContent').html("<pre style='color: #990000;'>" + successCheck["errorstring"] + "</pre>");
+            }
+        } else {
+            $RB('#callbackContent').html("<pre style='color: #990000;'>Something went terribly wrong during the updateResursCallbacksResult() and no errors could be fetched</pre>");
+        }
     }
 }
 
