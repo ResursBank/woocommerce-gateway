@@ -90,13 +90,13 @@
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git",
-            "reference": "78dc0991971337dc40ae5196e4e73c1b1f62b5a0"
+            "reference": "0a638421a5716c089506f59af49ac4ffc5b628b1"
         },
         "require": {
             "php": ">=5.3",
             "tornevall/tornelib-php-crypto": "^6.0"
         },
-        "time": "2018-04-26T21:46:08+00:00",
+        "time": "2018-04-26T22:26:22+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

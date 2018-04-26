@@ -1,9 +1,0 @@
-composer.phar
-composer.lock
-.composer.json.swp
-.idea/*
-Makefile
-vendor
-runit.sh
-coverage
-source/build

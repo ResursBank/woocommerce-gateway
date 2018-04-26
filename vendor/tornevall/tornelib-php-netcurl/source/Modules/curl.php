@@ -2013,6 +2013,14 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			$contentType           = isset( $headerInfo['Content-Type'] ) ? $headerInfo['Content-Type'] : null;
 			$arrayedResponse['ip'] = $this->CURL_IP_ADDRESS;
 
+			// Store data that can be stored before tryiing to handle the parsed parts
+			$this->NETCURL_RESPONSE_RAW                   = $rawInput;
+			$this->NETCURL_RESPONSE_CONTAINER             = $arrayedResponse;
+			$this->NETCURL_RESPONSE_CONTAINER_CODE        = trim( $code );
+			$this->NETCURL_RESPONSE_CONTAINER_HTTPMESSAGE = trim( $httpMessage );
+			$this->NETCURL_RESPONSE_CONTAINER_BODY        = $body;
+			$this->NETCURL_RESPONSE_CONTAINER_HEADER      = $header;
+
 			if ( $this->isFlag( 'IS_SOAP' ) && ! $this->isFlag( 'ALLOW_PARSE_SOAP' ) ) {
 				$arrayedResponse['parsed'] = null;
 
@@ -2023,14 +2031,8 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			$NCP                       = new NETCURL_PARSER( $arrayedResponse['body'], $contentType );
 			$parsedContent             = $NCP->getParsedResponse();
 			$arrayedResponse['parsed'] = $parsedContent;
-
-			$this->NETCURL_RESPONSE_RAW                   = $rawInput;
-			$this->NETCURL_RESPONSE_CONTAINER             = $arrayedResponse;
 			$this->NETCURL_RESPONSE_CONTAINER_PARSED      = $parsedContent;
-			$this->NETCURL_RESPONSE_CONTAINER_CODE        = trim( $code );
-			$this->NETCURL_RESPONSE_CONTAINER_HTTPMESSAGE = trim( $httpMessage );
-			$this->NETCURL_RESPONSE_CONTAINER_BODY        = $body;
-			$this->NETCURL_RESPONSE_CONTAINER_HEADER      = $header;
+
 
 			if ( $this->NETCURL_RETURN_RESPONSE_TYPE == NETCURL_RESPONSETYPE::RESPONSETYPE_OBJECT ) {
 				return new NETCURL_HTTP_OBJECT( $arrayedResponse['header'], $arrayedResponse['body'], $arrayedResponse['code'], $arrayedResponse['parsed'], $this->CURL_STORED_URL, $this->CURL_IP_ADDRESS );
