@@ -8,4 +8,4 @@ deploy
 vendor/resursbank/ecomphp/bitbucket-pipelines.yml
 vendor/resursbank/ecomphp/tests
 vendor/tornevall/tornelib-php-netcurl/tests
-
+vendor/tornevall/tornelib-php-crypto/tests
