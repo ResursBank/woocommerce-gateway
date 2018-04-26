@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.9.1
 Requires PHP: 5.4
-Stable tag: 2.2.4
+Stable tag: 2.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,7 @@ Requirements:
 
  * At least PHP 5.4
  * [curl](https://curl.haxx.se)
+ * [PHP streams](http://php.net/manual/en/book.stream.php)
  * [SoapClient](http://php.net/manual/en/class.soapclient.php)
 
 [Project URL](https://test.resurs.com/docs/display/ecom/WooCommerce) - [Plugin URL](https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/)
@@ -64,6 +65,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
+= 2.2.5 =
+
+    * [WOO-232] - Annuity factors problem
+
 = 2.2.4 =
 
     * [WOO-226] - Counting non countables control - (first) PHP 7.2 compliant patch
@@ -74,11 +79,6 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
 
     * [WOO-225] - Form fields must not be empty (RCO)
 
-= 2.2.2 =
-
-    * [WOO-95] - updatePaymentReference to WooCommerce orderId
-    * [WOO-223] - getValidatedCallbackDigest()
-    * [WOO-222] - Invoice numbers are not properly updated (shown from payment admin) if the invoice sequence are primary nulled
 
 
 == Upgrade Notice ==
