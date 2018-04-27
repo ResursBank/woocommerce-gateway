@@ -155,7 +155,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 			$this->soapClient = null;
 			$sslOpt           = $this->getSslOpt();
 			//$optionsStream    = $this->sslGetOptionsStream();
-			$optionsStream    = $this->PARENT->sslGetOptionsStream();
+			$optionsStream = $this->PARENT->sslGetOptionsStream();
 
 			if ( is_array( $optionsStream ) && count( $optionsStream ) ) {
 				foreach ( $optionsStream as $optionKey => $optionValue ) {
@@ -179,6 +179,9 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 			$soapFaultOnInit = false;
 
 			$parentFlags = $this->PARENT->getFlags();
+			foreach ( $parentFlags as $flagKey => $flagValue ) {
+				$this->setFlag( $flagKey, $flagValue );
+			}
 
 			if ( $this->SoapTryOnce ) {
 				try {
@@ -223,7 +226,10 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 									if ( isset( $httpSplitError[1] ) && intval( $httpSplitError[1] ) > 0 ) {
 										$throwErrorCode = $httpSplitError[1];
 										if ( isset( $httpSplitError[2] ) && is_string( $httpSplitError[2] ) && ! empty( $httpSplitError[2] ) ) {
-											$throwErrorMessage = "HTTP-Request-Exception: " . $httpSplitError[1] . " " . trim( $httpSplitError[2] ) . "\n" . $throwErrorMessage;
+											if ( ! isset( $parentFlags['SOAPWARNINGS_EXTEND'] ) ) {
+												unset( $throwErrorMessage );
+											}
+											$throwErrorMessage = "HTTP-Request exception (" . $throwErrorCode . "): " . $httpSplitError[1] . " " . trim( $httpSplitError[2] ) . "\n" . $throwErrorMessage;
 										}
 									}
 								}
@@ -315,7 +321,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 				$this->soapFaultExceptionObject = $e;
 				if ( $this->canThrowSoapFaults ) {
 					$exceptionCode = $e->getCode();
-					if (!$exceptionCode && $this->getCode() > 0) {
+					if ( ! $exceptionCode && $this->getCode() > 0 ) {
 						$exceptionCode = $this->getCode();
 					}
 					throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception from soapClient: " . $e->getMessage(), $exceptionCode, $e );

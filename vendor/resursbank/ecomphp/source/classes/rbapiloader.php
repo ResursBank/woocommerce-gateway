@@ -521,10 +521,15 @@ class ResursBank {
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
-	private function InitializeServices($reInitializeCurl = true) {
+	private function InitializeServices( $reInitializeCurl = true ) {
 
+		$inheritExtendedSoapWarnings = false;
 		if ( is_null( $this->CURL ) ) {
 			$reInitializeCurl = true;
+		} else {
+			if ($this->CURL->hasFlag('SOAPWARNINGS_EXTEND')) {
+				$inheritExtendedSoapWarnings = $this->CURL->getFlag('SOAPWARNINGS_EXTEND');
+			}
 		}
 		if ( ! $reInitializeCurl ) {
 			return;
@@ -541,7 +546,10 @@ class ResursBank {
 		if ( class_exists( '\Resursbank\RBEcomPHP\Tornevall_cURL' ) || class_exists( '\TorneLIB\Tornevall_cURL' ) ) {
 			$this->CURL = new Tornevall_cURL();
 			$this->CURL->setChain( false );
-			$this->CURL->setFlag('SOAPCHAIN', false);
+			if ($inheritExtendedSoapWarnings) {
+				$this->CURL->setFlag('SOAPWARNINGS_EXTEND', true);
+			}
+			$this->CURL->setFlag( 'SOAPCHAIN', false );
 			$this->CURL->setStoreSessionExceptions( true );
 			$this->CURL->setAuthentication( $this->soapOptions['login'], $this->soapOptions['password'] );
 			$this->CURL->setUserAgent( $this->myUserAgent );
@@ -585,6 +593,18 @@ class ResursBank {
 		$this->curlStats['debug'] = $this->debug;
 
 		return $this->curlStats;
+	}
+
+	/**
+	 * Get curl mode version without the debugging requirement
+	 * @param bool $fullRelease
+	 *
+	 * @return string
+	 */
+	public function getCurlVersion( $fullRelease = false ) {
+		if ( ! is_null( $this->CURL ) ) {
+			return $this->CURL->getVersion( $fullRelease );
+		}
 	}
 
 	/**
@@ -803,11 +823,16 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function setFlag( $flagKey = '', $flagValue = null ) {
+		if ( is_null( $this->CURL ) ) {
+			$this->InitializeServices();
+		}
 		if ( is_null( $flagValue ) ) {
 			$flagValue = true;
 		}
 
 		if ( ! empty( $flagKey ) ) {
+			// CURL bypass
+			$this->CURL->setFlag( $flagKey, $flagValue );
 			$this->internalFlags[ $flagKey ] = $flagValue;
 
 			return true;
@@ -1446,7 +1471,7 @@ class ResursBank {
 			return true;
 		}
 
-		throw new \Exception("Could not register callback", $code);
+		throw new \Exception("setRegisterCallbackException ($code): Could not register callback event " . $renderCallback['eventType'] . ' (service: '.$registerBy.')', $code);
 	}
 
 	/**
