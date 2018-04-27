@@ -443,6 +443,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 		return false;
 	}
 
+	/**
+	 * @param string $definedConstantName
+	 *
+	 * @return mixed|null
+	 */
 	function getDefined($definedConstantName = '') {
 	    if (defined($definedConstantName)) {
 	        return constant($definedConstantName);
@@ -450,14 +455,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
         return null;
     }
 
-    function getPluginInformation() {
-	    $pluginInfo = $this->setSeparator( __( 'Plugin information', 'WC_Payment_Gateway' ) );
-	    $pluginInfo .= '<tr><td>Version</td><td>ResursBankPaymentGateway v' . rbWcGwVersion() . '</td></tr>';
-	    $pluginInfo .= '<tr><td>PHP</td><td>' . ( defined( 'PHP_VERSION' ) ? "PHP v" . PHP_VERSION : "" ) . '</td></tr>';
-	    $pluginInfo .= '<tr><td>EComPHP</td><td>' . $this->flow->getVersionFull() . '</td></tr>';
-	    $pluginInfo .= '<tr><td>CURL MODULES</td><td> NETCURL-v' . $this->getDefined('NETCURL_RELEASE') . ' MODULE_CURL-v'.$this->getDefined('NETCURL_CURL_RELEASE').' MODULE_NETWORK-v'.$this->getDefined('NETCURL_NETWORK_RELEASE').'</td></tr>';
-	    return $pluginInfo;
-    }
+	/**
+	 * @return string
+	 */
+	function getPluginInformation() {
+		$pluginInfo = $this->setSeparator( __( 'Plugin information', 'WC_Payment_Gateway' ) );
+		$pluginInfo .= '<tr><td>Plugin/Gateway</td><td>v' . rbWcGwVersion() . '</td></tr>';
+		$pluginInfo .= '<tr><td>PHP</td><td>' . ( defined( 'PHP_VERSION' ) ? "v" . PHP_VERSION : "" ) . '</td></tr>';
+		$pluginInfo .= '<tr><td>EComPHP</td><td>' . $this->flow->getVersionFull() . '</td></tr>';
+		$pluginInfo .= '<tr><td>CURL MODULES</td><td> NETCURL-v' . $this->getDefined( 'NETCURL_RELEASE' ) . ' MODULE_CURL-v' . $this->getDefined( 'NETCURL_CURL_RELEASE' ) . '</td></tr>';
+
+		return $pluginInfo;
+	}
 
 	/**
 	 * Primary configuration tab
