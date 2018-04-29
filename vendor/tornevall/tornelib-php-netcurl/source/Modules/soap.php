@@ -356,6 +356,8 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 			$this->NETCURL_RESPONSE_CONTAINER_BODY   = $this->getBody();
 			$this->NETCURL_RESPONSE_CONTAINER_HEADER = $this->getHeader();
 			$this->NETCURL_RESPONSE_CONTAINER        = $returnResponse;
+			$this->NETCURL_REQUEST_HEADERS           = $this->soapRequestHeaders;
+			$this->NETCURL_REQUEST_BODY              = $this->soapRequest;
 
 			if ( ! is_null( $this->PARENT ) ) {
 				$this->PARENT->NETCURL_RESPONSE_RAW              = $this->NETCURL_RESPONSE_RAW;
@@ -364,6 +366,8 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 				$this->PARENT->NETCURL_RESPONSE_CONTAINER_BODY   = $this->NETCURL_RESPONSE_CONTAINER_BODY;
 				$this->PARENT->NETCURL_RESPONSE_CONTAINER_HEADER = $this->NETCURL_RESPONSE_CONTAINER_HTTPMESSAGE;
 				$this->PARENT->NETCURL_RESPONSE_CONTAINER        = $this->NETCURL_RESPONSE_CONTAINER;
+				$this->PARENT->NETCURL_REQUEST_HEADERS           = $this->soapRequestHeaders;
+				$this->PARENT->NETCURL_REQUEST_BODY              = $this->soapRequest;
 			}
 
 			// HTTPMESSAGE is not applicable for this section

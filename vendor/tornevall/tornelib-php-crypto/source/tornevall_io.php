@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.9
+ * @version 6.0.10
  */
 
 namespace TorneLIB;
@@ -37,7 +37,9 @@ if ( defined( 'TORNELIB_IO_REQUIRE' ) ) {
 	}
 	define( 'TORNELIB_IO_ALLOW_AUTOLOAD', version_compare( TORNELIB_IO_RELEASE, TORNELIB_IO_REQUIRE, TORNELIB_IO_REQUIRE_OPERATOR ) ? true : false );
 } else {
-	define( 'TORNELIB_IO_ALLOW_AUTOLOAD', true );
+	if ( ! defined( 'TORNELIB_IO_ALLOW_AUTOLOAD' ) ) {
+		define( 'TORNELIB_IO_ALLOW_AUTOLOAD', true );
+	}
 }
 
 if ( ! class_exists( 'MODULE_IO' ) && ! class_exists( 'TorneLIB\MODULE_IO' ) && defined( 'TORNELIB_IO_ALLOW_AUTOLOAD' ) && TORNELIB_IO_ALLOW_AUTOLOAD === true ) {

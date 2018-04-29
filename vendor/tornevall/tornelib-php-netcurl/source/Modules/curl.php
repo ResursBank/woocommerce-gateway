@@ -111,6 +111,8 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		protected $NETCURL_RESPONSE_CONTAINER_HTTPMESSAGE;
 		protected $NETCURL_RESPONSE_CONTAINER_HEADER;
 		protected $NETCURL_RESPONSE_RAW;
+		protected $NETCURL_REQUEST_HEADERS;
+		protected $NETCURL_REQUEST_BODY;
 
 		private $userAgents = array(
 			'Mozilla' => 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0;)'
@@ -2224,6 +2226,22 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			}
 
 			return null;
+		}
+
+		/**
+		 * @return mixed
+		 * @since 6.0.20
+		 */
+		public function getRequestHeaders() {
+			return $this->NETCURL_REQUEST_CONTAINER;
+		}
+
+		/**
+		 * @return mixed
+		 * @since 6.0.20
+		 */
+		public function getRequestBody() {
+			return $this->NETCURL_REQUEST_BODY;
 		}
 
 		/**

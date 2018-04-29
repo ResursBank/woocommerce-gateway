@@ -6,12 +6,12 @@
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "d28b2615f88601b72e947f78ce57eb8d48351f18"
+            "reference": "3b0d30c112695845d26e51c61e719a4fb82eb7c7"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/d28b2615f88601b72e947f78ce57eb8d48351f18.zip",
-            "reference": "d28b2615f88601b72e947f78ce57eb8d48351f18",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/3b0d30c112695845d26e51c61e719a4fb82eb7c7.zip",
+            "reference": "3b0d30c112695845d26e51c61e719a4fb82eb7c7",
             "shasum": ""
         },
         "require": {
@@ -21,7 +21,7 @@
             "tornevall/tornelib-php-crypto": "^6.0",
             "tornevall/tornelib-php-netcurl": "dev-develop/6.0"
         },
-        "time": "2018-04-27T11:25:12+00:00",
+        "time": "2018-04-27T13:53:33+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -47,17 +47,17 @@
     },
     {
         "name": "tornevall/tornelib-php-crypto",
-        "version": "6.0.11",
-        "version_normalized": "6.0.11.0",
+        "version": "6.0.12",
+        "version_normalized": "6.0.12.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-crypto.git",
-            "reference": "f3a2fa48e0068470cbb4d9fa88e9d07d00c7ec4f"
+            "reference": "49167ed1ea4e5b3c1b4d8e8d8b98087ad9c39e85"
         },
         "require": {
             "php": ">=5.3"
         },
-        "time": "2018-04-26T18:48:33+00:00",
+        "time": "2018-04-29T12:39:25+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -90,13 +90,13 @@
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git",
-            "reference": "46cc7ca2599d29a2a1808599fd0e3dc61d731065"
+            "reference": "fd054f7b5a021f9b2a16a0fd192aeb6229356f7d"
         },
         "require": {
             "php": ">=5.3",
             "tornevall/tornelib-php-crypto": "^6.0"
         },
-        "time": "2018-04-27T10:33:40+00:00",
+        "time": "2018-04-27T12:34:29+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

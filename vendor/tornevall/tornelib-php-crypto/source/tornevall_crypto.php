@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.11
+ * @version 6.0.12
  *
  * Crypto-IO Library. Anything that changes in those folders, will render version increase.
  */
@@ -39,7 +39,9 @@ if ( defined( 'TORNELIB_CRYPTO_REQUIRE' ) ) {
 	}
 	define( 'TORNELIB_CRYPTO_ALLOW_AUTOLOAD', version_compare( TORNELIB_CRYPTO_RELEASE, TORNELIB_CRYPTO_REQUIRE, TORNELIB_CRYPTO_REQUIRE_OPERATOR ) ? true : false );
 } else {
-	define( 'TORNELIB_CRYPTO_ALLOW_AUTOLOAD', true );
+	if ( ! defined( 'TORNELIB_CRYPTO_ALLOW_AUTOLOAD' ) ) {
+		define( 'TORNELIB_CRYPTO_ALLOW_AUTOLOAD', true );
+	}
 }
 
 if ( ! class_exists( 'MODULE_CRYPTO' ) && ! class_exists( 'TorneLIB\MODULE_CRYPTO' ) && defined( 'TORNELIB_CRYPTO_ALLOW_AUTOLOAD' ) && TORNELIB_CRYPTO_ALLOW_AUTOLOAD === true ) {
