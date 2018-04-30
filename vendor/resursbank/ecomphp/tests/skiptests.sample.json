@@ -1,0 +1,6 @@
+{
+  "note":"This is a sample file. Put in /etc/ecomphp.json to make it active. Used temporarily for external bamboo tests.",
+  "skip": [
+    "aftershop"
+  ]
+}
