@@ -5,8 +5,6 @@
   "license": "Apache-2.0",
   "require": {
     "php": ">=5.3",
-    "ext-soap": "*",
-    "ext-curl": "*",
     "tornevall/tornelib-php-crypto": "^6.0"
   },
   "authors": [
@@ -19,11 +17,30 @@
   ],
   "autoload": {
     "files": [
-      "source/tornevall_network.php",
-      "source/tornevall_netcurl_exceptions.php"
+      "source/Modules/netcurl_init.php",
+      "source/Interface/drivers.php",
+      "source/Modules/Drivers/guzzle.php",
+      "source/Modules/Drivers/wordpress.php",
+      "source/Modules/parser.php",
+      "source/Modules/drivers.php",
+      "source/Modules/ssl.php",
+      "source/Addons/netbits.php",
+      "source/Exception/Exception.php",
+      "source/Model/Type/authtypes.php",
+      "source/Model/Type/curlobject.php",
+      "source/Model/Type/datatypes.php",
+      "source/Model/Type/drivers.php",
+      "source/Model/Type/environment.php",
+      "source/Model/Type/ip_protocols.php",
+      "source/Model/Type/postmethods.php",
+      "source/Model/Type/resolvers.php",
+      "source/Model/Type/responses.php",
+      "source/Modules/network.php",
+      "source/Modules/curl.php",
+      "source/Modules/soap.php"
     ],
     "psr-4": {
-      "\\TorneLIB\\": "source/tornevall_network.php"
+      "TorneLIB\\": "source"
     }
   }
 }

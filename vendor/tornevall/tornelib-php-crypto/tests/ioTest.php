@@ -171,8 +171,43 @@ class ioTest extends TestCase {
 		$xmlObjectString = $this->IO->renderXml( $this->obj );
 		/** @var SimpleXMLElement $xmlElement */
 		$xmlElements = $this->IO->getFromXml( $xmlObjectString, true );
-		print_R( $xmlElements );
 		static::assertTrue( isset( $xmlElements->a ) );
+	}
+
+	/**
+	 * @test
+	 * @throws Exception
+	 */
+	function getFromSimpleXmlWrongEntity() {
+		$this->IO->setXmlSimple( true );
+		$xmlObjectString = htmlentities( $this->IO->renderXml( $this->obj ) );
+		/** @var SimpleXMLElement $xmlElement */
+		$xmlElements = $this->IO->getFromXml( $xmlObjectString, true );
+		static::assertTrue( isset( $xmlElements->a ) );
+	}
+
+	/**
+	 * @test
+	 * @throws Exception
+	 */
+	function getFromSimpleXmlWrongEntityTwice() {
+		$this->IO->setXmlSimple( true );
+		$xmlObjectString = htmlentities( htmlentities( $this->IO->renderXml( $this->obj ) ) );
+		/** @var SimpleXMLElement $xmlElement */
+		$xmlElements = $this->IO->getFromXml( $xmlObjectString, true );
+		static::assertTrue( isset( $xmlElements->a ) );
+	}
+
+	/**
+	 * @test
+	 * @throws Exception
+	 */
+	function getFromSimpleXmlWrongEntityTriple() {
+		$this->IO->setXmlSimple( true );
+		$xmlObjectString = htmlentities( htmlentities( htmlentities( $this->IO->renderXml( $this->obj ) ) ) );
+		/** @var SimpleXMLElement $xmlElement */
+		$xmlElements = $this->IO->getFromXml( $xmlObjectString, true );
+		static::assertTrue( is_null( $xmlElements ) );
 	}
 
 	/**

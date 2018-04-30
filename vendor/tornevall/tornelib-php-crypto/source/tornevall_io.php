@@ -16,16 +16,16 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.8
+ * @version 6.0.10
  */
 
 namespace TorneLIB;
 
 if ( ! defined( 'TORNELIB_IO_RELEASE' ) ) {
-	define( 'TORNELIB_IO_RELEASE', '6.0.8' );
+	define( 'TORNELIB_IO_RELEASE', '6.0.9' );
 }
 if ( ! defined( 'TORNELIB_IO_MODIFY' ) ) {
-	define( 'TORNELIB_IO_MODIFY', '20180424' );
+	define( 'TORNELIB_IO_MODIFY', '20180426' );
 }
 if ( ! defined( 'TORNELIB_IO_CLIENTNAME' ) ) {
 	define( 'TORNELIB_IO_CLIENTNAME', 'MODULE_IO' );
@@ -37,7 +37,9 @@ if ( defined( 'TORNELIB_IO_REQUIRE' ) ) {
 	}
 	define( 'TORNELIB_IO_ALLOW_AUTOLOAD', version_compare( TORNELIB_IO_RELEASE, TORNELIB_IO_REQUIRE, TORNELIB_IO_REQUIRE_OPERATOR ) ? true : false );
 } else {
-	define( 'TORNELIB_IO_ALLOW_AUTOLOAD', true );
+	if ( ! defined( 'TORNELIB_IO_ALLOW_AUTOLOAD' ) ) {
+		define( 'TORNELIB_IO_ALLOW_AUTOLOAD', true );
+	}
 }
 
 if ( ! class_exists( 'MODULE_IO' ) && ! class_exists( 'TorneLIB\MODULE_IO' ) && defined( 'TORNELIB_IO_ALLOW_AUTOLOAD' ) && TORNELIB_IO_ALLOW_AUTOLOAD === true ) {
@@ -62,6 +64,8 @@ if ( ! class_exists( 'MODULE_IO' ) && ! class_exists( 'TorneLIB\MODULE_IO' ) && 
 		/** @var bool $SOAP_ATTRIBUTES_ENABLED */
 		private $SOAP_ATTRIBUTES_ENABLED = false;
 
+		/** @var int $XML_TRANSLATE_ENTITY_RERUN */
+		private $XML_TRANSLATE_ENTITY_RERUN = 0;
 
 		public function __construct() {
 		}
@@ -520,8 +524,30 @@ if ( ! class_exists( 'MODULE_IO' ) && ! class_exists( 'TorneLIB\MODULE_IO' ) && 
 		 * @since 6.0.5
 		 */
 		public function getFromXml( $dataIn = '', $normalize = false ) {
+			$dataIn = trim( $dataIn );
+
+			if ( preg_match( "/&\b(.*?)+;(.*)/is", $dataIn ) ) {
+				$dataEntity = trim( html_entity_decode( $dataIn ) );
+				if ( preg_match( "/^\</", $dataEntity ) ) {
+
+					return $this->getFromXml( $dataEntity, $normalize );
+				}
+
+				if ( $this->XML_TRANSLATE_ENTITY_RERUN >= 0 ) {
+					// Fail on too many loops
+					$this->XML_TRANSLATE_ENTITY_RERUN ++;
+					if ( $this->XML_TRANSLATE_ENTITY_RERUN >= 2 ) {
+						return null;
+					}
+
+					return $this->getFromXml( $dataEntity, $normalize );
+				}
+
+				return null;
+			}
+
 			if ( $this->getXmlUnSerializer() && $this->getHasXmlSerializer() ) {
-				if ( is_string( $dataIn ) ) {
+				if ( is_string( $dataIn ) && preg_match( "/\<(.*?)\>/s", $dataIn ) ) {
 					require_once( 'XML/Unserializer.php' );
 					$xmlSerializer = new \XML_Unserializer();
 					$xmlSerializer->unserialize( $dataIn );
@@ -534,7 +560,7 @@ if ( ! class_exists( 'MODULE_IO' ) && ! class_exists( 'TorneLIB\MODULE_IO' ) && 
 				}
 			} else {
 				if ( class_exists( 'SimpleXMLElement' ) ) {
-					if ( is_string( $dataIn ) ) {
+					if ( is_string( $dataIn ) && preg_match( "/\<(.*?)\>/s", $dataIn ) ) {
 						if ( $this->ENFORCE_CDATA ) {
 							$simpleXML = new \SimpleXMLElement( $dataIn, LIBXML_NOCDATA );
 						} else {
