@@ -4,15 +4,15 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.3.4
- * Version: 2.2.5
+ * WC Tested up to: 3.3.5
+ * Version: 2.2.6
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', "2.2.5" );
+define( 'RB_WOO_VERSION', '2.2.6' );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 define( 'RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce' );
 
@@ -3786,7 +3786,8 @@ function wc_get_payment_id_by_order_id( $orderId = '' ) {
  *
  * @return bool|string
  */
-function getResursFlag($flagKey = '') {
+function getResursFlag($flagKey = null) {
+	$allFlags = array();
 	$flagRow = getResursOption("devFlags");
 	$flagsArray = explode(",", $flagRow);
 	if (is_array($flagsArray)) {
@@ -3794,20 +3795,30 @@ function getResursFlag($flagKey = '') {
 			$flagEx = explode("=", $flagParameter,2);
 			if (is_array($flagEx) && isset($flagEx[1])) {
 				// Handle as parameter key with values
-				if (strtolower($flagEx[0]) == strtolower($flagKey)) {
-					return $flagEx[1];
-				}
+                if (!is_null($flagKey)) {
+	                if ( strtolower( $flagEx[0] ) == strtolower( $flagKey ) ) {
+		                return $flagEx[1];
+	                }
+                } else {
+                    $allFlags[$flagEx[0]] = $flagEx[1];
+                }
 			} else {
-				// Handle as defined true
-				if (strtolower($flagParameter) == strtolower($flagKey)) {
-					return true;
-				}
+			    if (!is_null($flagKey)) {
+				    // Handle as defined true
+				    if ( strtolower( $flagParameter ) == strtolower( $flagKey ) ) {
+					    return true;
+				    }
+			    } else {
+				    $allFlags[$flagParameter] = true;
+			    }
 			}
 		}
 	}
+	if (is_null($flagKey)) {
+	    return $allFlags;
+    }
 	return false;
 }
-
 
 /**
  * Get specific options from the Resurs configuration set
@@ -3996,6 +4007,7 @@ if ( ! function_exists( 'r_wc_get_order_item_type_by_item_id' ) ) {
  * @param int $setEnvironment
  *
  * @return \Resursbank\RBEcomPHP\ResursBank
+ * @throws Exception
  */
 function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET ) {
 	global $current_user;
@@ -4011,12 +4023,19 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	if ( ! empty( $overridePassword ) ) {
 		$password = $overridePassword;
 	}
+
 	/** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
 	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
 	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
 	if (isResursTest() && $sslHandler) {
 		$initFlow->setDebug(true);
 		$initFlow->setSslValidation(false);
+	}
+	$allFlags = getResursFlag(null);
+	foreach ($allFlags as $flagKey => $flagValue) {
+	    if (!empty($flagKey)) {
+		    $initFlow->setFlag( $flagKey, $flagValue );
+	    }
 	}
 
 	$initFlow->setUserAgent( RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
