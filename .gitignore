@@ -13,3 +13,4 @@ vendor/tornevall/tornelib-php-crypto/tests
 vendor/tornevall/tornelib-php-netcurl/bitbucket-pipelines.yml
 vendor/tornevall/tornelib-php-netcurl/merge.sh
 vendor/tornevall/tornelib-php-netcurl/phpunit.xml
+vendor/tornevall/tornelib-php-crypto/source/GSM0338.TXT
