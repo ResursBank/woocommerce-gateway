@@ -5,7 +5,11 @@ node_modules
 /staticflows/index.php
 composer.lock
 deploy
+vendor/resursbank/ecomphp/phpunit.xml
 vendor/resursbank/ecomphp/bitbucket-pipelines.yml
 vendor/resursbank/ecomphp/tests
 vendor/tornevall/tornelib-php-netcurl/tests
 vendor/tornevall/tornelib-php-crypto/tests
+vendor/tornevall/tornelib-php-netcurl/bitbucket-pipelines.yml
+vendor/tornevall/tornelib-php-netcurl/merge.sh
+vendor/tornevall/tornelib-php-netcurl/phpunit.xml
