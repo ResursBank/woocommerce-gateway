@@ -1,0 +1,8 @@
+deb http://ppa.launchpad.net/sergey-dryabzhinsky/packages/ubuntu trusty main
+deb http://ppa.launchpad.net/sergey-dryabzhinsky/php53/ubuntu trusty main
+
+#deb http://ppa.launchpad.net/sergey-dryabzhinsky/packages/ubuntu xenial main
+#deb http://ppa.launchpad.net/sergey-dryabzhinsky/php53/ubuntu xenial main
+
+# deb-src http://ppa.launchpad.net/sergey-dryabzhinsky/packages/ubuntu xenial main
+# deb-src http://ppa.launchpad.net/sergey-dryabzhinsky/php53/ubuntu xenial main
