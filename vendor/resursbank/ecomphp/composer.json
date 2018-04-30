@@ -6,8 +6,7 @@
     "php": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~7.0.0|~7.1.0|~7.2.0",
     "ext-soap": "*",
     "ext-curl": "*",
-    "tornevall/tornelib-php-crypto": "^6.0",
-    "tornevall/tornelib-php-netcurl": "dev-develop/6.0"
+    "tornevall/tornelib-php-netcurl": "^6.0"
   },
   "authors": [
     {

@@ -17,12 +17,12 @@ class RESURS_TEST_BRIDGE {
 
 	function __construct( $userName = "ecomphpPipelineTest", $password = "4Em4r5ZQ98x3891D6C19L96TQ72HsisD" ) {
 		$this->shareFile = __DIR__ . "/../storage/shared.serialize";
-		$this->ECOM      = new ResursBank( $userName, $password, RESURS_ENVIRONMENTS::ENVIRONMENT_TEST, true );
+		$this->ECOM      = new ResursBank( $userName, $password, RESURS_ENVIRONMENTS::ENVIRONMENT_TEST );
 	}
 
 	/**
 	 * getCredentialControl(): Initiates ECom with proper credentials or failing credentials
-	 *
+
 	 * @param bool $successLogin
 	 *
 	 * @return mixed
@@ -55,8 +55,6 @@ class RESURS_TEST_BRIDGE {
 			if ( ! isset( $shareData[ $key ] ) ) {
 				if ( ! is_null( $value ) ) {
 					$shareData[ $key ] = array( $value );
-				} else {
-					return null;
 				}
 			} else {
 				if ( ! is_null( $value ) ) {
@@ -69,8 +67,8 @@ class RESURS_TEST_BRIDGE {
 					return $shareData[ $key ];
 				}
 			}
+			file_put_contents( $this->shareFile, serialize( $shareData ) );
 		}
-		file_put_contents( $this->shareFile, serialize( $shareData ) );
 
 		return $shareData;
 	}
@@ -92,4 +90,11 @@ class RESURS_TEST_BRIDGE {
 		$this->ECOM->setPreferredPaymentFlowService( $flow );
 	}
 
+
+	/**
+	 * getBookPayment(): Books a payment with defaults and random products if nothing has been given via set up
+	 */
+	public function getCreatePayment() {
+		$this->ECOM->getPayload();
+	}
 }

@@ -7,7 +7,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.3
- * @version 1.3.9
+ * @version 1.3.8
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -15,15 +15,16 @@
 
 namespace Resursbank\RBEcomPHP;
 
-// Prevent duplicate loading
-if ( class_exists( 'ResursBank' ) && class_exists( 'Resursbank\RBEcomPHP\ResursBank' ) ) {return;}
-
-require_once( __DIR__ . '/rbapiloader/ResursForms.php' );
-require_once( __DIR__ . '/rbapiloader/ResursTypeClasses.php' );
-require_once( __DIR__ . '/rbapiloader/ResursException.php' );
-
-if ( file_exists( __DIR__ . "/../../vendor/autoload.php" ) ) {
-	require_once( __DIR__ . '/../../vendor/autoload.php' );
+/**
+ * Location of RBEcomPHP class files.
+ */
+if ( ! defined( 'RB_API_PATH' ) ) {
+	define( 'RB_API_PATH', __DIR__ );
+}
+require_once( RB_API_PATH . '/rbapiloader/ResursTypeClasses.php' );
+require_once( RB_API_PATH . '/rbapiloader/ResursException.php' );
+if ( file_exists( RB_API_PATH . "/../../vendor/autoload.php" ) ) {
+	require_once( RB_API_PATH . '/../../vendor/autoload.php' );
 }
 
 use \TorneLIB\TorneLIB_Crypto;
@@ -32,18 +33,15 @@ use \TorneLIB\TorneLIB_Network;
 use \TorneLIB\Tornevall_cURL;
 use \TorneLIB\CURL_POST_AS;
 
-// Globals starts here
-if ( ! defined( 'ECOMPHP_VERSION' ) ) {
-	define( 'ECOMPHP_VERSION', '1.3.9' );
-}
-if ( ! defined( 'ECOMPHP_MODIFY_DATE' ) ) {
-	define( 'ECOMPHP_MODIFY_DATE', '20180425' );
-}
+/*
+ *  Global
+ */
+define('ECOMPHP_VERSION', '1.3.8');
+define('ECOMPHP_MODIFY_DATE', '20180320');
 
 /**
- * Class ResursBank
+ * Class ResursBank Primary class for EComPHP
  * Works with dynamic data arrays. By default, the API-gateway will connect to Resurs Bank test environment, so to use production mode this must be configured at runtime.
- * @package Resursbank\RBEcomPHP
  */
 class ResursBank {
 	////////// Constants
@@ -77,6 +75,19 @@ class ResursBank {
 	 * @var array
 	 */
 	private $wsdlServices = array();
+
+	/** @var null Object configurationService */
+	public $configurationService = null;
+	/** @var null Object developerWebService */
+	public $developerWebService = null;
+	/** @var null Object simplifiedShopFlowService (this is what is primary used by this gateway) */
+	public $simplifiedShopFlowService = null;
+	/** @var null Object afterShopFlowService */
+	public $afterShopFlowService = null;
+	/** @var null Object shopFlowService (Deprecated) */
+	public $shopFlowService = null;
+	/** @var null What the service has returned (debug) */
+	public $serviceReturn;
 
 	///// Shop related
 	/** @var bool Always append amount data and ending urls (cost examples) */
@@ -141,7 +152,6 @@ class ResursBank {
 	 * @since 1.1.1
 	 */
 	private $CURL;
-	private $CURL_HANDLE_COLLECTOR = array();
 	/**
 	 * Info and statistics from the CURL-client
 	 * @var array
@@ -164,10 +174,6 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	private $T_CRYPTO;
-
-	/** @var RESURS_DEPRECATED_FLOW $E_DEPRECATED */
-	private $E_DEPRECATED;
-
 	/**
 	 * The payload rendered out from CreatePayment()
 	 * @var array
@@ -214,14 +220,12 @@ class ResursBank {
 	private $env_omni_test = "https://omnitest.resurs.com";
 	/** @var string Default URL to omnicheckout production */
 	private $env_omni_prod = "https://checkout.resurs.com";
-	/** @var string Default URL to omnicheckout test */
-	private $env_omni_pos_test = "https://postest.resurs.com";
-	/** @var string Default URL to omnicheckout production */
-	private $env_omni_pos_prod = "https://poscheckout.resurs.com";
 	/** @var string Country of choice */
 	private $envCountry;
-	/** @var bool Defined if the environment will point at Resurs Checkout POS */
-	private $env_omni_pos = false;
+	/** @var string The current chosen URL for omnicheckout after initiation */
+	private $env_omni_current = "";
+	/** @var string The current chosen URL for hosted flow after initiation */
+	private $env_hosted_current = "";
 	/** @var string ShopUrl to use with the checkout */
 	private $checkoutShopUrl = "";
 	/** @var bool Set to true via setValidateCheckoutShopUrl() if you require validation of a proper shopUrl */
@@ -382,19 +386,15 @@ class ResursBank {
 	 * @param string $login
 	 * @param string $password
 	 * @param int $targetEnvironment
-	 * @param null $debug Activate debugging immediately on initialization
+	 *
+	 * @throws \Exception
 	 */
-	function __construct( $login = '', $password = '', $targetEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET, $debug = null ) {
+	function __construct( $login = '', $password = '', $targetEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET ) {
 		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
 			$theHost = $_SERVER['HTTP_HOST'];
 		} else {
 			$theHost = "nohost.localhost";
 		}
-
-		if (!is_null($debug) && is_bool($debug)) {
-			$this->debug = $debug;
-		}
-
 		$this->checkoutShopUrl           = $this->hasHttps( true ) . "://" . $theHost;
 		$this->soapOptions['cache_wsdl'] = ( defined( 'WSDL_CACHE_BOTH' ) ? WSDL_CACHE_BOTH : true );
 		$this->soapOptions['ssl_method'] = ( defined( 'SOAP_SSL_METHOD_TLS' ) ? SOAP_SSL_METHOD_TLS : false );
@@ -404,7 +404,6 @@ class ResursBank {
 			$this->setEnvironment( $targetEnvironment );
 		}
 		$this->setUserAgent();
-		$this->E_DEPRECATED = new RESURS_DEPRECATED_FLOW();
 
 	}
 
@@ -515,26 +514,12 @@ class ResursBank {
 	 * code structures, everything needs to be done from here. For now. In future version, this is probably deprecated too, as it is an
 	 * obsolete way of getting things done as Resurs Bank has more than one way to pick things up in the API suite.
 	 *
-	 * @param bool $reInitializeCurl
 	 * @return bool
 	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
-	private function InitializeServices( $reInitializeCurl = true ) {
-
-		$inheritExtendedSoapWarnings = false;
-		if ( is_null( $this->CURL ) ) {
-			$reInitializeCurl = true;
-		} else {
-			if ($this->CURL->hasFlag('SOAPWARNINGS_EXTEND')) {
-				$inheritExtendedSoapWarnings = $this->CURL->getFlag('SOAPWARNINGS_EXTEND');
-			}
-		}
-		if ( ! $reInitializeCurl ) {
-			return;
-		}
-
+	private function InitializeServices() {
 		$this->sessionActivate();
 		$this->hasServicesInitialization = true;
 		$this->testWrappers();
@@ -546,14 +531,9 @@ class ResursBank {
 		if ( class_exists( '\Resursbank\RBEcomPHP\Tornevall_cURL' ) || class_exists( '\TorneLIB\Tornevall_cURL' ) ) {
 			$this->CURL = new Tornevall_cURL();
 			$this->CURL->setChain( false );
-			if ($inheritExtendedSoapWarnings) {
-				$this->CURL->setFlag('SOAPWARNINGS_EXTEND', true);
-			}
-			$this->CURL->setFlag( 'SOAPCHAIN', false );
 			$this->CURL->setStoreSessionExceptions( true );
 			$this->CURL->setAuthentication( $this->soapOptions['login'], $this->soapOptions['password'] );
 			$this->CURL->setUserAgent( $this->myUserAgent );
-			//$this->CURL->setThrowableHttpCodes();
 			$this->NETWORK = new TorneLIB_Network();
 			$this->BIT     = $this->NETWORK->BIT;
 		}
@@ -578,7 +558,7 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function setDebug( $debugModeState = false ) {
-		$this->InitializeServices(false);
+		$this->InitializeServices();
 		$this->debug = $debugModeState;
 	}
 
@@ -596,36 +576,17 @@ class ResursBank {
 	}
 
 	/**
-	 * Get curl mode version without the debugging requirement
-	 * @param bool $fullRelease
-	 *
-	 * @return string
-	 */
-	public function getCurlVersion( $fullRelease = false ) {
-		if ( ! is_null( $this->CURL ) ) {
-			return $this->CURL->getVersion( $fullRelease );
-		}
-	}
-
-	/**
 	 * Return the CURL communication handle to the client, when in debug mode (Read only)
 	 *
-	 * @param bool $bulk
 	 * @return Tornevall_cURL
 	 * @throws \Exception
 	 * @since 1.0.22
 	 * @since 1.1.22
 	 * @since 1.2.0
 	 */
-	public function getCurlHandle($bulk = false) {
-		$this->InitializeServices(false);
+	public function getCurlHandle() {
+		$this->InitializeServices();
 		if ( $this->debug ) {
-			if ($bulk) {
-				if (count($this->CURL_HANDLE_COLLECTOR)) {
-					return array_pop($this->CURL_HANDLE_COLLECTOR);
-				}
-				return $this->CURL_HANDLE_COLLECTOR;
-			}
 			return $this->CURL;
 		} else {
 			throw new \Exception( "Can't return handle. The module is in wrong state (non-debug mode)", 403 );
@@ -650,32 +611,6 @@ class ResursBank {
 		} else {
 			throw new \Exception( "Can't return handle. The module is in wrong state (non-debug mode)", 403 );
 		}
-	}
-
-	/**
-	 * Make EComPHP go through the POS endpoint rather than the standard Checkout endpoint
-	 *
-	 * @param bool $activatePos
-	 * @since 1.0.36
-	 * @since 1.1.36
-	 * @since 1.3.9
-	 * @since 2.0.0
-	 */
-	public function setPos($activatePos = true) {
-		$this->env_omni_pos = $activatePos;
-	}
-
-	/**
-	 * Returns true if Resurs Checkout is pointing at the POS endpoint
-	 *
-	 * @return bool
-	 * @since 1.0.36
-	 * @since 1.1.36
-	 * @since 1.3.9
-	 * @since 2.0.0
-	 */
-	public function getPos() {
-		return $this->env_omni_pos;
 	}
 
 	/**
@@ -814,7 +749,7 @@ class ResursBank {
 	 * Set internal flag parameter
 	 *
 	 * @param string $flagKey
-	 * @param string $flagValue Will be boolean==true if empty
+	 * @param string $flagValue
 	 *
 	 * @return bool If successful
 	 * @throws \Exception
@@ -822,17 +757,8 @@ class ResursBank {
 	 * @since 1.1.23
 	 * @since 1.2.0
 	 */
-	public function setFlag( $flagKey = '', $flagValue = null ) {
-		if ( is_null( $this->CURL ) ) {
-			$this->InitializeServices();
-		}
-		if ( is_null( $flagValue ) ) {
-			$flagValue = true;
-		}
-
+	public function setFlag( $flagKey = '', $flagValue = '' ) {
 		if ( ! empty( $flagKey ) ) {
-			// CURL bypass
-			$this->CURL->setFlag( $flagKey, $flagValue );
 			$this->internalFlags[ $flagKey ] = $flagValue;
 
 			return true;
@@ -895,7 +821,7 @@ class ResursBank {
 	 */
 	public function isFlag( $flagKey = '' ) {
 		if ( $this->hasFlag( $flagKey ) ) {
-			return ( $this->getFlag( $flagKey ) == 1 || $this->getFlag( $flagKey ) == true ? true : false );
+			return ( $this->getFlag( $flagKey ) === 1 || $this->getFlag( $flagKey ) === true ? true : false );
 		}
 
 		return false;
@@ -1282,14 +1208,6 @@ class ResursBank {
 
 	/**
 	 * Retreive a full list of, by merchant, registered callbacks
-	 * 
-	 * The callback list will return only existing eventTypes, so if no event types exists, the returned array or object will be empty.
-	 * Developer note: Changing this behaviour so all event types is always returned even if they don't exist (meaning ecomphp fills in what's missing) might
-	 * break plugins that is already in production.
-	 *
-	 * The callback list will return only existing eventTypes, so if no event types exists, the returned array or object will be empty.
-	 * Developer note: Changing this behaviour so all event types is always returned even if they don't exist (meaning ecomphp fills in what's missing) might
-	 * break plugins that is already in production.
 	 *
 	 * @param bool $ReturnAsArray
 	 *
@@ -1395,6 +1313,7 @@ class ResursBank {
 	 * @since 1.1.1
 	 */
 	public function setRegisterCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackUriTemplate = "", $digestData = array(), $basicAuthUserName = null, $basicAuthPassword = null ) {
+		$returnSuccess = false;
 		$this->InitializeServices();
 		if ( is_array( $this->validateExternalUrl ) && count( $this->validateExternalUrl ) ) {
 			$isValidAddress = $this->validateExternalAddress();
@@ -1453,7 +1372,7 @@ class ResursBank {
 				unset( $renderCallback['eventType'] );
 			}
 			$renderedResponse = $this->CURL->doPost( $renderCallbackUrl, $renderCallback, CURL_POST_AS::POST_AS_JSON );
-			$code             = $this->CURL->getResponseCode($renderedResponse);
+			$code             = $this->CURL->getResponseCode();
 		} else {
 			$renderCallbackUrl = $this->getServiceUrl( "registerEventCallback" );
 			// We are not using postService here, since we are dependent on the response code rather than the response itself
@@ -1471,7 +1390,7 @@ class ResursBank {
 			return true;
 		}
 
-		throw new \Exception("setRegisterCallbackException ($code): Could not register callback event " . $renderCallback['eventType'] . ' (service: '.$registerBy.')', $code);
+		return false;
 	}
 
 	/**
@@ -1614,33 +1533,6 @@ class ResursBank {
 	}
 
 	/**
-	 * @param bool $setSoapChainBoolean
-	 *
-	 * @throws \Exception
-	 * @since 1.0.36
-	 * @since 1.1.36
-	 * @since 1.3.9
-	 * @since 2.0.0
-	 */
-	public function setSoapChain($setSoapChainBoolean = true) {
-		$this->InitializeServices();
-		$this->CURL->setFlag('SOAPCHAIN', $setSoapChainBoolean);
-	}
-
-	/**
-	 * @return mixed|null
-	 * @throws \Exception
-	 * @since 1.0.36
-	 * @since 1.1.36
-	 * @since 1.3.9
-	 * @since 2.0.0
-	 */
-	public function getSoapChain() {
-		$this->InitializeServices();
-		return $this->CURL->getFlag('SOAPCHAIN');
-	}
-
-	/**
 	 * Configure EComPHP to use a specific flow
 	 *
 	 * @param int $flowType
@@ -1718,17 +1610,8 @@ class ResursBank {
 					if ( isset( $objectDetails->errorTypeId ) && intval( $objectDetails->errorTypeId ) > 0 ) {
 						$exceptionCode = $objectDetails->errorTypeId;
 					}
-					if ( isset( $objectDetails->userErrorMessage ) ) {
-						$errorTypeDescription = isset( $objectDetails->errorTypeDescription ) ? "[" . $objectDetails->errorTypeDescription . "] " : "";
-						$exceptionMessage     = $errorTypeDescription . $objectDetails->userErrorMessage;
-						$fixableByYou         = isset( $objectDetails->fixableByYou ) ? $objectDetails->fixableByYou : null;
-						if ( $fixableByYou == "false" ) {
-							$fixableByYou = " (Not fixable by you)";
-						} else {
-							$fixableByYou = " (Fixable by you)";
-						}
-						$exceptionMessage .= $fixableByYou;
-
+					if ( isset( $previousException->detail->userErrorMessage ) ) {
+						$exceptionMessage = $objectDetails->userErrorMessage;
 					}
 				}
 				if ( empty( $exceptionCode ) || $exceptionCode == "0" ) {
@@ -1746,8 +1629,6 @@ class ResursBank {
 				$this->curlStats['calls'] ++;
 				$this->curlStats['internals'] = $this->CURL->getDebugData();
 			}
-			$this->CURL_HANDLE_COLLECTOR[] = $Service;
-
 			if ( ! $getResponseCode ) {
 				return $ParsedResponse;
 			} else {
@@ -1905,6 +1786,7 @@ class ResursBank {
 			$currentInvoiceTest = $this->getNextInvoiceNumber();
 		} catch ( \Exception $e ) {
 		}
+		$paymentScanList = array();
 		$paymentScanTypes = array('IS_DEBITED', 'IS_CREDITED', 'IS_ANNULLED');
 
 		$lastHighestInvoice = 0;
@@ -1985,38 +1867,6 @@ class ResursBank {
 		$realPaymentMethods = $this->sanitizePaymentMethods( $paymentMethods );
 
 		return $realPaymentMethods;
-	}
-
-	/**
-	 * Get list of payment methods (payment method objects), that support annuity factors
-	 *
-	 * @param bool $namesOnly
-	 *
-	 * @return array
-	 * @throws \Exception
-	 * @since 1.0.36
-	 * @since 1.1.36
-	 * @since 1.3.9
-	 * @since 2.0.0
-	 */
-	public function getPaymentMethodsByAnnuity($namesOnly = false) {
-		$allMethods = $this->getPaymentMethods();
-		$annuitySupported = array('REVOLVING_CREDIT');
-		$annuityMethods = array();
-		foreach ($allMethods as $methodIndex => $methodObject) {
-			$t = isset($methodObject->type) ? $methodObject->type : null;
-			$s = isset($methodObject->specificType) ? $methodObject->specificType : null;
-			if (in_array($t, $annuitySupported) || in_array($s, $annuitySupported)) {
-				if (!$namesOnly) {
-					$annuityMethods[] = $methodObject;
-				} else {
-					if (isset($methodObject->id)) {
-						$annuityMethods[] = $methodObject->id;
-					}
-				}
-			}
-		}
-		return $annuityMethods;
 	}
 
 	/**
@@ -2247,7 +2097,6 @@ class ResursBank {
 	 * getPayment - Retrieves detailed information about a payment (rewritten to primarily use rest instead of SOAP, to get more soap independence)
 	 *
 	 * @param string $paymentId
-	 * @param bool $useSoap
 	 *
 	 * @return array|mixed|null
 	 * @throws \Exception
@@ -2258,22 +2107,13 @@ class ResursBank {
 	 * @since 1.2.4 Refactored from this version
 	 * @since 1.3.4 Refactored from this version
 	 */
-	public function getPayment( $paymentId = '', $useSoap = false ) {
-		$this->InitializeServices();
-		if ( $this->isFlag( 'GET_PAYMENT_BY_SOAP' ) || $useSoap ) {
+	public function getPayment( $paymentId = '' ) {
+		if ( $this->isFlag( 'GET_PAYMENT_BY_SOAP' ) ) {
 			return $this->getPaymentBySoap( $paymentId );
 		}
+		$this->InitializeServices();
 
-		try {
-			return $this->CURL->getParsedResponse( $this->CURL->doGet( $this->getCheckoutUrl() . "/checkout/payments/" . $paymentId ) );
-		} catch (\Exception $e) {
-			// Get internal exceptions before http responses
-			$exceptionTestBody = @json_decode($this->CURL->getResponseBody());
-			if (isset($exceptionTestBody->errorCode) && isset($exceptionTestBody->description)) {
-				throw new \Exception($exceptionTestBody->errorMessage, $exceptionTestBody->errorCode, $e);
-			}
-			throw new \Exception($e->getMessage(), $e->getCode(), $e);
-		}
+		return $this->CURL->getParsedResponse( $this->CURL->doGet( $this->getCheckoutUrl() . "/checkout/payments/" . $paymentId ) );
 	}
 
 	/**
@@ -3027,22 +2867,145 @@ class ResursBank {
 	 * @param $fieldArray
 	 *
 	 * @return array
-	 * @deprecated 1.0.8 Build your own integration please
-	 * @deprecated 1.1.8 Build your own integration please
+	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integratio
+	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
 	public function setFormTemplateRules( $customerType, $methodType, $fieldArray ) {
-		return $this->E_DEPRECATED->setFormTemplateRules($customerType, $methodType, $fieldArray);
+		$this->formTemplateRuleArray = array(
+			$customerType => array(
+				'fields' => array(
+					$methodType => $fieldArray
+				)
+			)
+		);
+
+		return $this->formTemplateRuleArray;
 	}
 
 	/**
 	 * Retrieve html-form rules for each payment method type, including regular expressions for the form fields, to validate against.
 	 *
 	 * @return array
-	 * @deprecated 1.0.8 Build your own integration please
-	 * @deprecated 1.1.8 Build your own integration please
+	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration.
+	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration.
 	 */
 	private function getFormTemplateRules() {
-		return $this->E_DEPRECATED->getFormTemplateRules();
+		$formTemplateRules = array(
+			'NATURAL' => array(
+				'fields' => array(
+					'INVOICE'          => array(
+						'applicant-government-id',
+						'applicant-telephone-number',
+						'applicant-mobile-number',
+						'applicant-email-address'
+					),
+					'CARD'             => array( 'applicant-government-id', 'card-number' ),
+					'REVOLVING_CREDIT' => array(
+						'applicant-government-id',
+						'applicant-telephone-number',
+						'applicant-mobile-number',
+						'applicant-email-address'
+					),
+					'PART_PAYMENT'     => array(
+						'applicant-government-id',
+						'applicant-telephone-number',
+						'applicant-mobile-number',
+						'applicant-email-address'
+					)
+				)
+			),
+			'LEGAL'   => array(
+				'fields' => array(
+					'INVOICE' => array(
+						'applicant-government-id',
+						'applicant-telephone-number',
+						'applicant-mobile-number',
+						'applicant-email-address',
+						'applicant-full-name',
+						'contact-government-id'
+					),
+				)
+			),
+			'display' => array(
+				'applicant-government-id',
+				'card-number',
+				'applicant-full-name',
+				'contact-government-id'
+			),
+			'regexp'  => array(
+				'SE' => array(
+					'NATURAL' => array(
+						'applicant-government-id'    => '^(18\d{2}|19\d{2}|20\d{2}|\d{2})(0[1-9]|1[0-2])([0][1-9]|[1-2][0-9]|3[0-1])(\-|\+)?([\d]{4})$',
+						'applicant-telephone-number' => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
+						'applicant-mobile-number'    => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					),
+					'LEGAL'   => array(
+						'applicant-government-id'    => '^(16\d{2}|18\d{2}|19\d{2}|20\d{2}|\d{2})(\d{2})(\d{2})(\-|\+)?([\d]{4})$',
+						'applicant-telephone-number' => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
+						'applicant-mobile-number'    => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					)
+				),
+				'DK' => array(
+					'NATURAL' => array(
+						'applicant-government-id'    => '^((3[0-1])|([1-2][0-9])|(0[1-9]))((1[0-2])|(0[1-9]))(\d{2})(\-)?([\d]{4})$',
+						'applicant-telephone-number' => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-mobile-number'    => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					),
+					'LEGAL'   => array(
+						'applicant-government-id'    => null,
+						'applicant-telephone-number' => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-mobile-number'    => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					)
+				),
+				'NO' => array(
+					'NATURAL' => array(
+						'applicant-government-id'    => '^([0][1-9]|[1-2][0-9]|3[0-1])(0[1-9]|1[0-2])(\d{2})(\-)?([\d]{5})$',
+						'applicant-telephone-number' => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-mobile-number'    => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					),
+					'LEGAL'   => array(
+						'applicant-government-id'    => '^([89]([ |-]?[0-9]){8})$',
+						'applicant-telephone-number' => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-mobile-number'    => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					)
+				),
+				'FI' => array(
+					'NATURAL' => array(
+						'applicant-government-id'    => '^([\d]{6})[\+\-A]([\d]{3})([0123456789ABCDEFHJKLMNPRSTUVWXY])$',
+						'applicant-telephone-number' => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
+						'applicant-mobile-number'    => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					),
+					'LEGAL'   => array(
+						'applicant-government-id'    => '^((\d{7})(\-)?\d)$',
+						'applicant-telephone-number' => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
+						'applicant-mobile-number'    => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
+						'applicant-email-address'    => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
+						'card-number'                => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
+					)
+				),
+			)
+		);
+		if ( isset( $this->formTemplateRuleArray ) && is_array( $this->formTemplateRuleArray ) && count( $this->formTemplateRuleArray ) ) {
+			foreach ( $this->formTemplateRuleArray as $cType => $cArray ) {
+				$formTemplateRules[ $cType ] = $cArray;
+			}
+		}
+
+		return $formTemplateRules;
 	}
 
 	/**
@@ -3057,11 +3020,46 @@ class ResursBank {
 	 *
 	 * @return array
 	 * @throws \Exception
-	 * @deprecated 1.0.8 Build your own integration please
-	 * @deprecated 1.1.8 Build your own integration please
+	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
+	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
 	public function getRegEx( $formFieldName = '', $countryCode, $customerType ) {
-		return $this->E_DEPRECATED->getRegEx($formFieldName, $countryCode, $customerType);
+		$returnRegEx = array();
+
+		$templateRule = $this->getFormTemplateRules();
+		$returnRegEx  = $templateRule['regexp'];
+
+		if ( empty( $countryCode ) ) {
+			throw new \Exception( __FUNCTION__ . ": Country code is missing in getRegEx-request for form fields", \RESURS_EXCEPTIONS::REGEX_COUNTRYCODE_MISSING );
+		}
+		if ( empty( $customerType ) ) {
+			throw new \Exception( __FUNCTION__ . ": Customer type is missing in getRegEx-request for form fields", \RESURS_EXCEPTIONS::REGEX_CUSTOMERTYPE_MISSING );
+		}
+
+		if ( ! empty( $countryCode ) && isset( $returnRegEx[ strtoupper( $countryCode ) ] ) ) {
+			$returnRegEx = $returnRegEx[ strtoupper( $countryCode ) ];
+			if ( ! empty( $customerType ) ) {
+				if ( ! is_array( $customerType ) ) {
+					if ( isset( $returnRegEx[ strtoupper( $customerType ) ] ) ) {
+						$returnRegEx = $returnRegEx[ strtoupper( $customerType ) ];
+						if ( isset( $returnRegEx[ strtolower( $formFieldName ) ] ) ) {
+							$returnRegEx = $returnRegEx[ strtolower( $formFieldName ) ];
+						}
+					}
+				} else {
+					foreach ( $customerType as $cType ) {
+						if ( isset( $returnRegEx[ strtoupper( $cType ) ] ) ) {
+							$returnRegEx = $returnRegEx[ strtoupper( $cType ) ];
+							if ( isset( $returnRegEx[ strtolower( $formFieldName ) ] ) ) {
+								$returnRegEx = $returnRegEx[ strtolower( $formFieldName ) ];
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $returnRegEx;
 	}
 
 	/**
@@ -3075,11 +3073,29 @@ class ResursBank {
 	 *
 	 * @return bool Returns false if you should NOT hide the field
 	 * @throws \Exception
-	 * @deprecated 1.0.8 Build your own integration please
-	 * @deprecated 1.1.8 Build your own integration please
+	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
+	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
 	public function canHideFormField( $formField = "", $canThrow = false ) {
-		return $this->E_DEPRECATED->canHideFormField($formField, $canThrow);
+		$canHideSet = false;
+
+		if ( is_array( $this->templateFieldsByMethodResponse ) && count( $this->templateFieldsByMethodResponse ) && isset( $this->templateFieldsByMethodResponse['fields'] ) && isset( $this->templateFieldsByMethodResponse['display'] ) ) {
+			$currentDisplay = $this->templateFieldsByMethodResponse['display'];
+			if ( in_array( $formField, $currentDisplay ) ) {
+				$canHideSet = false;
+			} else {
+				$canHideSet = true;
+			}
+		} else {
+			/* Make sure that we don't hide things that does not exists in our configuration */
+			$canHideSet = false;
+		}
+
+		if ( $canThrow && ! $canHideSet ) {
+			throw new \Exception( __FUNCTION__ . ": templateFieldsByMethodResponse is empty. You have to run getTemplateFieldsByMethodType first", \RESURS_EXCEPTIONS::FORMFIELD_CANHIDE_EXCEPTION );
+		}
+
+		return $canHideSet;
 	}
 
 	/**
@@ -3100,11 +3116,45 @@ class ResursBank {
 	 * @param string $specificType
 	 *
 	 * @return array
-	 * @deprecated 1.0.8 Build your own integration please
-	 * @deprecated 1.1.8 Build your own integration please
+	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
+	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
 	public function getTemplateFieldsByMethodType( $paymentMethodName = "", $customerType = "", $specificType = "" ) {
-		return $this->E_DEPRECATED->getTemplateFieldsByMethodType($paymentMethodName, $customerType, $specificType);
+		$templateRules     = $this->getFormTemplateRules();
+		$returnedRules     = array();
+		$returnedRuleArray = array();
+		/* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
+		if ( is_object( $paymentMethodName ) || is_array( $paymentMethodName ) ) {
+			if ( is_object( $paymentMethodName ) ) {
+				// Prevent arrays to go through here and crash something
+				if ( ! is_array( $customerType ) ) {
+					if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ] ) ) {
+						$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ];
+					}
+				}
+			} else if ( is_array( $paymentMethodName ) ) {
+				/*
+				 * This should probably not happen and the developers should probably also stick to objects as above.
+				 */
+				if ( is_array( $paymentMethodName ) && count( $paymentMethodName ) ) {
+					if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ] ) ) {
+						$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ];
+					}
+				}
+			}
+		} else {
+			if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName ) ] ) ) {
+				$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $specificType ) ];
+			}
+		}
+		$returnedRules                        = array(
+			'fields'  => $returnedRuleArray,
+			'display' => $templateRules['display'],
+			'regexp'  => $templateRules['regexp']
+		);
+		$this->templateFieldsByMethodResponse = $returnedRules;
+
+		return $returnedRules;
 	}
 
 	/**
@@ -3114,11 +3164,11 @@ class ResursBank {
 	 *
 	 * @return array
 	 * @throws \Exception
-	 * @deprecated 1.0.8 Build your own integration please
-	 * @deprecated 1.1.8 Build your own integration please
+	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
+	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
 	public function getTemplateFieldsByMethod( $paymentMethodName = "" ) {
-		return $this->E_DEPRECATED->getTemplateFieldsByMethodType( $this->getPaymentMethodSpecific( $paymentMethodName ) );
+		return $this->getTemplateFieldsByMethodType( $this->getPaymentMethodSpecific( $paymentMethodName ) );
 	}
 
 	/**
@@ -3128,11 +3178,11 @@ class ResursBank {
 	 *
 	 * @return array
 	 * @throws \Exception
-	 * @deprecated 1.0.8 Build your own integration please
-	 * @deprecated 1.1.8 Build your own integration please
+	 * @deprecated 1.0.8 It is strongly recommended that you are generating all this by yourself in an integration
+	 * @deprecated 1.1.8 It is strongly recommended that you are generating all this by yourself in an integration
 	 */
 	public function getFormFieldsByMethod( $paymentMethodName = "" ) {
-		return $this->E_DEPRECATED->getTemplateFieldsByMethod( $paymentMethodName );
+		return $this->getTemplateFieldsByMethod( $paymentMethodName );
 	}
 
 
@@ -3309,10 +3359,8 @@ class ResursBank {
 				);
 			}
 			foreach ( $this->SpecLines as $specIndex => $specRow ) {
-				if ( is_array( $specRow ) ) {
-					if ( ! isset( $specRow['unitMeasure'] ) || ( isset( $specRow['unitMeasure'] ) && empty( $specRow['unitMeasure'] ) ) ) {
-						$this->SpecLines[ $specIndex ]['unitMeasure'] = $this->defaultUnitMeasure;
-					}
+				if ( is_array( $specRow ) && ! isset( $specRow['unitMeasure'] ) ) {
+					$this->SpecLines[ $specIndex ]['unitMeasure'] = $this->defaultUnitMeasure;
 				}
 				if ( $myFlow === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
 					$this->SpecLines[ $specIndex ]['id'] = ( $specIndex ) + 1;
@@ -3486,6 +3534,7 @@ class ResursBank {
 			$hostedUrl      = $this->getHostedUrl();
 			$hostedResponse = $this->CURL->doPost( $hostedUrl, $this->Payload, CURL_POST_AS::POST_AS_JSON );
 			$parsedResponse = $this->CURL->getParsedResponse( $hostedResponse );
+			$responseCode   = $this->CURL->getResponseCode( $hostedResponse );
 			// Do not trust response codes!
 			if ( isset( $parsedResponse->location ) ) {
 				$this->resetPayload();
@@ -3532,6 +3581,8 @@ class ResursBank {
 
 		/** @var string $dataHash Output string */
 		$dataHash = null;
+		/** @var array $orderData */
+		$orderData = array();
 		/** @var array $customerData */
 		$customerData = array();
 		/** @var array $hashes Data to hash or encrypt */
@@ -4013,20 +4064,14 @@ class ResursBank {
 			} else if ( $myFlow == RESURS_FLOW_TYPES::FLOW_MINIMALISTIC ) {
 				$mySpecRules = $specRules['minimalistic'];
 			}
-			$hasMeasure = false;
 			foreach ( $specLines as $specIndex => $specArray ) {
 				foreach ( $specArray as $key => $value ) {
 					if ( strtolower( $key ) == "unitmeasure" && empty( $value ) ) {
-						$hasMeasure = true;
 						$specArray[ $key ] = $this->defaultUnitMeasure;
 					}
 					if ( ! in_array( strtolower( $key ), array_map( "strtolower", $mySpecRules ) ) ) {
 						unset( $specArray[ $key ] );
 					}
-				}
-				// Add unit measure if missing
-				if ( ! $hasMeasure && $myFlow != RESURS_FLOW_TYPES::FLOW_MINIMALISTIC ) {
-					$specArray['unitMeasure'] = $this->defaultUnitMeasure;
 				}
 				$specLines[ $specIndex ] = $specArray;
 			}
@@ -4100,16 +4145,7 @@ class ResursBank {
 			// Giving internal country data more influence on this method
 			$this->setCountryByCountryCode( $targetCountry );
 		}
-		if ( is_null( $this->enforceService ) ) {
-			/**
-			 * EComPHP might get a bit confused here, if no preferred flow is set. Normally, we don't have to know this,
-			 * but in this case (since EComPHP actually points at the simplified flow by default) we need to tell it
-			 * what to use, so correct payload will be used, during automation of the billing.
-			 * @link https://resursbankplugins.atlassian.net/browse/ECOMPHP-238
-			 */
-			$this->setPreferredPaymentFlowService( RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW );
-		}
-		if ( $this->enforceService === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+		if ( $this->enforceService === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
 			$ReturnAddress['country'] = $country;
 		} else {
 			$ReturnAddress['countryCode'] = $country;
@@ -4510,17 +4546,13 @@ class ResursBank {
 	 * @since 1.1.1
 	 */
 	public function getCheckoutUrl( $EnvironmentRequest = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST, $getCurrentIfSet = true ) {
-		// If current_environment is set, override incoming variable
+		/*
+		 * If current_environment is set, override incoming variable
+		 */
 		if ( $getCurrentIfSet && $this->current_environment_updated ) {
 			if ( $this->current_environment == RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION ) {
-				if ($this->getPos()) {
-					return $this->env_omni_pos_prod;
-				}
 				return $this->env_omni_prod;
 			} else {
-				if ($this->getPos()) {
-					return $this->env_omni_pos_test;
-				}
 				return $this->env_omni_test;
 			}
 		}
@@ -4549,6 +4581,7 @@ class ResursBank {
 	 * @since 1.2.0
 	 */
 	public function updateCheckoutOrderLines( $paymentId = '', $orderLines = array() ) {
+		$outputOrderLines = array();
 		if ( empty( $paymentId ) ) {
 			throw new \Exception( "Payment id not set" );
 		}

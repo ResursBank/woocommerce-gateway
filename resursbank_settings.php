@@ -580,9 +580,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
 				$methodDescription    = isset($this->paymentMethods->description) ? $this->paymentMethods->description : "";
 			}
 		} catch ( Exception $e ) {
-			$paymentMethodsError = $e->getMessage();
-			if (preg_match("/simplifiedshopflowservice/i", $paymentMethodsError)) {
-			    $paymentMethodsError = __('The service can not be reached for the moment. Please try again later. You should also make sure that your credentials are really correct - especially when switching between test and production mode', 'WC_Payment_Gateway');
+    		$errorCode = $e->getCode();
+    		$errorMessage = $e->getMessage();
+			if ($errorCode == 401)  {
+				$paymentMethodsError = __('Authentication error', 'WC_Payment_Gateway');
+            } else if ($errorCode >= 400 && $errorCode <= 499) {
+				$paymentMethodsError = __( 'The service can not be reached for the moment (HTTP Error '.$errorCode.'). Please try again later.', 'WC_Payment_Gateway' );
+            } else if ($errorCode >= 500) {
+				$paymentMethodsError = __("Unreachable service, code ", 'WC_Payment_Gateway') . $errorCode . " (".trim($errorMessage).")";
+            } else {
+				$paymentMethodsError = "Unhandled exception from Resurs: [".$errorCode."] - " . $e->getMessage();
 			}
 		}
 

@@ -1,6 +1,6 @@
 # EComPHP - PHP Gateway for Resurs Bank ECommerce Services #
 
-Resurs EComPHP Gateway is a simplifier for our webservices, with functionality enough to getting started fast. It communicates with the Simplified Flow API for booking payments, Configuration Service and the After Shop Service API for finalizing, crediting and annulments etc. This full version of the gateway communicates with Hosted Payment Flow and Resurs Checkout (supporting both REST and SOAP). A PHP-reference for EComPHP is located at https://test.resurs.com/autodocs/apigen/ecomphp-1.3-develop/, if you want to take a look at our automatically generated documentation.
+Resurs EComPHP Gateway is a simplifier for our webservices, with functionality enough to getting started fast. It communicates with the Simplified Flow API for booking payments, Configuration Service and the After Shop Service API for finalizing, crediting and annulments etc. This full version of the gateway communicates with Hosted Payment Flow and Resurs Checkout (supporting both REST and SOAP). A PHP-reference for EComPHP is located at https://test.resurs.com/autodocs/ecomphp-apigen/, if you want to take a look at our automatically generated documentation.
 
 As EComPHP is continuously developed, you should take a look at our bitbucket repo to keep this information updated. It can be found at https://bitbucket.org/resursbankplugins/resurs-ecomphp
 
@@ -9,26 +9,17 @@ As EComPHP is continuously developed, you should take a look at our bitbucket re
 
 * For EComPHP 1.0 (With no namespaces) at least PHP 5.2
 * For EComPHP 1.1 (With namespaces) at least PHP 5.3
-* For EComPHP 1.3 at least PHP 5.3 (Requires composer for dependencies)
-* For EComPHP 2.0 at least PHP 5.3 (Requires composer for dependencies)
-* [OpenSSL](https://www.openssl.org): For reaching Resurs Bank REST/SOAP
-* [curl](https://curl.haxx.se): php-curl with SSL support
-* php-xml and streams (For the SOAP parts)
-* EComPHP uses [NetCURL](https://www.netcurl.org) for calls via both SOAP and REST. The packagist component is located [here](https://www.netcurl.org/packagist)
-* If you plan to ONLY use Resurs Checkout based functions there should be no need for SoapClient. However, there are functions in EComPHP that utilizes the SOAP-based flow before the REST-services (Callback UPDATE, getPaymentMethods, etc)
+* For EComPHP 1.2 (Namespace release only) at least PHP 5.3
+* OpenSSL: For reaching Resurs webservices that is restricted to https only
+* curl: php-curl and php-xml (For the SOAP parts)
+* EComPHP uses [this curl library](https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse/classes/tornevall_network.php) (currently bundled) for calls via both SOAP and REST. It is available via composer and packagist [here](https://packagist.org/packages/tornevall/tornelib-php-netcurl)
+* If you plan to ONLY use Resurs Checkout based functions there should be no need for SoapClient. However, registration of the callback UPDATE, currently **requires** SoapClient as it do not exist in the rest-calls
 
-### Installing curl, xml, soapclient, etc
-
-For Ubuntu, you can quickly fetch those with apt-get like below, if your system is missing them:
-
-    apt-get install php-curl php-xml php-soap
-     
-There might be a slight chance that you also need openssl or similar, as our services runs on https-only (normally openssl are delivered automatically, but sometimes they do not - apt-get install openssl might work in those cases if you have access to the server).
-
+As this module uses [curl](https://curl.haxx.se) and [SoapClient](http://php.net/manual/en/class.soapclient.php) to work, there are dependencies in curl and xml libraries (as shown above). For Ubuntu, you can quickly fetch those with apt-get (apt-get install php-curl php-xml) if they do not already exists in your system. There might be a slight chance that you also need openssl or similar, as our services runs on https-only (normally openssl are delivered automatically, but sometimes they do not - apt-get install openssl might work in those cases if you have access to the server).
 
 # PHP 7.2
 
-Tests are verified with the deprecated suite up to PHP 7.2.3 as of 20 march 2018.
+Tests are verified with the deprecated suite up to PHP 7.2.3 as of 20 march 2018,
 
 
 ## What this library do and do not
