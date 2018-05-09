@@ -2031,7 +2031,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						$order->update_status( 'cancelled', __( 'The payment failed during purchase', 'WC_Payment_Gateway' ) );
 						wc_add_notice( __( "The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.", 'WC_Payment_Gateway' ), 'error' );
 						WC()->session->set( "order_awaiting_payment", true );
-						$getRedirectUrl = $woocommerce->cart->get_cart_url();
+						$getRedirectUrl = wc_get_cart_url();
 					} else {
 						$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
 						$hasReduceStock         = get_post_meta( $order_id, 'hasReduceStock' );
@@ -2106,7 +2106,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				}
 				/* We should however not return with a success */
 				//wp_safe_redirect($this->get_return_url($order));
-				wp_safe_redirect( $woocommerce->cart->get_cart_url() );
+				wp_safe_redirect( wc_get_cart_url() );
 			}
 
 			try {
@@ -2137,20 +2137,20 @@ function woocommerce_gateway_resurs_bank_init() {
 				} elseif ( $bookedStatus == 'DENIED' ) {
 					$order->update_status( 'failed' );
 					wc_add_notice( __( 'The payment can not complete. Contact customer services for more information.', 'WC_Payment_Gateway' ), 'error' );
-					$getRedirectUrl = $woocommerce->cart->get_cart_url();
+					$getRedirectUrl = wc_get_cart_url();
 				} elseif ( $bookedStatus == 'FAILED' ) {
 					$order->update_status( 'failed', __( 'An error occured during the update of the booked payment. The payment id was never received properly in signing response', 'WC_Payment_Gateway' ) );
 					wc_add_notice( __( 'An unknown error occured. Please, try again later', 'WC_Payment_Gateway' ), 'error' );
-					$getRedirectUrl = $woocommerce->cart->get_cart_url();
+					$getRedirectUrl = wc_get_cart_url();
 				}
 			} catch ( Exception $e ) {
 				wc_add_notice( __( 'Something went wrong during the signing process.', 'WC_Payment_Gateway' ), 'error' );
-				$getRedirectUrl = $woocommerce->cart->get_cart_url();
+				$getRedirectUrl = wc_get_cart_url();
 			}
 
 			$hasAnnulment = get_post_meta( ! isWooCommerce3() ? $order->id : $order->get_id(), "hasAnnulment", true );
 			if ( ! $getRedirectUrl || $hasAnnulment == "1" ) {
-				$getRedirectUrl = $woocommerce->cart->get_cart_url();
+				$getRedirectUrl = wc_get_cart_url();
 			}
 
 			wp_safe_redirect( $getRedirectUrl );
