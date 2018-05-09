@@ -851,36 +851,45 @@ function woocommerce_gateway_resurs_bank_init() {
 		 * @throws Exception
 		 */
 		private function updateOrderByResursPaymentStatus($woocommerceOrder, $currentWcStatus = '', $paymentIdOrPaymentObject = '', $byCallbackEvent = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackEventDataArrayOrString = array()) {
-			/** @var $suggestedStatus RESURS_PAYMENT_STATUS_RETURNCODES */
-			$suggestedStatus = $this->flow->getOrderStatusByPayment($paymentIdOrPaymentObject, $byCallbackEvent, $callbackEventDataArrayOrString);
+			try {
+				/** @var $suggestedStatus RESURS_PAYMENT_STATUS_RETURNCODES */
+				$suggestedStatus = $this->flow->getOrderStatusByPayment( $paymentIdOrPaymentObject, $byCallbackEvent, $callbackEventDataArrayOrString );
 
-			switch ($suggestedStatus) {
-                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING:
-	                $this->synchronizeResursOrderStatus($currentWcStatus, 'processing', $woocommerceOrder, $suggestedStatus);
-	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Processing)");
-	                return $suggestedStatus;
-                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_REFUND:
-	                $this->synchronizeResursOrderStatus($currentWcStatus, 'refunded', $woocommerceOrder, $suggestedStatus);
-	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Refund)");
-                    return $suggestedStatus;
-                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED:
-	                $this->synchronizeResursOrderStatus($currentWcStatus, 'completed', $woocommerceOrder, $suggestedStatus);
-	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Completed)");
-                    return $suggestedStatus;
-                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
-	                $this->synchronizeResursOrderStatus($currentWcStatus, 'on-hold', $woocommerceOrder, $suggestedStatus);
-	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Pending)");
-                    return $suggestedStatus;
-                case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CANCELLED:
-	                $woocommerceOrder->update_status( 'cancelled' );
-	                if ( ! isWooCommerce3() ) {
-		                $woocommerceOrder->cancel_order( __( 'Resurs Bank annulled the order', 'WC_Payment_Gateway' ));
-	                }
-	                return $suggestedStatus;
-                default:
-	                $this->synchronizeResursOrderStatus($currentWcStatus, 'on-hold', $woocommerceOrder, $suggestedStatus);
-	                //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Generic_Payment_Status - on-hold)");
-                    break;
+				switch ( $suggestedStatus ) {
+					case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING:
+						$this->synchronizeResursOrderStatus( $currentWcStatus, 'processing', $woocommerceOrder, $suggestedStatus );
+
+						//$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Processing)");
+						return $suggestedStatus;
+					case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_REFUND:
+						$this->synchronizeResursOrderStatus( $currentWcStatus, 'refunded', $woocommerceOrder, $suggestedStatus );
+
+						//$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Refund)");
+						return $suggestedStatus;
+					case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED:
+						$this->synchronizeResursOrderStatus( $currentWcStatus, 'completed', $woocommerceOrder, $suggestedStatus );
+
+						//$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Completed)");
+						return $suggestedStatus;
+					case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
+						$this->synchronizeResursOrderStatus( $currentWcStatus, 'on-hold', $woocommerceOrder, $suggestedStatus );
+
+						//$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Pending)");
+						return $suggestedStatus;
+					case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CANCELLED:
+						$woocommerceOrder->update_status( 'cancelled' );
+						if ( ! isWooCommerce3() ) {
+							$woocommerceOrder->cancel_order( __( 'Resurs Bank annulled the order', 'WC_Payment_Gateway' ) );
+						}
+
+						return $suggestedStatus;
+					default:
+						$this->synchronizeResursOrderStatus( $currentWcStatus, 'on-hold', $woocommerceOrder, $suggestedStatus );
+						//$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Generic_Payment_Status - on-hold)");
+						break;
+				}
+			} catch (\Exception $e) {
+			    // Ignore errors
             }
 			return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
         }
@@ -2077,6 +2086,7 @@ function woocommerce_gateway_resurs_bank_init() {
 				} catch ( Exception $getPaymentException ) {
 					$hasGetPaymentErrors        = true;
 					$getPaymentExceptionMessage = $getPaymentException->getMessage();
+					die("WTF");
 				}
 				$paymentIdCheck = isset($paymentCheck->paymentId) ? $paymentCheck->paymentId : null;
 				/* If there is a payment, this order has been already got booked */
@@ -3640,6 +3650,8 @@ function ThirdPartyHooks( $type = '', $content = '', $addonData = array() ) {
  * @param string $paymentId
  * @param null $internalOrderId
  * @param null $callbackType
+ *
+ * @throws Exception
  */
 function ThirdPartyHooksSetPaymentTrigger( $type = '', $paymentId = '', $internalOrderId = null, $callbackType = null ) {
     /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
