@@ -14,3 +14,5 @@ node_modules
 /vendor/tornevall/tornelib-php-netcurl/merge.sh
 /vendor/tornevall/tornelib-php-netcurl/phpunit.xml
 /vendor/tornevall/tornelib-php-crypto/source/GSM0338.TXT
+/vendor/tornevall/tornelib-php-crypto/phpunit.xml
+/vendor/tornevall/tornelib-php-netcurl/composer.json
