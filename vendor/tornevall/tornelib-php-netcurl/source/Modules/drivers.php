@@ -316,9 +316,10 @@ if ( ! class_exists( 'NETCURL_DRIVER_CONTROLLER' ) && ! class_exists( 'TorneLIB\
 				return $this->DRIVER;
 			}
 
-			if (!is_null($ownClass) && class_exists($ownClass)) {
-				$this->DRIVER = $this->getDriverByClass($netDriver, $parameters, $ownClass);
+			if ( ! is_null( $ownClass ) && class_exists( $ownClass ) ) {
+				$this->DRIVER    = $this->getDriverByClass( $netDriver, $parameters, $ownClass );
 				$this->DRIVER_ID = $netDriver;
+
 				return $this->DRIVER;
 			}
 
@@ -333,7 +334,7 @@ if ( ! class_exists( 'NETCURL_DRIVER_CONTROLLER' ) && ! class_exists( 'TorneLIB\
 
 			} else {
 				if ( $this->hasCurl() ) {
-					$this->DRIVER = NETCURL_NETWORK_DRIVERS::DRIVER_CURL;
+					$this->DRIVER    = NETCURL_NETWORK_DRIVERS::DRIVER_CURL;
 					$this->DRIVER_ID = NETCURL_NETWORK_DRIVERS::DRIVER_CURL;
 				} else {
 					// Last resort: Check if there is any other driver available if this fails

@@ -24,10 +24,10 @@
 namespace TorneLIB;
 
 if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETWORK' ) ) {
-	if (!defined('NETCURL_NETWORK_RELEASE')) {
+	if ( ! defined( 'NETCURL_NETWORK_RELEASE' ) ) {
 		define( 'NETCURL_NETWORK_RELEASE', '6.0.6' );
 	}
-	if (!defined('NETCURL_NETWORK_MODIFY')) {
+	if ( ! defined( 'NETCURL_NETWORK_MODIFY' ) ) {
 		define( 'NETCURL_NETWORK_MODIFY', '20180325' );
 	}
 
@@ -38,7 +38,7 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 	 * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
 	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
 	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
-	 * 
+	 *
 	 * @package TorneLIB
 	 */
 	class MODULE_NETWORK {
@@ -298,11 +298,11 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 					foreach ( $urls as $url ) {
 						$trimUrl = trim( $url );
 						if ( ! empty( $trimUrl ) ) {
-							$prependUrl    = $protocol . $url;
-							if (!$preventDuplicates) {
+							$prependUrl = $protocol . $url;
+							if ( ! $preventDuplicates ) {
 								$returnArray[] = $prependUrl;
 							} else {
-								if (!in_array($prependUrl, $returnArray)) {
+								if ( ! in_array( $prependUrl, $returnArray ) ) {
 									$returnArray[] = $prependUrl;
 								}
 							}
@@ -671,6 +671,7 @@ if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_
 	/**
 	 * Class MODULE_CURL
 	 * @package TorneLIB
+	 * @deprecated 6.0.20 Use MODULE_NETWORK
 	 */
 	class TorneLIB_Network extends MODULE_NETWORK {
 		function __construct() {

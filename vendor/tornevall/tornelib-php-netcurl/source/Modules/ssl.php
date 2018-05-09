@@ -85,7 +85,11 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 			// Common ssl checkers (if they fail, there is a sslDriverError to recall
 
 			$sslDriverError = array();
-			if ( ! in_array( 'https', @stream_get_wrappers() ) ) {
+			$streamWrappers = @stream_get_wrappers();
+			if ( ! is_array( $streamWrappers ) ) {
+				$streamWrappers = array();
+			}
+			if ( ! in_array( 'https', array_map( "strtolower", $streamWrappers ) ) ) {
 				$sslDriverError[] = "SSL Failure: HTTPS wrapper can not be found";
 			}
 			if ( ! extension_loaded( 'openssl' ) ) {
@@ -115,9 +119,10 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 		 * @return bool
 		 */
 		public static function hasSsl() {
-			if (!count(self::getCurlSslAvailable())) {
+			if ( ! count( self::getCurlSslAvailable() ) ) {
 				return true;
 			}
+
 			return false;
 		}
 
@@ -321,9 +326,10 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 			);
 			// During tests, this bundle might disappear depending on what happens in tests. If something fails, that might render
 			// strange false alarms, so we'll just add the file into the array if it's set. Many tests in a row can strangely have this effect.
-			if (!empty($sslCaBundle)) {
+			if ( ! empty( $sslCaBundle ) ) {
 				$contextGenerateArray['cafile'] = $sslCaBundle;
 			}
+
 			return $contextGenerateArray;
 		}
 
@@ -339,7 +345,7 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 		public function getSslStream( $optionsArray = array(), $addonContextData = array() ) {
 			$streamContextOptions = array();
 			if ( is_object( $this->PARENT ) ) {
-				$this->PARENT->setUserAgent(NETCURL_SSL_CLIENTNAME . "-" . NETCURL_SSL_RELEASE);
+				$this->PARENT->setUserAgent( NETCURL_SSL_CLIENTNAME . "-" . NETCURL_SSL_RELEASE );
 				$streamContextOptions['http'] = array(
 					"user_agent" => $this->PARENT->getUserAgent()
 				);

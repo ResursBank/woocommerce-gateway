@@ -295,7 +295,5 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		public function getParsedResponse() {
 			return $this->PARSE_CONTENT_OUTPUT;
 		}
-
-
 	}
 }

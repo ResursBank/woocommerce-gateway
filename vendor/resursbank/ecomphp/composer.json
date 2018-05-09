@@ -7,7 +7,7 @@
     "ext-soap": "*",
     "ext-curl": "*",
     "tornevall/tornelib-php-crypto": "^6.0",
-    "tornevall/tornelib-php-netcurl": "dev-develop/6.0"
+    "tornevall/tornelib-php-netcurl": "^6.0"
   },
   "authors": [
     {
@@ -17,6 +17,7 @@
   ],
   "autoload": {
     "files": [
+      "source/classes/ecomhooks.php",
       "source/classes/rbapiloader.php"
     ],
     "psr-4": {

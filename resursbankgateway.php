@@ -709,9 +709,10 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$orderId = wc_get_order_id_by_payment_id( $request['paymentId'] );
 			$order   = new WC_Order( $orderId );
-			if ( !$this->flow->getValidatedCallbackDigest(isset($request['paymentId']) ? $request['paymentId'] : null, $currentSalt, isset($request['digest']) ? $request['digest'] : null, isset($request['result']) ? $request['result'] : null) ) {
+			if ( ! $this->flow->getValidatedCallbackDigest( isset( $request['paymentId'] ) ? $request['paymentId'] : null, $currentSalt, isset( $request['digest'] ) ? $request['digest'] : null, isset( $request['result'] ) ? $request['result'] : null ) ) {
 				$order->add_order_note( __( 'The Resurs Bank event ' . $event_type . ' was received but not accepted (digest fault)', 'WC_Payment_Gateway' ) );
 				header( 'HTTP/1.1 406 Digest not accepted', true, 406 );
+				echo "406: Digest not accepted";
 				exit;
 			}
 

@@ -50,8 +50,7 @@ if ( ! class_exists( 'TORNELIB_CURL_DRIVERS' ) && ! class_exists( 'TorneLIB\TORN
 	/**
 	 * Class TORNELIB_CURL_DRIVERS
 	 * @package TorneLIB
-	 * @deprecated use NETCURL_NETWORK_DRIVERS
-	 * @since 6.0.20
+	 * @deprecated .0.20 Use NETCURL_NETWORK_DRIVERS
 	 */
 	abstract class TORNELIB_CURL_DRIVERS extends NETCURL_NETWORK_DRIVERS {
 	}

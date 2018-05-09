@@ -29,7 +29,6 @@ if ( ! class_exists( 'NETCURL_POST_DATATYPES' ) && ! class_exists( 'TorneLIB\NET
 	 * @package TorneLIB
 	 * @since 6.0.20
 	 */
-
 	abstract class NETCURL_POST_DATATYPES {
 		const DATATYPE_NOT_SET = 0;
 		const DATATYPE_JSON = 1;
@@ -41,8 +40,7 @@ if ( ! class_exists( 'NETCURL_POST_DATATYPES' ) && ! class_exists( 'TorneLIB\NET
 if ( ! class_exists( 'CURL_POST_AS' ) && ! class_exists( 'TorneLIB\CURL_POST_AS' ) ) {
 	/**
 	 * @package TorneLIB
-	 * @deprecated Use NETCURL_POST_DATATYPES
-	 * @since 6.0.20
+	 * @deprecated 6.0.20 Use NETCURL_POST_DATATYPES
 	 */
 	abstract class CURL_POST_AS extends NETCURL_POST_DATATYPES {
 		/**

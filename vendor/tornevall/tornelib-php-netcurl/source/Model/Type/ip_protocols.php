@@ -39,8 +39,7 @@ if ( ! class_exists( 'TorneLIB_Network_IP' ) && ! class_exists( 'TorneLIB\TorneL
 	/**
 	 * Class TorneLIB_Network_IP
 	 * @package TorneLIB
-	 * @deprecated Use NETCURL_IP_PROTOCOLS
-	 * @since 6.0.20
+	 * @deprecated 6.0.20 Use NETCURL_IP_PROTOCOLS
 	 */
 	abstract class TorneLIB_Network_IP extends NETCURL_IP_PROTOCOLS {
 		const IPTYPE_NONE = 0;
@@ -53,8 +52,7 @@ if ( ! class_exists( 'TorneLIB_Network_IP_Protocols' ) && ! class_exists( 'Torne
 	/**
 	 * Class TorneLIB_Network_IP_Protocols
 	 * @package TorneLIB
-	 * @deprecated Use NETCURL_IP_PROTOCOLS
-	 * @since 6.0.20
+	 * @deprecated 6.0.20 Use NETCURL_IP_PROTOCOLS
 	 */
 	abstract class TorneLIB_Network_IP_Protocols extends TorneLIB_Network_IP {
 	}

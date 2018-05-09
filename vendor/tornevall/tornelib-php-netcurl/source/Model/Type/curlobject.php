@@ -37,13 +37,13 @@ if ( ! class_exists( 'NETCURL_HTTP_OBJECT' ) && ! class_exists( 'TorneLIB\NETCUR
 		private $NETCURL_URL;
 		private $NETCURL_IP;
 
-		public function __construct($header = array(), $body = '', $code = 0, $parsed = '', $url = '', $ip = '') {
+		public function __construct( $header = array(), $body = '', $code = 0, $parsed = '', $url = '', $ip = '' ) {
 			$this->NETCURL_HEADER = $header;
-			$this->NETCURL_BODY = $body;
-			$this->NETCURL_CODE = $code;
+			$this->NETCURL_BODY   = $body;
+			$this->NETCURL_CODE   = $code;
 			$this->NETCURL_PARSED = $parsed;
-			$this->NETCURL_URL = $url;
-			$this->NETCURL_IP = $ip;
+			$this->NETCURL_URL    = $url;
+			$this->NETCURL_IP     = $ip;
 		}
 
 		public function getHeader() {

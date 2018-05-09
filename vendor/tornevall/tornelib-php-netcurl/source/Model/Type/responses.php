@@ -38,8 +38,7 @@ if ( ! class_exists( 'NETCURL_RESPONSETYPE' ) && ! class_exists( 'TorneLIB\NETCU
 		/**
 		 * Class TORNELIB_CURL_RESPONSETYPE
 		 * @package TorneLIB
-		 * @deprecated Use NETCURL_RESPONSETYPE
-		 * @since 6.0.20
+		 * @deprecated 6.0.20 Use NETCURL_RESPONSETYPE
 		 */
 		abstract class TORNELIB_CURL_RESPONSETYPE extends NETCURL_RESPONSETYPE {
 		}

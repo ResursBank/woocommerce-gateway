@@ -44,6 +44,7 @@ use TorneLIB\Tornevall_SimpleSoap;
 
 // Global test configuration section starts here
 require_once( __DIR__ . "/classes/ResursBankTestClass.php" );
+require_once( __DIR__ . "/hooks.php" );
 
 // Set up local user agent for identification with webservices
 if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
@@ -294,7 +295,6 @@ class resursBankTest extends TestCase {
 	 */
 	function generateSimpleSimplifiedInvoiceOrder( $noAssert = false ) {
 		$customerData = $this->getHappyCustomerData();
-		//$this->TEST->ECOM->setPreferredPaymentFlowService( RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW );
 		$this->TEST->ECOM->addOrderLine( "Product-1337", "One simple orderline", 800, 25 );
 		$this->TEST->ECOM->setBillingByGetAddress( $customerData );
 		$this->TEST->ECOM->setCustomer( "198305147715", "0808080808", "0707070707", "test@test.com", "NATURAL" );
@@ -349,6 +349,50 @@ class resursBankTest extends TestCase {
 		$handle      = $this->TEST->ECOM->getCurlHandle();
 		$requestBody = $handle->getRequestBody();
 		static::assertTrue( strlen( $requestBody ) > 100 && count( $paymentScanList ) );
+	}
+
+	/**
+	 * @test
+	 */
+	function testHookExperiment1() {
+		if ( ! function_exists( 'ecom_event_register' ) ) {
+			static::markTestIncomplete( 'ecomhooks does not exist' );
+
+			return;
+		}
+		ecom_event_register('update_store_id', 'inject_test_storeid');
+		$customerData = $this->getHappyCustomerData();
+		$this->TEST->ECOM->addOrderLine( "Product-1337", "One simple orderline", 800, 25 );
+		$this->TEST->ECOM->setBillingByGetAddress( $customerData );
+		$this->TEST->ECOM->setCustomer( "198305147715", "0808080808", "0707070707", "test@test.com", "NATURAL" );
+		$this->TEST->ECOM->setSigning( $this->signUrl . '&success=true', $this->signUrl . '&success=false', false );
+		$myPayLoad = $this->TEST->ECOM->getPayload();
+		static::assertTrue(isset($myPayLoad['storeId']) && $myPayLoad['storeId'] >= 0);
+	}
+	/**
+	 * @test
+	 */
+	function testHookExperiment2() {
+		if ( ! function_exists( 'ecom_event_register' ) ) {
+			static::markTestIncomplete( 'ecomhooks does not exist' );
+
+			return;
+		}
+		ecom_event_register('update_payload', 'ecom_inject_payload');
+		$customerData = $this->getHappyCustomerData();
+		$errorCode = 0;
+		$this->TEST->ECOM->addOrderLine( "Product-1337", "One simple orderline", 800, 25 );
+		$this->TEST->ECOM->setBillingByGetAddress( $customerData );
+		$this->TEST->ECOM->setCustomer( "198305147715", "0808080808", "0707070707", "test@test.com", "NATURAL" );
+		$this->TEST->ECOM->setSigning( $this->signUrl . '&success=true', $this->signUrl . '&success=false', false );
+		try {
+			$myPayLoad = $this->TEST->ECOM->getPayload();
+			$response = $this->TEST->ECOM->createPayment( $this->getMethodId() );
+		} catch (\Exception $e) {
+			$errorCode = $e->getCode();
+		}
+
+		static::assertTrue(isset($myPayLoad['add_a_problem_into_payload']) && !isset($myPayLoad['signing']) && $errorCode == 3);
 	}
 
 	/**

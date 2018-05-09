@@ -39,8 +39,7 @@ if ( ! class_exists( 'NETCURL_RESOLVER' ) && ! class_exists( 'TorneLIB\NETCURL_R
 if ( ! class_exists( 'CURL_RESOLVER' ) && ! class_exists( 'TorneLIB\CURL_RESOLVER' ) ) {
 	/**
 	 * @package TorneLIB
-	 * @deprecated Use NETCURL_RESOLVER
-	 * @since 6.0.20
+	 * @deprecated 6.0.20 Use NETCURL_RESOLVER
 	 */
 	abstract class CURL_RESOLVER extends NETCURL_RESOLVER {
 	}

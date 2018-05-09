@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit69b5f1f2b39b1088f183d57cff0031ba
+class ComposerStaticInitc31326c6a646cdf5ef3cdee85d571579
 {
     public static $files = array (
         'a2ffb7dc7e05ad2dc2ed262a34ab8f48' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/tornevall_crypto.php',
@@ -30,6 +30,7 @@ class ComposerStaticInit69b5f1f2b39b1088f183d57cff0031ba
         '4a7a2444f2d491c7d8161d1dc7d59ca1' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/network.php',
         '2ec79023d995178b0fb9ece85f227b80' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/curl.php',
         'fdd125965a2f74a934f756f47ef5f84f' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/soap.php',
+        '90d189b1df317b83da222c214c8e0dc4' => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/ecomhooks.php',
         'e6cb3e061b463a34be4630aa7d1ecca2' => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/rbapiloader.php',
     );
 
@@ -63,8 +64,8 @@ class ComposerStaticInit69b5f1f2b39b1088f183d57cff0031ba
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit69b5f1f2b39b1088f183d57cff0031ba::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit69b5f1f2b39b1088f183d57cff0031ba::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitc31326c6a646cdf5ef3cdee85d571579::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitc31326c6a646cdf5ef3cdee85d571579::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

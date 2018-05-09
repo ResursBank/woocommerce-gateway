@@ -41,9 +41,11 @@ if ( defined( 'NETCURL_REQUIRE' ) ) {
 	}
 	define( 'NETCURL_ALLOW_AUTOLOAD', version_compare( NETCURL_RELEASE, NETCURL_REQUIRE, NETCURL_REQUIRE_OPERATOR ) ? true : false );
 } else {
-	define( 'NETCURL_ALLOW_AUTOLOAD', true );
+	if ( ! defined( 'NETCURL_ALLOW_AUTOLOAD' ) ) {
+		define( 'NETCURL_ALLOW_AUTOLOAD', true );
+	}
 }
 
-if ( file_exists( __DIR__ . '/../vendor/autoload.php' ) && defined( 'NETCURL_ALLOW_AUTOLOAD' ) && NETCURL_ALLOW_AUTOLOAD === true ) {
+if ( file_exists( __DIR__ . '/../vendor/autoload.php' ) && ( defined( 'NETCURL_ALLOW_AUTOLOAD' ) && NETCURL_ALLOW_AUTOLOAD === true ) ) {
 	require_once( __DIR__ . '/../vendor/autoload.php' );
 }

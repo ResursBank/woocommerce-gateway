@@ -10,21 +10,6 @@ This library should be compatible with at least PHP 5.3 up to PHP 7.2.
 Observe that SOAP-calls requires SoapClient and PHP streams to be enabled.
 
 
-## Utilizing external libraries
-
-Want to test this library with an external library like Guzzle? Add this row to composer:
-
-    "guzzlehttp/guzzle": "^6.3"
-
-Then call for this method on initiation:
-
-     $LIB->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP );
-     
-or
-   
-     $LIB->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP_STREAM );
-
-
 ## Auto detection of communicators
 
 Using this call before running calls will try to prepare for a proper communications driver. If curl is available, the internal functions will be prioritized before others as this used to be best practice. However, if curl is missing, this might help you find a proper driver automatically.
@@ -45,4 +30,21 @@ Using this call before running calls will try to prepare for a proper communicat
 * NetCurl supports SoapClient. It's done by the class Tornevall_simpleSoap. This module has dependencies to xml and SoapClient. SoapCalls are handled automatically from the base class: Adding ?wsdl to the URL fetched by NetCurl, will automatically initiate a session for soap. The call can also be sent without ?wsdl, but in that case you have to tell the module to go SOAP.
 * NetCurl supports native basic authentication (curl) and enables similar support when going through a GuzzleStream. For curl, authentication comes for free, while you're pretty much on your own when going stream. NetCurl also makes sure that the SoapClient adopts authentication data set by the setAuthentication()-method.
 * NetCurl was back in time more focused to be a "network attack protection tool", rather than a functional network communications tool. Many things has happened since then.
+
+
+# HOWTOs
+
+## Utilizing external libraries
+
+Want to test this library with an external library like Guzzle? Add this row to composer:
+
+    "guzzlehttp/guzzle": "^6.3"
+
+Then call for this method on initiation:
+
+     $LIB->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP );
+     
+or
+   
+     $LIB->setDriver( TORNELIB_CURL_DRIVERS::DRIVER_GUZZLEHTTP_STREAM );
 

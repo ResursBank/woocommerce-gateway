@@ -39,7 +39,7 @@ if ( ! class_exists( 'NETCURL_AUTH_TYPES' ) && ! class_exists( 'TorneLIB\NETCURL
 if ( ! class_exists( 'CURL_AUTH_TYPES' ) && ! class_exists( 'TorneLIB\CURL_AUTH_TYPES' ) ) {
 	/**
 	 * @package TorneLIB
-	 * @deprecated Use NETCURL_AUTH_TYPES
+	 * @deprecated 6.0.20 Use NETCURL_AUTH_TYPES
 	 */
 	abstract class CURL_AUTH_TYPES extends NETCURL_AUTH_TYPES {
 	}

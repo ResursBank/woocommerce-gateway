@@ -150,6 +150,18 @@ if ( ! class_exists( 'NETCURL_DRIVER_WORDPRESS' ) && ! class_exists( 'TorneLIB\N
 				$postThis['body']    = $this->IO->renderJson( $this->POST_DATA );
 			}
 
+			$wpResponse = $this->getWpResponse($postThis);
+
+			/** @var $httpResponse \WP_HTTP_Requests_Response */
+			$httpResponse = $wpResponse['http_response'];
+			/** @var $httpReponseObject \Requests_Response */
+			$httpResponseObject = $httpResponse->get_response_object();
+			$this->RESPONSE_RAW = isset($httpResponseObject->raw) ? $httpResponseObject->raw : null;
+
+			return $this;
+		}
+
+		private function getWpResponse($postData) {
 			$wpResponse = null;
 			if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_HEAD ) {
 				$wpResponse = $this->DRIVER->head( $this->REQUEST_URL, $postThis );
@@ -160,14 +172,7 @@ if ( ! class_exists( 'NETCURL_DRIVER_WORDPRESS' ) && ! class_exists( 'TorneLIB\N
 			} else {
 				$wpResponse = $this->DRIVER->get( $this->REQUEST_URL, $postThis );
 			}
-
-			/** @var $httpResponse \WP_HTTP_Requests_Response */
-			$httpResponse = $wpResponse['http_response'];
-			/** @var $httpReponseObject \Requests_Response */
-			$httpResponseObject = $httpResponse->get_response_object();
-			$this->RESPONSE_RAW = isset($httpResponseObject->raw) ? $httpResponseObject->raw : null;
-
-			return $this;
+			return $wpResponse;
 		}
 
 		public function executeNetcurlRequest( $url = '', $postData = array(), $postMethod = NETCURL_POST_METHODS::METHOD_GET, $postDataType = NETCURL_POST_DATATYPES::DATATYPE_NOT_SET ) {

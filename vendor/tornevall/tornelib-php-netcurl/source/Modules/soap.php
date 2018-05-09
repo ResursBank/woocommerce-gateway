@@ -38,9 +38,10 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 	/**
 	 * Class TorneLIB_SimpleSoap Simple SOAP client.
 	 *
-	 * Masking no difference of a SOAP call and a regular GET/POST
+	 * Making no difference of a SOAP call and a regular GET/POST
 	 *
 	 * @package TorneLIB
+	 * @since 6.0.20
 	 */
 	class MODULE_SOAP extends MODULE_CURL {
 		protected $soapClient;
@@ -191,7 +192,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 					if ( ! $soapCode ) {
 						$soapCode = 500;
 					}
-					$throwErrorMessage = NETCURL_CURL_CLIENTNAME . " exception from soapClient: " . $soapException->getMessage();
+					$throwErrorMessage = NETCURL_CURL_CLIENTNAME . " (internal/simplesoap) exception from SoapClient: " . $soapException->getMessage();
 					$throwErrorCode    = $soapCode;
 					$throwBackCurrent  = $soapException;
 					//$throwPrevious     = $soapException->getPrevious();
@@ -222,7 +223,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 								preg_match_all( "/! (http\/\d+\.\d+ \d+ (.*?))\n/is", $throwErrorMessage, $outInfo );
 								if ( isset( $outInfo[1] ) && isset( $outInfo[1][0] ) && preg_match( "/^HTTP\//", $outInfo[1][0] ) ) {
 									$httpError      = $outInfo[1][0];
-									$httpSplitError = explode( " ", $httpError );
+									$httpSplitError = explode( " ", $httpError, 3 );
 									if ( isset( $httpSplitError[1] ) && intval( $httpSplitError[1] ) > 0 ) {
 										$throwErrorCode = $httpSplitError[1];
 										if ( isset( $httpSplitError[2] ) && is_string( $httpSplitError[2] ) && ! empty( $httpSplitError[2] ) ) {
@@ -425,6 +426,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 		/**
 		 * Class MODULE_CURL
 		 * @package TorneLIB
+		 * @deprecated 6.0.20 Use MODULE_SOAP
 		 */
 		class Tornevall_SimpleSoap extends MODULE_SOAP {
 			function __construct( string $Url, $that = null ) {

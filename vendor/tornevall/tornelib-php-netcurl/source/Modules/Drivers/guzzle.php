@@ -66,6 +66,9 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 		/** @var string $HTTP_MESSAGE */
 		private $HTTP_MESSAGE = '';
 
+		/** @var bool $HAS_AUTHENTICATION Set if there's authentication configured */
+		private $HAS_AUTHENTICATION = false;
+
 		/**
 		 * @var array $POST_AUTH_DATA
 		 */
@@ -73,6 +76,9 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 
 		/** @var string $RESPONSE_RAW */
 		private $RESPONSE_RAW = '';
+
+		/** @var array $GUZZLE_POST_OPTIONS Post options for Guzzle */
+		private $GUZZLE_POST_OPTIONS;
 
 
 		public function __construct( $parameters = null ) {
@@ -132,25 +138,86 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 			return $this->POST_AUTH_DATA;
 		}
 
+		/**
+		 * @return array
+		 */
 		public function getWorker() {
 			return $this->WORKER_DATA;
 		}
 
+		/**
+		 * @return int
+		 */
 		public function getStatusCode() {
 			return $this->HTTP_STATUS;
 		}
 
+		/**
+		 * @return string
+		 */
 		public function getStatusMessage() {
 			return $this->HTTP_MESSAGE;
 		}
 
-
+		/**
+		 * Guzzle Renderer
+		 * @return $this|NETCURL_DRIVER_GUZZLEHTTP
+		 * @throws \Exception
+		 */
 		private function getGuzzle() {
 			/** @var $gResponse \GuzzleHttp\Psr7\Response */
 			$gResponse          = null;
 			$this->RESPONSE_RAW = null;
 			$gBody              = null;
 
+			$this->GUZZLE_POST_OPTIONS = $this->getPostOptions();
+
+			$gRequest = $this->getGuzzleRequest();
+			if ( ! is_null( $gRequest ) ) {
+				$this->getRenderedGuzzleResponse( $gRequest );
+			} else {
+				throw new \Exception( NETCURL_CURL_CLIENTNAME . " streams for guzzle is probably missing as I can't find the request method in the current class", $this->NETWORK->getExceptionCode( 'NETCURL_GUZZLESTREAM_MISSING' ) );
+			}
+
+			return $this;
+		}
+
+		/**
+		 * @return NETCURL_DRIVER_GUZZLEHTTP
+		 * @throws \Exception
+		 */
+		private function getRenderedGuzzleResponse($gRequest) {
+			$this->WORKER_DATA  = array( 'worker' => $this->DRIVER, 'request' => $gRequest );
+			$gHeaders           = $gRequest->getHeaders();
+			$gBody              = $gRequest->getBody()->getContents();
+			$this->HTTP_STATUS  = $gRequest->getStatusCode();
+			$this->HTTP_MESSAGE = $gRequest->getReasonPhrase();
+			$this->RESPONSE_RAW .= "HTTP/" . $gRequest->getProtocolVersion() . " " . $this->HTTP_STATUS . " " . $this->HTTP_MESSAGE . "\r\n";
+			$this->RESPONSE_RAW .= "X-NetCurl-ClientDriver: " . $this->DRIVER_ID . "\r\n";
+			if ( is_array( $gHeaders ) ) {
+				foreach ( $gHeaders as $hParm => $hValues ) {
+					$this->RESPONSE_RAW .= $hParm . ": " . implode( "\r\n", $hValues ) . "\r\n";
+				}
+			}
+			$this->RESPONSE_RAW .= "\r\n" . $gBody;
+
+			// Prevent problems during authorization. Unsupported media type checks defaults to application/json
+			if ( $this->HAS_AUTHENTICATION && $this->HTTP_STATUS == 415 ) {
+				$contentTypeRequest = $gRequest->getHeader( 'content-type' );
+				if ( empty( $contentTypeRequest ) ) {
+					$this->setContentType();
+				} else {
+					$this->setContentType( $contentTypeRequest );
+				}
+
+				return $this->getGuzzle();
+			}
+		}
+
+		/**
+		 * Render postdata
+		 */
+		private function getPostOptions() {
 			$postOptions            = array();
 			$postOptions['headers'] = array();
 			$contentType            = $this->getContentType();
@@ -170,10 +237,8 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 				}
 			}
 
-
-			$hasAuth = false;
 			if ( isset( $this->POST_AUTH_DATA['Username'] ) ) {
-				$hasAuth = true;
+				$this->HAS_AUTHENTICATION = true;
 				if ( $this->POST_AUTH_DATA['Type'] == NETCURL_AUTH_TYPES::AUTHTYPE_BASIC ) {
 					$postOptions['headers']['Accept'] = '*/*';
 					if ( ! empty( $contentType ) ) {
@@ -185,56 +250,33 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 					);
 				}
 			}
+			return $postOptions;
+		}
 
+		private function getGuzzleRequest() {
 			/** @var \Psr\Http\Message\ResponseInterface $gRequest */
 			$gRequest = null;
 			if ( method_exists( $this->DRIVER, 'request' ) ) {
 				if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_GET ) {
-					$gRequest = $this->DRIVER->request( 'GET', $this->REQUEST_URL, $postOptions );
+					$gRequest = $this->DRIVER->request( 'GET', $this->REQUEST_URL, $this->GUZZLE_POST_OPTIONS );
 				} else if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_POST ) {
-					$gRequest = $this->DRIVER->request( 'POST', $this->REQUEST_URL, $postOptions );
+					$gRequest = $this->DRIVER->request( 'POST', $this->REQUEST_URL, $this->GUZZLE_POST_OPTIONS );
 				} else if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_PUT ) {
-					$gRequest = $this->DRIVER->request( 'PUT', $this->REQUEST_URL, $postOptions );
+					$gRequest = $this->DRIVER->request( 'PUT', $this->REQUEST_URL, $this->GUZZLE_POST_OPTIONS );
 				} else if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_DELETE ) {
-					$gRequest = $this->DRIVER->request( 'DELETE', $this->REQUEST_URL, $postOptions );
+					$gRequest = $this->DRIVER->request( 'DELETE', $this->REQUEST_URL, $this->GUZZLE_POST_OPTIONS );
 				} else if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_HEAD ) {
-					$gRequest = $this->DRIVER->request( 'HEAD', $this->REQUEST_URL, $postOptions );
+					$gRequest = $this->DRIVER->request( 'HEAD', $this->REQUEST_URL, $this->GUZZLE_POST_OPTIONS );
 				}
 			} else {
 				throw new \Exception( NETCURL_CURL_CLIENTNAME . " streams for guzzle is probably missing as I can't find the request method in the current class", $this->NETWORK->getExceptionCode( 'NETCURL_GUZZLESTREAM_MISSING' ) );
 			}
-
-			$this->WORKER_DATA = array( 'worker' => $this->DRIVER, 'request' => $gRequest );
-
-			$gHeaders           = $gRequest->getHeaders();
-			$gBody              = $gRequest->getBody()->getContents();
-			$this->HTTP_STATUS  = $gRequest->getStatusCode();
-			$this->HTTP_MESSAGE = $gRequest->getReasonPhrase();
-			$this->RESPONSE_RAW .= "HTTP/" . $gRequest->getProtocolVersion() . " " . $this->HTTP_STATUS . " " . $this->HTTP_MESSAGE . "\r\n";
-			$this->RESPONSE_RAW .= "X-NetCurl-ClientDriver: " . $this->DRIVER_ID . "\r\n";
-			if ( is_array( $gHeaders ) ) {
-				foreach ( $gHeaders as $hParm => $hValues ) {
-					$this->RESPONSE_RAW .= $hParm . ": " . implode( "\r\n", $hValues ) . "\r\n";
-				}
-			}
-			$this->RESPONSE_RAW .= "\r\n" . $gBody;
-
-			// Prevent problems during authorization. Unsupported media type checks defaults to application/json
-			if ( $hasAuth && $this->HTTP_STATUS == 415 ) {
-				$contentTypeRequest = $gRequest->getHeader( 'content-type' );
-				if ( empty( $contentTypeRequest ) ) {
-					$this->setContentType();
-				} else {
-					$this->setContentType( $contentTypeRequest );
-				}
-
-				return $this->getGuzzle();
-			}
-
-			return $this;
+			return $gRequest;
 		}
 
-
+		/**
+		 * @return string
+		 */
 		public function getRawResponse() {
 			return $this->RESPONSE_RAW;
 		}

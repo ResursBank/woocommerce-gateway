@@ -472,7 +472,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		 */
 		private function setPreparedAuthentication() {
 			$authFlags = $this->getFlag( 'auth' );
-			if ( isset( $authFlags['username'] ) && isset( $authFlags['password'] ) ) {
+			if ( is_array( $authFlags ) && isset( $authFlags['username'] ) && isset( $authFlags['password'] ) ) {
 				$this->setAuthentication( $authFlags['username'], $authFlags['password'], isset( $authFlags['type'] ) ? $authFlags['type'] : NETCURL_AUTH_TYPES::AUTHTYPE_BASIC );
 			}
 		}
@@ -843,52 +843,76 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		 */
 		private function initCookiePath() {
 			// Method rewrite as of NetCurl 6.0.20
+			if ( $this->isFlag( 'NETCURL_DISABLE_CURL_COOKIES' ) || ! $this->useLocalCookies ) {
+				return false;
+			}
 
 			try {
-				$sysTempDir = sys_get_temp_dir();
-
-				if ( $this->isFlag( 'NETCURL_DISABLE_CURL_COOKIES' ) || ! $this->useLocalCookies ) {
-					return false;
-				}
 				$ownCookiePath = $this->getFlag( 'NETCURL_COOKIE_LOCATION' );
 				if ( ! empty( $ownCookiePath ) ) {
-					if ( is_dir( $ownCookiePath ) ) {
-						$this->COOKIE_PATH = $ownCookiePath;
-
-						return true;
-					} else {
-						@mkdir( $ownCookiePath );
-						if ( is_dir( $ownCookiePath ) ) {
-							$this->COOKIE_PATH = $ownCookiePath;
-
-							return true;
-						}
-
-						return false;
-					}
+					return $this->setCookiePathUserDefined( $ownCookiePath );
 				}
 
-				if ( empty( $this->COOKIE_PATH ) ) {
-					if ( $this->isFlag( 'NETCURL_COOKIE_TEMP_LOCATION' ) ) {
-						if ( ! empty( $sysTempDir ) ) {
-							if ( is_dir( $sysTempDir ) ) {
-								$this->COOKIE_PATH = $sysTempDir;
-								@mkdir( $sysTempDir . "/netcurl/" );
-								if ( is_dir( $sysTempDir . "/netcurl/" ) ) {
-									$this->COOKIE_PATH = $sysTempDir . "/netcurl/";
-								}
+				return $this->setCookiePathBySystem();
 
-								return true;
-							} else {
-								return false;
-							}
-						}
-					}
-				}
 			} catch ( \Exception $e ) {
 				// Something happened, so we won't try this again
 				return false;
 			}
+		}
+
+		/**
+		 * Sets, if defined by user, up a cookie directory storage
+		 *
+		 * @param $ownCookiePath
+		 *
+		 * @return bool
+		 * @since 6.0.20
+		 */
+		private function setCookiePathUserDefined( $ownCookiePath ) {
+			if ( is_dir( $ownCookiePath ) ) {
+				$this->COOKIE_PATH = $ownCookiePath;
+
+				return true;
+			} else {
+				@mkdir( $ownCookiePath );
+				if ( is_dir( $ownCookiePath ) ) {
+					$this->COOKIE_PATH = $ownCookiePath;
+
+					return true;
+				}
+
+				return false;
+			}
+
+		}
+
+		/**
+		 * Sets up cookie path if allowed, to system default storage path
+		 * @return bool
+		 * @since 6.0.20
+		 */
+		private function setCookiePathBySystem() {
+			$sysTempDir = sys_get_temp_dir();
+			if ( empty( $this->COOKIE_PATH ) ) {
+				if ( $this->isFlag( 'NETCURL_COOKIE_TEMP_LOCATION' ) ) {
+					if ( ! empty( $sysTempDir ) ) {
+						if ( is_dir( $sysTempDir ) ) {
+							$this->COOKIE_PATH = $sysTempDir;
+							@mkdir( $sysTempDir . "/netcurl/" );
+							if ( is_dir( $sysTempDir . "/netcurl/" ) ) {
+								$this->COOKIE_PATH = $sysTempDir . "/netcurl/";
+							}
+
+							return true;
+						} else {
+							return false;
+						}
+					}
+				}
+			}
+
+			return false;
 		}
 
 		/**
@@ -1342,16 +1366,25 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			}
 
 			if ( ! empty( $CustomUserAgent ) ) {
-				$trimmedUserAgent = trim( $CustomUserAgent );
-				if ( ! in_array( $trimmedUserAgent, $this->CUSTOM_USER_AGENT ) ) {
-					$this->CUSTOM_USER_AGENT[] = $trimmedUserAgent;
-				}
-
-				// NETCURL_CURL_CLIENTNAME . '-' . NETCURL_RELEASE . "/" . __CLASS__ . "-" . NETCURL_CURL_RELEASE
-				$this->HTTP_USER_AGENT = implode( " ", $this->CUSTOM_USER_AGENT ) . " +TorneLIB-NETCURL-" . NETCURL_RELEASE . " +" . NETCURL_CURL_CLIENTNAME . "-" . NETCURL_CURL_RELEASE . " (" . $this->netCurlUrl . ")";
+				$this->mergeUserAgent( $CustomUserAgent );
 			} else {
 				$this->HTTP_USER_AGENT = $this->userAgents['Mozilla'] . ' +TorneLIB-NetCURL-' . NETCURL_RELEASE . " +" . NETCURL_CURL_CLIENTNAME . "+-" . NETCURL_CURL_RELEASE . ' (' . $this->netCurlUrl . ')';
 			}
+		}
+
+		/**
+		 * @param string $CustomUserAgent
+		 *
+		 * @since 6.0.20
+		 */
+		private function mergeUserAgent( $CustomUserAgent = "" ) {
+			$trimmedUserAgent = trim( $CustomUserAgent );
+			if ( ! in_array( $trimmedUserAgent, $this->CUSTOM_USER_AGENT ) ) {
+				$this->CUSTOM_USER_AGENT[] = $trimmedUserAgent;
+			}
+
+			// NETCURL_CURL_CLIENTNAME . '-' . NETCURL_RELEASE . "/" . __CLASS__ . "-" . NETCURL_CURL_RELEASE
+			$this->HTTP_USER_AGENT = implode( " ", $this->CUSTOM_USER_AGENT ) . " +TorneLIB-NETCURL-" . NETCURL_RELEASE . " +" . NETCURL_CURL_CLIENTNAME . "-" . NETCURL_CURL_RELEASE . " (" . $this->netCurlUrl . ")";
 		}
 
 		/**
@@ -1604,7 +1637,6 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		 */
 		private function getHasUpdateState( $libName = 'tornelib_curl' ) {
 			// Currently only supporting this internal module (through $myRelease).
-			//$myRelease  = $this->getInternalRelease();
 			$myRelease  = NETCURL_RELEASE;
 			$libRequest = ( ! empty( $libName ) ? "lib/" . $libName : "" );
 			$getInfo    = $this->doGet( "https://api.tornevall.net/2.0/libs/getLibs/" . $libRequest . "/me/" . $myRelease );
@@ -1614,8 +1646,6 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 					if ( isset( $getInfo['parsed']->response->getLibsResponse->libs->tornelib_curl ) ) {
 						return $getInfo['parsed']->response->getLibsResponse->libs->tornelib_curl;
 					}
-				} else {
-					return "";
 				}
 			}
 
@@ -1821,6 +1851,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		 *
 		 * @throws \Exception
 		 * @since 5.0
+		 * @todo Split code (try to fix all if/elses)
 		 */
 		private function handleIpList() {
 			$this->CURL_IP_ADDRESS = null;
@@ -1840,6 +1871,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			} else if ( ! empty( $this->IpAddr ) ) {
 				$UseIp = $this->IpAddr;
 			}
+
 			$ipType = $this->NETWORK->getArpaFromAddr( $UseIp, true );
 			// Bind interface to specific ip only if any are found
 			if ( $ipType == "0" ) {
@@ -1932,12 +1964,17 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			return array();
 		}
 
+		private function netcurl_split_get_base() {
+
+		}
+
 		/**
 		 * @param string $rawInput
 		 * @param bool $internalRaw
 		 *
 		 * @return $this|array|NETCURL_HTTP_OBJECT
 		 * @throws \Exception
+		 * @todo Can this be split up?
 		 */
 		public function netcurl_split_raw( $rawInput = null, $internalRaw = false ) {
 			$rawDataTest = $this->getRaw();
@@ -1955,7 +1992,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 				'parsed' => ''
 			);
 
-			// Generate safer content than via list()
+			// explodeRaw usages - header and body
 			$explodeRaw        = explode( "\r\n\r\n", $rawInput . "\r\n", 2 );
 			$header            = isset( $explodeRaw[0] ) ? $explodeRaw[0] : "";
 			$body              = isset( $explodeRaw[1] ) ? $explodeRaw[1] : "";
@@ -1984,7 +2021,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 					'code'   => $code
 				);
 				if ( $this->isFlag( 'FOLLOWLOCATION_INTERNAL' ) ) {
-					$transferByLocation = array( 300, 301, 302, 307, 308 );
+					//$transferByLocation = array( 300, 301, 302, 307, 308 );
 					if ( isset( $headerInfo['Location'] ) ) {
 						$newLocation = $headerInfo['Location'];
 						if ( ! preg_match( "/^http/i", $newLocation ) ) {
@@ -2132,32 +2169,82 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		 * @since 6.0.20
 		 */
 		public function getParsed( $inputResponse = null ) {
+			$returnThis = null;
 
+			$this->getParsedExceptionCheck( $inputResponse );
+
+			// When curl is disabled or missing, this might be returned chained
+			if ( is_object( $inputResponse ) ) {
+				$returnThis = $this->getParsedByObjectMethod( $inputResponse );
+				if ( ! is_null( $returnThis ) ) {
+					return $returnThis;
+				}
+			}
+			if ( is_null( $inputResponse ) && ! empty( $this->NETCURL_RESPONSE_CONTAINER_PARSED ) ) {
+				return $this->NETCURL_RESPONSE_CONTAINER_PARSED;
+			} else if ( is_array( $inputResponse ) ) {
+				return $this->getParsedByDeprecated( $inputResponse );
+			}
+
+			$returnThis = $this->getParsedUntouched( $inputResponse );
+
+			return $returnThis;
+		}
+
+		/**
+		 * @param $inputResponse
+		 *
+		 * @return bool
+		 * @throws \Exception
+		 * @since 6.0.20
+		 */
+		private function getParsedExceptionCheck( $inputResponse ) {
+			// If the input response is an array and contains the deprecated editon of an error code
 			if ( is_array( $inputResponse ) ) {
-				// If the input response is an array and contains the deprecated editon of an error code
 				if ( isset( $inputResponse['code'] ) && $inputResponse['code'] >= 400 ) {
 					throw new \Exception( NETCURL_CURL_CLIENTNAME . " parseResponse exception - Unexpected response code from server: " . $inputResponse['code'], $inputResponse['code'] );
 				}
 			}
 
-			// When curl is disabled or missing, this might be returned chained
-			if ( is_object( $inputResponse ) ) {
-				if ( method_exists( $inputResponse, "getParsedResponse" ) ) {
-					return $inputResponse->getParsedResponse();
-				} else if ( isset( $inputResponse->NETCURL_RESPONSE_CONTAINER_PARSED ) ) {
-					return $inputResponse->NETCURL_RESPONSE_CONTAINER_PARSED;
-				}
+			return false;
+		}
+
+		/**
+		 * @param $inputResponse
+		 *
+		 * @return null
+		 * @since 6.0.20
+		 */
+		private function getParsedByObjectMethod( $inputResponse ) {
+			if ( method_exists( $inputResponse, "getParsedResponse" ) ) {
+				return $inputResponse->getParsedResponse();
+			} else if ( isset( $inputResponse->NETCURL_RESPONSE_CONTAINER_PARSED ) ) {
+				return $inputResponse->NETCURL_RESPONSE_CONTAINER_PARSED;
 			}
 
-			if ( is_null( $inputResponse ) && ! empty( $this->NETCURL_RESPONSE_CONTAINER_PARSED ) ) {
-				return $this->NETCURL_RESPONSE_CONTAINER_PARSED;
-			} else if ( is_array( $inputResponse ) ) {
-				// Return a deprecated answer
-				if ( isset( $inputResponse['parsed'] ) ) {
-					return $inputResponse['parsed'];
-				}
-			}
+			return null;
+		}
 
+		/**
+		 * @param $inputResponse
+		 *
+		 * @return mixed
+		 * @since 6.0.20
+		 */
+		private function getParsedByDeprecated( $inputResponse ) {
+			// Return a deprecated answer
+			if ( isset( $inputResponse['parsed'] ) ) {
+				return $inputResponse['parsed'];
+			}
+		}
+
+		/**
+		 * @param $inputResponse
+		 *
+		 * @return null
+		 * @since 6.0.20
+		 */
+		private function getParsedUntouched( $inputResponse ) {
 			if ( is_array( $inputResponse ) ) {
 				// This might already be parsed, if the array reaches this point
 				return $inputResponse;
@@ -2276,19 +2363,24 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		 * @since 6.0.20
 		 */
 		public function getValue( $keyName = null, $responseContent = null ) {
+			$testInternalParsed = $this->getParsed();
+			if ( is_null( $responseContent ) && ! empty( $testInternalParsed ) ) {
+				$responseContent = $testInternalParsed;
+			}
+
 			if ( is_string( $keyName ) ) {
-				$ParsedValue = $this->getParsedResponse( $responseContent );
+				$ParsedValue = $this->getParsed( $responseContent );
 				if ( is_array( $ParsedValue ) && isset( $ParsedValue[ $keyName ] ) ) {
 					return $ParsedValue[ $keyName ];
 				}
 				if ( is_object( $ParsedValue ) && isset( $ParsedValue->$keyName ) ) {
-					return $ParsedValue->$keyName;
+					return $ParsedValue->{$keyName};
 				}
 			} else {
 				if ( is_null( $responseContent ) && ! empty( $this->NETCURL_RESPONSE_CONTAINER ) ) {
 					$responseContent = $this->NETCURL_RESPONSE_CONTAINER;
 				}
-				$Parsed       = $this->getParsedResponse( $responseContent );
+				$Parsed       = $this->getParsed( $responseContent );
 				$hasRecursion = false;
 				if ( is_array( $keyName ) ) {
 					$TheKeys  = array_reverse( $keyName );
@@ -2301,7 +2393,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 								$hasRecursion = true;
 							}
 						} else if ( is_object( $Parsed ) ) {
-							if ( isset( $Parsed->$CurrentKey ) ) {
+							if ( isset( $Parsed->{$CurrentKey} ) ) {
 								$hasRecursion = true;
 							}
 						} else {
@@ -2312,7 +2404,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 							break;
 						}
 						if ( $hasRecursion ) {
-							$Parsed = $this->getParsedValue( $CurrentKey, array( 'parsed' => $Parsed ) );
+							$Parsed = $this->getValue( $CurrentKey, array( 'parsed' => $Parsed ) );
 							// Break if this was the last one
 							if ( ! count( $TheKeys ) ) {
 								break;
@@ -2582,8 +2674,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		private function executePostData() {
 			$this->POST_DATA_REAL = $this->NETCURL_POST_DATA;
 			$postDataContainer    = $this->NETCURL_POST_DATA;
-
-			$POST_AS_DATATYPE = $this->NETCURL_POST_DATA_TYPE;
+			$POST_AS_DATATYPE     = $this->NETCURL_POST_DATA_TYPE;
 
 			// Enforce postAs: If you'd like to force everything to use json you can for example use: $myLib->setPostTypeDefault(NETCURL_POST_DATATYPES::DATATYPE_JSON)
 			if ( ! is_null( $this->FORCE_POST_TYPE ) ) {
@@ -2596,38 +2687,58 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			$this->POSTDATACONTAINER = $postDataContainer;
 
 			if ( $POST_AS_DATATYPE == NETCURL_POST_DATATYPES::DATATYPE_JSON ) {
-				// Using $jsonRealData to validate the string
-				$jsonRealData = null;
-				if ( ! is_string( $this->NETCURL_POST_DATA ) ) {
-					$jsonRealData = json_encode( $this->NETCURL_POST_DATA );
-				} else {
-					$testJsonData = json_decode( $this->NETCURL_POST_DATA );
-					if ( is_object( $testJsonData ) || is_array( $testJsonData ) ) {
-						$jsonRealData = $this->NETCURL_POST_DATA;
-					}
-				}
-				$parsedPostData = $jsonRealData;
+				$parsedPostData = $this->transformPostDataJson();
 			} else if ( ( $POST_AS_DATATYPE == NETCURL_POST_DATATYPES::DATATYPE_XML || $POST_AS_DATATYPE == NETCURL_POST_DATATYPES::DATATYPE_SOAP_XML ) ) {
-				$this->setContentType( 'text/xml' ); // ; charset=utf-8
-				$this->setCurlHeader( 'Content-Type', $this->getContentType() );
-				if ( ! empty( $this->NETCURL_POST_PREPARED_XML ) ) {
-					$parsedPostData = $this->NETCURL_POST_PREPARED_XML;
-				} else {
-					try {
-						if ( is_array( $this->NETCURL_POST_DATA ) && count( $this->NETCURL_POST_DATA ) ) {
-							if ( ! is_null( $this->IO ) ) {
-								$parsedPostData = $this->IO->renderXml( $this->NETCURL_POST_DATA );
-							} else {
-								throw new \Exception( NETCURL_CURL_CLIENTNAME . " can not render XML data properly, since the IO library is not initialized", $this->NETWORK->getExceptionCode( 'NETCURL_PARSE_XML_FAILURE' ) );
-							}
-						}
-					} catch ( \Exception $e ) {
-						// Silently fail and return nothing if prepared data is failing
-					}
-				}
+				$parsedPostData = $this->transformPostDataXml();
 			}
 
 			$this->POST_DATA_HANDLED = $parsedPostData;
+
+			return $parsedPostData;
+		}
+
+		/**
+		 * @return array|null|string
+		 * @since 6.0.20
+		 */
+		private function transformPostDataJson() {
+			// Using $jsonRealData to validate the string
+			$jsonRealData = null;
+			if ( ! is_string( $this->NETCURL_POST_DATA ) ) {
+				$jsonRealData = json_encode( $this->NETCURL_POST_DATA );
+			} else {
+				$testJsonData = json_decode( $this->NETCURL_POST_DATA );
+				if ( is_object( $testJsonData ) || is_array( $testJsonData ) ) {
+					$jsonRealData = $this->NETCURL_POST_DATA;
+				}
+			}
+
+			return $jsonRealData;
+		}
+
+		/**
+		 * @return mixed|null|string
+		 * @since 6.0.20
+		 */
+		private function transformPostDataXml() {
+			$this->setContentType( 'text/xml' ); // ; charset=utf-8
+			$this->setCurlHeader( 'Content-Type', $this->getContentType() );
+			$parsedPostData = null;
+			if ( ! empty( $this->NETCURL_POST_PREPARED_XML ) ) {
+				$parsedPostData = $this->NETCURL_POST_PREPARED_XML;
+			} else {
+				try {
+					if ( is_array( $this->NETCURL_POST_DATA ) && count( $this->NETCURL_POST_DATA ) ) {
+						if ( ! is_null( $this->IO ) ) {
+							$parsedPostData = $this->IO->renderXml( $this->NETCURL_POST_DATA );
+						} else {
+							throw new \Exception( NETCURL_CURL_CLIENTNAME . " can not render XML data properly, since the IO library is not initialized", $this->NETWORK->getExceptionCode( 'NETCURL_PARSE_XML_FAILURE' ) );
+						}
+					}
+				} catch ( \Exception $e ) {
+					// Silently fail and return nothing if prepared data is failing
+				}
+			}
 
 			return $parsedPostData;
 		}
@@ -3008,6 +3119,85 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			}
 		}
 
+		/**
+		 * Handle curl-errors
+		 *
+		 * @return bool
+		 * @throws \Exception
+		 * @since 6.0.20
+		 */
+		private function internal_curl_errors() {
+			$this->NETCURL_ERRORHANDLER_HAS_ERRORS = false;
+			$this->NETCURL_ERRORHANDLER_RERUN      = false;
+
+			$errorCode    = curl_errno( $this->NETCURL_CURL_SESSION ) > 0 ? curl_errno( $this->NETCURL_CURL_SESSION ) : null;
+			$errorMessage = curl_error( $this->NETCURL_CURL_SESSION ) != '' ? curl_error( $this->NETCURL_CURL_SESSION ) : null;
+
+			if ( ! is_null( $errorCode ) || ! is_null( $errorMessage ) ) {
+				$this->NETCURL_ERRORHANDLER_HAS_ERRORS = true;
+				$this->internal_curl_error_ssl( $errorCode, $errorMessage );
+
+				// Special case: Resolver failures
+				if ( $this->CURL_RESOLVER_FORCED && $this->CURL_RETRY_TYPES['resolve'] >= 2 ) {
+					throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for " . $this->CURL_STORED_URL . " has been reached without any successful response. Normally, this happens after " . $this->CURL_RETRY_TYPES['resolve'] . " CurlResolveRetries and might be connected with a bad URL or similar that can not resolve properly.\nCurl error message follows: " . $errorMessage, $errorCode );
+				}
+				$this->internal_curl_error_resolver( $errorCode, $errorMessage );
+			}
+
+			if ( $this->NETCURL_ERRORHANDLER_HAS_ERRORS && ! $this->NETCURL_ERRORHANDLER_RERUN ) {
+				throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception from PHP/CURL at " . __FUNCTION__ . ": " . curl_error( $this->NETCURL_CURL_SESSION ), curl_errno( $this->NETCURL_CURL_SESSION ) );
+			}
+
+			return $this->NETCURL_ERRORHANDLER_HAS_ERRORS;
+		}
+
+		/**
+		 * @param $errorCode
+		 * @param $errorMessage
+		 *
+		 * @since 6.0.20
+		 */
+		private function internal_curl_error_resolver( $errorCode, $errorMessage ) {
+			if ( $errorCode == CURLE_COULDNT_RESOLVE_HOST || $errorCode === 45 ) {
+				$this->NETCURL_ERROR_CONTAINER[] = array( 'code' => $errorCode, 'message' => $errorMessage );
+				unset( $this->CURL_IP_ADDRESS );
+				$this->CURL_RESOLVER_FORCED = true;
+				if ( $this->CURL_IP_ADDRESS_TYPE == 6 ) {
+					$this->setCurlResolve( NETCURL_RESOLVER::RESOLVER_IPV4 );
+					$this->CURL_IP_ADDRESS_TYPE = 4;
+				} else if ( $this->CURL_IP_ADDRESS_TYPE == 4 ) {
+					$this->setCurlResolve( NETCURL_RESOLVER::RESOLVER_IPV6 );
+					$this->CURL_IP_ADDRESS_TYPE = 6;
+				} else {
+					$this->CURL_IP_ADDRESS_TYPE = 4;
+					$this->setCurlResolve( NETCURL_RESOLVER::RESOLVER_IPV4 );
+				}
+				if ( $this->CURL_RETRY_TYPES['resolve'] <= 2 ) {
+					$this->NETCURL_ERRORHANDLER_RERUN = true;
+				}
+				$this->CURL_RETRY_TYPES['resolve'] ++;
+			}
+		}
+
+		/**
+		 * Redirects to sslVerificationAdjustment
+		 *
+		 * @param $errorCode
+		 * @param $errorMessage
+		 *
+		 * @throws \Exception
+		 * @since 6.0.20
+		 */
+		private function internal_curl_error_ssl( $errorCode, $errorMessage ) {
+			$this->sslVerificationAdjustment( $errorCode, $errorMessage );
+		}
+
+		/**
+		 * @param $errorCode
+		 * @param $errorMessage
+		 *
+		 * @throws \Exception
+		 */
 		private function sslVerificationAdjustment( $errorCode, $errorMessage ) {
 			// Special case: SSL failures (CURLE_SSL_CACERT = 60)
 			if ( $this->SSL->getStrictFallback() ) {
@@ -3031,56 +3221,6 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 				}
 
 			}
-		}
-
-		/**
-		 * Handle curl-errors
-		 *
-		 * @return bool
-		 * @throws \Exception
-		 * @since 6.0.20
-		 */
-		private function internal_curl_errors() {
-			$this->NETCURL_ERRORHANDLER_HAS_ERRORS = false;
-			$this->NETCURL_ERRORHANDLER_RERUN      = false;
-
-			$errorCode    = curl_errno( $this->NETCURL_CURL_SESSION ) > 0 ? curl_errno( $this->NETCURL_CURL_SESSION ) : null;
-			$errorMessage = curl_error( $this->NETCURL_CURL_SESSION ) != '' ? curl_error( $this->NETCURL_CURL_SESSION ) : null;
-
-			if ( ! is_null( $errorCode ) || ! is_null( $errorMessage ) ) {
-				$this->NETCURL_ERRORHANDLER_HAS_ERRORS = true;
-				$this->sslVerificationAdjustment( $errorCode, $errorMessage );
-
-				// Special case: Resolver failures
-				if ( $this->CURL_RESOLVER_FORCED && $this->CURL_RETRY_TYPES['resolve'] >= 2 ) {
-					throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for " . $this->CURL_STORED_URL . " has been reached without any successful response. Normally, this happens after " . $this->CURL_RETRY_TYPES['resolve'] . " CurlResolveRetries and might be connected with a bad URL or similar that can not resolve properly.\nCurl error message follows: " . $errorMessage, $errorCode );
-				}
-				if ( $errorCode == CURLE_COULDNT_RESOLVE_HOST || $errorCode === 45 ) {
-					$this->NETCURL_ERROR_CONTAINER[] = array( 'code' => $errorCode, 'message' => $errorMessage );
-					unset( $this->CURL_IP_ADDRESS );
-					$this->CURL_RESOLVER_FORCED = true;
-					if ( $this->CURL_IP_ADDRESS_TYPE == 6 ) {
-						$this->setCurlResolve( NETCURL_RESOLVER::RESOLVER_IPV4 );
-						$this->CURL_IP_ADDRESS_TYPE = 4;
-					} else if ( $this->CURL_IP_ADDRESS_TYPE == 4 ) {
-						$this->setCurlResolve( NETCURL_RESOLVER::RESOLVER_IPV6 );
-						$this->CURL_IP_ADDRESS_TYPE = 6;
-					} else {
-						$this->CURL_IP_ADDRESS_TYPE = 4;
-						$this->setCurlResolve( NETCURL_RESOLVER::RESOLVER_IPV4 );
-					}
-					if ( $this->CURL_RETRY_TYPES['resolve'] <= 2 ) {
-						$this->NETCURL_ERRORHANDLER_RERUN = true;
-					}
-					$this->CURL_RETRY_TYPES['resolve'] ++;
-				}
-			}
-
-			if ( $this->NETCURL_ERRORHANDLER_HAS_ERRORS && ! $this->NETCURL_ERRORHANDLER_RERUN ) {
-				throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception from PHP/CURL at " . __FUNCTION__ . ": " . curl_error( $this->NETCURL_CURL_SESSION ), curl_errno( $this->NETCURL_CURL_SESSION ) );
-			}
-
-			return $this->NETCURL_ERRORHANDLER_HAS_ERRORS;
 		}
 
 		/**
@@ -3229,9 +3369,9 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			$Soap = new MODULE_SOAP( $this->CURL_STORED_URL, $this );
 
 			// Proper inherits
-			foreach ($this->getFlags() as $flagKey => $flagValue) {
-				$this->setFlag($flagKey, $flagValue);
-				$Soap->setFlag($flagKey, $flagValue);
+			foreach ( $this->getFlags() as $flagKey => $flagValue ) {
+				$this->setFlag( $flagKey, $flagValue );
+				$Soap->setFlag( $flagKey, $flagValue );
 			}
 
 			$this->setFlag( 'WAS_SOAP_CHAIN', $this->getIsChained() );
@@ -3274,7 +3414,11 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 					return $this->executeHttpSoap( $url, $postData, $CurlMethod );
 				}
 
-				throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception from soapClient: [" . $getSoapResponseException->getCode() . "] " . $getSoapResponseException->getMessage(), $getSoapResponseException->getCode() );
+				switch ( $getSoapResponseException->getCode() ) {
+					default:
+						throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception from SoapClient: [" . $getSoapResponseException->getCode() . "] " . $getSoapResponseException->getMessage(), $getSoapResponseException->getCode() );
+				}
+
 			}
 
 			return $getSoapResponse;
@@ -3812,7 +3956,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 		 * Class MODULE_CURL
 		 * @package TorneLIB
 		 * @throws \Exception
-		 * @since 6.0
+		 * @deprecated 6.0.20
 		 */
 		class Tornevall_cURL extends MODULE_CURL {
 			function __construct( $requestUrl = '', $requestPostData = array(), $requestPostMethod = NETCURL_POST_METHODS::METHOD_POST, $requestFlags = array() ) {
