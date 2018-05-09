@@ -358,6 +358,7 @@ $RB(document).ready(function ($) {
             },
 
             fetch_address: function (ssn, customerType) {
+                $('#fetch_address_status').show();
                 /* Make sure the loader url exists, or do not run this part -151202 */
                 if (typeof wc_checkout_params.ajax_loader_url !== "undefined") {
                     $('form[name="checkout"]').block({
@@ -379,8 +380,9 @@ $RB(document).ready(function ($) {
                         'customerType': customerType
                     }
                 }).done(function (data) {
-                    data = $.parseJSON(data);
+                    //data = $.parseJSON(data);
                     var info = data;
+                    $('#fetch_address_status').hide();
 
                     this.ssnP = $('p[class="resurs_ssn_field"]');
                     // If the above class finding fails
@@ -394,7 +396,7 @@ $RB(document).ready(function ($) {
 
                     if (typeof data.error !== 'undefined') {
                         var form = $('form[name="checkout"]');
-                        var tempSpan = $('<span></span>', {
+                        var tempSpan = $('<div></div>', {
                             'class': 'ssn-error-message',
                             'text': data.error
                         });

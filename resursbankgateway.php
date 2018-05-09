@@ -2377,11 +2377,13 @@ function woocommerce_gateway_resurs_bank_init() {
 		/**
 		 * Get address for a specific government ID
 		 *
-		 * @return  JSON Prints the address data as JSON
+		 * @return void Prints the address data as JSON
+		 * @throws Exception
 		 */
 		public static function get_address_ajax() {
+			$results = array();
 			if ( isset( $_REQUEST ) && 'SE' == getResursOption('country') ) {
-				$customerType = isset( $_REQUEST['customerType'] ) ? ( $_REQUEST['customerType'] != 'LEGAL' ? 'NATURAL' : 'LEGAL' ) : 'NATURAL';
+                $customerType = isset( $_REQUEST['customerType'] ) ? ( $_REQUEST['customerType'] != 'LEGAL' ? 'NATURAL' : 'LEGAL' ) : 'NATURAL';
 
 				$serverEnv = getResursOption( "serverEnv" );
 				/*
@@ -2400,11 +2402,12 @@ function woocommerce_gateway_resurs_bank_init() {
 					try {
 						$results = $flow->getAddress( $_REQUEST['ssn'], $customerType, self::get_ip_address() );
 					} catch ( Exception $e ) {
-						print ( json_encode( array( "error" => __( 'Can not get the address from current government ID', 'WC_Payment_Gateway' ) ) ) );
+						$results = array( "error" => __( 'Can not get the address from current government ID', 'WC_Payment_Gateway' ) );
 					}
 				}
-				print( json_encode( $results ) );
 			}
+			header( "Content-type: application/json; charset=utf-8" );
+			echo json_encode( $results );
 			die();
 		}
 
@@ -2813,7 +2816,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					$translation = array();
 				}
 				$get_address = ( ! empty( $translation ) ) ? $translation['get_address'] : __( 'Get address', 'WC_Payment_Gateway' );
-				echo '<a href="#" class="button" id="fetch_address">' . $get_address . '</a><br>';
+				echo '<a href="#" class="button" id="fetch_address">' . $get_address . '</a> <span id="fetch_address_status" style="display: none;"><img src="'.plugin_dir_url( __FILE__ ) . "loader.gif".'" border="0"></span>
+                <br>';
 			}
 		}
 
