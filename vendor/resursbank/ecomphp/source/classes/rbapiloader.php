@@ -3758,7 +3758,6 @@ class ResursBank {
 			if ( ! isset( $paymentDataPayload ['paymentData'] ) ) {
 				$paymentDataPayload ['paymentData'] = array();
 			}
-
 			$paymentDataPayload['paymentData']['paymentMethodId']   = $payment_id_or_method;
 			$paymentDataPayload['paymentData']['preferredId']       = $this->getPreferredPaymentId();
 			$paymentDataPayload['paymentData']['customerIpAddress'] = $this->getCustomerIp();
