@@ -1490,6 +1490,7 @@ function woocommerce_gateway_resurs_bank_init() {
 			}
 			$supportProviderMethods = true;
 			try {
+				$this->flow->setPreferredId($preferredId);
 				if ( isResursHosted() ) {
 					if ( isset( $_REQUEST['ssn_field'] ) && ! empty( $_REQUEST['ssn_field'] ) ) {
 						$bookDataArray['customer']['governmentId'] = $_REQUEST['ssn_field'];
@@ -1517,6 +1518,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						return;
 					} else {
 						try {
+						    // Going payload-arrays in ECOMPHP is deprecated so we'll do it right
 							$this->flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 							$hostedFlowUrl = $this->flow->createPayment( $shortMethodName, $bookDataArray );
 						} catch ( \Exception $hostedException ) {
@@ -1524,11 +1526,6 @@ function woocommerce_gateway_resurs_bank_init() {
 							wc_add_notice( $hostedException->getMessage(), 'error' );
 						}
 					}
-
-					//$successUrl = isset($hostedFlowPayload['successUrl']) ? $hostedFlowPayload['successUrl'] : null;
-					//$backUrl = isset($hostedFlowPayload['backUrl']) ? $hostedFlowPayload['backUrl'] : null;
-                    // Failurl is currently the only needed variable from the payload
-					//$failUrl = isset($hostedFlowPayload['failUrl']) ? $hostedFlowPayload['failUrl'] : null;
 
 					if ( ! $hostedFlowBookingFailure && ! empty( $hostedFlowUrl ) ) {
 						$order->update_status( 'pending' );
@@ -1970,7 +1967,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 			$paymentId              = wc_get_payment_id_by_order_id( $order_id );
 			$isHostedFlow           = false;
-			$requestedPaymentId     = $request['payment_id'];
+			$requestedPaymentId     = isset($request['payment_id']) ? $request['payment_id'] : "";
 			$hasBookedHostedPayment = false;
 			$bookedPaymentId        = 0;
 			$bookedStatus           = null;
@@ -1992,6 +1989,7 @@ function woocommerce_gateway_resurs_bank_init() {
 						try {
 							$paymentInfo = $this->flow->getPayment( $requestedPaymentId );
 						} catch ( Exception $e ) {
+
 						}
 						$bookedStatus = "BOOKED";
 						// If unable to credit/debit, it may have been annulled
@@ -2086,7 +2084,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				} catch ( Exception $getPaymentException ) {
 					$hasGetPaymentErrors        = true;
 					$getPaymentExceptionMessage = $getPaymentException->getMessage();
-					die("WTF");
 				}
 				$paymentIdCheck = isset($paymentCheck->paymentId) ? $paymentCheck->paymentId : null;
 				/* If there is a payment, this order has been already got booked */
