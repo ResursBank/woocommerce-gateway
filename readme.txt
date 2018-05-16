@@ -68,24 +68,17 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
-= 2.2.5 =
+= 2.2.6 =
 
-    * [WOO-232] - Annuity factors problem
-
-= 2.2.4 =
-
-    * [WOO-226] - Counting non countables control - (first) PHP 7.2 compliant patch
-    * [WOO-230] - Show PHP version in RB-admin panel
-    * [WOO-229] - Editing payment methods that belongs to the PSP-sphere in simplified mode crashes wooAdminMethodEditor
-
-= 2.2.3 =
-
-    * [WOO-225] - Form fields must not be empty (RCO)
-
+    * [WOO-238] - Extend WooComPlugin to show detailed exceptions during callback registration when success is false
+    * [WOO-239] - Make ready for EComPHP 1.3.9-milestone
+    * [WOO-241] - Simplified shopflow getaddress malfunctioning when entering invalid government ids
+    * [WOO-242] - Unexistent payments during callbacks fails when trying to update status (getPayment throws 404)
+    * [WOO-243] - WC_Cart::get_cart_url deprecated since WC 2.5
+    * [WOO-244] - Deprecated way of making payloads prevents correct payment id in hosted flow
 
 
 == Upgrade Notice ==
 
-    * (1.2.3) If you are upgrading from 1.2.0 to 1.2.3 and using hosted flow, an update of the current payment methods may be required, to get the "Read more"-issue fixed.
-    * (1.1.0) If you are upgrading through WordPress autoupdater, you also have to upgrade the payment methods configuration page afterwards.
+Make sure your payment methods are still there after upgrading the plugin.
 

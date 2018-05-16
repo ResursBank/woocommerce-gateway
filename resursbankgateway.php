@@ -380,6 +380,7 @@ function woocommerce_gateway_resurs_bank_init() {
 
 		/**
 		 * Check the callback event received and perform the appropriate action
+		 * @throws Exception
 		 */
 		public function check_callback_response() {
 			global $wpdb;
