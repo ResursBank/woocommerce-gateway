@@ -16,16 +16,16 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.10
+ * @version 6.0.11
  */
 
 namespace TorneLIB;
 
 if ( ! defined( 'TORNELIB_IO_RELEASE' ) ) {
-	define( 'TORNELIB_IO_RELEASE', '6.0.9' );
+	define( 'TORNELIB_IO_RELEASE', '6.0.11' );
 }
 if ( ! defined( 'TORNELIB_IO_MODIFY' ) ) {
-	define( 'TORNELIB_IO_MODIFY', '20180426' );
+	define( 'TORNELIB_IO_MODIFY', '20180514' );
 }
 if ( ! defined( 'TORNELIB_IO_CLIENTNAME' ) ) {
 	define( 'TORNELIB_IO_CLIENTNAME', 'MODULE_IO' );
@@ -526,7 +526,9 @@ if ( ! class_exists( 'MODULE_IO' ) && ! class_exists( 'TorneLIB\MODULE_IO' ) && 
 		public function getFromXml( $dataIn = '', $normalize = false ) {
 			$dataIn = trim( $dataIn );
 
-			if ( preg_match( "/&\b(.*?)+;(.*)/is", $dataIn ) ) {
+			// Run entity checker only if there seems to be no initial tags located in the input string, as this may cause bad loops
+			// for PHP (in older versions this also cause SEGFAULTs)
+			if ( ! preg_match( "/^\</", $dataIn ) && preg_match( "/&\b(.*?)+;(.*)/is", $dataIn ) ) {
 				$dataEntity = trim( html_entity_decode( $dataIn ) );
 				if ( preg_match( "/^\</", $dataEntity ) ) {
 
