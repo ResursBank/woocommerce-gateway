@@ -5,14 +5,14 @@
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
  * WC Tested up to: 3.3.5
- * Version: 2.2.6
+ * Version: 2.2.7
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', '2.2.6' );
+define( 'RB_WOO_VERSION', '2.2.7' );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 define( 'RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce' );
 
@@ -1170,14 +1170,6 @@ function woocommerce_gateway_resurs_bank_init() {
 			return $setPaymentSpec;
 		}
 
-		protected static function resurs_hostedflow_create_payment() {
-			global $woocommerce;
-			/** @var $flow \Resursbank\RBEcomPHP\ResursBank */
-			$flow = initializeResursFlow();
-			$flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
-			$flow->Include = array();
-		}
-
 		/**
 		 * Function formerly known as the forms session, where forms was created from a response from Resurs.
 		 * From now on, we won't get any returned values from this function. Instead, we'll create the form at this
@@ -1346,54 +1338,15 @@ function woocommerce_gateway_resurs_bank_init() {
 			if ( ! empty( $fieldGenHtml ) ) {
 				echo $fieldGenHtml;
 			}
-			if ( isResursTest() ) {
-				/*if ( isset($minMaxError) ) {
-					echo '<div style="font-style:italic">' . __( 'Your environment is currently in test mode and the payment amount is lower or higher that the payment method allows.<br>In production mode, this payment method will be hidden.', 'WC_Payment_Gateway' ) . "</div>";
-				}*/
-			}
 		}
 
 		/**
-		 * Proccess the payment
-         *
-		 * @param  int $order_id WooCommerce order ID
+		 * @param $order_id
 		 *
-		 * @return array|void Null on failure, array on success
-		 * @throws Exception
+		 * @since 2.2.7
+		 * @return string
 		 */
-		public function process_payment( $order_id ) {
-			global $woocommerce;
-			// Skip procedure of process_payment if the session is based on a finalizing omnicheckout.
-			if ( defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
-				return;
-			}
-			$order = new WC_Order( $order_id );
-
-			if ( getResursOption( "postidreference" ) ) {
-				$preferredId = $order_id;
-			} else {
-				$preferredId = $this->flow->getPreferredPaymentId();
-			}
-
-			update_post_meta( $order_id, 'paymentId', $preferredId );
-			//$customer  = $woocommerce->customer;
-			//$payment_settings = get_option( 'woocommerce_' . $className . '_settings' );
-			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
-
-			/** @var \Resursbank\RBEcomPHP\ResursBank */
-			$this->flow    = initializeResursFlow();
-			$bookDataArray = array();
-
-			if ( isset( $_REQUEST['applicant-government-id'] ) && ! empty( $_REQUEST['applicant-government-id'] ) ) {
-				$_REQUEST['applicant-government-id'] = trim( $_REQUEST['applicant-government-id'] );
-			}
-
-			$this->flow->setBillingAddress( $_REQUEST['billing_last_name'] . ' ' . $_REQUEST['billing_first_name'], $_REQUEST['billing_first_name'], $_REQUEST['billing_last_name'], $_REQUEST['billing_address_1'], ( empty( $_REQUEST['billing_address_2'] ) ? '' : $_REQUEST['billing_address_2'] ), $_REQUEST['billing_city'], $_REQUEST['billing_postcode'], $_REQUEST['billing_country'] );
-			if ( isset( $_REQUEST['ship_to_different_address'] ) ) {
-				$this->flow->setDeliveryAddress( $_REQUEST['shipping_last_name'] . ' ' . $_REQUEST['shipping_first_name'], $_REQUEST['shipping_first_name'], $_REQUEST['shipping_last_name'], $_REQUEST['shipping_address_1'], ( empty( $_REQUEST['shipping_address_2'] ) ? '' : $_REQUEST['shipping_address_2'] ), $_REQUEST['shipping_city'], $_REQUEST['shipping_postcode'], $_REQUEST['shipping_country'] );
-			}
-
-			$shortMethodName = str_replace( 'resurs_bank_nr_', '', $className );
+		private function getSuccessUrl( $order_id, $preferredId ) {
 			$success_url = home_url( '/' );
 			$success_url = add_query_arg( 'wc-api', 'WC_Resurs_Bank', $success_url );
 			$success_url = add_query_arg( 'order_id', $order_id, $success_url );
@@ -1405,10 +1358,63 @@ function woocommerce_gateway_resurs_bank_init() {
 				$success_url = add_query_arg( 'flow-type', 'check_hosted_response', $success_url );
 			}
 
-			$backurl = null;
-			if ( isResursHosted() ) {
-				$backurl = html_entity_decode( $order->get_cancel_order_url() ) . "&isBack=1";
+			return $success_url;
+		}
+
+
+		function process_payment_prepare_customer() {
+			$this->flow->setBillingAddress( $_REQUEST['billing_last_name'] . ' ' . $_REQUEST['billing_first_name'], $_REQUEST['billing_first_name'], $_REQUEST['billing_last_name'], $_REQUEST['billing_address_1'], ( empty( $_REQUEST['billing_address_2'] ) ? '' : $_REQUEST['billing_address_2'] ), $_REQUEST['billing_city'], $_REQUEST['billing_postcode'], $_REQUEST['billing_country'] );
+			if ( isset( $_REQUEST['ship_to_different_address'] ) ) {
+				$this->flow->setDeliveryAddress( $_REQUEST['shipping_last_name'] . ' ' . $_REQUEST['shipping_first_name'], $_REQUEST['shipping_first_name'], $_REQUEST['shipping_last_name'], $_REQUEST['shipping_address_1'], ( empty( $_REQUEST['shipping_address_2'] ) ? '' : $_REQUEST['shipping_address_2'] ), $_REQUEST['shipping_city'], $_REQUEST['shipping_postcode'], $_REQUEST['shipping_country'] );
 			}
+        }
+        function process_payment_get_payment_id($order_id) {
+	        if ( getResursOption( "postidreference" ) ) {
+		        $preferredId = $order_id;
+	        } else {
+		        $preferredId = $this->flow->getPreferredPaymentId();
+	        }
+	        update_post_meta( $order_id, 'paymentId', $preferredId );
+		    return $preferredId;
+        }
+        function process_payment_get_backurl($order) {
+		    $backurl = null;
+	        if ( isResursHosted() ) {
+		        $backurl = html_entity_decode( $order->get_cancel_order_url() ) . "&isBack=1";
+	        }
+		    return $backurl;
+        }
+
+		/**
+		 * Proccess the payment
+         *
+		 * @param  int $order_id WooCommerce order ID
+		 *
+		 * @return array|void Null on failure, array on success
+		 * @throws Exception
+		 */
+		public function process_payment( $order_id ) {
+			global $woocommerce;
+
+			// Skip procedure of process_payment if the session is based on a Resurs Checkout, by using the internal constant
+			if ( defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
+				return;
+			}
+
+
+			// Initializing stuff
+			$order = new WC_Order( $order_id );
+			$bookDataArray = array();
+			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
+			$shortMethodName = str_replace( 'resurs_bank_nr_', '', $className );
+			/** @var \Resursbank\RBEcomPHP\ResursBank */
+			$this->flow    = initializeResursFlow();
+			$preferredId = $this->process_payment_get_payment_id($order_id);
+			$this->process_payment_prepare_customer();
+			$success_url = $this->getSuccessUrl( $order_id, $preferredId );
+
+
+			$backurl = $this->process_payment_get_backurl($order);
 			$urlFail = html_entity_decode( $order->get_cancel_order_url() );
 			$this->flow->setSigning( $success_url, $urlFail, false, $backurl );
 			$this->flow->setWaitForFraudControl( resursOption( 'waitForFraudControl' ) );
@@ -1430,13 +1436,17 @@ function woocommerce_gateway_resurs_bank_init() {
 			} else {
 				$useCustomerType = "NATURAL";
 			}
+
+			// Special cases
+            // * If applicant phone is missing, try use billing phone instead
+            // * If applicant mail is missing, try use billing email instead
 			$this->flow->setCustomer(
-				( isset( $_REQUEST['applicant-government-id'] ) ? $_REQUEST['applicant-government-id'] : "" ),
-				( isset( $_REQUEST['applicant-telephone-number'] ) ? $_REQUEST['applicant-telephone-number'] : "" ),
-				( isset( $_REQUEST['applicant-mobile-number'] ) && ! empty( $_REQUEST['applicant-mobile-number'] ) ? $_REQUEST['applicant-mobile-number'] : null ),
-				( isset( $_REQUEST['applicant-email-address'] ) ? $_REQUEST['applicant-email-address'] : "" ),
-				( isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : $useCustomerType ),
-				( isset( $_REQUEST['contact-government-id'] ) ? $_REQUEST['contact-government-id'] : null )
+				( isset( $_REQUEST['applicant-government-id'] ) ? trim( $_REQUEST['applicant-government-id'] ) : "" ),
+				( isset( $_REQUEST['applicant-telephone-number'] ) ? trim( $_REQUEST['applicant-telephone-number'] ) : ( isset( $_REQUEST['billing_phone'] ) ? trim( $_REQUEST['billing_phone'] ) : "" ) ),
+				( isset( $_REQUEST['applicant-mobile-number'] ) && ! empty( $_REQUEST['applicant-mobile-number'] ) ? trim( $_REQUEST['applicant-mobile-number'] ) : null ),
+				( isset( $_REQUEST['applicant-email-address'] ) ? trim( $_REQUEST['applicant-email-address'] ) : ( isset( $_REQUEST['billing_email'] ) ? trim( $_REQUEST['billing_email'] ) : "" ) ),
+				( isset( $_REQUEST['ssnCustomerType'] ) ? trim( $_REQUEST['ssnCustomerType'] ) : $useCustomerType ),
+				( isset( $_REQUEST['contact-government-id'] ) ? trim( $_REQUEST['contact-government-id'] ) : null )
 			);
 
 			$bookDataArray['specLine'] = $paymentSpec;
@@ -1464,8 +1474,8 @@ function woocommerce_gateway_resurs_bank_init() {
 					} else {
 						try {
 							// Going payload-arrays in ECOMPHP is deprecated so we'll do it right
-							$this->flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 							$hostedFlowUrl = $this->flow->createPayment( $shortMethodName, $bookDataArray );
+
 						} catch ( \Exception $hostedException ) {
 							$hostedFlowBookingFailure = true;
 							wc_add_notice( $hostedException->getMessage(), 'error' );
@@ -1499,15 +1509,7 @@ function woocommerce_gateway_resurs_bank_init() {
 							$this->flow->setStoreId( $storeId );
 							update_post_meta( $order_id, 'resursStoreId', $storeId );
 						}
-						// TODO: New payload handling requires this to be moved to the place where setCustomer is initialized
-						// If woocommerce forms do offer phone and email, while our own don't, use them.
-						if ( empty( $bookDataArray['customer']['phone'] ) && isset( $_REQUEST['billing_phone'] ) && ! empty( $_REQUEST['billing_phone'] ) ) {
-							$bookDataArray['customer']['phone'] = $_REQUEST['billing_phone'];
-						}
-						if ( empty( $bookDataArray['customer']['email'] ) && isset( $_REQUEST['billing_phone'] ) && ! empty( $_REQUEST['billing_email'] ) ) {
-							$bookDataArray['customer']['email'] = $_REQUEST['billing_email'];
-						}
-
+						// If woocommerce forms do offer phone and email, while our own don't, use them (moved to the section of setCustomer)
 						$bookPaymentResult = $this->flow->createPayment( $shortMethodName, $bookDataArray );
 					}
 				}
@@ -3993,20 +3995,25 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 
 	/** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
-	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
-	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
-	if (isResursTest() && $sslHandler) {
-		$initFlow->setDebug(true);
-		$initFlow->setSslValidation(false);
-	}
-	$allFlags = getResursFlag(null);
-	foreach ($allFlags as $flagKey => $flagValue) {
-	    if (!empty($flagKey)) {
-		    $initFlow->setFlag( $flagKey, $flagValue );
-	    }
+	$initFlow   = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
+
+	if (isResursHosted()) {
+		$initFlow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 	}
 
-	$initFlow->setUserAgent( RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
+	$sslHandler = getResursFlag( "DISABLE_SSL_VALIDATION" );
+	if ( isResursTest() && $sslHandler ) {
+		$initFlow->setDebug( true );
+		$initFlow->setSslValidation( false );
+	}
+	$allFlags = getResursFlag( null );
+	foreach ( $allFlags as $flagKey => $flagValue ) {
+		if ( ! empty( $flagKey ) ) {
+			$initFlow->setFlag( $flagKey, $flagValue );
+		}
+	}
+
+	$initFlow->setUserAgent( RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
 	$initFlow->setDefaultUnitMeasure();
 	if ( isset( $_REQUEST['testurl'] ) ) {
@@ -4034,9 +4041,10 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 	$country = getResursOption( "country" );
 	$initFlow->setCountryByCountryCode( $country );
-	if ($initFlow->getCountry() == "FI") {
-	    $initFlow->setDefaultUnitMeasure("kpl");
-    }
+	if ( $initFlow->getCountry() == "FI" ) {
+		$initFlow->setDefaultUnitMeasure( "kpl" );
+	}
+
 	return $initFlow;
 }
 
