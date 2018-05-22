@@ -2048,7 +2048,6 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			$returnResponse['URL'] = $this->CURL_STORED_URL;
 			$returnResponse['ip']  = isset( $this->CURL_IP_ADDRESS ) ? $this->CURL_IP_ADDRESS : null;  // Will only be filled if there is custom address set.
 
-			$this->throwCodeException( trim( $httpMessage ), $code );
 			$contentType           = isset( $headerInfo['Content-Type'] ) ? $headerInfo['Content-Type'] : null;
 			$arrayedResponse['ip'] = $this->CURL_IP_ADDRESS;
 
@@ -2059,6 +2058,7 @@ if ( ! class_exists( 'MODULE_CURL' ) && ! class_exists( 'TorneLIB\MODULE_CURL' )
 			$this->NETCURL_RESPONSE_CONTAINER_HTTPMESSAGE = trim( $httpMessage );
 			$this->NETCURL_RESPONSE_CONTAINER_BODY        = $body;
 			$this->NETCURL_RESPONSE_CONTAINER_HEADER      = $header;
+			$this->throwCodeException( trim( $httpMessage ), $code );
 
 			if ( $this->isFlag( 'IS_SOAP' ) && ! $this->isFlag( 'ALLOW_PARSE_SOAP' ) ) {
 				$arrayedResponse['parsed'] = null;
