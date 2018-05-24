@@ -18,7 +18,7 @@
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
  * @package TorneLIB
- * @version 6.0.0
+ * @version 6.0.1
  */
 
 namespace TorneLIB;
@@ -34,6 +34,12 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		private $PARSE_CONTAINER = '';
 		private $PARSE_CONTENT_TYPE = '';
 		private $PARSE_CONTENT_OUTPUT = '';
+
+		/**
+		 * @var bool
+		 */
+		private $NETCURL_CONTENT_IS_DOMCONTENT = false;
+
 
 		/** @var MODULE_IO $IO */
 		private $IO;
@@ -248,6 +254,14 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		}
 
 		/**
+		 * @return bool
+		 * @since 6.0.1
+		 */
+		public function getIsDomContent() {
+			return $this->NETCURL_CONTENT_IS_DOMCONTENT;
+		}
+
+		/**
 		 * @return array
 		 * @throws \Exception
 		 * @since 6.0.0
@@ -264,6 +278,8 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 					libxml_use_internal_errors( true );
 					$DOM->loadHTML( $this->PARSE_CONTAINER );
 					if ( isset( $DOM->childNodes->length ) && $DOM->childNodes->length > 0 ) {
+						$this->NETCURL_CONTENT_IS_DOMCONTENT = true;
+
 						$elementsByTagName = $DOM->getElementsByTagName( '*' );
 						$childNodeArray    = $this->getChildNodes( $elementsByTagName );
 						$childTagArray     = $this->getChildNodes( $elementsByTagName, 'tagnames' );

@@ -354,7 +354,7 @@ class resursBankTest extends TestCase {
 	/**
 	 * @test
 	 */
-	function testHookExperiment1() {
+	function hookExperiment1() {
 		if ( ! function_exists( 'ecom_event_register' ) ) {
 			static::markTestIncomplete( 'ecomhooks does not exist' );
 
@@ -372,7 +372,7 @@ class resursBankTest extends TestCase {
 	/**
 	 * @test
 	 */
-	function testHookExperiment2() {
+	function hookExperiment2() {
 		if ( ! function_exists( 'ecom_event_register' ) ) {
 			static::markTestIncomplete( 'ecomhooks does not exist' );
 
@@ -393,6 +393,39 @@ class resursBankTest extends TestCase {
 		}
 
 		static::assertTrue(isset($myPayLoad['add_a_problem_into_payload']) && !isset($myPayLoad['signing']) && $errorCode == 3);
+	}
+
+	/**
+	 * @test
+	 * @testdox Expect arrays regardless of response
+	 * @throws \Exception
+	 */
+	function getEmptyCallbacksList() {
+		/**
+		 * Standard request returns:
+		 *
+		 *   array(
+		 *      [index-1] => stdObject
+		 *      [index-2] => stdObject
+		 *   )
+		 *
+		 *   asArrayRequest returns:
+		 *   array(
+		 *      [keyCallbackName1] => URL
+		 *      [keyCallbackName2] => URL
+		 *   )
+		 *
+		 * Standard request when empty should return array()
+		 *
+		 */
+
+		try {
+			$this->TEST->ECOM->unregisterEventCallback( 255, true );
+		} catch (\Exception $e) {
+		}
+		$callbacks = $this->TEST->ECOM->getCallBacksByRest();
+		static::assertTrue( is_array( $callbacks ) && ! count( $callbacks ) ? true : false );
+
 	}
 
 	/**
