@@ -633,7 +633,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page {
                     v' . rbWcGwVersion() . ( defined( 'PHP_VERSION' ) ? "/PHP v" . PHP_VERSION : "" ) . ' ' . ( ! empty( $currentVersion ) ? $currentVersion : "" );
 			}
 			?>
-            <table class="form-table">
+            <!-- Table layout auto fixes issues for woocom 3.4.0 as it has added a fixed value to it in this version -->
+            <table class="form-table" style="table-layout: auto !important;">
 				<?php
 
 				if ( empty( $section ) ) {
