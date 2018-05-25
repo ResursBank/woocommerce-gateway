@@ -423,9 +423,23 @@ class resursBankTest extends TestCase {
 			$this->TEST->ECOM->unregisterEventCallback( 255, true );
 		} catch (\Exception $e) {
 		}
-		$callbacks = $this->TEST->ECOM->getCallBacksByRest();
+		$callbacks = $this->TEST->ECOM->getCallBacksByRest(true);
 		static::assertTrue( is_array( $callbacks ) && ! count( $callbacks ) ? true : false );
 
+	}
+
+	/**
+	 * @test
+	 * @testdox The normal way
+	 * @throws \Exception
+	 */
+	function getEmptyCallbacksListSecond() {
+		try {
+			$this->TEST->ECOM->unregisterEventCallback( 255, true );
+		} catch (\Exception $e) {
+		}
+		$callbacks = $this->TEST->ECOM->getCallBacksByRest();
+		static::assertTrue( is_array( $callbacks ) && ! count( $callbacks ) ? true : false );
 	}
 
 	/**

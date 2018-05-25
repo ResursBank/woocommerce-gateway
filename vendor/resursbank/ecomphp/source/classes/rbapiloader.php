@@ -7,7 +7,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.3
- * @version 1.3.11
+ * @version 1.3.11.1
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -35,10 +35,10 @@ use \TorneLIB\CURL_POST_AS;
 
 // Globals starts here
 if ( ! defined( 'ECOMPHP_VERSION' ) ) {
-	define( 'ECOMPHP_VERSION', '1.3.11' );
+	define( 'ECOMPHP_VERSION', '1.3.11.2' );
 }
 if ( ! defined( 'ECOMPHP_MODIFY_DATE' ) ) {
-	define( 'ECOMPHP_MODIFY_DATE', '20180524' );
+	define( 'ECOMPHP_MODIFY_DATE', '20180525' );
 }
 
 /**
@@ -1324,13 +1324,17 @@ class ResursBank {
 	 * @since 1.0.1
 	 */
 	public function getCallBacksByRest( $ReturnAsArray = false ) {
+		$ResursResponse = array();
 		$this->InitializeServices();
 		try {
-			$ResursResponse = $this->CURL->getParsed( $this->CURL->doGet( $this->getCheckoutUrl() . "/callbacks" ) );
+			$callbackResponse = $this->CURL->getParsed( $this->CURL->doGet( $this->getCheckoutUrl() . "/callbacks" ) );
+			$callbacksBody    = trim( $this->CURL->getBody() );
+			if ( ! empty( $callbackResponse ) ) {
+				$ResursResponse = $this->CURL->getParsed();
+			}
 		} catch ( \Exception $restException ) {
 			throw new \Exception( $restException->getMessage(), $restException->getCode() );
 		}
-		$ResursResponse = array();
 		if ( $ReturnAsArray ) {
 			$ResursResponseArray = array();
 			if ( is_array( $ResursResponse ) && count( $ResursResponse ) ) {
@@ -1351,9 +1355,11 @@ class ResursBank {
 			return $ResursResponseArray;
 		}
 		$hasUpdate = false;
-		foreach ( $ResursResponse as $responseObject ) {
-			if ( isset( $responseObject->eventType ) && $responseObject->eventType == "UPDATE" ) {
-				$hasUpdate = true;
+		if ( is_array( $ResursResponse ) || is_object( $ResursResponse ) ) {
+			foreach ( $ResursResponse as $responseObject ) {
+				if ( isset( $responseObject->eventType ) && $responseObject->eventType == "UPDATE" ) {
+					$hasUpdate = true;
+				}
 			}
 		}
 		if ( ! $hasUpdate ) {
