@@ -175,12 +175,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 
 	/**
 	 * @return string
+	 * @throws Exception
 	 */
 	protected function resurs_omnicheckout_create_frame() {
 		$this->flow->setPreferredPaymentService( \Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_CHECKOUT );
-		$this->flow->Include = array();
 		$bookDataOmni        = self::createResursOmniOrder();
-		//$shopUrl = home_url('');
 		$omniRef = WC()->session->get( 'omniRef' );
 		try {
 			$flowBook  = $this->flow->createPayment( $omniRef, $bookDataOmni );
@@ -199,6 +198,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 
 	/**
 	 * @return array
+	 * @throws Exception
 	 */
 	private function createResursOmniOrder() {
 		global $woocommerce;

@@ -18,7 +18,7 @@
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
  * @package TorneLIB
- * @version 6.0.1
+ * @version 6.0.2
  */
 
 namespace TorneLIB;
@@ -152,6 +152,9 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		 * @since 6.0.0
 		 */
 		private function getNull( $testData = '' ) {
+			if (is_array($testData) || is_object($testData)) {
+				return $testData;
+			}
 			return empty( $testData ) ? null : $testData;
 		}
 

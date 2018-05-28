@@ -4,15 +4,15 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.3.5
- * Version: 2.2.6
+ * WC Tested up to: 3.4.0
+ * Version: 2.2.7
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
  * Domain Path: /languages
  */
 
-define( 'RB_WOO_VERSION', '2.2.6' );
+define( 'RB_WOO_VERSION', '2.2.7' );
 define( 'RB_ALWAYS_RELOAD_JS', true );
 define( 'RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce' );
 
@@ -566,9 +566,11 @@ function woocommerce_gateway_resurs_bank_init() {
 								);
 								$login         = getResursOption( "login" );
 								$password      = getResursOption( "password" );
+
 								if ( ! empty( $login ) && ! empty( $password ) ) {
 									$lastFetchedCacheTime = time() - get_transient( "resurs_callback_templates_cache_last" );
 									$lastFetchedCache     = get_transient( "resurs_callback_templates_cache" );
+									$_REQUEST['force'] = true;
 									if ( $lastFetchedCacheTime >= 86400 || empty( $lastFetchedCache ) || isset( $_REQUEST['force'] ) ) {
 										try {
 											$responseArray['callbacks'] = $this->flow->getCallBacksByRest( true );
@@ -1170,14 +1172,6 @@ function woocommerce_gateway_resurs_bank_init() {
 			return $setPaymentSpec;
 		}
 
-		protected static function resurs_hostedflow_create_payment() {
-			global $woocommerce;
-			/** @var $flow \Resursbank\RBEcomPHP\ResursBank */
-			$flow = initializeResursFlow();
-			$flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
-			$flow->Include = array();
-		}
-
 		/**
 		 * Function formerly known as the forms session, where forms was created from a response from Resurs.
 		 * From now on, we won't get any returned values from this function. Instead, we'll create the form at this
@@ -1346,78 +1340,15 @@ function woocommerce_gateway_resurs_bank_init() {
 			if ( ! empty( $fieldGenHtml ) ) {
 				echo $fieldGenHtml;
 			}
-			if ( isResursTest() ) {
-				/*if ( isset($minMaxError) ) {
-					echo '<div style="font-style:italic">' . __( 'Your environment is currently in test mode and the payment amount is lower or higher that the payment method allows.<br>In production mode, this payment method will be hidden.', 'WC_Payment_Gateway' ) . "</div>";
-				}*/
-			}
 		}
 
 		/**
-		 * Proccess the payment
-         *
-		 * @param  int $order_id WooCommerce order ID
+		 * @param $order_id
 		 *
-		 * @return array|void Null on failure, array on success
-		 * @throws Exception
+		 * @since 2.2.7
+		 * @return string
 		 */
-		public function process_payment( $order_id ) {
-			global $woocommerce;
-			// Skip procedure of process_payment if the session is based on a finalizing omnicheckout.
-			if ( defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
-				return;
-			}
-			$order       = new WC_Order( $order_id );
-
-			if (getResursOption( "postidreference" )) {
-			    $preferredId = $order_id;
-            } else {
-				$preferredId = $this->flow->getPreferredPaymentId( 25 );
-            }
-
-			update_post_meta( $order_id, 'paymentId', $preferredId );
-			$customer  = $woocommerce->customer;
-			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
-
-			$payment_settings = get_option( 'woocommerce_' . $className . '_settings' );
-			/** @var \Resursbank\RBEcomPHP\ResursBank */
-			$this->flow       = initializeResursFlow();
-			$bookDataArray    = array();
-
-			if ( isset( $_REQUEST['applicant-government-id'] ) && ! empty( $_REQUEST['applicant-government-id'] ) ) {
-				$_REQUEST['applicant-government-id'] = trim( $_REQUEST['applicant-government-id'] );
-			}
-
-			$bookDataArray['address'] = array(
-				'fullName'    => $_REQUEST['billing_last_name'] . ' ' . $_REQUEST['billing_first_name'],
-				'firstName'   => $_REQUEST['billing_first_name'],
-				'lastName'    => $_REQUEST['billing_last_name'],
-				'addressRow1' => $_REQUEST['billing_address_1'],
-				'addressRow2' => ( empty( $_REQUEST['billing_address_2'] ) ? '' : $_REQUEST['billing_address_2'] ),
-				'postalArea'  => $_REQUEST['billing_city'],
-				'postalCode'  => $_REQUEST['billing_postcode'],
-				'country'     => $_REQUEST['billing_country'],
-			);
-			if ( isset( $_REQUEST['ship_to_different_address'] ) ) {
-				$bookDataArray['deliveryAddress'] = array(
-					'fullName'    => $_REQUEST['shipping_last_name'] . ' ' . $_REQUEST['shipping_first_name'],
-					'firstName'   => $_REQUEST['shipping_first_name'],
-					'lastName'    => $_REQUEST['shipping_last_name'],
-					'addressRow1' => $_REQUEST['shipping_address_1'],
-					'addressRow2' => ( empty( $_REQUEST['shipping_address_2'] ) ? '' : $_REQUEST['shipping_address_2'] ),
-					'postalArea'  => $_REQUEST['shipping_city'],
-					'postalCode'  => $_REQUEST['shipping_postcode'],
-					'country'     => $_REQUEST['shipping_country'],
-				);
-			}
-			if ( empty( $_REQUEST['shipping_address_2'] ) ) {
-				unset( $bookDataArray['deliveryAddress']['addressRow2'] );
-			};
-			if ( empty( $_REQUEST['billing_address_2'] ) ) {
-				unset( $bookDataArray['address']['addressRow2'] );
-			};
-
-			/* Generate successUrl for the signing (Legacy) */
+		private function getSuccessUrl( $order_id, $preferredId ) {
 			$success_url = home_url( '/' );
 			$success_url = add_query_arg( 'wc-api', 'WC_Resurs_Bank', $success_url );
 			$success_url = add_query_arg( 'order_id', $order_id, $success_url );
@@ -1427,157 +1358,186 @@ function woocommerce_gateway_resurs_bank_init() {
 			$success_url = add_query_arg( 'payment_id', $preferredId, $success_url );
 			if ( isResursHosted() ) {
 				$success_url = add_query_arg( 'flow-type', 'check_hosted_response', $success_url );
-				$bookDataArray['backUrl'] = html_entity_decode( $order->get_cancel_order_url() ) . "&isBack=1";
 			}
-			//$success_url = add_query_arg( 'uniq', '$uniqueId', $success_url );
 
-			$urlFail = html_entity_decode( $order->get_cancel_order_url() );
-			$urlSuccess = $success_url;
+			return $success_url;
+		}
 
-			$bookDataArray['uniqueId'] = sha1( uniqid( microtime( true ), true ) );
-			$bookDataArray['signing']  = array(
-				'successUrl'   => $success_url,
-				'failUrl'      => $urlFail,
-				'forceSigning' => false
-			);
-
-			$bookDataArray['paymentData'] = array(
-				'waitForFraudControl' => resursOption( 'waitForFraudControl' ),
-				'annulIfFrozen'       => resursOption( 'annulIfFrozen' ),
-				'finalizeIfBooked'    => resursOption( 'finalizeIfBooked' ),
-				'preferredId'         => $preferredId
-			);
-			$shortMethodName              = str_replace( 'resurs_bank_nr_', '', $className );
-			$cart                         = $woocommerce->cart;
-			$paymentSpec                  = $this->get_payment_spec( $cart, true );
-
-			$methodSpecification = $this->getTransientMethod( $shortMethodName );
-            $useCustomerType = "";
-
-			if (!is_array($methodSpecification->customerType)) {
-				if ( $methodSpecification->customerType == "NATURAL" ) {
-                    $useCustomerType = "NATURAL";
-				} else if ( $methodSpecification->customerType == "LEGAL" ) {
-                    $useCustomerType = "LEGAL";
-				}
-			} else {
-			    $useCustomerType = "NATURAL";
-            }
-
-			$bookDataArray['specLine'] = $paymentSpec;
-			$bookDataArray['customer'] = array(
-				'governmentId' => ( isset( $_REQUEST['applicant-government-id'] ) ? $_REQUEST['applicant-government-id'] : "" ),
-				'phone'        => ( isset( $_REQUEST['applicant-telephone-number'] ) ? $_REQUEST['applicant-telephone-number'] : "" ),
-				'email'        => ( isset( $_REQUEST['applicant-email-address'] ) ? $_REQUEST['applicant-email-address'] : "" ),
-				'type'         => ( isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : $useCustomerType )
-			);
-			if ( isset( $methodSpecification->specificType ) && ( $methodSpecification->specificType == "REVOLVING_CREDIT" || $methodSpecification->specificType == "CARD" ) ) {
-				$bookDataArray['customer']['governmentId'] = isset( $_REQUEST['applicant-government-id'] ) ? $_REQUEST['applicant-government-id'] : "";
-				$bookDataArray['customer']['type']         = isset( $_REQUEST['ssnCustomerType'] ) ? $_REQUEST['ssnCustomerType'] : $useCustomerType;
-				if ( $methodSpecification->specificType == "REVOLVING_CREDIT" ) {
-					$this->flow->setCardData();
-				} else {
-					if ( isset( $_REQUEST['card-number'] ) ) {
-						$cardNumber = $_REQUEST['card-number'];
-						$this->flow->setCardData( $cardNumber );
-					}
-				}
+		/**
+		 * @since 2.2.7
+		 */
+		function process_payment_prepare_customer() {
+			$this->flow->setBillingAddress( $_REQUEST['billing_last_name'] . ' ' . $_REQUEST['billing_first_name'], $_REQUEST['billing_first_name'], $_REQUEST['billing_last_name'], $_REQUEST['billing_address_1'], ( empty( $_REQUEST['billing_address_2'] ) ? '' : $_REQUEST['billing_address_2'] ), $_REQUEST['billing_city'], $_REQUEST['billing_postcode'], $_REQUEST['billing_country'] );
+			if ( isset( $_REQUEST['ship_to_different_address'] ) ) {
+				$this->flow->setDeliveryAddress( $_REQUEST['shipping_last_name'] . ' ' . $_REQUEST['shipping_first_name'], $_REQUEST['shipping_first_name'], $_REQUEST['shipping_last_name'], $_REQUEST['shipping_address_1'], ( empty( $_REQUEST['shipping_address_2'] ) ? '' : $_REQUEST['shipping_address_2'] ), $_REQUEST['shipping_city'], $_REQUEST['shipping_postcode'], $_REQUEST['shipping_country'] );
 			}
-			if ( $methodSpecification->customerType == "LEGAL" ) {
-				$bookDataArray['customer']['contactGovernmentId'] = ( isset( $_REQUEST['contact-government-id'] ) ? $_REQUEST['contact-government-id'] : null );
-			}
-			if ( isset( $_REQUEST['applicant-mobile-number'] ) && ! empty( $_REQUEST['applicant-mobile-number'] ) ) {
-				$bookDataArray['customer']['cellPhone'] = $_REQUEST['applicant-mobile-number'];
-			}
-			$supportProviderMethods = true;
-			try {
-				$this->flow->setPreferredId($preferredId);
-				if ( isResursHosted() ) {
-					if ( isset( $_REQUEST['ssn_field'] ) && ! empty( $_REQUEST['ssn_field'] ) ) {
-						$bookDataArray['customer']['governmentId'] = $_REQUEST['ssn_field'];
-					}
-					if ( isset( $_REQUEST['billing_phone'] ) ) {
-						$bookDataArray['customer']['phone'] = $_REQUEST['billing_phone'];
-					}
-					if ( isset( $_REQUEST['billing_email'] ) ) {
-						$bookDataArray['customer']['email'] = $_REQUEST['billing_email'];
-					}
-					if ( isset( $_REQUEST['ssnCustomerType'] ) ) {
-						$bookDataArray['customer']['type'] = $_REQUEST['ssnCustomerType'];
-					}
-					if (empty($bookDataArray['customer']['type'])) {
-						$bookDataArray['customer']['type'] = $useCustomerType;
-					}
-					$bookDataArray['paymentData']['preferredId'] = $preferredId;
-					$hostedFlowBookingFailure   = false;
-					$hostedFlowUrl = null;
-					$hostedBookPayment = null;
+        }
 
-					if ( $methodSpecification->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
-						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+		/**
+		 * @param $order_id
+		 *
+		 * @return string
+         * @since 2.2.7
+		 */
+        function process_payment_get_payment_id($order_id) {
+	        if ( getResursOption( "postidreference" ) ) {
+		        $preferredId = $order_id;
+	        } else {
+		        $preferredId = $this->flow->getPreferredPaymentId();
+	        }
+	        update_post_meta( $order_id, 'paymentId', $preferredId );
+		    return $preferredId;
+        }
 
-						return;
-					} else {
-						try {
-						    // Going payload-arrays in ECOMPHP is deprecated so we'll do it right
-							$this->flow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
-							$hostedFlowUrl = $this->flow->createPayment( $shortMethodName, $bookDataArray );
-						} catch ( \Exception $hostedException ) {
-							$hostedFlowBookingFailure = true;
-							wc_add_notice( $hostedException->getMessage(), 'error' );
-						}
-					}
+		/**
+		 * @param $order
+		 *
+		 * @return null|string
+         * @since 2.2.7
+		 */
+        function process_payment_get_backurl($order) {
+		    $backurl = null;
+	        if ( isResursHosted() ) {
+		        $backurl = html_entity_decode( $order->get_cancel_order_url() ) . "&isBack=1";
+	        }
+		    return $backurl;
+        }
 
-					if ( ! $hostedFlowBookingFailure && ! empty( $hostedFlowUrl ) ) {
-						$order->update_status( 'pending' );
-						update_post_meta( $order_id, 'paymentId', $preferredId );
-						return array(
-							'result'   => 'success',
-							'redirect' => $hostedFlowUrl
-						);
-					} else {
-						$order->update_status( 'failed', __( 'An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly', 'WC_Payment_Gateway' ) );
-						return array(
-							'result'   => 'failure',
-							'redirect' => $urlFail
-						);
-					}
-				} else {
-					if ( $methodSpecification->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
-						wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+		/**
+		 * @param $paymentMethodData
+		 *
+		 * @return string
+         * @since 2.2.7
+		 */
+        function process_payment_get_customer_type($paymentMethodData) {
+	        $useCustomerType     = "";
+	        if ( ! is_array( $paymentMethodData->customerType ) ) {
+		        if ( $paymentMethodData->customerType == "NATURAL" ) {
+			        $useCustomerType = "NATURAL";
+		        } else if ( $paymentMethodData->customerType == "LEGAL" ) {
+			        $useCustomerType = "LEGAL";
+		        }
+	        } else {
+		        $useCustomerType = "NATURAL";
+	        }
+            return $useCustomerType;
+        }
 
-						return;
-					} else {
-						$storeId = apply_filters( "resursbank_set_storeid", null );
-						if ( ! empty( $storeId ) ) {
-							$bookDataArray['storeId'] = $storeId;
-							update_post_meta( $order_id, 'resursStoreId', $storeId );
-						}
-						// If woocommerce forms do offer phone and email, while our own don't, use them.
-						if ( empty( $bookDataArray['customer']['phone'] ) && isset( $_REQUEST['billing_phone'] ) && ! empty( $_REQUEST['billing_phone'] ) ) {
-							$bookDataArray['customer']['phone'] = $_REQUEST['billing_phone'];
-						}
-						if ( empty( $bookDataArray['customer']['email'] ) && isset( $_REQUEST['billing_phone'] ) && ! empty( $_REQUEST['billing_email'] ) ) {
-							$bookDataArray['customer']['email'] = $_REQUEST['billing_email'];
-						}
-						$bookPaymentResult = $this->flow->createPayment( $shortMethodName, $bookDataArray );
-					}
-				}
-			} catch ( Exception $bookPaymentException ) {
-				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
+		/**
+		 * @param $paymentMethodInformation
+         * @since 2.2.7
+		 */
+        function process_payment_set_card_info($paymentMethodInformation) {
+	        if ( isset( $paymentMethodInformation->specificType ) && ( $paymentMethodInformation->specificType == "REVOLVING_CREDIT" || $paymentMethodInformation->specificType == "CARD" ) ) {
+		        if ( $paymentMethodInformation->specificType == "REVOLVING_CREDIT" ) {
+			        $this->flow->setCardData();
+		        } else {
+			        if ( isset( $_REQUEST['card-number'] ) ) {
+				        $this->flow->setCardData( $_REQUEST['card-number'] );
+			        }
+		        }
+	        }
+        }
+
+		/**
+		 * @param $order
+		 * @param $order_id
+		 * @param $shortMethodName
+		 * @param $preferredId
+		 * @param $paymentMethodInformation
+		 * @param $supportProviderMethods
+		 * @param $bookDataArray
+		 * @param $urlFail
+		 *
+		 * @return array|void
+		 * @since 2.2.7
+		 */
+		function process_payment_hosted( $order, $order_id, $shortMethodName, $preferredId, $paymentMethodInformation, $supportProviderMethods, $bookDataArray, $urlFail ) {
+			$hostedFlowBookingFailure = false;
+			$hostedFlowUrl            = null;
+			$hostedBookPayment        = null;
+
+			if ( $paymentMethodInformation->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
+				wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+
 				return;
+			} else {
+				try {
+					// Going payload-arrays in ECOMPHP is deprecated so we'll do it right
+					$hostedFlowUrl = $this->flow->createPayment( $shortMethodName, $bookDataArray );
+
+				} catch ( \Exception $hostedException ) {
+					$hostedFlowBookingFailure = true;
+					wc_add_notice( $hostedException->getMessage(), 'error' );
+				}
 			}
 
-			$bookedStatus = trim(isset($bookPaymentResult->bookPaymentStatus) ? $bookPaymentResult->bookPaymentStatus : null);
-			$bookedPaymentId = isset($bookPaymentResult->paymentId) ? $bookPaymentResult->paymentId : null;
+			if ( ! $hostedFlowBookingFailure && ! empty( $hostedFlowUrl ) ) {
+				$order->update_status( 'pending' );
+				update_post_meta( $order_id, 'paymentId', $preferredId );
+
+				return array(
+					'result'   => 'success',
+					'redirect' => $hostedFlowUrl
+				);
+			} else {
+				$order->update_status( 'failed', __( 'An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly', 'WC_Payment_Gateway' ) );
+
+				return array(
+					'result'   => 'failure',
+					'redirect' => $urlFail
+				);
+			}
+
+		}
+
+		/**
+		 * @param $order_id
+		 * @param $shortMethodName
+		 * @param $paymentMethodInformation
+		 * @param $supportProviderMethods
+		 * @param $bookDataArray
+		 *
+		 * @return array|void
+         * @since 2.2.7
+		 */
+		function process_payment_simplified($order_id, $shortMethodName, $paymentMethodInformation, $supportProviderMethods, $bookDataArray) {
+			if ( $paymentMethodInformation->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods ) {
+				wc_add_notice( __( 'The payment method is not available for the selected payment flow', 'WC_Payment_Gateway' ), 'error' );
+
+				return;
+			} else {
+				$storeId = apply_filters( "resursbank_set_storeid", null );
+				if ( ! empty( $storeId ) ) {
+					$this->flow->setStoreId( $storeId );
+					update_post_meta( $order_id, 'resursStoreId', $storeId );
+				}
+				// If woocommerce forms do offer phone and email, while our own don't, use them (moved to the section of setCustomer)
+				$bookPaymentResult = $this->flow->createPayment( $shortMethodName, $bookDataArray );
+			}
+            return $bookPaymentResult;
+		}
+
+		/**
+		 * @param $order
+		 * @param $order_id
+		 * @param $bookPaymentResult
+		 *
+		 * @return array|void
+         * @since 2.2.7
+		 */
+		function process_payment_handle_payment_result($order, $order_id, $bookPaymentResult) {
+			$bookedStatus    = trim( isset( $bookPaymentResult->bookPaymentStatus ) ? $bookPaymentResult->bookPaymentStatus : null );
+			$bookedPaymentId = isset( $bookPaymentResult->paymentId ) ? $bookPaymentResult->paymentId : null;
 			if ( empty( $bookedPaymentId ) ) {
 				$bookedStatus = "FAILED";
 			} else {
 				update_post_meta( $order_id, 'paymentId', $bookedPaymentId );
 			}
+
 			switch ( $bookedStatus ) {
 				case 'FINALIZED':
-					define('RB_SYNCHRONOUS_MODE', true);
+					define( 'RB_SYNCHRONOUS_MODE', true );
 					WC()->session->set( "order_awaiting_payment", true );
 					//$order->update_status( 'completed' );
 					try {
@@ -1585,22 +1545,24 @@ function woocommerce_gateway_resurs_bank_init() {
 						$order->save();
 					} catch ( \Exception $e ) {
 						wc_add_notice( $e->getMessage(), 'error' );
+
 						return;
 					}
-    				WC()->cart->empty_cart();
+					WC()->cart->empty_cart();
+
 					return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
 					break;
 				case 'BOOKED':
 					$order->update_status( 'processing' );
 					$optionReduceOrderStock = getResursOption( 'reduceOrderStock' );
-					$hasReduceStock = get_post_meta($order_id, 'hasReduceStock');
+					$hasReduceStock         = get_post_meta( $order_id, 'hasReduceStock' );
 					if ( $optionReduceOrderStock && empty( $hasReduceStock ) ) {
 						update_post_meta( $order_id, 'hasReduceStock', time() );
-					    if (isWooCommerce3()) {
-						    wc_reduce_stock_levels($order_id);
-					    } else {
-						    $order->reduce_order_stock();
-					    }
+						if ( isWooCommerce3() ) {
+							wc_reduce_stock_levels( $order_id );
+						} else {
+							$order->reduce_order_stock();
+						}
 					}
 					WC()->cart->empty_cart();
 
@@ -1609,16 +1571,17 @@ function woocommerce_gateway_resurs_bank_init() {
 				case 'FROZEN':
 					$order->update_status( 'on-hold' );
 					WC()->cart->empty_cart();
+
 					return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
 					break;
 				case 'SIGNING':
-				    $signingUrl = isset($bookPaymentResult->signingUrl) ? $bookPaymentResult->signingUrl : null;
-				    if (!is_null($signingUrl)) {
-					    return array(
-						    'result'   => 'success',
-						    'redirect' => $signingUrl
-					    );
-				    }
+					$signingUrl = isset( $bookPaymentResult->signingUrl ) ? $bookPaymentResult->signingUrl : null;
+					if ( ! is_null( $signingUrl ) ) {
+						return array(
+							'result'   => 'success',
+							'redirect' => $signingUrl
+						);
+					}
 					$order->update_status( 'failed' );
 					wc_add_notice( __( 'Payment can not complete. A problem with the signing url occurred. Contact customer services for more information.', 'WC_Payment_Gateway' ), 'error' );
 					break;
@@ -1640,6 +1603,75 @@ function woocommerce_gateway_resurs_bank_init() {
 					return;
 					break;
 			}
+
+		}
+
+		/**
+		 * Proccess the payment
+         *
+		 * @param  int $order_id WooCommerce order ID
+		 *
+		 * @return array|void Null on failure, array on success
+		 * @throws Exception
+		 */
+		public function process_payment( $order_id ) {
+			global $woocommerce;
+
+			// Skip procedure of process_payment if the session is based on a Resurs Checkout, by using the internal constant
+			if ( defined( 'OMNICHECKOUT_PROCESSPAYMENT' ) ) {
+				return;
+			}
+
+			// Initializing stuff
+			$order = new WC_Order( $order_id );
+			$bookDataArray = array();
+			$className = isset( $_REQUEST['payment_method'] ) ? $_REQUEST['payment_method'] : null;
+			$shortMethodName = str_replace( 'resurs_bank_nr_', '', $className );
+			$paymentMethodInformation = $this->getTransientMethod( $shortMethodName );
+			/** @var \Resursbank\RBEcomPHP\ResursBank */
+			$this->flow    = initializeResursFlow();
+			$this->process_payment_prepare_customer();
+			$preferredId = $this->process_payment_get_payment_id($order_id);
+			$success_url = $this->getSuccessUrl( $order_id, $preferredId );
+			$backurl = $this->process_payment_get_backurl($order);
+			$urlFail = html_entity_decode( $order->get_cancel_order_url() );
+			$this->flow->setSigning( $success_url, $urlFail, false, $backurl );
+			$this->flow->setWaitForFraudControl( resursOption( 'waitForFraudControl' ) );
+			$this->flow->setAnnulIfFrozen( resursOption( 'annulIfFrozen' ) );
+			$this->flow->setFinalizeIfBooked( resursOption( 'finalizeIfBooked' ) );
+			$this->flow->setPreferredId( $preferredId );
+			$cart            = $woocommerce->cart;
+			// TODO: Old style payment spec generator should be fixed
+			$paymentSpec     = $this->get_payment_spec( $cart, true );
+			$bookDataArray['specLine'] = $paymentSpec;
+
+			// Special cases
+            // * If applicant phone is missing, try use billing phone instead
+            // * If applicant mail is missing, try use billing email instead
+			$this->flow->setCustomer(
+				( isset( $_REQUEST['applicant-government-id'] ) ? trim( $_REQUEST['applicant-government-id'] ) : "" ),
+				( isset( $_REQUEST['applicant-telephone-number'] ) ? trim( $_REQUEST['applicant-telephone-number'] ) : ( isset( $_REQUEST['billing_phone'] ) ? trim( $_REQUEST['billing_phone'] ) : "" ) ),
+				( isset( $_REQUEST['applicant-mobile-number'] ) && ! empty( $_REQUEST['applicant-mobile-number'] ) ? trim( $_REQUEST['applicant-mobile-number'] ) : null ),
+				( isset( $_REQUEST['applicant-email-address'] ) ? trim( $_REQUEST['applicant-email-address'] ) : ( isset( $_REQUEST['billing_email'] ) ? trim( $_REQUEST['billing_email'] ) : "" ) ),
+				( isset( $_REQUEST['ssnCustomerType'] ) ? trim( $_REQUEST['ssnCustomerType'] ) : $this->process_payment_get_customer_type($paymentMethodInformation) ),
+				( isset( $_REQUEST['contact-government-id'] ) ? trim( $_REQUEST['contact-government-id'] ) : null )
+			);
+            $this->process_payment_set_card_info($paymentMethodInformation);
+
+			$supportProviderMethods = true;
+			try {
+				if ( isResursHosted() ) {
+				    return $this->process_payment_hosted($order, $order_id, $shortMethodName, $preferredId, $paymentMethodInformation, $supportProviderMethods, $bookDataArray, $urlFail);
+				} else {
+					$bookPaymentResult = $this->process_payment_simplified($order_id, $shortMethodName, $paymentMethodInformation, $supportProviderMethods, $bookDataArray);
+				}
+			} catch ( Exception $bookPaymentException ) {
+				wc_add_notice( __( $bookPaymentException->getMessage(), 'WC_Payment_Gateway' ), 'error' );
+
+				return;
+			}
+
+			return $this->process_payment_handle_payment_result($order, $order_id, $bookPaymentResult);
 		}
 
 		/**
@@ -4040,20 +4072,25 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 
 	/** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
-	$initFlow                      = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
-	$sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
-	if (isResursTest() && $sslHandler) {
-		$initFlow->setDebug(true);
-		$initFlow->setSslValidation(false);
-	}
-	$allFlags = getResursFlag(null);
-	foreach ($allFlags as $flagKey => $flagValue) {
-	    if (!empty($flagKey)) {
-		    $initFlow->setFlag( $flagKey, $flagValue );
-	    }
+	$initFlow   = new \Resursbank\RBEcomPHP\ResursBank( $username, $password );
+
+	if (isResursHosted()) {
+		$initFlow->setPreferredPaymentService( RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW );
 	}
 
-	$initFlow->setUserAgent( RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
+	$sslHandler = getResursFlag( "DISABLE_SSL_VALIDATION" );
+	if ( isResursTest() && $sslHandler ) {
+		$initFlow->setDebug( true );
+		$initFlow->setSslValidation( false );
+	}
+	$allFlags = getResursFlag( null );
+	foreach ( $allFlags as $flagKey => $flagValue ) {
+		if ( ! empty( $flagKey ) ) {
+			$initFlow->setFlag( $flagKey, $flagValue );
+		}
+	}
+
+	$initFlow->setUserAgent( RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION );
 	$initFlow->setEnvironment( $useEnvironment );
 	$initFlow->setDefaultUnitMeasure();
 	if ( isset( $_REQUEST['testurl'] ) ) {
@@ -4081,9 +4118,10 @@ function initializeResursFlow( $overrideUser = "", $overridePassword = "", $setE
 	}
 	$country = getResursOption( "country" );
 	$initFlow->setCountryByCountryCode( $country );
-	if ($initFlow->getCountry() == "FI") {
-	    $initFlow->setDefaultUnitMeasure("kpl");
-    }
+	if ( $initFlow->getCountry() == "FI" ) {
+		$initFlow->setDefaultUnitMeasure( "kpl" );
+	}
+
 	return $initFlow;
 }
 
