@@ -16,9 +16,11 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
- * @package TorneLIB
- * @version 6.0.1
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
+ * @package    TorneLIB
+ * @version    6.0.1
  * @deprecated Use composerized tornevall/tornelib-php-bitmask instead
  */
 
@@ -205,7 +207,8 @@ if ( ! class_exists( 'MODULE_NETBITS' ) && ! class_exists( 'TorneLIB\MODULE_NETB
 if ( ! class_exists( 'TorneLIB_NetBits' ) && ! class_exists( 'TorneLIB\TorneLIB_NetBits' ) ) {
 	/**
 	 * Class TorneLIB_NetBits
-	 * @package TorneLIB
+	 *
+	 * @package    TorneLIB
 	 * @deprecated Use MODULE_NETBITS
 	 */
 	class TorneLIB_NetBits extends MODULE_NETBITS {

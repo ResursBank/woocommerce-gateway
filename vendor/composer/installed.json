@@ -1,17 +1,17 @@
 [
     {
         "name": "tornevall/tornelib-php-crypto",
-        "version": "6.0.14",
-        "version_normalized": "6.0.14.0",
+        "version": "6.0.17",
+        "version_normalized": "6.0.17.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-crypto.git",
-            "reference": "cff02587fea81d4e21e6f62be2e0afeb609f0d13"
+            "reference": "fd34ebd7f70279b840e75ede1503217bb65cb887"
         },
         "require": {
             "php": ">=5.3"
         },
-        "time": "2018-05-14T08:11:24+00:00",
+        "time": "2018-06-24T10:37:08+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -39,18 +39,18 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.0.21",
-        "version_normalized": "6.0.21.0",
+        "version": "6.0.23",
+        "version_normalized": "6.0.23.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git",
-            "reference": "ef4550d17a7ca14fbcbfe61e20c77d4bad2a8804"
+            "reference": "b9f6ef63501c75f5eddde8f1bb81a3ab1db42c0c"
         },
         "require": {
             "php": ">=5.3",
             "tornevall/tornelib-php-crypto": "^6.0"
         },
-        "time": "2018-05-25T06:36:49+00:00",
+        "time": "2018-06-21T06:49:57+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

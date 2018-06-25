@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  * @version 6.0.0
  */
@@ -37,14 +39,10 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 
 	/**
 	 * Class MODULE_SSL SSL Helper class
+	 *
 	 * @package TorneLIB
 	 */
 	class MODULE_SSL {
-		/** @var bool Do not test certificates on older PHP-version (< 5.6.0) if this is false */
-		private $sslDriverError = array();
-		/** @var bool If SSL has been compiled in CURL, this will transform to true */
-		private $sslCurlDriver = false;
-
 		/** @var array Default paths to the certificates we are looking for */
 		private $sslPemLocations = array( '/etc/ssl/certs' );
 		/** @var array Files to look for in sslPemLocations */
@@ -98,7 +96,6 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 
 			if ( function_exists( 'curl_version' ) ) {
 				$curlVersionRequest = curl_version();
-				$curlVersion        = $curlVersionRequest['version'];
 				if ( defined( 'CURL_VERSION_SSL' ) ) {
 					if ( isset( $curlVersionRequest['features'] ) ) {
 						$CURL_SSL_AVAILABLE = ( $curlVersionRequest['features'] & CURL_VERSION_SSL ? true : false );
@@ -116,6 +113,7 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 
 		/**
 		 * Returns true if no errors occured in the control
+		 *
 		 * @return bool
 		 */
 		public static function hasSsl() {
@@ -130,7 +128,7 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 		 * Make sure that we are allowed to do things
 		 *
 		 * @param bool $checkSafeMode If true, we will also check if safe_mode is active
-		 * @param bool $mockSafeMode If true, NetCurl will pretend safe_mode is true (for testing)
+		 * @param bool $mockSafeMode  If true, NetCurl will pretend safe_mode is true (for testing)
 		 *
 		 * @return bool If true, PHP is in secure mode and won't allow things like follow-redirects and setting up different paths for certificates, etc
 		 * @since 6.0.20
@@ -150,8 +148,6 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 
 				return true;
 			}
-
-			return false;
 		}
 
 		/**
@@ -174,16 +170,17 @@ if ( ! class_exists( 'MODULE_SSL' ) && ! class_exists( 'TorneLIB\MODULE_SSL' ) )
 			return ( filter_var( ini_get( 'safe_mode' ), FILTER_VALIDATE_BOOLEAN ) );
 		}
 
-		/**
-		 * openssl_guess rewrite
-		 *
-		 * @return string
-		 * @since 6.0.0
-		 */
+        /**
+         * openssl_guess rewrite
+         *
+         * @param bool $forceChecking
+         * @return string
+         * @since 6.0.0
+         */
 		public function getSslCertificateBundle( $forceChecking = false ) {
 			// Assume that sysadmins can handle this, if open_basedir is set as things will fail if we proceed here
 			if ( $this->getIsSecure( false ) && ! $forceChecking ) {
-				return;
+				return null;
 			}
 
 			foreach ( $this->sslPemLocations as $filePath ) {

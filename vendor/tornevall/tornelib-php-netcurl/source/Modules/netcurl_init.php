@@ -16,19 +16,21 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
- * @version 6.0.21
+ * @version 6.0.23
  */
 
 namespace TorneLIB;
 
 // Library Release Information
 if ( ! defined( 'NETCURL_RELEASE' ) ) {
-	define( 'NETCURL_RELEASE', '6.0.21' );
+	define( 'NETCURL_RELEASE', '6.0.23' );
 }
 if ( ! defined( 'NETCURL_MODIFY' ) ) {
-	define( 'NETCURL_MODIFY', '20180525' );
+	define( 'NETCURL_MODIFY', '20180619' );
 }
 if ( ! defined( 'TORNELIB_NETCURL_RELEASE' ) ) {
 	// Compatibility constant
@@ -46,6 +48,6 @@ if ( defined( 'NETCURL_REQUIRE' ) ) {
 	}
 }
 
-if ( file_exists( __DIR__ . '/../vendor/autoload.php' ) && ( defined( 'NETCURL_ALLOW_AUTOLOAD' ) && NETCURL_ALLOW_AUTOLOAD === true ) ) {
-	require_once( __DIR__ . '/../vendor/autoload.php' );
+if ( file_exists( __DIR__ . '/../../vendor/autoload.php' ) && ( defined( 'NETCURL_ALLOW_AUTOLOAD' ) && NETCURL_ALLOW_AUTOLOAD === true ) ) {
+	require_once( __DIR__ . '/../../vendor/autoload.php' );
 }

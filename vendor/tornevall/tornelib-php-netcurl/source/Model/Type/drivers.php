@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  */
 
@@ -25,8 +27,9 @@ namespace TorneLIB;
 if ( ! class_exists( 'NETCURL_NETWORK_DRIVERS' ) && ! class_exists( 'TorneLIB\NETCURL_NETWORK_DRIVERS' ) ) {
 	/**
 	 * Class NETCURL_NETWORK_DRIVERS Supported network Addons
+	 *
 	 * @package TorneLIB
-	 * @since 6.0.20
+	 * @since   6.0.20
 	 */
 	abstract class NETCURL_NETWORK_DRIVERS {
 		const DRIVER_NOT_SET = 0;
@@ -49,7 +52,8 @@ if ( ! class_exists( 'NETCURL_NETWORK_DRIVERS' ) && ! class_exists( 'TorneLIB\NE
 if ( ! class_exists( 'TORNELIB_CURL_DRIVERS' ) && ! class_exists( 'TorneLIB\TORNELIB_CURL_DRIVERS' ) ) {
 	/**
 	 * Class TORNELIB_CURL_DRIVERS
-	 * @package TorneLIB
+	 *
+	 * @package    TorneLIB
 	 * @deprecated .0.20 Use NETCURL_NETWORK_DRIVERS
 	 */
 	abstract class TORNELIB_CURL_DRIVERS extends NETCURL_NETWORK_DRIVERS {

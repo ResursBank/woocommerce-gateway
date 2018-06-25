@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  * @version 6.0.6
  */
@@ -41,7 +43,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 	 * Making no difference of a SOAP call and a regular GET/POST
 	 *
 	 * @package TorneLIB
-	 * @since 6.0.20
+	 * @since   6.0.20
 	 */
 	class MODULE_SOAP extends MODULE_CURL {
 		protected $soapClient;
@@ -51,7 +53,6 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 			'trace'      => true,
 			'cache_wsdl' => 0       // Replacing WSDL_CACHE_NONE (WSDL_CACHE_BOTH = 3)
 		);
-		private $simpleSoapVersion = NETCURL_SIMPLESOAP_RELEASE;
 		private $soapUrl;
 		private $AuthData;
 		private $soapRequest;
@@ -60,12 +61,10 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 		private $soapResponseHeaders;
 		private $libResponse;
 		private $canThrowSoapFaults = true;
-		private $CUSTOM_USER_AGENT;
 		private $soapFaultExceptionObject;
 		/** @var MODULE_CURL */
 		private $PARENT;
 
-		private $sslopt = array();
 		private $SoapFaultString = null;
 		private $SoapFaultCode = 0;
 		private $SoapTryOnce = true;
@@ -75,7 +74,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 		/**
 		 * MODULE_SOAP constructor.
 		 *
-		 * @param $Url
+		 * @param      $Url
 		 * @param null $that
 		 *
 		 * @throws \Exception
@@ -154,6 +153,11 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 		 */
 		public function getSoap() {
 			$this->soapClient = null;
+            $throwErrorMessage = null;
+            $throwErrorCode    = null;
+            $throwBackCurrent  = null;
+            $soapFaultOnInit = false;
+            //$throwPrevious     = null;
 			$sslOpt           = $this->getSslOpt();
 			//$optionsStream    = $this->sslGetOptionsStream();
 			$optionsStream = $this->PARENT->sslGetOptionsStream();
@@ -172,12 +176,6 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 
 			$this->soapOptions['exceptions'] = true;
 			$this->soapOptions['trace']      = true;
-
-			$throwErrorMessage = null;
-			$throwErrorCode    = null;
-			$throwBackCurrent  = null;
-			//$throwPrevious     = null;
-			$soapFaultOnInit = false;
 
 			$parentFlags = $this->PARENT->getFlags();
 			foreach ( $parentFlags as $flagKey => $flagValue ) {
@@ -230,7 +228,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 											if ( ! isset( $parentFlags['SOAPWARNINGS_EXTEND'] ) ) {
 												unset( $throwErrorMessage );
 											}
-											$throwErrorMessage = "HTTP-Request exception (" . $throwErrorCode . "): " . $httpSplitError[1] . " " . trim( $httpSplitError[2] ) . "\n" . $throwErrorMessage;
+                                            $throwErrorMessage = "HTTP-Request exception (" . $throwErrorCode . "): " . $httpSplitError[1] . " " . trim($httpSplitError[2]) . (isset($throwErrorMessage) ? ("\n" . $throwErrorMessage) : null);
 										}
 									}
 								}
@@ -289,6 +287,13 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 			return $this->SoapTryOnce;
 		}
 
+        /**
+         * @param $name
+         * @param $arguments
+         *
+         * @return array|null
+         * @throws \Exception
+         */
 		function __call( $name, $arguments ) {
 			$returnResponse = array(
 				'header' => array( 'info' => null, 'full' => null ),
@@ -303,7 +308,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 				} else {
 					$SoapClientResponse = $this->soapClient->$name();
 				}
-			} catch ( \SoapFault $e ) {
+			} catch ( \Exception $e ) {
 				/** @noinspection PhpUndefinedMethodInspection */
 				$this->soapRequest = $this->soapClient->__getLastRequest();
 				/** @noinspection PhpUndefinedMethodInspection */
@@ -385,7 +390,7 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 		 * Get the SOAP response independently on exceptions or successes
 		 *
 		 * @return mixed
-		 * @since 5.0.0
+		 * @since      5.0.0
 		 * @deprecated 6.0.5 Use getSoapResponse()
 		 */
 		public function getLibResponse() {
@@ -425,7 +430,8 @@ if ( ! class_exists( 'MODULE_SOAP' ) && ! class_exists( 'TorneLIB\MODULE_SOAP' )
 	if ( ! class_exists( 'Tornevall_SimpleSoap' ) && ! class_exists( 'TorneLIB\Tornevall_SimpleSoap' ) ) {
 		/**
 		 * Class MODULE_CURL
-		 * @package TorneLIB
+		 *
+		 * @package    TorneLIB
 		 * @deprecated 6.0.20 Use MODULE_SOAP
 		 */
 		class Tornevall_SimpleSoap extends MODULE_SOAP {

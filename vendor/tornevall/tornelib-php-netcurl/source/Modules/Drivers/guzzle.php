@@ -22,9 +22,11 @@
 
 namespace TorneLIB;
 
-if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\NETCURL_DRIVER_GUZZLEHTTPINTERFACE' ) ) {
+if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\NETCURL_DRIVER_GUZZLEHTTP' ) ) {
 	/**
 	 * Class NETCURL_DRIVER_GUZZLEHTTP Network communications driver detection
+     *
+     * Inspections for classes and namespaces is ignored as they are dynamically loaded when they do exist.
 	 *
 	 * @package TorneLIB
 	 */
@@ -36,7 +38,9 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 		/** @var array Inbound parameters in the format array, object or whatever this driver takes */
 		private $PARAMETERS = array();
 
-		/** @var \GuzzleHttp\Client $DRIVER The class for where everything happens */
+        /** @noinspection PhpUndefinedClassInspection */
+        /** @noinspection PhpUndefinedNamespaceInspection */
+        /** @var \GuzzleHttp\Client $DRIVER The class for where everything happens */
 		private $DRIVER;
 
 		/** @var MODULE_NETWORK $NETWORK Network driver for using exceptions, etc */
@@ -100,13 +104,19 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 		private function initializeClass() {
 			if ( $this->DRIVER_ID == NETCURL_NETWORK_DRIVERS::DRIVER_GUZZLEHTTP ) {
 				if ( class_exists( 'GuzzleHttp\Client' ) ) {
-					$this->DRIVER = new \GuzzleHttp\Client;
+                    /** @noinspection PhpUndefinedClassInspection */
+                    /** @noinspection PhpUndefinedNamespaceInspection */
+                    $this->DRIVER = new \GuzzleHttp\Client;
 				}
 			} else if ( $this->DRIVER_ID === NETCURL_NETWORK_DRIVERS::DRIVER_GUZZLEHTTP_STREAM ) {
 				if ( class_exists( 'GuzzleHttp\Handler\StreamHandler' ) ) {
-					/** @var \GuzzleHttp\Handler\StreamHandler $streamHandler */
+                    /** @noinspection PhpUndefinedClassInspection */
+                    /** @noinspection PhpUndefinedNamespaceInspection */
+                    /** @var \GuzzleHttp\Handler\StreamHandler $streamHandler */
 					$streamHandler = new \GuzzleHttp\Handler\StreamHandler();
-					/** @var \GuzzleHttp\Client */
+                    /** @noinspection PhpUndefinedClassInspection */
+                    /** @noinspection PhpUndefinedNamespaceInspection */
+                    /** @var \GuzzleHttp\Client */
 					$this->DRIVER = new \GuzzleHttp\Client( array( 'handler' => $streamHandler ) );
 				}
 			}
@@ -165,7 +175,9 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 		 * @throws \Exception
 		 */
 		private function getGuzzle() {
-			/** @var $gResponse \GuzzleHttp\Psr7\Response */
+            /** @noinspection PhpUndefinedClassInspection */
+            /** @noinspection PhpUndefinedNamespaceInspection */
+            /** @var $gResponse \GuzzleHttp\Psr7\Response */
 			$gResponse          = null;
 			$this->RESPONSE_RAW = null;
 			$gBody              = null;
@@ -182,36 +194,48 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 			return $this;
 		}
 
-		/**
-		 * @return NETCURL_DRIVER_GUZZLEHTTP
-		 * @throws \Exception
-		 */
+        /**
+         * @param $gRequest
+         *
+         * @return NETCURL_DRIVER_GUZZLEHTTP
+         * @throws \Exception
+         */
 		private function getRenderedGuzzleResponse($gRequest) {
 			$this->WORKER_DATA  = array( 'worker' => $this->DRIVER, 'request' => $gRequest );
-			$gHeaders           = $gRequest->getHeaders();
-			$gBody              = $gRequest->getBody()->getContents();
-			$this->HTTP_STATUS  = $gRequest->getStatusCode();
-			$this->HTTP_MESSAGE = $gRequest->getReasonPhrase();
-			$this->RESPONSE_RAW .= "HTTP/" . $gRequest->getProtocolVersion() . " " . $this->HTTP_STATUS . " " . $this->HTTP_MESSAGE . "\r\n";
-			$this->RESPONSE_RAW .= "X-NetCurl-ClientDriver: " . $this->DRIVER_ID . "\r\n";
-			if ( is_array( $gHeaders ) ) {
-				foreach ( $gHeaders as $hParm => $hValues ) {
-					$this->RESPONSE_RAW .= $hParm . ": " . implode( "\r\n", $hValues ) . "\r\n";
-				}
-			}
-			$this->RESPONSE_RAW .= "\r\n" . $gBody;
+			if (method_exists($gRequest, 'getHeaders')) {
+                $gHeaders           = $gRequest->getHeaders();
+                /** @noinspection PhpUndefinedMethodInspection */
+                $gBody              = $gRequest->getBody()->getContents();
+                /** @noinspection PhpUndefinedMethodInspection */
+                $this->HTTP_STATUS  = $gRequest->getStatusCode();
+                /** @noinspection PhpUndefinedMethodInspection */
+                $this->HTTP_MESSAGE = $gRequest->getReasonPhrase();
+                /** @noinspection PhpUndefinedMethodInspection */
+                $this->RESPONSE_RAW .= "HTTP/" . $gRequest->getProtocolVersion() . " " . $this->HTTP_STATUS . " " . $this->HTTP_MESSAGE . "\r\n";
+                $this->RESPONSE_RAW .= "X-NetCurl-ClientDriver: " . $this->DRIVER_ID . "\r\n";
+                if (is_array($gHeaders)) {
+                    foreach ($gHeaders as $hParm => $hValues) {
+                        $this->RESPONSE_RAW .= $hParm . ": " . implode("\r\n", $hValues) . "\r\n";
+                    }
+                }
+                $this->RESPONSE_RAW .= "\r\n" . $gBody;
 
-			// Prevent problems during authorization. Unsupported media type checks defaults to application/json
-			if ( $this->HAS_AUTHENTICATION && $this->HTTP_STATUS == 415 ) {
-				$contentTypeRequest = $gRequest->getHeader( 'content-type' );
-				if ( empty( $contentTypeRequest ) ) {
-					$this->setContentType();
-				} else {
-					$this->setContentType( $contentTypeRequest );
-				}
+                // Prevent problems during authorization. Unsupported media type checks defaults to application/json
+                if ($this->HAS_AUTHENTICATION && $this->HTTP_STATUS == 415) {
+                    /** @noinspection PhpUndefinedMethodInspection */
+                    $contentTypeRequest = $gRequest->getHeader('content-type');
+                    if (empty($contentTypeRequest)) {
+                        $this->setContentType();
+                    } else {
+                        $this->setContentType($contentTypeRequest);
+                    }
 
-				return $this->getGuzzle();
-			}
+                    return $this->getGuzzle();
+                }
+            } else {
+                throw new \Exception( NETCURL_CURL_CLIENTNAME . "-".__FUNCTION__." exception: Guzzle driver missing proper methods like getHeaders(), can not render response", $this->NETWORK->getExceptionCode( 'NETCURL_GUZZLE_RESPONSE_EXCEPTION' ) );
+            }
+			return $this;
 		}
 
 		/**
@@ -253,8 +277,16 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 			return $postOptions;
 		}
 
-		private function getGuzzleRequest() {
-			/** @var \Psr\Http\Message\ResponseInterface $gRequest */
+		/** @noinspection PhpUndefinedClassInspection */
+        /** @noinspection PhpUndefinedNamespaceInspection */
+        /**
+         * @return \Psr\Http\Message\ResponseInterface
+         * @throws \Exception
+         */
+        private function getGuzzleRequest() {
+            /** @noinspection PhpUndefinedClassInspection */
+            /** @noinspection PhpUndefinedNamespaceInspection */
+            /** @var \Psr\Http\Message\ResponseInterface $gRequest */
 			$gRequest = null;
 			if ( method_exists( $this->DRIVER, 'request' ) ) {
 				if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_GET ) {
@@ -281,8 +313,16 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 			return $this->RESPONSE_RAW;
 		}
 
-		public function executeNetcurlRequest( $url = '', $postData = array(), $postMethod = NETCURL_POST_METHODS::METHOD_GET, $postDataType = NETCURL_POST_DATATYPES::DATATYPE_NOT_SET ) {
-
+        /**
+         * @param string $url
+         * @param array  $postData
+         * @param int    $postMethod
+         * @param int    $postDataType
+         *
+         * @return NETCURL_DRIVER_GUZZLEHTTP
+         * @throws \Exception
+         */
+        public function executeNetcurlRequest( $url = '', $postData = array(), $postMethod = NETCURL_POST_METHODS::METHOD_GET, $postDataType = NETCURL_POST_DATATYPES::DATATYPE_NOT_SET ) {
 			$this->REQUEST_URL    = $url;
 			$this->POST_DATA      = $postData;
 			$this->POST_METHOD    = $postMethod;

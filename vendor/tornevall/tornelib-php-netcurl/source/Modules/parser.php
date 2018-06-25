@@ -16,9 +16,11 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
- * @version 6.0.2
+ * @version 6.0.3
  */
 
 namespace TorneLIB;
@@ -40,6 +42,14 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		 */
 		private $NETCURL_CONTENT_IS_DOMCONTENT = false;
 
+		/**
+		 * Do not include Dom content in the basic parser (default = true, as it might destroy output data in legacy products)
+		 *
+		 * @var bool $NETCURL_PROHIBIT_DOMCONTENT_PARSE
+		 * @since 6.0.3
+		 */
+		private $NETCURL_PROHIBIT_DOMCONTENT_PARSE = true;
+
 
 		/** @var MODULE_IO $IO */
 		private $IO;
@@ -52,13 +62,19 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		 *
 		 * @param string $htmlContent
 		 * @param string $contentType
+		 * @param array  $flags
 		 *
 		 * @throws \Exception
 		 * @since 6.0.0
 		 */
-		public function __construct( $htmlContent = '', $contentType = '' ) {
+		public function __construct( $htmlContent = '', $contentType = '', $flags = array() ) {
 			$this->NETWORK = new MODULE_NETWORK();
 			$this->IO      = new MODULE_IO();
+
+			if (isset($flags['NETCURL_PROHIBIT_DOMCONTENT_PARSE'])) {
+				$this->NETCURL_PROHIBIT_DOMCONTENT_PARSE = $flags['NETCURL_PROHIBIT_DOMCONTENT_PARSE'];
+			}
+
 			/*if (is_null($this->IO)) {
 				throw new \Exception( NETCURL_CURL_CLIENTNAME . " is missing MODULE_IO for rendering post data content", $this->NETWORK->getExceptionCode( 'NETCURL_PARSE_XML_FAILURE' ) );
 			}*/
@@ -67,10 +83,12 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 			$this->PARSE_CONTENT_OUTPUT = $this->getContentByTest();
 		}
 
-		/**
-		 * @return null|string
-		 * @since 6.0.0
-		 */
+        /**
+         * @param bool $returnAsIs
+         *
+         * @return null|string
+         * @since 6.0.0
+         */
 		public function getContentByJson( $returnAsIs = false ) {
 			try {
 				if ( $returnAsIs ) {
@@ -83,6 +101,27 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 			}
 
 			return null;
+		}
+
+		/**
+		 * Enable/disable the parsing of Dom content
+		 *
+		 * @param bool $domContentProhibit
+		 *
+		 * @since 6.0.3
+		 */
+		public function setDomContentParser( $domContentProhibit = false ) {
+			$this->NETCURL_PROHIBIT_DOMCONTENT_PARSE = $domContentProhibit;
+		}
+
+		/**
+		 * Get the status of dom content parser mode
+		 *
+		 * @return bool
+		 * @since 6.0.3
+		 */
+		public function getDomContentParser() {
+			return $this->NETCURL_PROHIBIT_DOMCONTENT_PARSE;
 		}
 
 		/**
@@ -152,17 +191,18 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		 * @since 6.0.0
 		 */
 		private function getNull( $testData = '' ) {
-			if (is_array($testData) || is_object($testData)) {
+			if ( is_array( $testData ) || is_object( $testData ) ) {
 				return $testData;
 			}
+
 			return empty( $testData ) ? null : $testData;
 		}
 
-		/**
-		 * @return null|void
-		 * @throws \Exception
-		 * @since 6.0.0
-		 */
+        /**
+         * @return array|null|string
+         * @throws \Exception
+         * @since 6.0.0
+         */
 		private function getContentByTest() {
 			$returnNonNullValue = null;
 
@@ -174,7 +214,7 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 				$returnNonNullValue = $respond;
 			} else if ( ! is_null( $respond = $this->getContentByYaml() ) ) {
 				$returnNonNullValue = $respond;
-			} else if ( ! is_null( $response = $this->getDomElements() ) ) {
+			} else if ( ! $this->NETCURL_PROHIBIT_DOMCONTENT_PARSE && ! is_null( $response = $this->getDomElements() ) ) {
 				return $response;
 			}
 
@@ -185,7 +225,7 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 		/**
 		 * Experimental: Convert DOMDocument to an array
 		 *
-		 * @param array $childNode
+		 * @param array  $childNode
 		 * @param string $getAs
 		 *
 		 * @return array
@@ -197,13 +237,14 @@ if ( ! class_exists( 'NETCURL_PARSER' ) && ! class_exists( 'TorneLIB\NETCURL_PAR
 			$childIdArray        = array();
 			$returnContext       = "";
 			if ( is_object( $childNode ) ) {
-				/** @var \DOMNodeList $nodeItem */
-				foreach ( $childNode as $nodeItem ) {
+				/** @var \DOMElement $nodeItem */
+                foreach ( $childNode as $nodeItem ) {
 					if ( is_object( $nodeItem ) ) {
 						if ( isset( $nodeItem->tagName ) ) {
 							if ( strtolower( $nodeItem->tagName ) == "title" ) {
 								$elementData['pageTitle'] = $nodeItem->nodeValue;
 							}
+
 							$elementData            = array( 'tagName' => $nodeItem->tagName );
 							$elementData['id']      = $nodeItem->getAttribute( 'id' );
 							$elementData['name']    = $nodeItem->getAttribute( 'name' );
