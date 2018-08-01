@@ -312,7 +312,7 @@ function woocommerce_gateway_resurs_bank_init() {
 									$purchaseFailOrderId = wc_get_order_id_by_payment_id( $_GET['pRef'] );
 									$purchareFailOrder   = new WC_Order( $purchaseFailOrderId );
 									$purchareFailOrder->update_status( 'failed', __( 'Resurs Bank denied purchase', 'WC_Payment_Gateway' ) );
-                                    $checkoutPurchaseFailTest = get_post_meta( $orderId, 'soft_purchase_fail', true );
+                                    update_post_meta( $purchaseFailOrderId, 'soft_purchase_fail', true );
 									WC()->session->set( "resursCreatePass", 0 );
 									$returnResult['success']     = true;
 									$returnResult['errorString'] = "Denied by Resurs";
