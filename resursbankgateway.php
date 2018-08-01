@@ -3341,7 +3341,6 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 			/** @var $rb \Resursbank\RBEcomPHP\ResursBank */
 			$rb                = initializeResursFlow();
 
-            // soft_purchase_fail
             $checkoutPurchaseFailTest = get_post_meta( $orderId, 'soft_purchase_fail', true );
 
             try {
