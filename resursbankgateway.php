@@ -3405,8 +3405,10 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 	$renderedResursData = '';
 	if ( ! isWooCommerce3() ) {
 		$resursPaymentId = get_post_meta( $order->id, 'paymentId', true );
+		$orderId = $order->id;
 	} else {
 		$resursPaymentId = get_post_meta( $order->get_id(), 'paymentId', true );
+		$orderId = $order->get_id();
 	}
 	if ( ! empty( $resursPaymentId ) ) {
 		$hasError = "";
