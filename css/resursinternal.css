@@ -341,3 +341,8 @@ a.labelBoot:focus, a.labelBoot:hover {
     border-top: 1px solid lightgrey;
     border-bottom: 1px solid lightgrey;
 }
+
+.resursPaymentDemoRestrictionView {
+    font-size: 12px !important;
+    color: #990000 !important;
+}

@@ -582,6 +582,7 @@ if ( is_admin() ) {
         class {$class_name} extends WC_Resurs_Bank {
             public function __construct()
             {
+                global \$woocommerce;
                 \$this->isDemo = isResursDemo();
                 //\$this->allMethods = array();
                 \$this->overRideIsAvailable = true;
@@ -676,6 +677,19 @@ if ( is_admin() ) {
                     \$this->description = \$this->title;
                 }
     
+  	            if (isset(\$woocommerce->cart)) {
+                    \$cart = \$woocommerce->cart;
+		            \$total = \$cart->total;
+		            if (\$total > 0) {
+			            if (\$total >= \$this->maxLimit || \$total <= \$this->minLimit)
+			            {
+			                \$isDemo = ' <span class="resursPaymentDemoRestrictionView" title="'.__('In demo mode, this payment method is shown regardless of the total payment amount and the payment method limits', 'WC_Payment_Gateway').'">['.__('Restricted', 'WC_Payment_Gateway').']</span>';
+			                \$this->description .= \$isDemo;
+			                \$this->title .= \$isDemo;
+			            }
+		            }
+	            }
+
                 if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
                     add_action( 'woocommerce_update_options_payment_gateways_' . \$this->id, array( \$this, 'process_admin_options' ) );
                 } else {
@@ -951,7 +965,7 @@ if ( is_admin() ) {
                     \$minLimit = '{$minLimit}';
                     \$maxLimit = '{$maxLimit}';
                     if (\$total > 0) {
-                        if (\$total >= \$maxLimit || \$total <= \$minLimit)
+                        if (\$total > \$maxLimit || \$total < \$minLimit)
                         {
                             if (!isResursTest()) {
                                 return \$methods;

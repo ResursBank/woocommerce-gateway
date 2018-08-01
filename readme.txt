@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.9.1
 Requires PHP: 5.4
-Stable tag: 2.2.6
+Stable tag: 2.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,14 +68,12 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
-= 2.2.6 =
+= 2.2.7 =
 
-    * [WOO-238] - Extend WooComPlugin to show detailed exceptions during callback registration when success is false
-    * [WOO-239] - Make ready for EComPHP 1.3.9-milestone
-    * [WOO-241] - Simplified shopflow getaddress malfunctioning when entering invalid government ids
-    * [WOO-242] - Unexistent payments during callbacks fails when trying to update status (getPayment throws 404)
-    * [WOO-243] - WC_Cart::get_cart_url deprecated since WC 2.5
-    * [WOO-244] - Deprecated way of making payloads prevents correct payment id in hosted flow
+    * [WOO-245] - Payload handling is deprecated. Plugin should use EComPHP "API" instead of self generated payloads.
+    * [WOO-252] - min- max control of amount seems not to work properly
+    * [WOO-255] - WC 3.4 Configuration (forms adjusted, left table is larger than the right one)
+    * [WOO-254] - If callbacks are removed from somewhere else and WC tries to list callbacks outside cache time
 
 
 == Upgrade Notice ==

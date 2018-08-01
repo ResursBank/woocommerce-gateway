@@ -302,6 +302,7 @@ function showResursCallbackArray(cbArrayResponse) {
         if (typeof cbArrayResponse["response"]["getMyCallbacksResponse"] !== "undefined") {
             var callbackListSize = 0;
             var callbackResponse = cbArrayResponse["response"]["getMyCallbacksResponse"];
+
             var isCached = callbackResponse["cached"];
             $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                 callbackListSize++;
@@ -322,9 +323,12 @@ function showResursCallbackArray(cbArrayResponse) {
                 callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
                 $RB('#callbackContent').html(callbackContent);
             } else {
-                if (adminJs["requestForCallbacks"] === "1") {
-                    $RB('#callbackContent').html('<b><i>' + adminJs["noCallbacksSet"] + '</i></b>');
-                }
+                // Affects what?
+                //$RB('#callbackContent').html('<b><i>' + adminJs["noCallbacksSet"] + '</i></b>');
+                //if (adminJs["requestForCallbacks"] == "1") {}
+                callbackContent = '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
+                $RB('#callbackContent').html(callbackContent);
+
             }
         } else {
             $RB('#callbackContent').html("");
