@@ -3416,7 +3416,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 			/** @var $rb \Resursbank\RBEcomPHP\ResursBank */
 			$rb                = initializeResursFlow();
 			try {
-                //$rb->setFlag('GET_PAYMENT_BY_SOAP');
+                $rb->setFlag('GET_PAYMENT_BY_SOAP');
 				$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
 			} catch (\Exception $e) {
 			    $errorMessage = $e->getMessage();
