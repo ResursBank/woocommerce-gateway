@@ -4,7 +4,7 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.4.0
+ * WC Tested up to: 3.4.4
  * Version: 2.2.7
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
@@ -571,7 +571,7 @@ function woocommerce_gateway_resurs_bank_init() {
 								if ( ! empty( $login ) && ! empty( $password ) ) {
 									$lastFetchedCacheTime = time() - get_transient( "resurs_callback_templates_cache_last" );
 									$lastFetchedCache     = get_transient( "resurs_callback_templates_cache" );
-									$_REQUEST['force'] = true;
+									$_REQUEST['force']    = true;
 									if ( $lastFetchedCacheTime >= 86400 || empty( $lastFetchedCache ) || isset( $_REQUEST['force'] ) ) {
 										try {
 											$responseArray['callbacks'] = $this->flow->getCallBacksByRest( true );
@@ -1467,7 +1467,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				try {
 					// Going payload-arrays in ECOMPHP is deprecated so we'll do it right
 					$hostedFlowUrl = $this->flow->createPayment( $shortMethodName, $bookDataArray );
-
 				} catch ( \Exception $hostedException ) {
 					$hostedFlowBookingFailure = true;
 					wc_add_notice( $hostedException->getMessage(), 'error' );
@@ -3403,6 +3402,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 
 	$orderInfoShown     = true;
 	$renderedResursData = '';
+	$orderId = null;
 	if ( ! isWooCommerce3() ) {
 		$resursPaymentId = get_post_meta( $order->id, 'paymentId', true );
 		$orderId = $order->id;
