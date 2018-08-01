@@ -7,7 +7,7 @@
  * @package RBEcomPHP
  * @author Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch 1.3
- * @version 1.3.9
+ * @version 1.3.11.1
  * @link https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @license Apache License
@@ -26,6 +26,7 @@ if ( file_exists( __DIR__ . "/../../vendor/autoload.php" ) ) {
 	require_once( __DIR__ . '/../../vendor/autoload.php' );
 }
 
+use \TorneLIB\MODULE_NETBITS;
 use \TorneLIB\TorneLIB_Crypto;
 use \TorneLIB\TorneLIB_NetBits;
 use \TorneLIB\TorneLIB_Network;
@@ -34,10 +35,10 @@ use \TorneLIB\CURL_POST_AS;
 
 // Globals starts here
 if ( ! defined( 'ECOMPHP_VERSION' ) ) {
-	define( 'ECOMPHP_VERSION', '1.3.9' );
+	define( 'ECOMPHP_VERSION', '1.3.11.2' );
 }
 if ( ! defined( 'ECOMPHP_MODIFY_DATE' ) ) {
-	define( 'ECOMPHP_MODIFY_DATE', '20180509' );
+	define( 'ECOMPHP_MODIFY_DATE', '20180525' );
 }
 
 /**
@@ -1323,9 +1324,14 @@ class ResursBank {
 	 * @since 1.0.1
 	 */
 	public function getCallBacksByRest( $ReturnAsArray = false ) {
+		$ResursResponse = array();
 		$this->InitializeServices();
 		try {
-			$ResursResponse = $this->CURL->getParsedResponse( $this->CURL->doGet( $this->getCheckoutUrl() . "/callbacks" ) );
+			$callbackResponse = $this->CURL->getParsed( $this->CURL->doGet( $this->getCheckoutUrl() . "/callbacks" ) );
+			$callbacksBody    = trim( $this->CURL->getBody() );
+			if ( ! empty( $callbackResponse ) ) {
+				$ResursResponse = $this->CURL->getParsed();
+			}
 		} catch ( \Exception $restException ) {
 			throw new \Exception( $restException->getMessage(), $restException->getCode() );
 		}
@@ -1349,9 +1355,11 @@ class ResursBank {
 			return $ResursResponseArray;
 		}
 		$hasUpdate = false;
-		foreach ( $ResursResponse as $responseObject ) {
-			if ( isset( $responseObject->eventType ) && $responseObject->eventType == "UPDATE" ) {
-				$hasUpdate = true;
+		if ( is_array( $ResursResponse ) || is_object( $ResursResponse ) ) {
+			foreach ( $ResursResponse as $responseObject ) {
+				if ( isset( $responseObject->eventType ) && $responseObject->eventType == "UPDATE" ) {
+					$hasUpdate = true;
+				}
 			}
 		}
 		if ( ! $hasUpdate ) {
@@ -1420,6 +1428,7 @@ class ResursBank {
 	 */
 	public function setRegisterCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $callbackUriTemplate = "", $digestData = array(), $basicAuthUserName = null, $basicAuthPassword = null ) {
 		$this->InitializeServices();
+		$registerBy = "unknown";
 		if ( is_array( $this->validateExternalUrl ) && count( $this->validateExternalUrl ) ) {
 			$isValidAddress = $this->validateExternalAddress();
 			if ( $isValidAddress == RESURS_CALLBACK_REACHABILITY::IS_NOT_REACHABLE ) {
@@ -1471,6 +1480,7 @@ class ResursBank {
 		}
 		////// DIGEST CONFIGURATION FINISH
 		if ( $this->registerCallbacksViaRest && $callbackType !== RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE ) {
+			$registerBy = 'rest';
 			$serviceUrl        = $this->getCheckoutUrl() . "/callbacks";
 			$renderCallbackUrl = $serviceUrl . "/" . $renderCallback['eventType'];
 			if ( isset( $renderCallback['eventType'] ) ) {
@@ -1479,6 +1489,7 @@ class ResursBank {
 			$renderedResponse = $this->CURL->doPost( $renderCallbackUrl, $renderCallback, CURL_POST_AS::POST_AS_JSON );
 			$code             = $this->CURL->getResponseCode($renderedResponse);
 		} else {
+			$registerBy = 'wsdl';
 			$renderCallbackUrl = $this->getServiceUrl( "registerEventCallback" );
 			// We are not using postService here, since we are dependent on the response code rather than the response itself
 			$renderedResponse = $this->CURL->doPost( $renderCallbackUrl )->registerEventCallback( $renderCallback );
@@ -1495,44 +1506,84 @@ class ResursBank {
 			return true;
 		}
 
-		throw new \Exception("setRegisterCallbackException ($code): Could not register callback event " . $renderCallback['eventType'] . ' (service: '.$registerBy.')', $code);
+		throw new \Exception( "setRegisterCallbackException ($code): Could not register callback event " . $renderCallback['eventType'] . ' (service: ' . $registerBy . ')', $code );
 	}
 
 	/**
 	 * Simplifies removal of callbacks even when they does not exist at first.
 	 *
 	 * @param int $callbackType
+	 * @param bool $isMultiple Supports bitmasked unregistration of callbacks (setting callbackType 255 and this value to true, will register all callbacks in one call)
 	 *
 	 * @return bool
 	 * @throws \Exception
 	 * @since 1.0.1
 	 * @since 1.1.1
 	 */
-	public function unregisterEventCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET ) {
+	public function unregisterEventCallback( $callbackType = RESURS_CALLBACK_TYPES::CALLBACK_TYPE_NOT_SET, $isMultiple = false ) {
+		$hasAtLeastOne = false;
+
+		if ($isMultiple) {
+			$this->BIT = new MODULE_NETBITS();
+			$this->BIT->setBitStructure(
+				array(
+					'UNFREEZE'                => RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UNFREEZE,
+					'ANNULMENT'               => RESURS_CALLBACK_TYPES::CALLBACK_TYPE_ANNULMENT,
+					'AUTOMATIC_FRAUD_CONTROL' => RESURS_CALLBACK_TYPES::CALLBACK_TYPE_AUTOMATIC_FRAUD_CONTROL,
+					'FINALIZATION'            => RESURS_CALLBACK_TYPES::CALLBACK_TYPE_FINALIZATION,
+					'TEST'                    => RESURS_CALLBACK_TYPES::CALLBACK_TYPE_TEST,
+					'UPDATE'                  => RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE,
+					'BOOKED'                  => RESURS_CALLBACK_TYPES::CALLBACK_TYPE_BOOKED,
+				)
+			);
+			$callbackTypes = $this->BIT->getBitArray($callbackType);
+		}
+
 		$callbackType = $this->getCallbackTypeString( $callbackType );
 
-		if ( ! empty( $callbackType ) ) {
-			if ( $this->registerCallbacksViaRest ) {
-				$this->InitializeServices();
-				$serviceUrl        = $this->getCheckoutUrl() . "/callbacks";
-				$renderCallbackUrl = $serviceUrl . "/" . $callbackType;
-				$curlResponse      = $this->CURL->doDelete( $renderCallbackUrl );
-				$curlCode          = $this->CURL->getResponseCode( $curlResponse );
-				if ( $curlCode >= 200 && $curlCode <= 250 ) {
-					return true;
-				}
-			} else {
-				$this->InitializeServices();
-				// Not using postService here, since we're
-				$curlResponse = $this->CURL->doGet( $this->getServiceUrl( 'unregisterEventCallback' ) )->unregisterEventCallback( array( 'eventType' => $callbackType ) );
-				$curlCode     = $this->CURL->getResponseCode( $curlResponse );
-				if ( $curlCode >= 200 && $curlCode <= 250 ) {
-					return true;
+		if ( ! isset( $callbackTypes ) || ! is_array( $callbackTypes ) ) {
+			$callbackTypes = array( $callbackType );
+		}
+
+		$unregisteredCallbacks = array();
+		foreach ($callbackTypes as $callbackType) {
+			if ( ! empty( $callbackType ) ) {
+				if ( $this->registerCallbacksViaRest && $callbackType != 'UPDATE' ) {
+					$this->InitializeServices();
+					$serviceUrl        = $this->getCheckoutUrl() . "/callbacks";
+					$renderCallbackUrl = $serviceUrl . "/" . $callbackType;
+					$curlResponse      = $this->CURL->doDelete( $renderCallbackUrl );
+					$curlCode          = $this->CURL->getCode( $curlResponse );
+					if ( $curlCode >= 200 && $curlCode <= 250 ) {
+						if (!$isMultiple) {
+							return true;
+						} else {
+							$hasAtLeastOne = true;
+							$unregisteredCallbacks[$callbackType] = true;
+						}
+					}
+				} else {
+					$this->InitializeServices();
+					// Not using postService here, since we're
+					$curlResponse = $this->CURL->doGet( $this->getServiceUrl( 'unregisterEventCallback' ) )->unregisterEventCallback( array( 'eventType' => $callbackType ) );
+					$curlCode     = $this->CURL->getCode( $curlResponse );
+					if ( $curlCode >= 200 && $curlCode <= 250 ) {
+						if (!$isMultiple) {
+							return true;
+						} else {
+							$hasAtLeastOne = true;
+							$unregisteredCallbacks[$callbackType] = true;
+						}
+					}
 				}
 			}
 		}
 
-		return false;
+		if (!$isMultiple) {
+			return false;
+		} else {
+			return $unregisteredCallbacks;
+		}
 	}
 
 	/**
@@ -2294,7 +2345,7 @@ class ResursBank {
 			// Get internal exceptions before http responses
 			$exceptionTestBody = @json_decode($this->CURL->getResponseBody());
 			if (isset($exceptionTestBody->errorCode) && isset($exceptionTestBody->description)) {
-				throw new \Exception($exceptionTestBody->errorMessage, $exceptionTestBody->errorCode, $e);
+				throw new \Exception($exceptionTestBody->description, $exceptionTestBody->errorCode, $e);
 			}
 			throw new \Exception($e->getMessage(), $e->getCode(), $e);
 		}
@@ -3486,46 +3537,82 @@ class ResursBank {
 			return $myFlowResponse;
 		} else if ( $myFlow == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT ) {
 			$checkoutUrl      = $this->getCheckoutUrl() . "/checkout/payments/" . $payment_id_or_method;
-			$checkoutResponse = $this->CURL->doPost( $checkoutUrl, $this->Payload, CURL_POST_AS::POST_AS_JSON );
-			$parsedResponse   = $this->CURL->getParsedResponse( $checkoutResponse );
-			$responseCode     = $this->CURL->getResponseCode( $checkoutResponse );
-			// Do not trust response codes!
-			if ( isset( $parsedResponse->paymentSessionId ) ) {
-				$this->paymentSessionId = $parsedResponse->paymentSessionId;
-				$this->SpecLines        = array();
+			try {
+				$checkoutResponse = $this->CURL->doPost( $checkoutUrl, $this->Payload, CURL_POST_AS::POST_AS_JSON );
+				$parsedResponse   = $this->CURL->getParsedResponse( $checkoutResponse );
+				$responseCode     = $this->CURL->getResponseCode( $checkoutResponse );
+				// Do not trust response codes!
+				if ( isset( $parsedResponse->paymentSessionId ) ) {
+					$this->paymentSessionId = $parsedResponse->paymentSessionId;
+					$this->SpecLines        = array();
 
-				return $parsedResponse->html;
-			} else {
-				if ( isset( $parsedResponse->error ) ) {
-					$error[] = $parsedResponse->error;
+					return $parsedResponse->html;
+				} else {
+					if ( isset( $parsedResponse->error ) ) {
+						$error[] = $parsedResponse->error;
+					}
+					if ( isset( $parsedResponse->message ) ) {
+						$error[] = $parsedResponse->message;
+					}
+					throw new \Exception( implode( "\n", $error ), $responseCode );
 				}
-				if ( isset( $parsedResponse->message ) ) {
-					$error[] = $parsedResponse->message;
-				}
-				throw new \Exception( implode( "\n", $error ), $responseCode );
+			} catch (\Exception $e) {
+				$this->handlePostErrors($e);
 			}
 
 			return $parsedResponse;
 		} else if ( $myFlow == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW ) {
 			$hostedUrl      = $this->getHostedUrl();
-			$hostedResponse = $this->CURL->doPost( $hostedUrl, $this->Payload, CURL_POST_AS::POST_AS_JSON );
-			$parsedResponse = $this->CURL->getParsedResponse( $hostedResponse );
-			// Do not trust response codes!
-			if ( isset( $parsedResponse->location ) ) {
-				$this->resetPayload();
+			try {
+				$hostedResponse = $this->CURL->doPost( $hostedUrl, $this->Payload, CURL_POST_AS::POST_AS_JSON );
+				$parsedResponse = $this->CURL->getParsedResponse( $hostedResponse );
+				// Do not trust response codes!
+				if ( isset( $parsedResponse->location ) ) {
+					$this->resetPayload();
 
-				return $parsedResponse->location;
-			} else {
-				if ( isset( $parsedResponse->error ) ) {
-					$error[] = $parsedResponse->error;
+					return $parsedResponse->location;
+				} else {
+					if ( isset( $parsedResponse->error ) ) {
+						$error[] = $parsedResponse->error;
+					}
+					if ( isset( $parsedResponse->message ) ) {
+						$error[] = $parsedResponse->message;
+					}
+					$responseCode = $this->CURL->getResponseCode( $hostedResponse );
+					throw new \Exception( implode( "\n", $error ), $responseCode );
 				}
-				if ( isset( $parsedResponse->message ) ) {
-					$error[] = $parsedResponse->message;
-				}
-				$responseCode = $this->CURL->getResponseCode( $hostedResponse );
-				throw new \Exception( implode( "\n", $error ), $responseCode );
+				throw new \Exception( "Could not parse location of hosted flow (missing)", 404 );
+			} catch (\Exception $e) {
+				$this->handlePostErrors($e);
 			}
-			throw new \Exception( "Could not parse location of hosted flow (missing)", 404 );
+		}
+	}
+
+	/**
+	 * Handle post errors and extract eventual errors from a http body
+	 *
+	 * @param $e
+	 *
+	 * @throws \Exception
+	 * @since 1.0.38
+	 * @since 1.1.38
+	 * @since 1.3.11
+	 * @since 2.0.0
+	 */
+	private function handlePostErrors($e) {
+		$bodyTest = $this->CURL->getBody();
+		if (is_string($bodyTest) && !empty($bodyTest)) {
+			$bodyErrTest = json_decode($bodyTest);
+			if (is_object($bodyErrTest)) {
+				if (isset($bodyErrTest->message) &&isset($bodyErrTest->status)) {
+					throw new \Exception($bodyErrTest->message, $bodyErrTest->status);
+				} else if (isset($bodyErrTest->description)) {
+					throw new \Exception($bodyErrTest->description, isset($bodyErrTest->errorCode) ? $bodyErrTest->errorCode: 500);
+				}
+			}
+		}
+		if (method_exists($e, 'getMessage')) {
+			throw new \Exception($e->getMessage(), $e->getCode(), $e);
 		}
 	}
 
@@ -3654,7 +3741,7 @@ class ResursBank {
 		if ( ! empty( $this->createPaymentExecuteCommand ) ) {
 			return $this->createPaymentExecute( $this->createPaymentExecuteCommand, $this->Payload );
 		} else {
-			throw new \Exception( "setRequiredExecute() must used before you use this function", 403 );
+			throw new \Exception( "createPaymentDelay() must used before you use this function", 403 );
 		}
 	}
 

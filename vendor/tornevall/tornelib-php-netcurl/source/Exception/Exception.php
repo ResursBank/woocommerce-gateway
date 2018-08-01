@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  */
 
@@ -25,11 +27,14 @@ namespace TorneLIB;
 if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS' ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS' ) ) {
 	/**
 	 * Class NETCURL_EXCEPTIONS
+	 *
 	 * @package TorneLIB
 	 */
 	abstract class NETCURL_EXCEPTIONS {
 		const NETCURL_NO_ERROR = 0;
 		const NETCURL_EXCEPTION_IT_WORKS = 1;
+        const NETCURL_EXCEPTION_IT_DOESNT_WORK = 500;
+
 
 		/**
 		 * @deprecated
@@ -69,16 +74,18 @@ if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS' ) && ! class_exists( 'TorneLI
 		const NETCURL_DOMDOCUMENT_EMPTY = 1016;
 		const NETCURL_NO_DRIVER_AVAILABLE_NOT_EVEN_CURL = 1017;
 		const NETCURL_UNEXISTENT_FUNCTION = 1018;
-
 		const NETCURL_PARSE_XML_FAILURE = 1019;
 		const NETCURL_IO_PARSER_MISSING = 1020;
+        const NETCURL_GUZZLE_RESPONSE_EXCEPTION = 1021;
+        const NETCURL_WP_REQUEST_ERROR = 1022;
 	}
 }
 
 if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS' ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS' ) ) {
 	/**
 	 * Class TORNELIB_NETCURL_EXCEPTIONS
-	 * @package TorneLIB
+	 *
+	 * @package    TorneLIB
 	 * @deprecated Use NETCURL_EXCEPTIONS
 	 */
 	abstract class TORNELIB_NETCURL_EXCEPTIONS extends NETCURL_EXCEPTIONS {

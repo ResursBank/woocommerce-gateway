@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  */
 
@@ -25,8 +27,9 @@ namespace TorneLIB;
 if ( ! class_exists( 'NETCURL_HTTP_OBJECT' ) && ! class_exists( 'TorneLIB\NETCURL_HTTP_OBJECT' ) ) {
 	/**
 	 * Class NETCURL_CURLOBJECT
+	 *
 	 * @package TorneLIB
-	 * @since 6.0.20
+	 * @since   6.0.20
 	 */
 	class NETCURL_HTTP_OBJECT {
 
@@ -75,7 +78,8 @@ if ( ! class_exists( 'NETCURL_HTTP_OBJECT' ) && ! class_exists( 'TorneLIB\NETCUR
 if ( ! class_exists( 'TORNELIB_CURLOBJECT' ) && ! class_exists( 'TorneLIB\TORNELIB_CURLOBJECT' ) ) {
 	/**
 	 * Class TORNELIB_CURLOBJECT
-	 * @package TorneLIB
+	 *
+	 * @package    TorneLIB
 	 * @deprecated 6.0.20 Use NETCURL_HTTP_OBJECT
 	 */
 	class TORNELIB_CURLOBJECT extends NETCURL_HTTP_OBJECT {

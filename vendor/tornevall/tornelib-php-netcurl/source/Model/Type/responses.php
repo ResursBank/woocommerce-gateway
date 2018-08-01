@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  */
 
@@ -25,8 +27,9 @@ namespace TorneLIB;
 if ( ! class_exists( 'NETCURL_RESPONSETYPE' ) && ! class_exists( 'TorneLIB\NETCURL_RESPONSETYPE' ) ) {
 	/**
 	 * Class NETCURL_RESPONSETYPE Assoc or object?
+	 *
 	 * @package TorneLIB
-	 * @since 6.0.20
+	 * @since   6.0.20
 	 */
 	abstract class NETCURL_RESPONSETYPE {
 		const RESPONSETYPE_ARRAY = 0;
@@ -37,7 +40,8 @@ if ( ! class_exists( 'NETCURL_RESPONSETYPE' ) && ! class_exists( 'TorneLIB\NETCU
 
 		/**
 		 * Class TORNELIB_CURL_RESPONSETYPE
-		 * @package TorneLIB
+		 *
+		 * @package    TorneLIB
 		 * @deprecated 6.0.20 Use NETCURL_RESPONSETYPE
 		 */
 		abstract class TORNELIB_CURL_RESPONSETYPE extends NETCURL_RESPONSETYPE {

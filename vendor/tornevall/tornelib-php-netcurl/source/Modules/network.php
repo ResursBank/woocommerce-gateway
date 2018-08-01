@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  * @version 6.0.6
  */
@@ -35,9 +37,10 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 	 * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
 	 *
 	 * Class MODULE_NETWORK
-	 * @link https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
-	 * @link https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
-	 * @link https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
+	 *
+	 * @link    https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
+	 * @link    https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
+	 * @link    https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
 	 *
 	 * @package TorneLIB
 	 */
@@ -78,7 +81,7 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 		function __construct() {
 			// Initiate and get client headers.
 			$this->renderProxyHeaders();
-			$this->BIT = new TorneLIB_NetBits();
+			$this->BIT = new MODULE_NETBITS();
 		}
 
 		/**
@@ -120,8 +123,8 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 		 * Try to fetch git tags from git URLS
 		 *
 		 * @param string $gitUrl
-		 * @param bool $cleanNonNumerics Normally you do not want to strip anything. This boolean however, decides if we will include non numerical version data in the returned array
-		 * @param bool $sanitizeNumerics If we decide to not include non numeric values from the version tag array (by $cleanNonNumerics), the tags will be sanitized in a preg_replace filter that will the keep numerics in the content only (with $cleanNonNumerics set to false, this boolen will have no effect)
+		 * @param bool   $cleanNonNumerics Normally you do not want to strip anything. This boolean however, decides if we will include non numerical version data in the returned array
+		 * @param bool   $sanitizeNumerics If we decide to not include non numeric values from the version tag array (by $cleanNonNumerics), the tags will be sanitized in a preg_replace filter that will the keep numerics in the content only (with $cleanNonNumerics set to false, this boolen will have no effect)
 		 *
 		 * @return array
 		 * @throws \Exception
@@ -134,15 +137,15 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 			// Clean up all user auth data in URL if exists
 			$gitUrl = preg_replace( "/\/\/(.*?)@/", '//', $gitUrl );
 			/** @var $CURL Tornevall_cURL */
-			$CURL = new Tornevall_cURL();
+			$CURL = new MODULE_CURL();
 
 			/** @noinspection PhpUnusedLocalVariableInspection */
 			$code             = 0;
 			$exceptionMessage = "";
 			try {
 				$gitGet  = $CURL->doGet( $gitUrl );
-				$code    = intval( $CURL->getResponseCode() );
-				$gitBody = $CURL->getResponseBody( $gitGet );
+				$code    = intval( $CURL->getCode() );
+				$gitBody = $CURL->getBody( $gitGet );
 				if ( $code >= 200 && $code <= 299 && ! empty( $gitBody ) ) {
 					$fetchFail = false;
 					preg_match_all( "/refs\/tags\/(.*?)\n/s", $gitBody, $tagMatches );
@@ -239,7 +242,7 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 		 * As some functions still uses this, we chose to keep it, but do it "right".
 		 *
 		 * @param string $requestedUrlHost
-		 * @param bool $validateHost Validate that the hostname do exist
+		 * @param bool   $validateHost Validate that the hostname do exist
 		 *
 		 * @return array
 		 * @throws \Exception
@@ -274,17 +277,16 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 		/**
 		 * Extract urls from a text string and return as array
 		 *
-		 * @param $stringWithUrls
-		 * @param int $offset
-		 * @param int $urlLimit
+		 * @param       $stringWithUrls
+		 * @param int   $offset
+		 * @param int   $urlLimit
 		 * @param array $protocols
-		 * @param bool $preventDuplicates
+		 * @param bool  $preventDuplicates
 		 *
 		 * @return array
 		 */
 		public function getUrlsFromHtml( $stringWithUrls, $offset = - 1, $urlLimit = - 1, $protocols = array( "http" ), $preventDuplicates = true ) {
 			$returnArray = array();
-			$urls        = array();
 
 			// Pick up all urls by protocol (adding http will include https too)
 			foreach ( $protocols as $protocol ) {
@@ -359,9 +361,9 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 		 * Prepare addon parameters for setting a cookie
 		 *
 		 * @param string $path
-		 * @param null $prefix
-		 * @param null $domain
-		 * @param null $secure
+		 * @param null   $prefix
+		 * @param null   $domain
+		 * @param null   $secure
 		 */
 		public function setCookieParameters( $path = "/", $prefix = null, $domain = null, $secure = null ) {
 			$this->cookieDefaultPath = $path;
@@ -392,6 +394,7 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 
 		/**
 		 * Render a list of client ip addresses (if exists). This requires that the server exposes the REMOTE_ADDR
+		 *
 		 * @return bool If successful, this is true
 		 */
 		private function renderProxyHeaders() {
@@ -471,8 +474,26 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 		 * @since 6.0.15
 		 */
 		public static function getCurrentServerProtocol( $returnProtocol = false ) {
-			/** @noinspection PhpDynamicAsStaticMethodCallInspection */
-			return self::getProtocol( $returnProtocol );
+			if ( isset( $_SERVER['HTTPS'] ) ) {
+				if ( $_SERVER['HTTPS'] == "on" ) {
+					if ( ! $returnProtocol ) {
+						return true;
+					} else {
+						return "https";
+					}
+				} else {
+					if ( ! $returnProtocol ) {
+						return false;
+					} else {
+						return "http";
+					}
+				}
+			}
+			if ( ! $returnProtocol ) {
+				return false;
+			} else {
+				return "http";
+			}
 		}
 
 		/**
@@ -532,7 +553,7 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 		 * Get reverse octets from ip address
 		 *
 		 * @param string $ipAddr
-		 * @param bool $returnIpType
+		 * @param bool   $returnIpType
 		 *
 		 * @return int|string
 		 */
@@ -670,7 +691,8 @@ if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETW
 if ( ! class_exists( 'TorneLIB_Network' ) && ! class_exists( 'TorneLIB\TorneLIB_Network' ) ) {
 	/**
 	 * Class MODULE_CURL
-	 * @package TorneLIB
+	 *
+	 * @package    TorneLIB
 	 * @deprecated 6.0.20 Use MODULE_NETWORK
 	 */
 	class TorneLIB_Network extends MODULE_NETWORK {

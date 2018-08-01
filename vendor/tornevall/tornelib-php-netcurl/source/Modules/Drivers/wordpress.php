@@ -43,7 +43,8 @@ if ( ! class_exists( 'NETCURL_DRIVER_WORDPRESS' ) && ! class_exists( 'TorneLIB\N
 		/** @var array Inbound parameters in the format array, object or whatever this driver takes */
 		private $PARAMETERS = array();
 
-		/** @var \WP_Http $DRIVER */
+        /** @noinspection PhpUndefinedClassInspection */
+        /** @var \WP_Http $DRIVER When this class exists, it should be referred to WP_Http */
 		private $DRIVER;
 
 		/** @var \stdClass $TRANSPORT Wordpress transport layer */
@@ -134,15 +135,26 @@ if ( ! class_exists( 'NETCURL_DRIVER_WORDPRESS' ) && ! class_exists( 'TorneLIB\N
 			return $this->HTTP_MESSAGE;
 		}
 
-		private function initializeClass() {
-			$this->DRIVER    = new \WP_Http();
-			$this->TRANSPORT = $this->DRIVER->_get_first_available_transport( array() );
+        /**
+         * @throws \Exception
+         */
+        private function initializeClass()
+        {
+            /** @noinspection PhpUndefinedClassInspection */
+            $this->DRIVER = new \WP_Http();
+            if (method_exists($this->DRIVER, '_get_first_available_transport')) {
+                $this->TRANSPORT = $this->DRIVER->_get_first_available_transport(array());
+            }
+            if (empty($this->TRANSPORT)) {
+                throw new \Exception(NETCURL_CURL_CLIENTNAME . " " . __FUNCTION__ . " exception: Could not find any available transport for WordPress Driver",
+                    $this->NETWORK->getExceptionCode('NETCURL_WP_TRANSPORT_ERROR'));
+            }
+        }
 
-			if ( empty( $this->TRANSPORT ) ) {
-				throw new \Exception( NETCURL_CURL_CLIENTNAME . " " . __FUNCTION__ . " exception: Could not find any available transport for WordPress Driver", $this->NETWORK->getExceptionCode( 'NETCURL_WP_TRANSPORT_ERROR' ) );
-			}
-		}
-
+        /**
+         * @return $this
+         * @throws \Exception
+         */
 		private function getWp() {
 			$postThis = array( 'body' => $this->POST_DATA );
 			if ( $this->POST_DATA_TYPE == NETCURL_POST_DATATYPES::DATATYPE_JSON ) {
@@ -151,30 +163,62 @@ if ( ! class_exists( 'NETCURL_DRIVER_WORDPRESS' ) && ! class_exists( 'TorneLIB\N
 			}
 
 			$wpResponse = $this->getWpResponse($postThis);
+            /** @noinspection PhpUndefinedClassInspection */
 
-			/** @var $httpResponse \WP_HTTP_Requests_Response */
+            /** @var $httpResponse \WP_HTTP_Requests_Response */
 			$httpResponse = $wpResponse['http_response'];
-			/** @var $httpReponseObject \Requests_Response */
-			$httpResponseObject = $httpResponse->get_response_object();
-			$this->RESPONSE_RAW = isset($httpResponseObject->raw) ? $httpResponseObject->raw : null;
+
+			if (method_exists($httpResponse, 'get_response_object')) {
+                /** @noinspection PhpUndefinedClassInspection */
+                /** @var $httpReponseObject \Requests_Response */
+                $httpResponseObject = $httpResponse->get_response_object();
+                $this->RESPONSE_RAW = isset($httpResponseObject->raw) ? $httpResponseObject->raw : null;
+            } else {
+                throw new \Exception(NETCURL_CURL_CLIENTNAME . " " . __FUNCTION__ . " exception: Wordpress driver seem to miss get_response_object",
+                    $this->NETWORK->getExceptionCode('NETCURL_WP_REQUEST_ERROR'));
+            }
 
 			return $this;
 		}
 
-		private function getWpResponse($postData) {
-			$wpResponse = null;
-			if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_HEAD ) {
-				$wpResponse = $this->DRIVER->head( $this->REQUEST_URL, $postThis );
-			} else if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_POST ) {
-				$wpResponse = $this->DRIVER->post( $this->REQUEST_URL, $postThis );
-			} else if ( $this->POST_METHOD == NETCURL_POST_METHODS::METHOD_REQUEST ) {
-				$wpResponse = $this->DRIVER->request( $this->REQUEST_URL, $postThis );
-			} else {
-				$wpResponse = $this->DRIVER->get( $this->REQUEST_URL, $postThis );
-			}
-			return $wpResponse;
-		}
+        /**
+         * @param $postData
+         *
+         * @return null
+         */
+        private function getWpResponse($postData)
+        {
+            $wpResponse = null;
+            if ($this->POST_METHOD == NETCURL_POST_METHODS::METHOD_HEAD) {
+                if (method_exists($this->DRIVER, 'head')) {
+                    $wpResponse = $this->DRIVER->head($this->REQUEST_URL, $postData);
+                }
+            } elseif ($this->POST_METHOD == NETCURL_POST_METHODS::METHOD_POST) {
+                if (method_exists($this->DRIVER, 'post')) {
+                    $wpResponse = $this->DRIVER->post($this->REQUEST_URL, $postData);
+                }
+            } elseif ($this->POST_METHOD == NETCURL_POST_METHODS::METHOD_REQUEST) {
+                if (method_exists($this->DRIVER, 'request')) {
+                    $wpResponse = $this->DRIVER->request($this->REQUEST_URL, $postData);
+                }
+            } else {
+                if (method_exists($this->DRIVER, 'get')) {
+                    $wpResponse = $this->DRIVER->get($this->REQUEST_URL, $postData);
+                }
+            }
 
+            return $wpResponse;
+        }
+
+        /**
+         * @param string $url
+         * @param array  $postData
+         * @param int    $postMethod
+         * @param int    $postDataType
+         *
+         * @return NETCURL_DRIVER_WORDPRESS
+         * @throws \Exception
+         */
 		public function executeNetcurlRequest( $url = '', $postData = array(), $postMethod = NETCURL_POST_METHODS::METHOD_GET, $postDataType = NETCURL_POST_DATATYPES::DATATYPE_NOT_SET ) {
 			$this->REQUEST_URL    = $url;
 			$this->POST_DATA      = $postData;

@@ -16,7 +16,9 @@
  * limitations under the License.
  *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
- * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a major version too.
+ * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
+ * major version too.
+ *
  * @package TorneLIB
  */
 
@@ -29,7 +31,7 @@ if ( ! class_exists( 'NETCURL_AUTH_TYPES' ) && ! class_exists( 'TorneLIB\NETCURL
 	 * The authentication types listed in this section defines what is fully supported by the module. In other cases you might be on your own.
 	 *
 	 * @package TorneLIB
-	 * @since 6.0.20
+	 * @since   6.0.20
 	 */
 	abstract class NETCURL_AUTH_TYPES {
 		const AUTHTYPE_NONE = 0;
@@ -38,7 +40,7 @@ if ( ! class_exists( 'NETCURL_AUTH_TYPES' ) && ! class_exists( 'TorneLIB\NETCURL
 }
 if ( ! class_exists( 'CURL_AUTH_TYPES' ) && ! class_exists( 'TorneLIB\CURL_AUTH_TYPES' ) ) {
 	/**
-	 * @package TorneLIB
+	 * @package    TorneLIB
 	 * @deprecated 6.0.20 Use NETCURL_AUTH_TYPES
 	 */
 	abstract class CURL_AUTH_TYPES extends NETCURL_AUTH_TYPES {

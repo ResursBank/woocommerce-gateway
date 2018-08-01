@@ -312,7 +312,10 @@ function woocommerce_gateway_resurs_bank_init() {
 									$purchaseFailOrderId = wc_get_order_id_by_payment_id( $_GET['pRef'] );
 									$purchareFailOrder   = new WC_Order( $purchaseFailOrderId );
 									$purchareFailOrder->update_status( 'failed', __( 'Resurs Bank denied purchase', 'WC_Payment_Gateway' ) );
-									WC()->session->set( "resursCreatePass", 0 );
+
+                                    update_post_meta( $purchaseFailOrderId, 'soft_purchase_fail', true );
+
+                                    WC()->session->set( "resursCreatePass", 0 );
 									$returnResult['success']     = true;
 									$returnResult['errorString'] = "Denied by Resurs";
 									$returnResult['errorCode']   = "200";
@@ -3324,40 +3327,57 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 
 	$orderInfoShown     = true;
 	$renderedResursData = '';
+	$orderId = null;
 	if ( ! isWooCommerce3() ) {
 		$resursPaymentId = get_post_meta( $order->id, 'paymentId', true );
+		$orderId = $order->id;
 	} else {
 		$resursPaymentId = get_post_meta( $order->get_id(), 'paymentId', true );
+		$orderId = $order->get_id();
 	}
 	if ( ! empty( $resursPaymentId ) ) {
 		$hasError = "";
 		try {
 			/** @var $rb \Resursbank\RBEcomPHP\ResursBank */
 			$rb                = initializeResursFlow();
-			try {
-				$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
-			} catch (\Exception $e) {
-			    $errorMessage = $e->getMessage();
-			    if ($e->getCode() == 8) {
-			        // REFERENCED_DATA_DONT_EXISTS
+
+            // soft_purchase_fail
+            $checkoutPurchaseFailTest = get_post_meta( $orderId, 'soft_purchase_fail', true );
+
+            try {
+                //$rb->setFlag('GET_PAYMENT_BY_SOAP');
+                $resursPaymentInfo = $rb->getPayment($resursPaymentId);
+            } catch (\Exception $e) {
+                $errorMessage = $e->getMessage();
+                if ($e->getCode() == 8) {
+                    // REFERENCED_DATA_DONT_EXISTS
                     $errorMessage = __("Referenced data don't exist", 'WC_Payment_Gateway') . "<br>\n<br>\n";
-                    $errorMessage .= __("This error might occur when for example a payment doesn't exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed", 'WC_Payment_Gateway');
+                    $errorMessage .= __("This error might occur when for example a payment doesn't exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed",
+                        'WC_Payment_Gateway');
                 }
-			    echo '
+
+                if ($checkoutPurchaseFailTest == "1") {
+                    $errorMessage = __('The order was denied at Resurs Bank and therefore has not been created', 'WC_Payment_Gateway');
+                }
+
+                echo '
                 <div class="clear">&nbsp;</div>
                 <div class="order_data_column_container resurs_orderinfo_container resurs_orderinfo_text">
                     <div style="padding: 30px;border:none;" id="resursInfo">
-                        <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url( __FILE__ ) . '/img/rb_logo.png' . '"></span>
+                        <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
                         <fieldset>
-                        <b>'.__('Following error ocurred when we tried to fetch information about the payment', 'WC_Payment_Gateway').'</b><br>
+                        <b>' . __('Following error ocurred when we tried to fetch information about the payment',
+                        'WC_Payment_Gateway') . '</b><br>
                         <br>
-                        '.$errorMessage.'<br>
+                        ' . $errorMessage . '<br>
                     </fieldset>
                     </div>
                 </div>
 			    ';
-			    return;
-			}
+
+                return;
+            }
+
 			$currentWcStatus   = $order->get_status();
 			$notIn             = array( "completed", "cancelled", "refunded" );
 			if ( ! $rb->canDebit( $resursPaymentInfo ) && $rb->getIsDebited( $resursPaymentInfo ) && ! in_array( $currentWcStatus, $notIn ) ) {
