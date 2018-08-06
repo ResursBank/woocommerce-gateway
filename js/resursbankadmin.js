@@ -19,10 +19,10 @@ $RB(document).ready(function ($) {
         }
     }
     if (jQuery('.nav-tab').length > 0) {
-        jQuery('.nav-tab').each(function(i, elm) {
+        jQuery('.nav-tab').each(function (i, elm) {
             if (elm.innerHTML == "Resurs Bank") {
                 if (typeof adminJs["resursBankTabLogo"] !== "undefined") {
-                    elm.innerHTML = '<img src="'+adminJs["resursBankTabLogo"]+'">';
+                    elm.innerHTML = '<img src="' + adminJs["resursBankTabLogo"] + '">';
                 }
             }
         });
@@ -54,6 +54,7 @@ var flowRules = {
     "no": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
     "fi": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
 };
+
 function adminResursChangeFlowByCountry(o) {
     var country = o.value.toLowerCase();
     var ruleList = flowRules[country];
@@ -102,6 +103,7 @@ function resursEditProtectedField(currentField, ns) {
         alert("Fail (" + x + ", " + y + ")");
     });
 }
+
 function resursSaveProtectedField(currentFieldId, ns, cb) {
     var processId = $RB('#process_' + currentFieldId);
     if (processId.length > 0) {
@@ -170,6 +172,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
         }
     });
 }
+
 function resursProtectedFieldToggle(currentField) {
     if (typeof arguments[1] !== "undefined") {
         if (arguments[1] === "show") {
@@ -188,6 +191,7 @@ function resursProtectedFieldToggle(currentField) {
         $RB('#' + currentField + "_hidden").toggle("medium");
     }
 }
+
 function runResursAdminCallback(callbackName) {
     var setArg;
     var argData = {};
@@ -347,6 +351,7 @@ var startResursCallbacks = 0;
 var callbacksNotReceivedCheck = false;
 var runningCbTest = null;
 var lastRecvContent = "";
+
 function doUpdateResursCallbacks() {
     startResursCallbacks = Math.round(new Date() / 1000);
     if ($RB('#receivedCallbackConfirm').length > 0) {
@@ -360,7 +365,32 @@ function doUpdateResursCallbacks() {
     runResursAdminCallback("setMyCallbacks", "updateResursCallbacksResult");
 }
 
+function doGetRWcurlTags() {
+    $RB('#rwocurltag').html('<img src="' + adminJs.resursSpinner + '">');
+    $RB('#rwocurltag').show();
+    runResursAdminCallback("getNetCurlTag", "getNetCurlTag");
+}
+function doGetRWecomTags() {
+    $RB('#rwoecomtag').html('<img src="' + adminJs.resursSpinner + '">');
+    $RB('#rwoecomtag').show();
+    runResursAdminCallback("getEcomTag", "getEcomTag");
+}
+
+function getNetCurlTag(info) {
+    if (typeof info["response"] !== "undefined" && info["response"]["getNetCurlTagResponse"] != "undefined") {
+        var curlTagData = info["response"]["getNetCurlTagResponse"];
+        $RB('#rwocurltag').html("<b>netcurl response:</b> " + curlTagData["netCurlTag"]);
+    }
+}
+function getEcomTag(info) {
+    if (typeof info["response"] !== "undefined" && info["response"]["getEcomTagResponse"] != "undefined") {
+        var ecomTagData = info["response"]["getEcomTagResponse"];
+        $RB('#rwoecomtag').html("<b>ecomphp response:</b> " + ecomTagData["ecomTag"]);
+    }
+}
+
 var timeBeforeSlowCallbacks = 15;
+
 function noCallbacksReceived() {
     var stopResursCallbacks = Math.round(new Date() / 1000);
     var resursCallbacksTimeDiff = stopResursCallbacks - startResursCallbacks;
@@ -432,6 +462,7 @@ function wfcComboControl(checkboxObject) {
         $RB('#shopFlowRecommendedSettings').hide('medium');
     }
 }
+
 function changeResursFee(feeObject) {
     var feeId = feeObject.id.substr(4);
     var currentValue = feeObject.innerHTML;
@@ -452,6 +483,7 @@ function feeValueTrigger(event, targetColumn, sourceField) {
         resetRbFeeValue(targetColumn, sourceField);
     }
 }
+
 function resetRbFeeValue(targetColumn, sourceField) {
     $RB('#' + targetColumn).html(sourceField.value);
     var feeId = targetColumn.substr(4);
@@ -477,11 +509,11 @@ function resetRbFeeValue(targetColumn, sourceField) {
 
 function resursRemoveAnnuityElements(notThisElement) {
     var skipThis = "annuitySelector" + notThisElement;
-    $RB("select[id*='annuitySelector']").each(function(i,e) {
+    $RB("select[id*='annuitySelector']").each(function (i, e) {
         if (typeof e.id !== "undefined") {
-            if (skipThis !=  e.id) {
+            if (skipThis != e.id) {
                 $RB('#' + e.id).remove();
-                var curElementId = e.id.substr(e.id.indexOf('_')+1);
+                var curElementId = e.id.substr(e.id.indexOf('_') + 1);
                 $RB('#annuityClick_' + curElementId).removeClass("status-enabled");
                 $RB('#annuityClick_' + curElementId).addClass("status-disabled");
             }

@@ -4,6 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once(__DIR__ . "/vendor/autoload.php");
+
 load_plugin_textdomain( 'WC_Payment_Gateway', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
 if ( ! function_exists( 'getResursWooFormFields' ) ) {
