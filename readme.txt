@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.9.1
 Requires PHP: 5.4
-Stable tag: 2.2.7
+Stable tag: 2.2.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,7 +17,7 @@ This is a payment gateway for Resurs Bank, that supports three Resurs Bank shopf
 
  * Compatible with WooCommerce 2.6 up to 3.3.x
  * Plugin verified with PHP version 5.4 - 7.1
- * Addon scripts verified with PHP 5.3 - 7.2 (EComPHP 1.3.x and NetCURL 6.0.20)
+ * Addon scripts verified with PHP 5.3 - 7.2 (EComPHP 1.3.x and NetCURL 6.0.20+)
 
 
 Requirements and content:
