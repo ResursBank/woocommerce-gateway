@@ -4,7 +4,7 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
- * WC Tested up to: 3.4.0
+ * WC Tested up to: 3.4.4
  * Version: 2.2.7
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
@@ -312,6 +312,7 @@ function woocommerce_gateway_resurs_bank_init() {
 									$purchaseFailOrderId = wc_get_order_id_by_payment_id( $_GET['pRef'] );
 									$purchareFailOrder   = new WC_Order( $purchaseFailOrderId );
 									$purchareFailOrder->update_status( 'failed', __( 'Resurs Bank denied purchase', 'WC_Payment_Gateway' ) );
+                                    update_post_meta( $purchaseFailOrderId, 'soft_purchase_fail', true );
 									WC()->session->set( "resursCreatePass", 0 );
 									$returnResult['success']     = true;
 									$returnResult['errorString'] = "Denied by Resurs";
@@ -570,7 +571,7 @@ function woocommerce_gateway_resurs_bank_init() {
 								if ( ! empty( $login ) && ! empty( $password ) ) {
 									$lastFetchedCacheTime = time() - get_transient( "resurs_callback_templates_cache_last" );
 									$lastFetchedCache     = get_transient( "resurs_callback_templates_cache" );
-									$_REQUEST['force'] = true;
+									$_REQUEST['force']    = true;
 									if ( $lastFetchedCacheTime >= 86400 || empty( $lastFetchedCache ) || isset( $_REQUEST['force'] ) ) {
 										try {
 											$responseArray['callbacks'] = $this->flow->getCallBacksByRest( true );
@@ -1474,7 +1475,6 @@ function woocommerce_gateway_resurs_bank_init() {
 				try {
 					// Going payload-arrays in ECOMPHP is deprecated so we'll do it right
 					$hostedFlowUrl = $this->flow->createPayment( $shortMethodName, $bookDataArray );
-
 				} catch ( \Exception $hostedException ) {
 					$hostedFlowBookingFailure = true;
 					wc_add_notice( $hostedException->getMessage(), 'error' );
@@ -3410,10 +3410,13 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 
 	$orderInfoShown     = true;
 	$renderedResursData = '';
+	$orderId = null;
 	if ( ! isWooCommerce3() ) {
 		$resursPaymentId = get_post_meta( $order->id, 'paymentId', true );
+		$orderId = $order->id;
 	} else {
 		$resursPaymentId = get_post_meta( $order->get_id(), 'paymentId', true );
+		$orderId = $order->get_id();
 	}
 	if ( ! empty( $resursPaymentId ) ) {
 		$hasError = "";
@@ -3421,6 +3424,7 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
 			/** @var $rb \Resursbank\RBEcomPHP\ResursBank */
 			$rb                = initializeResursFlow();
 			try {
+                $rb->setFlag('GET_PAYMENT_BY_SOAP');
 				$resursPaymentInfo = $rb->getPayment( $resursPaymentId );
 			} catch (\Exception $e) {
 			    $errorMessage = $e->getMessage();
@@ -3429,7 +3433,13 @@ function resurs_order_data_info( $order = null, $orderDataInfoAfter = null ) {
                     $errorMessage = __("Referenced data don't exist", 'WC_Payment_Gateway') . "<br>\n<br>\n";
                     $errorMessage .= __("This error might occur when for example a payment doesn't exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed", 'WC_Payment_Gateway');
                 }
-			    echo '
+
+                $checkoutPurchaseFailTest = get_post_meta( $orderId, 'soft_purchase_fail', true );
+			    if ($checkoutPurchaseFailTest == "1") {
+                    $errorMessage = __('The order was denied at Resurs Bank and therefore has not been created', 'WC_Payment_Gateway');
+                }
+
+                echo '
                 <div class="clear">&nbsp;</div>
                 <div class="order_data_column_container resurs_orderinfo_container resurs_orderinfo_text">
                     <div style="padding: 30px;border:none;" id="resursInfo">
