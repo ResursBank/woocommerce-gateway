@@ -5,12 +5,16 @@ namespace Resursbank\RBEcomPHP;
 /**
  * Class RESURS_DEPRECATED_FLOW Thing with relation to Resurs Bank deprecated flow
  *
+ * WARNING: Use this class at your own risk as it contains glitches!
+ *
  * @package Resursbank\RBEcomPHP
  */
 class RESURS_DEPRECATED_FLOW {
+    private $formTemplateRuleArray;
+    private $templateFieldsByMethodResponse;
 
 
-	/**
+    /**
 	 * Override formTemplateFieldsetRules in case of important needs or unexpected changes
 	 *
 	 * @param $customerType
@@ -173,9 +177,10 @@ class RESURS_DEPRECATED_FLOW {
 	 * @deprecated Build your own integration
 	 */
 	public function getRegEx( $formFieldName = '', $countryCode, $customerType ) {
-		$returnRegEx = array();
+		//$returnRegEx = array();
 
-		$templateRule = $this->getFormTemplateRules();
+        /** @noinspection PhpDeprecationInspection */
+        $templateRule = $this->getFormTemplateRules();
 		$returnRegEx  = $templateRule['regexp'];
 
 		if ( empty( $countryCode ) ) {
@@ -225,7 +230,7 @@ class RESURS_DEPRECATED_FLOW {
 	 * @deprecated Build your own integration
 	 */
 	public function canHideFormField( $formField = "", $canThrow = false ) {
-		$canHideSet = false;
+		//$canHideSet = false;
 
 		if ( is_array( $this->templateFieldsByMethodResponse ) && count( $this->templateFieldsByMethodResponse ) && isset( $this->templateFieldsByMethodResponse['fields'] ) && isset( $this->templateFieldsByMethodResponse['display'] ) ) {
 			$currentDisplay = $this->templateFieldsByMethodResponse['display'];
@@ -268,16 +273,19 @@ class RESURS_DEPRECATED_FLOW {
 	 * @deprecated Build your own integration
 	 */
 	public function getTemplateFieldsByMethodType( $paymentMethodName = "", $customerType = "", $specificType = "" ) {
-		$templateRules     = $this->getFormTemplateRules();
-		$returnedRules     = array();
+        /** @noinspection PhpDeprecationInspection */
+        $templateRules     = $this->getFormTemplateRules();
+		//$returnedRules     = array();
 		$returnedRuleArray = array();
 		/* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
 		if ( is_object( $paymentMethodName ) || is_array( $paymentMethodName ) ) {
 			if ( is_object( $paymentMethodName ) ) {
 				// Prevent arrays to go through here and crash something
 				if ( ! is_array( $customerType ) ) {
-					if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ] ) ) {
-						$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ];
+                    /** @noinspection PhpUndefinedFieldInspection */
+                    if (isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ] ) ) {
+                        /** @noinspection PhpUndefinedFieldInspection */
+                        $returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ];
 					}
 				}
 			} else if ( is_array( $paymentMethodName ) ) {
@@ -315,7 +323,8 @@ class RESURS_DEPRECATED_FLOW {
 	 * @deprecated Build your own integration
 	 */
 	public function getTemplateFieldsByMethod( $paymentMethodName = "" ) {
-		return $this->getTemplateFieldsByMethodType( $this->getPaymentMethodSpecific( $paymentMethodName ) );
+        /** @noinspection PhpDeprecationInspection */
+        return $this->getTemplateFieldsByMethodType( $this->getPaymentMethodSpecific( $paymentMethodName ) );
 	}
 
 	/**
@@ -328,8 +337,7 @@ class RESURS_DEPRECATED_FLOW {
 	 * @deprecated Build your own integration
 	 */
 	public function getFormFieldsByMethod( $paymentMethodName = "" ) {
-		return $this->getTemplateFieldsByMethod( $paymentMethodName );
+        /** @noinspection PhpDeprecationInspection */
+        return $this->getTemplateFieldsByMethod( $paymentMethodName );
 	}
-
-
 }
