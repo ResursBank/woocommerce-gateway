@@ -343,8 +343,8 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 					'default'     => 'https://google.com/?test+landingpage'
 				),
 				'devFlags'                             => array(
-					'title'       => __( 'Special flags (developer mode)', 'WC_Payment_Gateway' ),
-					'description' => __( 'You can set up special sets of flags here (comma separated) to test or reveal parts of the plugin that is otherwise not available (no sensitive information is revealed).', 'WC_Payment_Gateway' ),
+					'title'       => __( 'Special flags', 'WC_Payment_Gateway' ),
+					'description' => __( 'Set up flags here (comma separated) to test, reveal or activate parts of the plugin that is normally not available.', 'WC_Payment_Gateway' ),
 					'type'        => 'text',
 					'default'     => ''
 				),

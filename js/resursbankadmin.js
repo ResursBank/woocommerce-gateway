@@ -442,6 +442,12 @@ function checkLastCallback() {
     runResursAdminCallback("getLastCallbackTimestamp");
 }
 
+function devFlagsControl(o) {
+    if (o.value == '?') {
+        o.title = 'Examples: DISABLE_SSL_VALIDATION, ALLOW_PSP, DEBUG';
+    }
+}
+
 function wfcComboControl(checkboxObject) {
     var currentObject = checkboxObject.id;
     var wfc = $RB('#woocommerce_resurs-bank_waitForFraudControl');
