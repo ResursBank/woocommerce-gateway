@@ -647,8 +647,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         // Ignore and go on
                     }
                 } else {
-                    $this->flow->setSimplifiedPsp(true);
-                    $this->paymentMethods = $this->flow->getPaymentMethods();
+                    $this->paymentMethods = $this->flow->getPaymentMethods(array(), true);
                 }
                 if (is_array($this->paymentMethods)) {
                     foreach ($this->paymentMethods as $methodLoop) {
@@ -1051,12 +1050,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('devResursSimulation', $namespace);
                     echo $this->setTextBox('devSimulateSuccessUrl', $namespace);
                     echo $this->setCheckBox('showResursCheckoutStandardFieldsTest', $namespace);
-                    echo $this->setTextBox('devFlags', $namespace);
                     echo $this->setSeparator(__('Miscellaneous', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
                     echo $this->setCheckBox('showPaymentIdInOrderList', $namespace);
                     echo $this->setSeparator(__('Special test occasions', 'WC_Payment_Gateway'),
                         'configSeparateTitleSmall');
+                    echo $this->setTextBox('devFlags', $namespace, 'onkeyup="devFlagsControl(this)"');
                     echo $this->setCheckBox('demoshopMode', $namespace);
 
                     /*
@@ -1072,7 +1071,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '<input id="cleanResursSettings" type="button" value="' . __('Resurs settings',
                             'WC_Payment_Gateway') . '" onclick="runResursAdminCallback(\'cleanRbSettings\', \'cleanResursSettings\')"> <span id="process_cleanResursSettings"></span><br>';
                     echo '<input id="cleanResursMethods" type="button" value="' . __('Payment methods',
-                            'WC_Payment_Gateway') . '" onclick="runResursAdminCallback(\'cleanRbMethods\', \'cleanResursMethods\')"> <span id="process_cleanResursMethods"><span>';
+                            'WC_Payment_Gateway') . '" onclick="runResursAdminCallback(\'cleanRbMethods\', \'cleanResursMethods\')"> <span id="process_cleanResursMethods"><span><br>';
+                    echo '<input id="cleanResursCache" type="button" value="' . __('Cached data',
+                            'WC_Payment_Gateway') . '" onclick="runResursAdminCallback(\'cleanRbCache\', \'cleanResursCache\')"> <span id="process_cleanResursCache"><span>';
                     echo '</td></tr>';
 
                     echo $this->getPluginInformation();
