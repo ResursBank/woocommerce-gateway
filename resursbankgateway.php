@@ -667,6 +667,14 @@ function woocommerce_gateway_resurs_bank_init()
                                 } else {
                                     $responseArray['html'] = "";
                                 }
+                            } elseif ($_REQUEST['run'] == 'cleanRbCache') {
+                                try {
+                                    $wpdb->query("DELETE FROM " . $wpdb->options . " WHERE option_name LIKE '%resursTemporary%'");
+                                } catch (\Exception $dbException) {
+
+                                }
+                                $myBool                = true;
+                                $responseArray['html'] = "OK";
                             } elseif ($_REQUEST['run'] == 'cleanRbMethods') {
                                 $numDel     = 0;
                                 $numConfirm = 0;
@@ -1286,11 +1294,18 @@ function woocommerce_gateway_resurs_bank_init()
             if ( ! $hasCountry) {
                 try {
                     if ($timeDiff >= 3600) {
-                        $methodList = $this->flow->getPaymentMethods();
-                        set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
-                        set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
+                        $methodList = $this->flow->getPaymentMethods(array(), getResursFlag('ALLOW_PSP') ? true : false);
+                        set_transient("resursTemporaryPaymentMethodsTime", time());
+                        set_transient("resursTemporaryPaymentMethods", serialize($methodList));
                     } else {
                         $methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
+                        // When transient fetching fails.
+                        if (!is_array($methodList) || (is_array($methodList) && !count($methodList))) {
+                            $methodList = $this->flow->getPaymentMethods(array(),
+                                getResursFlag('ALLOW_PSP') ? true : false);
+                            set_transient("resursTemporaryPaymentMethods", serialize($methodList));
+                            set_transient("resursTemporaryPaymentMethodsTime", time());
+                        }
                     }
                 } catch (Exception $e) {
                     $sessionHasErrors    = true;
@@ -1309,6 +1324,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $min          = $method->minLimit;
                         $max          = $method->maxLimit;
                         $customerType = $method->customerType;
+                        $type = $method->type;
                         $specificType = $method->specificType;
 
                         $inheritFields = array(
@@ -1332,6 +1348,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $minMaxError = false;
                         if ($totalAmount >= $min && $totalAmount <= $max) {
                             try {
+                                // TODO: Remove unused variable
                                 $regExRules = $this->flow->getRegEx('', $currentCountry, $customerType);
                             } catch (Exception $e) {
                                 echo $e->getMessage();
@@ -1346,8 +1363,12 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (is_array($customerType) && in_array($customerTypeTest, $customerType)) {
                                     $customerType = $customerTypeTest;
                                 }
-                                $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType,
-                                    $specificType);
+                                if ($type === 'PAYMENT_PROVIDER') {
+                                    $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType, 'PAYMENT_PROVIDER');
+                                } else {
+                                    $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType,
+                                        $specificType);
+                                }
                                 $buttonCssClasses   = "btn btn-info active";
                                 $ajaxUrl            = admin_url('admin-ajax.php');
                                 if ( ! isResursHosted()) {
