@@ -4,8 +4,8 @@ namespace Resursbank\RBEcomPHP;
 
 /**
  * Class RESURS_DEPRECATED_FLOW Thing with relation to Resurs Bank deprecated flow
- *
- * WARNING: Use this class at your own risk as it contains glitches!
+ * WARNING: Use this class at your own risk as it may contain glitches. Maintenance is only done
+ * when really necessary.
  *
  * @package Resursbank\RBEcomPHP
  */
@@ -13,6 +13,14 @@ class RESURS_DEPRECATED_FLOW {
     private $formTemplateRuleArray;
     private $templateFieldsByMethodResponse;
 
+    /**
+     * Defines if we are allowed to skip government id validation. Payment provider methods
+     * normally does this when running in simplified mode. In other cases, validation will be
+     * handled by Resurs Bank and this setting shoudl not be affected by this
+     *
+     * @var bool $canSkipGovernmentIdValidation
+     */
+    private $canSkipGovernmentIdValidation = false;
 
     /**
 	 * Override formTemplateFieldsetRules in case of important needs or unexpected changes
@@ -296,6 +304,7 @@ class RESURS_DEPRECATED_FLOW {
                         /** @noinspection PhpUndefinedFieldInspection */
                         $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
                         if ($paymentMethodName->type === 'PAYMENT_PROVIDER') {
+                            $this->canSkipGovernmentIdValidation = true;
                             $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->type)];
                         }
                     }
@@ -308,6 +317,7 @@ class RESURS_DEPRECATED_FLOW {
                     if (isset($templateRules[strtoupper($customerType)]) && (isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])]) || isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['type'])]))) {
                         $returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ];
                         if ($paymentMethodName['type'] === 'PAYMENT_PROVIDER') {
+                            $this->canSkipGovernmentIdValidation = true;
                             $returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['type'] ) ];
                         }
                     }
@@ -326,6 +336,18 @@ class RESURS_DEPRECATED_FLOW {
         $this->templateFieldsByMethodResponse = $returnedRules;
 
         return $returnedRules;
+    }
+
+    /**
+     * Defines if we are allowed to skip government id validation. Payment provider methods
+     * normally does this when running in simplified mode. In other cases, validation will be
+     * handled by Resurs Bank and this setting shoudl not be affected by this
+     *
+     * @return bool
+     */
+    public function getCanSkipGovernmentIdValidation()
+    {
+        return $this->canSkipGovernmentIdValidation;
     }
 
 	/**
@@ -355,6 +377,4 @@ class RESURS_DEPRECATED_FLOW {
         /** @noinspection PhpDeprecationInspection */
         return $this->getTemplateFieldsByMethod( $paymentMethodName );
 	}
-
-
 }

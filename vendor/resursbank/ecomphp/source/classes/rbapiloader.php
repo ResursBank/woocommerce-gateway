@@ -3378,6 +3378,18 @@ class ResursBank
     }
 
     /**
+     * Defines if we are allowed to skip government id validation. Payment provider methods
+     * normally does this when running in simplified mode. In other cases, validation will be
+     * handled by Resurs Bank and this setting shoudl not be affected by this
+     *
+     * @return bool
+     */
+    public function getCanSkipGovernmentIdValidation()
+    {
+        return $this->E_DEPRECATED->getCanSkipGovernmentIdValidation();
+    }
+
+    /**
      * Get template fields by a specific payment method. This function retrieves the payment method in real time.
      *
      * @param string $paymentMethodName
