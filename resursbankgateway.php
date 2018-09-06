@@ -2407,7 +2407,7 @@ function woocommerce_gateway_resurs_bank_init()
             $validationFail = false;
             foreach ($methodFields as $fieldName) {
                 if (isset($_REQUEST[$fieldName]) && isset($regEx[$fieldName])) {
-                    if ($fieldName == 'applicant-government-id' && empty($_REQUEST[$fieldName])) {
+                    if ($fieldName == 'applicant-government-id' && empty($_REQUEST[$fieldName]) && $flow->getCanSkipGovernmentIdValidation()) {
                         continue;
                     }
                     $regExString = $regEx[$fieldName];
