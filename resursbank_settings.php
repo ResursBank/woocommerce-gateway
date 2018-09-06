@@ -626,7 +626,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 if (empty($countryBasedPaymentMethods[$countryId]) || (is_array($countryBasedPaymentMethods[$countryId]) && ! count($countryBasedPaymentMethods[$countryId]))) {
                                     $demoShopFlow->setAuthentication($countryCredentials['login'],
                                         $countryCredentials['password']);
-                                    $countryBasedPaymentMethods[$countryId] = $demoShopFlow->getPaymentMethods();
+                                    $countryBasedPaymentMethods[$countryId] = $demoShopFlow->getPaymentMethods(array(), true);
                                     foreach ($countryBasedPaymentMethods[$countryId] as $countryObject) {
                                         $countryObject->country = $countryId;
                                     }

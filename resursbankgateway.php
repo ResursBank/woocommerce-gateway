@@ -461,7 +461,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $newFlow = initializeResursFlow($testUser, $testPass);
                             }
                             try {
-                                $newPaymentMethodsList = $newFlow->getPaymentMethods();
+                                $newPaymentMethodsList = $newFlow->getPaymentMethods(array(), true);
                                 $myBool                = true;
                             } catch (Exception $e) {
                                 $myBool    = false;
@@ -511,8 +511,6 @@ function woocommerce_gateway_resurs_bank_init()
                             $responseArray = array();
                             if ($_REQUEST['run'] == "updateResursPaymentMethods") {
                                 try {
-                                    //$responseArray = $this->flow->getPaymentMethods();
-                                    // Do not reveal stuff at this level.
                                     $responseArray = true;
                                 } catch (Exception $e) {
                                     $errorMessage = $e->getMessage();
@@ -1294,15 +1292,14 @@ function woocommerce_gateway_resurs_bank_init()
             if ( ! $hasCountry) {
                 try {
                     if ($timeDiff >= 3600) {
-                        $methodList = $this->flow->getPaymentMethods(array(), getResursFlag('ALLOW_PSP') ? true : false);
+                        $methodList = $this->flow->getPaymentMethods(array(), true);
                         set_transient("resursTemporaryPaymentMethodsTime", time());
                         set_transient("resursTemporaryPaymentMethods", serialize($methodList));
                     } else {
                         $methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
                         // When transient fetching fails.
                         if (!is_array($methodList) || (is_array($methodList) && !count($methodList))) {
-                            $methodList = $this->flow->getPaymentMethods(array(),
-                                getResursFlag('ALLOW_PSP') ? true : false);
+                            $methodList = $this->flow->getPaymentMethods(array(), true);
                             set_transient("resursTemporaryPaymentMethods", serialize($methodList));
                             set_transient("resursTemporaryPaymentMethodsTime", time());
                         }
@@ -1838,7 +1835,7 @@ function woocommerce_gateway_resurs_bank_init()
                 /** @var \Resursbank\RBEcomPHP\ResursBank */
                 $this->flow = initializeResursFlow();
             }
-            $methodList = $this->flow->getPaymentMethods();
+            $methodList = $this->flow->getPaymentMethods(array(), true);
             if (is_array($methodList)) {
                 foreach ($methodList as $methodArray) {
                     if (strtolower($methodArray->id) == strtolower($methodId)) {
@@ -2574,7 +2571,7 @@ function woocommerce_gateway_resurs_bank_init()
         {
             $returnArr = array();
             try {
-                $paymentMethods = $this->flow->getPaymentMethods();
+                $paymentMethods = $this->flow->getPaymentMethods(array(), true);
                 if ( ! $skipGateway) {
                     $this->generate_payment_gateways($paymentMethods);
                 }
@@ -2699,7 +2696,7 @@ function woocommerce_gateway_resurs_bank_init()
             $timeDiff                          = time() - $resursTemporaryPaymentMethodsTime;
             try {
                 if ($timeDiff >= 3600) {
-                    $paymentMethods = $flow->getPaymentMethods();
+                    $paymentMethods = $flow->getPaymentMethods(array(), true);
                     set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
                     set_transient("resursTemporaryPaymentMethods", serialize($paymentMethods), 3600);
                 } else {
@@ -2994,7 +2991,7 @@ function woocommerce_gateway_resurs_bank_init()
             if ($timeDiff >= 3600) {
                 /** @var $theFlow \Resursbank\RBEcomPHP\ResursBank */
                 $theFlow    = initializeResursFlow();
-                $methodList = $theFlow->getPaymentMethods();
+                $methodList = $theFlow->getPaymentMethods(array(), true);
                 set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
                 set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
             } else {
