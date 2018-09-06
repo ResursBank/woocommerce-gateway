@@ -2393,36 +2393,39 @@ function woocommerce_gateway_resurs_bank_init()
             global $woocommerce;
             $className = $_REQUEST['payment_method'];
 
-            $methodName      = str_replace('resurs_bank_nr_', '', $className);
+            $methodName = str_replace('resurs_bank_nr_', '', $className);
             $transientMethod = $this->getTransientMethod($methodName);
-            $countryCode     = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : "";
-            $customerType    = isset($_REQUEST['ssnCustomerType']) ? $_REQUEST['ssnCustomerType'] : "NATURAL";
+            $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : "";
+            $customerType = isset($_REQUEST['ssnCustomerType']) ? $_REQUEST['ssnCustomerType'] : "NATURAL";
 
             /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
-            $flow                = initializeResursFlow();
-            $regEx               = $flow->getRegEx(null, $countryCode, $customerType);
+            $flow = initializeResursFlow();
+            $regEx = $flow->getRegEx(null, $countryCode, $customerType);
             $methodFieldsRequest = $flow->getTemplateFieldsByMethodType($transientMethod, $customerType);
-            $methodFields        = $methodFieldsRequest['fields'];
+            $methodFields = $methodFieldsRequest['fields'];
 
             $validationFail = false;
             foreach ($methodFields as $fieldName) {
                 if (isset($_REQUEST[$fieldName]) && isset($regEx[$fieldName])) {
-                    $regExString       = $regEx[$fieldName];
-                    $regExString       = str_replace('\\\\', '\\', $regExString);
-                    $fieldData         = isset($_REQUEST[$fieldName]) ? trim($_REQUEST[$fieldName]) : "";
+                    if ($fieldName == 'applicant-government-id' && empty($_REQUEST[$fieldName])) {
+                        continue;
+                    }
+                    $regExString = $regEx[$fieldName];
+                    $regExString = str_replace('\\\\', '\\', $regExString);
+                    $fieldData = isset($_REQUEST[$fieldName]) ? trim($_REQUEST[$fieldName]) : "";
                     $invalidFieldError = __('The field',
                             'WC_Payment_Gateway') . " " . $fieldName . " " . __('has invalid information',
-                            'WC_Payment_Gateway') . " (" . (! empty($fieldData) ? $fieldData : __("It can't be empty",
+                            'WC_Payment_Gateway') . " (" . (!empty($fieldData) ? $fieldData : __("It can't be empty",
                             'WC_Payment_Gateway')) . ")";
                     if ($fieldName == "card-number" && empty($fieldData)) {
                         continue;
                     }
                     if (preg_match("/email/", $fieldName)) {
-                        if ( ! filter_var($_REQUEST[$fieldName], FILTER_VALIDATE_EMAIL)) {
+                        if (!filter_var($_REQUEST[$fieldName], FILTER_VALIDATE_EMAIL)) {
                             wc_add_notice($invalidFieldError, 'error');
                         }
                     } else {
-                        if ( ! preg_match('/' . $regExString . '/', $_REQUEST[$fieldName])) {
+                        if (!preg_match('/' . $regExString . '/', $_REQUEST[$fieldName])) {
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
                         }
