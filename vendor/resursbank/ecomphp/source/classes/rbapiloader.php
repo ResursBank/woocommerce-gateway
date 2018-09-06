@@ -57,7 +57,7 @@ if ( ! defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', '1.3.12');
 }
 if ( ! defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20180801');
+    define('ECOMPHP_MODIFY_DATE', '20180905');
 }
 
 /**
@@ -116,6 +116,9 @@ class ResursBank
     private $paymentMethodsIsStrictPsp = false;
     /** @var bool Setting this to true should help developers have their payment method ids returned in a consistent format */
     private $paymentMethodIdSanitizing = false;
+    /** @var bool This setting is true if a flow is about to run through a PSP method */
+    private $paymentMethodIsPsp = false;
+
     /**
      * If a choice of payment method are discovered during the flow, this is set here
      *
@@ -1898,6 +1901,9 @@ class ResursBank
                     if (isset($objectDetails->userErrorMessage)) {
                         $errorTypeDescription = isset($objectDetails->errorTypeDescription) ? "[" . $objectDetails->errorTypeDescription . "] " : "";
                         $exceptionMessage     = $errorTypeDescription . $objectDetails->userErrorMessage;
+                        if (isset($previousException->faultstring)) {
+                            $exceptionMessage .= ' (' . $previousException->getMessage() . ') ';
+                        }
                         $fixableByYou         = isset($objectDetails->fixableByYou) ? $objectDetails->fixableByYou : null;
                         if ($fixableByYou == "false") {
                             $fixableByYou = " (Not fixable by you)";
@@ -1905,7 +1911,6 @@ class ResursBank
                             $fixableByYou = " (Fixable by you)";
                         }
                         $exceptionMessage .= $fixableByYou;
-
                     }
                 }
                 if (empty($exceptionCode) || $exceptionCode == "0") {
@@ -2152,16 +2157,15 @@ class ResursBank
      * Retrieves detailed information on the payment methods available to the representative. Parameters (customerType,
      * language and purchaseAmount) are optional.
      *
-     * @link  https://test.resurs.com/docs/display/ecom/Get+Payment+Methods
-     *
      * @param array $parameters
-     *
+     * @param bool $getAllMethods Manually configured psp-overrider
      * @return mixed
      * @throws \Exception
      * @since 1.0.0
      * @since 1.1.0
+     * @link  https://test.resurs.com/docs/display/ecom/Get+Payment+Methods
      */
-    public function getPaymentMethods($parameters = array())
+    public function getPaymentMethods($parameters = array(), $getAllMethods = false)
     {
         $this->InitializeServices();
 
@@ -2175,7 +2179,7 @@ class ResursBank
         if (is_object($paymentMethods)) {
             $paymentMethods = array($paymentMethods);
         }
-        $realPaymentMethods = $this->sanitizePaymentMethods($paymentMethods);
+        $realPaymentMethods = $this->sanitizePaymentMethods($paymentMethods, $getAllMethods);
 
         return $realPaymentMethods;
     }
@@ -2219,13 +2223,13 @@ class ResursBank
      * correctly on request, when for example PAYMENT_PROVIDER needs to be cleaned up
      *
      * @param array $paymentMethods
-     *
+     * @param bool $getAllMethods Manually configured psp-overrider
      * @return array
      * @since 1.0.24
      * @since 1.1.24
      * @since 1.2.0
      */
-    public function sanitizePaymentMethods($paymentMethods = array())
+    public function sanitizePaymentMethods($paymentMethods = array(), $getAllMethods = false)
     {
         $realPaymentMethods = array();
         $paymentSevice      = $this->getPreferredPaymentFlowService();
@@ -2239,15 +2243,15 @@ class ResursBank
                         $paymentMethods[$paymentMethodIndex]->id);
                 }
 
-                if ($this->paymentMethodsIsStrictPsp) {
+                if (!$getAllMethods && $this->paymentMethodsIsStrictPsp) {
                     if ($type == "PAYMENT_PROVIDER") {
                         $addMethod = false;
                     }
                 } elseif ($paymentSevice != RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
-                    if ($type == "PAYMENT_PROVIDER") {
+                    if (!$getAllMethods && $type == "PAYMENT_PROVIDER") {
                         $addMethod = false;
                     }
-                    if ($this->paymentMethodsHasPsp) {
+                    if ($getAllMethods || $this->paymentMethodsHasPsp) {
                         $addMethod = true;
                     }
                 }
@@ -2633,11 +2637,11 @@ class ResursBank
      */
     public function getPaymentMethodSpecific($specificMethodName = '')
     {
-        $methods     = $this->getPaymentMethods();
+        $methods     = $this->getPaymentMethods(array(), true);
         $methodArray = array();
         if (is_array($methods)) {
             foreach ($methods as $objectMethod) {
-                if (isset($objectMethod->id) && strtolower($objectMethod->id) == strtolower($specificMethodName)) {
+                if (isset($objectMethod->id) && strtolower($objectMethod->id) === strtolower($specificMethodName)) {
                     $methodArray = $objectMethod;
                 }
             }
@@ -3680,6 +3684,9 @@ class ResursBank
             if ($myFlow !== RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
                 $this->desiredPaymentMethod = $payment_id_or_method;
                 $paymentMethodInfo          = $this->getPaymentMethodSpecific($payment_id_or_method);
+                if (isset($paymentMethodInfo->type) && $paymentMethodInfo->type === 'PAYMENT_PROVIDER') {
+                    $this->paymentMethodIsPsp = true;
+                }
                 if (isset($paymentMethodInfo->id)) {
                     $this->PaymentMethod = $paymentMethodInfo;
                 }
@@ -3688,6 +3695,10 @@ class ResursBank
 
         }
         $this->preparePayload($payment_id_or_method, $payload);
+        if ($this->paymentMethodIsPsp) {
+            $this->clearPspCustomerPayload();
+        }
+
         if ($this->forceExecute) {
             $this->createPaymentExecuteCommand = $payment_id_or_method;
 
@@ -4767,6 +4778,15 @@ class ResursBank
     }
 
     //// PAYLOAD HANDLER!
+
+    /**
+     * Clean up payload fields that should not be there if method is PSP and payload is half empty
+     */
+    private function clearPspCustomerPayload() {
+        if (isset($this->Payload['customer']['governmentId']) && empty($this->Payload['customer']['governmentId'])) {
+            unset($this->Payload['customer']['governmentId']);
+        }
+    }
 
     /**
      * Compile user defined payload with payload that may have been pre-set by other calls

@@ -53,6 +53,11 @@ class RESURS_DEPRECATED_FLOW {
 						'applicant-email-address'
 					),
 					'CARD'             => array( 'applicant-government-id', 'card-number' ),
+                    'PAYMENT_PROVIDER' => array(
+                        'applicant-telephone-number',
+                        'applicant-mobile-number',
+                        'applicant-email-address'
+                    ),
 					'REVOLVING_CREDIT' => array(
 						'applicant-government-id',
 						'applicant-telephone-number',
@@ -272,46 +277,52 @@ class RESURS_DEPRECATED_FLOW {
 	 * @return array
 	 * @deprecated Build your own integration
 	 */
-	public function getTemplateFieldsByMethodType( $paymentMethodName = "", $customerType = "", $specificType = "" ) {
+    public function getTemplateFieldsByMethodType( $paymentMethodName = "", $customerType = "", $specificType = "" ) {
         /** @noinspection PhpDeprecationInspection */
         $templateRules     = $this->getFormTemplateRules();
-		//$returnedRules     = array();
-		$returnedRuleArray = array();
-		/* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
-		if ( is_object( $paymentMethodName ) || is_array( $paymentMethodName ) ) {
-			if ( is_object( $paymentMethodName ) ) {
-				// Prevent arrays to go through here and crash something
-				if ( ! is_array( $customerType ) ) {
+        //$returnedRules     = array();
+        $returnedRuleArray = array();
+        /* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
+        if ( is_object( $paymentMethodName ) || is_array( $paymentMethodName ) ) {
+            if ( is_object( $paymentMethodName ) ) {
+                // Prevent arrays to go through here and crash something
+                if ( ! is_array( $customerType ) ) {
                     /** @noinspection PhpUndefinedFieldInspection */
-                    if (isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ] ) ) {
+                    if (isset($templateRules[strtoupper($customerType)]) && (isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)]) || isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->type)]))) {
                         /** @noinspection PhpUndefinedFieldInspection */
-                        $returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName->specificType ) ];
-					}
-				}
-			} else if ( is_array( $paymentMethodName ) ) {
-				/*
-				 * This should probably not happen and the developers should probably also stick to objects as above.
-				 */
-				if ( is_array( $paymentMethodName ) && count( $paymentMethodName ) ) {
-					if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ] ) ) {
-						$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ];
-					}
-				}
-			}
-		} else {
-			if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName ) ] ) ) {
-				$returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $specificType ) ];
-			}
-		}
-		$returnedRules                        = array(
-			'fields'  => $returnedRuleArray,
-			'display' => $templateRules['display'],
-			'regexp'  => $templateRules['regexp']
-		);
-		$this->templateFieldsByMethodResponse = $returnedRules;
+                        $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
+                        if ($paymentMethodName->type === 'PAYMENT_PROVIDER') {
+                            $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->type)];
+                        }
+                    }
+                }
+            } else if ( is_array( $paymentMethodName ) ) {
+                /*
+                 * This should probably not happen and the developers should probably also stick to objects as above.
+                 */
+                if ( is_array( $paymentMethodName ) && count( $paymentMethodName ) ) {
+                    if (isset($templateRules[strtoupper($customerType)]) && (isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])]) || isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['type'])]))) {
+                        $returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['specificType'] ) ];
+                        if ($paymentMethodName['type'] === 'PAYMENT_PROVIDER') {
+                            $returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName['type'] ) ];
+                        }
+                    }
+                }
+            }
+        } else {
+            if ( isset( $templateRules[ strtoupper( $customerType ) ] ) && isset( $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $paymentMethodName ) ] ) ) {
+                $returnedRuleArray = $templateRules[ strtoupper( $customerType ) ]['fields'][ strtoupper( $specificType ) ];
+            }
+        }
+        $returnedRules                        = array(
+            'fields'  => $returnedRuleArray,
+            'display' => $templateRules['display'],
+            'regexp'  => $templateRules['regexp']
+        );
+        $this->templateFieldsByMethodResponse = $returnedRules;
 
-		return $returnedRules;
-	}
+        return $returnedRules;
+    }
 
 	/**
 	 * Get template fields by a specific payment method. This function retrieves the payment method in real time.
@@ -340,4 +351,6 @@ class RESURS_DEPRECATED_FLOW {
         /** @noinspection PhpDeprecationInspection */
         return $this->getTemplateFieldsByMethod( $paymentMethodName );
 	}
+
+
 }
