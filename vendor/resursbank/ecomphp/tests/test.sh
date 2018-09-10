@@ -10,7 +10,7 @@ if [ "$phpunit" = "" ] ; then
 fi
 
 if [ "$phpunit" != "" ] ; then
-        $phpunit $testfile
+        ${phpunit} ${testfile}
 else
         echo "No phpunit.phar found"
 fi

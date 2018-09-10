@@ -1,4 +1,4 @@
-# EComPHP - PHP Gateway for Resurs Bank ECommerce Services #
+# EComPHP 1.3 - PHP Library for Resurs Bank ECommerce #
 
 Resurs EComPHP Gateway is a simplifier for our webservices, with functionality enough to getting started fast. It communicates with the Simplified Flow API for booking payments, Configuration Service and the After Shop Service API for finalizing, crediting and annulments etc. This full version of the gateway communicates with Hosted Payment Flow and Resurs Checkout (supporting both REST and SOAP). A PHP-reference for EComPHP is located at https://test.resurs.com/autodocs/apigen/ecomphp-1.3-develop/, if you want to take a look at our automatically generated documentation.
 

@@ -22,15 +22,19 @@
 namespace TorneLIB;
 
 if ( ! defined('TORNELIB_IO_RELEASE')) {
-    define('TORNELIB_IO_RELEASE', '6.0.12');
+    define('TORNELIB_IO_RELEASE', '6.0.14');
 }
 if ( ! defined('TORNELIB_IO_MODIFY')) {
-    define('TORNELIB_IO_MODIFY', '20180619');
+    define('TORNELIB_IO_MODIFY', '20180822');
 }
 if ( ! defined('TORNELIB_IO_CLIENTNAME')) {
     define('TORNELIB_IO_CLIENTNAME', 'MODULE_IO');
 }
-
+if (!defined('IO_SKIP_AUTOLOAD')) {
+    define('IO_CLASS_EXISTS_AUTOLOAD', true);
+} else {
+    define('IO_CLASS_EXISTS_AUTOLOAD', false);
+}
 if (defined('TORNELIB_IO_REQUIRE')) {
     if ( ! defined('TORNELIB_IO_REQUIRE_OPERATOR')) {
         define('TORNELIB_IO_REQUIRE_OPERATOR', '==');
@@ -43,7 +47,7 @@ if (defined('TORNELIB_IO_REQUIRE')) {
     }
 }
 
-if ( ! class_exists('MODULE_IO') && ! class_exists('TorneLIB\MODULE_IO') && defined('TORNELIB_IO_ALLOW_AUTOLOAD') && TORNELIB_IO_ALLOW_AUTOLOAD === true) {
+if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && defined('TORNELIB_IO_ALLOW_AUTOLOAD') && TORNELIB_IO_ALLOW_AUTOLOAD === true) {
 
     /**
      * Class MODULE_IO
@@ -518,7 +522,7 @@ if ( ! class_exists('MODULE_IO') && ! class_exists('TorneLIB\MODULE_IO') && defi
                 'rootName'       => $rootName,
                 'defaultTagName' => $initialTagName
             );
-            if (class_exists('XML_Serializer') && ! $this->ENFORCE_SIMPLEXML) {
+            if (class_exists('XML_Serializer', IO_CLASS_EXISTS_AUTOLOAD) && ! $this->ENFORCE_SIMPLEXML) {
                 $xmlSerializer = new \XML_Serializer($options);
                 $xmlSerializer->serialize($objectArrayEncoded);
                 $contentRendered = $xmlSerializer->getSerializedData();
@@ -626,7 +630,7 @@ if ( ! class_exists('MODULE_IO') && ! class_exists('TorneLIB\MODULE_IO') && defi
                     }
                 }
             } else {
-                if (class_exists('SimpleXMLElement')) {
+                if (class_exists('SimpleXMLElement', IO_CLASS_EXISTS_AUTOLOAD)) {
                     if (is_string($dataIn) && preg_match("/\<(.*?)\>/s", $dataIn)) {
                         if ($this->ENFORCE_CDATA) {
                             $simpleXML = new \SimpleXMLElement($dataIn, LIBXML_NOCDATA);
@@ -732,7 +736,7 @@ if ( ! class_exists('MODULE_IO') && ! class_exists('TorneLIB\MODULE_IO') && defi
     }
 }
 
-if ( ! class_exists('TorneLIB_IO') && ! class_exists('TorneLIB\TorneLIB_IO')) {
+if ( ! class_exists('TorneLIB_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\TorneLIB_IO', IO_CLASS_EXISTS_AUTOLOAD)) {
     class TorneLIB_IO extends MODULE_IO
     {
     }

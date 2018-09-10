@@ -4,10 +4,10 @@
     "password": "4Em4r5ZQ98x3891D6C19L96TQ72HsisD"
   },
   "availableMethods": {
-    "invoice_legal": "109",
-    "invoice_natural": "112",
-    "card": "110",
-    "card_new": "111"
+    "invoice_legal": "COMPINVOICE",
+    "invoice_natural": "NATURALINVOICE",
+    "card": "CARD",
+    "card_new": "NEWCARD"
   },
   "callbackUrl": "https://test.resurs.com/signdummy/index.php?isCallback=1",
   "signUrl": "https://test.resurs.com/signdummy/index.php?isSigningUrl=1",

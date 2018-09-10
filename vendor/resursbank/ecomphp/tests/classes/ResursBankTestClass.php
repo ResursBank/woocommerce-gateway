@@ -5,7 +5,6 @@ namespace Resursbank\RBEcomPHP;
 
 /**
  * Class RESURS_TEST_BRIDGE Primary test class for setting up and simplify standard tests like order booking etc
- *
  */
 class RESURS_TEST_BRIDGE {
 
@@ -15,6 +14,14 @@ class RESURS_TEST_BRIDGE {
 	/** @var string Shared data filename */
 	private $shareFile;
 
+    /**
+     * RESURS_TEST_BRIDGE constructor.
+     *
+     * @param string $userName
+     * @param string $password
+     *
+     * @throws \Exception
+     */
 	function __construct( $userName = "ecomphpPipelineTest", $password = "4Em4r5ZQ98x3891D6C19L96TQ72HsisD" ) {
 		$this->shareFile = __DIR__ . "/../storage/shared.serialize";
 		$this->ECOM      = new ResursBank( $userName, $password, RESURS_ENVIRONMENTS::ENVIRONMENT_TEST, true );
@@ -79,8 +86,10 @@ class RESURS_TEST_BRIDGE {
 		if ( ! empty( $key ) ) {
 			$currentShare = $this->share();
 			unset( $currentShare[ $key ] );
-			file_put_contents( $this->shareFile, serialize( $currentShare ) );
+			@file_put_contents( $this->shareFile, serialize( $currentShare ) );
+			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -88,7 +97,7 @@ class RESURS_TEST_BRIDGE {
 	 *
 	 * @param int $flow
 	 */
-	public function setFlow( $flow = \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
+	public function setFlow( $flow = RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW ) {
 		$this->ECOM->setPreferredPaymentFlowService( $flow );
 	}
 

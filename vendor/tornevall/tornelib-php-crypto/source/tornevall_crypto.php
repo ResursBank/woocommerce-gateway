@@ -24,15 +24,19 @@
 namespace TorneLIB;
 
 if ( ! defined('TORNELIB_CRYPTO_RELEASE')) {
-    define('TORNELIB_CRYPTO_RELEASE', '6.0.17');
+    define('TORNELIB_CRYPTO_RELEASE', '6.0.19');
 }
 if ( ! defined('TORNELIB_CRYPTO_MODIFY')) {
-    define('TORNELIB_CRYPTO_MODIFY', '20180624');
+    define('TORNELIB_CRYPTO_MODIFY', '20180822');
 }
 if ( ! defined('TORNELIB_CRYPTO_CLIENTNAME')) {
     define('TORNELIB_CRYPTO_CLIENTNAME', 'MODULE_CRYPTO');
 }
-
+if (!defined('CRYPTO_SKIP_AUTOLOAD')) {
+    define('CRYPTO_CLASS_EXISTS_AUTOLOAD', true);
+} else {
+    define('CRYPTO_CLASS_EXISTS_AUTOLOAD', false);
+}
 if (defined('TORNELIB_CRYPTO_REQUIRE')) {
     if ( ! defined('TORNELIB_CRYPTO_REQUIRE_OPERATOR')) {
         define('TORNELIB_CRYPTO_REQUIRE_OPERATOR', '==');
@@ -45,7 +49,7 @@ if (defined('TORNELIB_CRYPTO_REQUIRE')) {
     }
 }
 
-if ( ! class_exists('MODULE_CRYPTO') && ! class_exists('TorneLIB\MODULE_CRYPTO') && defined('TORNELIB_CRYPTO_ALLOW_AUTOLOAD') && TORNELIB_CRYPTO_ALLOW_AUTOLOAD === true) {
+if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && defined('TORNELIB_CRYPTO_ALLOW_AUTOLOAD') && TORNELIB_CRYPTO_ALLOW_AUTOLOAD === true) {
 
     /**
      * Class TorneLIB_Crypto
@@ -893,7 +897,7 @@ if ( ! class_exists('MODULE_CRYPTO') && ! class_exists('TorneLIB\MODULE_CRYPTO')
     }
 }
 
-if ( ! class_exists('TORNELIB_CRYPTO_TYPES') && ! class_exists('TorneLIB\TORNELIB_CRYPTO_TYPES')) {
+if ( ! class_exists('TORNELIB_CRYPTO_TYPES', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\TORNELIB_CRYPTO_TYPES', CRYPTO_CLASS_EXISTS_AUTOLOAD)) {
     abstract class TORNELIB_CRYPTO_TYPES
     {
         const TYPE_NONE = 0;
@@ -902,7 +906,7 @@ if ( ! class_exists('TORNELIB_CRYPTO_TYPES') && ! class_exists('TorneLIB\TORNELI
     }
 }
 
-if ( ! class_exists('TorneLIB_Crypto') && ! class_exists('TorneLIB\TorneLIB_Crypto')) {
+if ( ! class_exists('TorneLIB_Crypto', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\TorneLIB_Crypto', CRYPTO_CLASS_EXISTS_AUTOLOAD)) {
     class TorneLIB_Crypto extends MODULE_CRYPTO
     {
     }
