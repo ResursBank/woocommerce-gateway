@@ -3,6 +3,7 @@ run
 /includes/resurs*
 clean
 node_modules
+Makefile
 /staticflows/index.php
 /composer.lock
 /deploy
