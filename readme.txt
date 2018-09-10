@@ -68,12 +68,9 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
-= 2.2.7 =
+= 2.2.8 =
 
-    * [WOO-245] - Payload handling is deprecated. Plugin should use EComPHP "API" instead of self generated payloads.
-    * [WOO-252] - min- max control of amount seems not to work properly
-    * [WOO-255] - WC 3.4 Configuration (forms adjusted, left table is larger than the right one)
-    * [WOO-254] - If callbacks are removed from somewhere else and WC tries to list callbacks outside cache time
+    * [WOO-274] - Government ID/SSN-less payment sessions supported in simplified mode
 
 
 == Upgrade Notice ==
