@@ -1,6 +1,7 @@
 .idea
+run
 /includes/resurs*
-Makefile
+clean
 node_modules
 /staticflows/index.php
 /composer.lock
