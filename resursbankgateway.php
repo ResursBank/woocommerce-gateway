@@ -1798,6 +1798,12 @@ function woocommerce_gateway_resurs_bank_init()
                 $_REQUEST['applicant-government-id'] = $fetchedGovernmentId;
             }
 
+            $ssnCustomerType = (isset($_REQUEST['ssnCustomerType']) ? trim($_REQUEST['ssnCustomerType']) : $this->process_payment_get_customer_type($paymentMethodInformation));
+            if ($ssnCustomerType === 'LEGAL') {
+                $_REQUEST['applicant-government-id'] = '';
+                $fetchedGovernmentId = '';
+            }
+
             // Special cases
             // * If applicant phone is missing, try use billing phone instead
             // * If applicant mail is missing, try use billing email instead
@@ -1806,7 +1812,7 @@ function woocommerce_gateway_resurs_bank_init()
                 (isset($_REQUEST['applicant-telephone-number']) ? trim($_REQUEST['applicant-telephone-number']) : (isset($_REQUEST['billing_phone']) ? trim($_REQUEST['billing_phone']) : "")),
                 (isset($_REQUEST['applicant-mobile-number']) && ! empty($_REQUEST['applicant-mobile-number']) ? trim($_REQUEST['applicant-mobile-number']) : null),
                 (isset($_REQUEST['applicant-email-address']) ? trim($_REQUEST['applicant-email-address']) : (isset($_REQUEST['billing_email']) ? trim($_REQUEST['billing_email']) : "")),
-                (isset($_REQUEST['ssnCustomerType']) ? trim($_REQUEST['ssnCustomerType']) : $this->process_payment_get_customer_type($paymentMethodInformation)),
+                $ssnCustomerType,
                 (isset($_REQUEST['contact-government-id']) ? trim($_REQUEST['contact-government-id']) : null)
             );
             $this->process_payment_set_card_info($paymentMethodInformation);
