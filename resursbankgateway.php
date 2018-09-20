@@ -4386,9 +4386,10 @@ function initializeResursFlow(
 
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
     $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
+    $initFlow->setSimplifiedPsp(true);
 
     if (isResursHosted()) {
-        $initFlow->setPreferredPaymentService(RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW);
+        $initFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW);
     }
 
     $sslHandler = getResursFlag("DISABLE_SSL_VALIDATION");
@@ -4444,6 +4445,7 @@ function initializeResursFlow(
  * @param string $ip
  *
  * @return array|mixed|null
+ * @throws Exception
  */
 function getAddressProd($ssn = '', $customerType = '', $ip = '')
 {

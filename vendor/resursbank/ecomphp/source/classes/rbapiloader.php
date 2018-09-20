@@ -111,7 +111,7 @@ class ResursBank
     /** @var string Customer id used at afterShopFlow */
     private $customerId = "";
     /** @var bool If the merchant has PSP methods available in the simplified and hosted flow where it is normally not supported, this should be set to true via setSimplifiedPsp(true) */
-    private $paymentMethodsHasPsp = false;
+    private $paymentMethodsHasPsp = true;
     /** @var bool If the strict control of payment methods vs PSP is set, we will never show any payment method that is based on PAYMENT_PROVIDER - this might be good to use in mixed environments */
     private $paymentMethodsIsStrictPsp = false;
     /** @var bool Setting this to true should help developers have their payment method ids returned in a consistent format */

@@ -550,7 +550,8 @@ if ( is_admin() ) {
 			if ($payment_method->customerType == "PAYMENT_PROVIDER" || $payment_method->type == "PAYMENT_PROVIDER") {
 			    $isPsp = "true";
             }
-            $allowPsp = (getResursFlag('ALLOW_PSP') ? "true" : "false");
+            //$allowPsp = (getResursFlag('ALLOW_PSP') ? "true" : "false");
+            $allowPsp = true;
 
 			//$icon_name = strtolower($method_name);
 			$icon_name = "resurs-standard";
