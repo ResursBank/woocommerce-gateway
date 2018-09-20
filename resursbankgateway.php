@@ -20,10 +20,10 @@ require_once(__DIR__ . '/vendor/autoload.php');
 
 include('functions.php');
 
-use \Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
-use \Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
-use \Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
-use \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
+use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
+use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
+use Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
+use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
 
 if (function_exists('add_action')) {
     add_action('plugins_loaded', 'woocommerce_gateway_resurs_bank_init');
@@ -673,6 +673,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 }
                                 $myBool                = true;
                                 $responseArray['html'] = "OK";
+                                $responseArray['element'] = "process_cleanResursMethods";
                             } elseif ($_REQUEST['run'] == 'cleanRbMethods') {
                                 $numDel     = 0;
                                 $numConfirm = 0;
