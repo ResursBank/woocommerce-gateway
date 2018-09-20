@@ -1792,11 +1792,17 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentSpec               = $this->get_payment_spec($cart, true);
             $bookDataArray['specLine'] = $paymentSpec;
 
+            $fetchedGovernmentId = (isset($_REQUEST['applicant-government-id']) ? trim($_REQUEST['applicant-government-id']) : "");
+            if (empty($fetchedGovernmentId) && isset($_REQUEST['ssn_field']) && !empty($_REQUEST['ssn_field'])) {
+                $fetchedGovernmentId = $_REQUEST['ssn_field'];
+                $_REQUEST['applicant-government-id'] = $fetchedGovernmentId;
+            }
+
             // Special cases
             // * If applicant phone is missing, try use billing phone instead
             // * If applicant mail is missing, try use billing email instead
             $this->flow->setCustomer(
-                (isset($_REQUEST['applicant-government-id']) ? trim($_REQUEST['applicant-government-id']) : ""),
+                $fetchedGovernmentId,
                 (isset($_REQUEST['applicant-telephone-number']) ? trim($_REQUEST['applicant-telephone-number']) : (isset($_REQUEST['billing_phone']) ? trim($_REQUEST['billing_phone']) : "")),
                 (isset($_REQUEST['applicant-mobile-number']) && ! empty($_REQUEST['applicant-mobile-number']) ? trim($_REQUEST['applicant-mobile-number']) : null),
                 (isset($_REQUEST['applicant-email-address']) ? trim($_REQUEST['applicant-email-address']) : (isset($_REQUEST['billing_email']) ? trim($_REQUEST['billing_email']) : "")),
@@ -2404,8 +2410,14 @@ function woocommerce_gateway_resurs_bank_init()
             /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
             $flow = initializeResursFlow();
             $regEx = $flow->getRegEx(null, $countryCode, $customerType);
+            // TODO: Leave the oldFlowSimulator/regex behind and replace with own field generators.
             $methodFieldsRequest = $flow->getTemplateFieldsByMethodType($transientMethod, $customerType);
             $methodFields = $methodFieldsRequest['fields'];
+
+            $fetchedGovernmentId = (isset($_REQUEST['applicant-government-id']) ? trim($_REQUEST['applicant-government-id']) : "");
+            if (empty($fetchedGovernmentId) && isset($_REQUEST['ssn_field']) && !empty($_REQUEST['ssn_field'])) {
+                $_REQUEST['applicant-government-id'] = $_REQUEST['ssn_field'];
+            }
 
             $validationFail = false;
             foreach ($methodFields as $fieldName) {
