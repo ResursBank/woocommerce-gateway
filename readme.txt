@@ -68,10 +68,12 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
-= 2.2.8 =
+= 2.2.9 =
 
-    * [WOO-274] - Government ID/SSN-less payment sessions supported in simplified mode
-
+    * [WOO-278] - Investigate true/false vs indexing problems in resursbank.js
+    * [WOO-279] - Special layouts destroys applicant forms
+    * [WOO-280] - Typo for nonwritable directory error message
+    * [WOO-281] - ALLOW_PSP is still required for all payment methods to show up
 
 == Upgrade Notice ==
 
