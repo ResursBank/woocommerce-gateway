@@ -72,7 +72,8 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
 
     * [WOO-278] - Investigate true/false vs indexing problems in resursbank.js
     * [WOO-279] - Special layouts destroys applicant forms
-    * Typo fixed for non-writable error message
+    * [WOO-280] - Typo for nonwritable directory error message
+    * [WOO-281] - ALLOW_PSP is still required for all payment methods to show up
 
 == Upgrade Notice ==
 
