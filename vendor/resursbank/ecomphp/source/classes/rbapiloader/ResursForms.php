@@ -97,6 +97,14 @@ class RESURS_DEPRECATED_FLOW
                         'applicant-full-name',
                         'contact-government-id'
                     ),
+                    'PAYMENT_PROVIDER' => array(
+                        'applicant-government-id',
+                        'applicant-telephone-number',
+                        'applicant-mobile-number',
+                        'applicant-email-address',
+                        'applicant-full-name',
+                        'contact-government-id'
+                    ),
                 )
             ),
             'display' => array(
