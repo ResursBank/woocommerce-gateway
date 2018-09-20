@@ -1799,6 +1799,10 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $ssnCustomerType = (isset($_REQUEST['ssnCustomerType']) ? trim($_REQUEST['ssnCustomerType']) : $this->process_payment_get_customer_type($paymentMethodInformation));
+            if ($ssnCustomerType === 'LEGAL') {
+                $_REQUEST['applicant-government-id'] = '';
+                $fetchedGovernmentId = '';
+            }
 
             // Special cases
             // * If applicant phone is missing, try use billing phone instead
