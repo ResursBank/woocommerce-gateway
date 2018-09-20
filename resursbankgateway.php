@@ -1413,7 +1413,7 @@ function woocommerce_gateway_resurs_bank_init()
                                         $translation = array();
                                     }
                                     $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-                                    if ($specificType != "CARD") {
+                                    if ($specificType != "CARD" && $type != 'PAYMENT_PROVIDER') {
                                         $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __($read_more,
                                                 'WC_Payment_Gateway') . '</button>';
                                     }
