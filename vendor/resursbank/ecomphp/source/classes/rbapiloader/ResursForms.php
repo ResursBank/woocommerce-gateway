@@ -95,7 +95,15 @@ class RESURS_DEPRECATED_FLOW
                         'applicant-mobile-number',
                         'applicant-email-address',
                         'applicant-full-name',
-                        'contact-government-id'
+                        'contact-government-id',
+                    ),
+                    'PAYMENT_PROVIDER' => array(
+                        'applicant-government-id',
+                        'applicant-telephone-number',
+                        'applicant-mobile-number',
+                        'applicant-email-address',
+                        'applicant-full-name',
+                        'contact-government-id',
                     ),
                 )
             ),
@@ -103,7 +111,7 @@ class RESURS_DEPRECATED_FLOW
                 'applicant-government-id',
                 'card-number',
                 'applicant-full-name',
-                'contact-government-id'
+                'contact-government-id',
             ),
             'regexp' => array(
                 'SE' => array(
@@ -309,8 +317,12 @@ class RESURS_DEPRECATED_FLOW
                 if (!is_array($customerType)) {
                     /** @noinspection PhpUndefinedFieldInspection */
                     if (isset($templateRules[strtoupper($customerType)]) && (isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)]) || isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->type)]))) {
-                        /** @noinspection PhpUndefinedFieldInspection */
-                        $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
+                        if (isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)])) {
+                            /** @noinspection PhpUndefinedFieldInspection */
+                            $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->specificType)];
+                        } else {
+                            $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->type)];
+                        }
                         if ($paymentMethodName->type === 'PAYMENT_PROVIDER') {
                             $this->canSkipGovernmentIdValidation = true;
                             $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName->type)];
@@ -324,7 +336,13 @@ class RESURS_DEPRECATED_FLOW
                      */
                     if (is_array($paymentMethodName) && count($paymentMethodName)) {
                         if (isset($templateRules[strtoupper($customerType)]) && (isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])]) || isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['type'])]))) {
-                            $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])];
+                            if (isset($templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])])) {
+                                /** @noinspection PhpUndefinedFieldInspection */
+                                $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['specificType'])];
+                            } else {
+                                $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['type'])];
+                            }
+
                             if ($paymentMethodName['type'] === 'PAYMENT_PROVIDER') {
                                 $this->canSkipGovernmentIdValidation = true;
                                 $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($paymentMethodName['type'])];

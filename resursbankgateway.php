@@ -1257,6 +1257,26 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
+         * Extract postdata from WC post_data
+         *
+         * @param string $dataContent
+         * @return array
+         */
+        private function splitPostData($dataContent = '') {
+            $return = array();
+
+            preg_match_all("/(.*?)\&/", $dataContent, $extraction);
+            if (isset($extraction[1])) {
+                foreach ($extraction[1] as $postDataVars) {
+                    $exVars = explode("=", $postDataVars, 2);
+                    $return[$exVars[0]] = $exVars[1];
+                }
+            }
+
+            return $return;
+        }
+
+        /**
          * Function formerly known as the forms session, where forms was created from a response from Resurs.
          * From now on, we won't get any returned values from this function. Instead, we'll create the form at this
          * level.
@@ -1354,6 +1374,12 @@ function woocommerce_gateway_resurs_bank_init()
                                 echo $e->getMessage();
                             }
                             if (strtolower($id) == strtolower($payment_id)) {
+                                $post_data = isset( $_REQUEST['post_data'] ) ? $this->splitPostData($_REQUEST['post_data']) : array();
+
+                                if (isset($post_data['ssnCustomerType'])) {
+                                    $_REQUEST['ssnCustomerType'] = $post_data['ssnCustomerType'];
+                                }
+
                                 // When boths customer types are allowed, this is going arrayified.
                                 // In that case, select the one that the customer has chosen. Default is NATURAL
                                 if ( ! isset($_REQUEST['ssnCustomerType'])) {
