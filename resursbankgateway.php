@@ -2756,7 +2756,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Get information about selected payment method in checkout, to control the method listing
          */
-        public static function get_address_customertype()
+        public static function get_address_customertype($return = false)
         {
             /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
             $flow                = initializeResursFlow();
@@ -2803,6 +2803,10 @@ function woocommerce_gateway_resurs_bank_init()
                 $responseArray = array(
                     'errorstring' => $methodsErrorMessage
                 );
+            }
+
+            if ($return) {
+                return $responseArray;
             }
 
             header('Content-Type: application/json');
@@ -3266,6 +3270,13 @@ function woocommerce_gateway_resurs_bank_init()
                 'WC_Payment_Gateway')
         );
 
+        $customerTypes = WC_Resurs_Bank::get_address_customertype(true);
+
+        $resursVars = array(
+            'ResursBankAB' => true,
+            'customerTypes' => $customerTypes,
+        );
+
         $oneRandomValue     = null;
         $randomizeJsLoaders = getResursOption("randomizeJsLoaders");
         if ($randomizeJsLoaders) {
@@ -3281,6 +3292,7 @@ function woocommerce_gateway_resurs_bank_init()
         wp_localize_script('resursbankmain', 'rb_general_translations', $generalJsTranslations);
         wp_localize_script('resursbankmain', 'ajax_object', $ajaxObject);
         wp_localize_script('resursbankmain', 'omnivars', $OmniVars);
+        wp_localize_script('resursbankmain', 'resursvars', $resursVars);
     }
 
     /**
@@ -3675,6 +3687,7 @@ function resurs_order_data_info_after_order($order = null)
 
 /**
  * @param null $order
+ * @throws Exception
  */
 function resurs_order_data_info_after_billing($order = null)
 {
@@ -3683,6 +3696,7 @@ function resurs_order_data_info_after_billing($order = null)
 
 /**
  * @param null $order
+ * @throws Exception
  */
 function resurs_order_data_info_after_shipping($order = null)
 {
@@ -4073,6 +4087,7 @@ function ThirdPartyHooksSetPaymentTrigger($type = '', $paymentId = '', $internal
  * @param $item_id
  *
  * @return bool
+ * @throws Exception
  */
 function resurs_remove_order_item($item_id)
 {
