@@ -10,16 +10,18 @@ if (null !== omnivars) {
 }
 
 var customerTypes = null;
+var currentCustomerType = 'NATURAL'; // Default
+var customerTypeOnLoad = false;
+
+// WooCommerce trigger for whats happening after payment method updates
+$RB(document).on('updated_checkout', function () {
+    preSetResursMethods(currentCustomerType.toUpperCase(), resursvars["customerTypes"]);
+});
+
 $RB(document).ready(function ($) {
-    $RB.ajax({
-        type: 'GET',
-        url: ajax_object.ajax_url,
-        data: {
-            'action': 'get_address_customertype'
-        }
-    }).done(function (data) {
-        customerTypes = data;
-    });
+
+    preSetResursMethods(currentCustomerType.toUpperCase(), resursvars["customerTypes"]);
+
         //$RB('#resurs-checkout-container iframe').css('background-color', '#9900FF');
         if (typeof ResursCheckout !== "undefined" && typeof omnivars !== "undefined" && omnivars !== null) {
             if (omnivars["useStandardFieldsForShipping"] == "1") {
@@ -377,14 +379,12 @@ $RB(document).ready(function ($) {
                     data: {
                         'action': 'get_address_ajax',
                         'ssn': ssn,
-                        'customerType': customerType
+                        'customerType': currentCustomerType.toUpperCase()
                     }
-                }).done(function (data) {
-                    //data = $.parseJSON(data);
-                    var info = data;
+                }).done(function (info) {
                     $('#fetch_address_status').hide();
 
-                    this.ssnP = $('p[class="resurs_ssn_field"]');
+                    this.ssnP = $RB('p[class="resurs_ssn_field"]');
                     // If the above class finding fails
                     if (this.ssnP.length === 0) {
                         this.ssnP = $('#ssn_field_field');
@@ -394,28 +394,22 @@ $RB(document).ready(function ($) {
                         console.log(getResursPhrase("ssnElementMissing"));
                     }
 
-                    if (typeof data.error !== 'undefined') {
+                    if (typeof info.error !== 'undefined') {
                         var form = $('form[name="checkout"]');
                         var tempSpan = $('<div></div>', {
                             'class': 'ssn-error-message',
-                            'text': data.error
+                            'text': info.error
                         });
                         //"form-row form-row-first validate-required woocommerce-invalid woocommerce-invalid-required-field"
                         this.ssnP.append(tempSpan);
                         this.ssnInput.css('border-color', '#fb7f88');
-                        this.ssnErrorTimeout = window.setTimeout(function () {
-                            $('.ssn-error-message').fadeOut('slow', function () {
-                                $(this.parent).find('input').css('border-color', '');
-                                $(this).remove();
-                            });
-                            $('p[class="form-row ssn form-row-wide woocommerce-validated"]').find('input').css('border-color', '');
-                        }, 5000);
+                        $RB('.ssn-error-message').delay('4000').fadeOut('medium');
                     } else {
-                        $('.ssn-error-message').remove();
+                        $RB('.ssn-error-message').remove();
                         this.ssnInput.css('border-color', '');
                         var customerType = "";
-                        if ($RB('#ssnCustomerType').length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
-                            var selectedType = $RB('#ssnCustomerType:checked');
+                        if ($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
+                            var selectedType = $RB('#ssnCustomerType'+currentCustomerType+':checked');
                             customerType = selectedType.val();
                             // Put up as much as possible as default
                             if (typeof info.firstName !== "undefined") {
@@ -476,12 +470,14 @@ function getResursPhrase(phraseName, countryId) {
         return "Lost in translation on phrase '" + phraseName + "'";
     }
 }
+
 function getMethodType(customerType) {
     var checkedPaymentMethod = null;
     var hasResursMethods = false;
 
+    $RB('body').trigger('update_checkout');
+
     var currentResursCountry = "";
-    var currentCustomerType = "";
     var enterNumberPhrase = "";
     var labelNumberPhrase = "";
 
@@ -498,8 +494,8 @@ function getMethodType(customerType) {
         $RB('#ssn_field').attr("placeholder", enterNumberPhrase);
         $RB("label[for*='ssn_field']").html(labelNumberPhrase);
     }
-    if ($RB('#ssnCustomerType').length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
-        var selectedType = $RB('#ssnCustomerType:checked');
+    if ($RB('#ssnCustomerType' + customerType.toUpperCase()).length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
+        var selectedType = $RB('#ssnCustomerType'+customerType.toUpperCase()+':checked');
         if ($RB('#billing_company').length > 0 && $RB('#billing_company').val() !== "") {
             customerType = "legal";
         } else {
@@ -516,27 +512,9 @@ function getMethodType(customerType) {
             }
         );
         if (customerType != "" && hasResursMethods) {
-            if (typeof customerTypes !== "undefined" && null !== customerTypes) {
-                preSetResursMethods(customerType, customerTypes);
-            } else {
-                $RB.ajax({
-                    type: 'GET',
-                    url: ajax_object.ajax_url,
-                    data: {
-                        'action': 'get_address_customertype',
-                        'customerType': customerType,
-                        'paymentMethod': checkedPaymentMethod
-                    }
-                }).done(function (data) {
-                    customerTypes = data;
-                    preSetResursMethods(customerType, data);
-                });
-            }
+            preSetResursMethods(customerType, resursvars["customerTypes"]);
         }
     }
-}
-
-function ResursRegexMatch(objectBound, regEx) {
 }
 
 function preSetResursMethods(customerType, returnedObjects) {
@@ -546,11 +524,6 @@ function preSetResursMethods(customerType, returnedObjects) {
     var hasNatural = false;
     var disableGetAddressOptions = "";
     var keepGetAddressOption = "";
-
-    if (typeof returnedObjects["errorstring"] !== "undefined") {
-        console.log(returnedObjects["errorstring"]);
-        return;
-    }
 
     if (typeof returnedObjects["legal"] !== "undefined") {
         if (returnedObjects["legal"].length > 0) {
@@ -573,7 +546,7 @@ function preSetResursMethods(customerType, returnedObjects) {
 
     if (disableGetAddressOptions != "") {
         // Make sure the options are removed if there is just one bulk of payment methods
-        $RB('[id="ssnCustomerType"]').each(
+        $RB('[id="ssnCustomerType'+customerType.toUpperCase()+'"]').each(
             function (i,d) {
                 if (d.value == disableGetAddressOptions) {
                     if ($RB('#ssnCustomerRadio' + disableGetAddressOptions).length > 0) {
@@ -596,7 +569,7 @@ function preSetResursMethods(customerType, returnedObjects) {
     }
     customerType = customerType.toLowerCase();
 
-    if ($RB('#ssnCustomerType:checked').length === 0 && ($RB('#billing_company').length > 0 && $RB('#billing_company').val() == "")) {
+    if ($RB('#ssnCustomerType'+customerType.toUpperCase()+':checked').length === 0 && ($RB('#billing_company').length > 0 && $RB('#billing_company').val() == "")) {
         // The moment when we cannot predict the method of choice, we'll show both methods
         $RB('li[class*=payment_method_resurs]').each(function () {
             showElm = document.getElementsByClassName(this.className);
@@ -642,8 +615,9 @@ function preSetResursMethods(customerType, returnedObjects) {
             }
         }
     }
+
     if ($RB('#billing_company').length > 0) {
-        var currentCustomerType = $RB('#ssnCustomerType:checked').val();
+        var currentCustomerType = $RB('#ssnCustomerType'+customerType.toUpperCase()+':checked').val();
         if (currentCustomerType === "NATURAL") {
             $RB('#billing_company').val("");
             $RB('#billing_company').prop('readonly', true);
