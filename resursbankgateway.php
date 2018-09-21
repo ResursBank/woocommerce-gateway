@@ -60,9 +60,7 @@ function woocommerce_gateway_resurs_bank_init()
         if (isset($languages[$setLanguage])) {
             $sellTo      = array($languages[$setLanguage]);
             $wooSpecific = get_option('woocommerce_specific_allowed_countries');
-            /*
-             * Follow woocommerce options. A little.
-             */
+            // Follow woocommerce options. A little.
             if (is_array($wooSpecific) && count($wooSpecific)) {
                 update_option('woocommerce_specific_allowed_countries', $sellTo);
             } else {
