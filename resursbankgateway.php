@@ -1313,8 +1313,14 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function get_payment_method_form($method, $paymentSpec, $method_class)
         {
+            global $woocommerce;
+            $cart             = $woocommerce->cart;
+
             $fieldGenHtml = null;
             $post_data = isset($_REQUEST['post_data']) ? $this->splitPostData($_REQUEST['post_data']) : array();
+            // Get the read more from internal translation if not set
+            $read_more = ( ! empty($translation) && isset($translation['read_more']) && ! empty($translation['read_more'])) ? $translation['read_more'] : __('Read more',
+                'WC_Payment_Gateway');
 
             $id = $method->id;
             $type = $method->type;
@@ -1437,7 +1443,6 @@ function woocommerce_gateway_resurs_bank_init()
 
             $cart             = $woocommerce->cart;
             $paymentSpec      = $this->get_payment_spec($cart);
-            $totalAmount      = $paymentSpec['totalAmount'];
             $sessionHasErrors = false;
 
             $resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
@@ -1471,10 +1476,6 @@ function woocommerce_gateway_resurs_bank_init()
                     $sessionErrorMessage = $e->getMessage();
                 }
             }
-
-            // Get the read more from internal translation if not set
-            $read_more = ( ! empty($translation) && isset($translation['read_more']) && ! empty($translation['read_more'])) ? $translation['read_more'] : __('Read more',
-                'WC_Payment_Gateway');
 
             if (!$sessionHasErrors) {
                 if (is_array($methodList)) {
