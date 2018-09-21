@@ -11,7 +11,6 @@ if (null !== omnivars) {
 
 var customerTypes = null;
 var currentCustomerType = 'NATURAL'; // Default
-var customerTypeOnLoad = false;
 
 // WooCommerce trigger for whats happening after payment method updates
 $RB(document).on('updated_checkout', function () {
