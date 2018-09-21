@@ -1820,18 +1820,18 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             // Initializing stuff
-            $order                    = new WC_Order($order_id);
-            $bookDataArray            = array();
-            $className                = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] : null;
-            $shortMethodName          = str_replace('resurs_bank_nr_', '', $className);
+            $order = new WC_Order($order_id);
+            $bookDataArray = array();
+            $className = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] : null;
+            $shortMethodName = str_replace('resurs_bank_nr_', '', $className);
             $paymentMethodInformation = $this->getTransientMethod($shortMethodName);
             /** @var \Resursbank\RBEcomPHP\ResursBank */
             $this->flow = initializeResursFlow();
             $this->process_payment_prepare_customer();
             $preferredId = $this->process_payment_get_payment_id($order_id);
             $success_url = $this->getSuccessUrl($order_id, $preferredId);
-            $backurl     = $this->process_payment_get_backurl($order);
-            $urlFail     = html_entity_decode($order->get_cancel_order_url());
+            $backurl = $this->process_payment_get_backurl($order);
+            $urlFail = html_entity_decode($order->get_cancel_order_url());
             $this->flow->setSigning($success_url, $urlFail, false, $backurl);
             $this->flow->setWaitForFraudControl(resursOption('waitForFraudControl'));
             $this->flow->setAnnulIfFrozen(resursOption('annulIfFrozen'));
@@ -1839,7 +1839,7 @@ function woocommerce_gateway_resurs_bank_init()
             $this->flow->setPreferredId($preferredId);
             $cart = $woocommerce->cart;
             // TODO: Old style payment spec generator should be fixed
-            $paymentSpec               = $this->get_payment_spec($cart, true);
+            $paymentSpec = $this->get_payment_spec($cart, true);
             $bookDataArray['specLine'] = $paymentSpec;
 
             $fetchedGovernmentId = (isset($_REQUEST['applicant-government-id']) ? trim($_REQUEST['applicant-government-id']) : "");
@@ -1847,8 +1847,10 @@ function woocommerce_gateway_resurs_bank_init()
                 $fetchedGovernmentId = $_REQUEST['ssn_field'];
                 $_REQUEST['applicant-government-id'] = $fetchedGovernmentId;
             }
-
             $ssnCustomerType = (isset($_REQUEST['ssnCustomerType']) ? trim($_REQUEST['ssnCustomerType']) : $this->process_payment_get_customer_type($paymentMethodInformation));
+            if ($ssnCustomerType === 'LEGAL' && $paymentMethodInformation->type === 'PAYMENT_PROVIDER') {
+                $fetchedGovernmentId = null;
+            }
 
             // Special cases
             // * If applicant phone is missing, try use billing phone instead
@@ -1856,7 +1858,7 @@ function woocommerce_gateway_resurs_bank_init()
             $this->flow->setCustomer(
                 $fetchedGovernmentId,
                 (isset($_REQUEST['applicant-telephone-number']) ? trim($_REQUEST['applicant-telephone-number']) : (isset($_REQUEST['billing_phone']) ? trim($_REQUEST['billing_phone']) : "")),
-                (isset($_REQUEST['applicant-mobile-number']) && ! empty($_REQUEST['applicant-mobile-number']) ? trim($_REQUEST['applicant-mobile-number']) : null),
+                (isset($_REQUEST['applicant-mobile-number']) && !empty($_REQUEST['applicant-mobile-number']) ? trim($_REQUEST['applicant-mobile-number']) : null),
                 (isset($_REQUEST['applicant-email-address']) ? trim($_REQUEST['applicant-email-address']) : (isset($_REQUEST['billing_email']) ? trim($_REQUEST['billing_email']) : "")),
                 $ssnCustomerType,
                 (isset($_REQUEST['contact-government-id']) ? trim($_REQUEST['contact-government-id']) : null)
