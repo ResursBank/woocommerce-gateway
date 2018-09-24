@@ -5,7 +5,7 @@
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/
  * Description: Extends WooCommerce with a Resurs Bank gateway
  * WC Tested up to: 3.4.5
- * Version: 2.2.9
+ * Version: 2.2.10
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: WC_Payment_Gateway
@@ -14,7 +14,7 @@
 
 // TODO: must refactor resursbankgateway.php
 
-define('RB_WOO_VERSION', '2.2.9');
+define('RB_WOO_VERSION', '2.2.10');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce');
 

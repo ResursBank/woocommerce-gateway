@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 4.9.1
 Requires PHP: 5.4
-Stable tag: 2.2.9
+Stable tag: 2.2.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,12 +68,11 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
-= 2.2.9 =
+= 2.2.10 =
 
-    * [WOO-278] - Investigate true/false vs indexing problems in resursbank.js
-    * [WOO-279] - Special layouts destroys applicant forms
-    * [WOO-280] - Typo for nonwritable directory error message
-    * [WOO-281] - ALLOW_PSP is still required for all payment methods to show up
+    * [WOO-282] - Read more on type PAYMENT_PROVIDER
+    * [WOO-284] - Switching between dual-customer-type based payment methods might not show correct data fields
+
 
 == Upgrade Notice ==
 
