@@ -608,9 +608,18 @@ if ( is_admin() ) {
                 \$this->init_settings();
                 \$this->minLimit = '{$minLimit}';
                 \$this->maxLimit = '{$maxLimit}';
-                \$this->title       = \$this->get_option( 'title' );
     
                 \$resursTemporaryMethodTime = get_transient("resursTemporaryMethodTime_" . \$this->id_short);
+                \$resursTemporaryMethod = unserialize(get_transient("resursTemporaryMethod_" . \$this->id_short));
+                \$realTimePaymentMethod = \$resursTemporaryMethod;
+
+                \$storedTitle = getResursOption('title', 'woocommerce_{$class_name}_settings');
+                \$resursTitle = null;
+                if (isset(\$resursTemporaryMethod->description)) {
+                    \$resursTitle = \$resursTemporaryMethod->description;
+                }
+                \$this->title = !empty(\$storedTitle) ? \$storedTitle : \$resursTitle;
+
                 \$timeDiff = time() - \$resursTemporaryMethodTime;
                 \$maxWaitTimeDiff = 3600;
     
@@ -621,24 +630,27 @@ if ( is_admin() ) {
                         \$timeDiff = \$maxWaitTimeDiff + 1;
                     }
                     try {
+                        // Refetch after timelimit end
                         if (\$timeDiff >= \$maxWaitTimeDiff) {
                             \$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
-                            set_transient("resursTemporaryMethodTime_" . \$this->id_short, time(), 3600);
-                            set_transient("resursTemporaryMethod_" . \$this->id_short, serialize(\$realTimePaymentMethod), 3600);
+                            set_transient("resursTemporaryMethodTime_" . \$this->id_short, time());
+                            set_transient("resursTemporaryMethod_" . \$this->id_short, serialize(\$realTimePaymentMethod));
+                            \$this->title = \$realTimePaymentMethod->description;
                         } else {
                             \$realTimePaymentMethod = unserialize(get_transient("resursTemporaryMethod_" . \$this->id_short));
                         }
-    
+
                         // Fetch this data if there is no errors during controls (this could for example, if credentials are wrong, generate errors that makes the site unreachable)
                     } catch (Exception \$realTimeException) {
                         \$this->hasErrors = true;
                     }
                 }
+
     
                 \$this->demoCountry = null;
                 \$this->demoMethods = null;
                 if (\$this->isDemo) {
-                    //\$this->allMethods = \$this->flow->sanitizePaymentMethods(get_transient('resursAllMethods'));
+                    // Overriders 
             		if ( class_exists( "CountryHandler" ) ) {
             		    // Now, let's do some magic here.
 			            \$countryHandler = new CountryHandler();
