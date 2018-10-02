@@ -20,7 +20,7 @@ define('RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce');
 
 require_once(__DIR__ . '/vendor/autoload.php');
 
-include('functions.php');
+include('functions_settings.php');
 
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;

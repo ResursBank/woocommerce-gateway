@@ -6,7 +6,7 @@ if ( ! defined('ABSPATH')) {
     exit;
 }
 
-include('functions.php');
+include('functions_settings.php');
 
 /**
  * Class WC_Settings_Tab_ResursBank
