@@ -6,7 +6,6 @@ if ( ! defined('ABSPATH')) {
     exit;
 }
 
-include('functions_gateway.php');
 include('functions_settings.php');
 
 /**
