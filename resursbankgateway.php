@@ -3366,8 +3366,22 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function start_session()
     {
-        if ( ! session_id()) {
-            session_start();
+        /** @var bool $do_not_start_session Using this filter and setting return value to true will be the same as disabling the session during this phase */
+        $do_not_start_session = (bool)apply_filters("resursbank_start_session_before", null);
+
+        /** @var bool $session_outside_admin Disable session creation when in admin if true (will make a !is_admin()-check) - https://resursbankplugins.atlassian.net/browse/WOO-247 */
+        $session_outside_admin = (bool)apply_filters("resursbank_start_session_outside_admin_only", null);
+
+        if ((bool)$do_not_start_session === false) {
+            if ((bool)$session_outside_admin === true) {
+                if (!is_admin() && !session_id()) {
+                    session_start();
+                }
+            } else {
+                if (!session_id()) {
+                    session_start();
+                }
+            }
         }
     }
 
