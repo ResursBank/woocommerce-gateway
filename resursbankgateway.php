@@ -44,9 +44,7 @@ function woocommerce_gateway_resurs_bank_init()
         return;
     }
 
-    /*
-     * (Very) Simplified locale and country enforcer. Do not use unless necessary, since it may break something.
-     */
+    // (Very) Simplified locale and country enforcer. Do not use unless necessary, since it may break something.
     if (isset($_GET['forcelanguage']) && isset($_SERVER['HTTP_REFERER'])) {
         $languages   = array(
             'sv_SE' => 'SE',
@@ -99,13 +97,7 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function __construct()
         {
-            global $current_user, $wpdb, $woocommerce;
             add_action('woocommerce_api_wc_resurs_bank', array($this, 'check_callback_response'));
-            if (function_exists('wp_get_current_user')) {
-                wp_get_current_user();
-            } else {
-                get_currentuserinfo();
-            }
 
             hasResursOmni();
             isResursSimulation(); // Make sure settings are properly set each round
@@ -1633,6 +1625,16 @@ function woocommerce_gateway_resurs_bank_init()
             $hostedFlowUrl            = null;
             $hostedBookPayment        = null;
 
+            $customerId = getResursWooCustomerId($order);
+            if (!is_null($customerId)) {
+                $bookDataArray = resurs_add_customer_meta(
+                    'CustomerId',
+                    $customerId,
+                    $bookDataArray,
+                    true
+                );
+            }
+
             if ($paymentMethodInformation->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods) {
                 wc_add_notice(__('The payment method is not available for the selected payment flow',
                     'WC_Payment_Gateway'), 'error');
@@ -1675,7 +1677,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $paymentMethodInformation
          * @param $supportProviderMethods
          * @param $bookDataArray
-         *
+         * @param WC_Order $order
          * @return array|void
          * @since 2.2.7
          */
@@ -1684,7 +1686,8 @@ function woocommerce_gateway_resurs_bank_init()
             $shortMethodName,
             $paymentMethodInformation,
             $supportProviderMethods,
-            $bookDataArray
+            $bookDataArray,
+            $order
         ) {
             if ($paymentMethodInformation->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods) {
                 wc_add_notice(__('The payment method is not available for the selected payment flow',
@@ -1697,6 +1700,16 @@ function woocommerce_gateway_resurs_bank_init()
                     $this->flow->setStoreId($storeId);
                     update_post_meta($order_id, 'resursStoreId', $storeId);
                 }
+
+                $customerId = getResursWooCustomerId($order);
+                if (!is_null($customerId)) {
+                    $bookDataArray = resurs_add_customer_meta(
+                        'CustomerId',
+                        $customerId,
+                        $bookDataArray
+                    );
+                }
+
                 // If woocommerce forms do offer phone and email, while our own don't, use them (moved to the section of setCustomer)
                 $bookPaymentResult = $this->flow->createPayment($shortMethodName, $bookDataArray);
             }
@@ -1712,7 +1725,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @return array|void
          * @since 2.2.7
          */
-        function process_payment_handle_payment_result($order, $order_id, $bookPaymentResult)
+        function process_payment_handle_payment_result($order, $order_id, $bookPaymentResult, $preferredId)
         {
             $bookedStatus    = trim(isset($bookPaymentResult->bookPaymentStatus) ? $bookPaymentResult->bookPaymentStatus : null);
             $bookedPaymentId = isset($bookPaymentResult->paymentId) ? $bookPaymentResult->paymentId : null;
@@ -1721,6 +1734,8 @@ function woocommerce_gateway_resurs_bank_init()
             } else {
                 update_post_meta($order_id, 'paymentId', $bookedPaymentId);
             }
+
+            $return = array();
 
             switch ($bookedStatus) {
                 case 'FINALIZED':
@@ -1738,7 +1753,7 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     WC()->cart->empty_cart();
 
-                    return array('result' => 'success', 'redirect' => $this->get_return_url($order));
+                    $return = array('result' => 'success', 'redirect' => $this->get_return_url($order));
                     break;
                 case 'BOOKED':
                     $order->update_status('processing');
@@ -1754,13 +1769,13 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     WC()->cart->empty_cart();
 
-                    return array('result' => 'success', 'redirect' => $this->get_return_url($order));
+                    $return = array('result' => 'success', 'redirect' => $this->get_return_url($order));
                     break;
                 case 'FROZEN':
                     $order->update_status('on-hold');
                     WC()->cart->empty_cart();
 
-                    return array('result' => 'success', 'redirect' => $this->get_return_url($order));
+                    $return = array('result' => 'success', 'redirect' => $this->get_return_url($order));
                     break;
                 case 'SIGNING':
                     $signingUrl = isset($bookPaymentResult->signingUrl) ? $bookPaymentResult->signingUrl : null;
@@ -1779,7 +1794,6 @@ function woocommerce_gateway_resurs_bank_init()
                     wc_add_notice(__('The payment can not complete. Contact customer services for more information.',
                         'WC_Payment_Gateway'), 'error');
 
-                    return;
                     break;
                 case 'FAILED':
                     $order->update_status('failed',
@@ -1788,16 +1802,15 @@ function woocommerce_gateway_resurs_bank_init()
                     wc_add_notice(__('An unknown error occured. Please, try again later', 'WC_Payment_Gateway'),
                         'error');
 
-                    return;
                     break;
                 default:
                     wc_add_notice(__('An unknown error occured. Please, try again later', 'WC_Payment_Gateway'),
                         'error');
 
-                    return;
                     break;
             }
 
+            return $return;
         }
 
         /**
@@ -1866,11 +1879,25 @@ function woocommerce_gateway_resurs_bank_init()
             $supportProviderMethods = true;
             try {
                 if (isResursHosted()) {
-                    return $this->process_payment_hosted($order, $order_id, $shortMethodName, $preferredId,
-                        $paymentMethodInformation, $supportProviderMethods, $bookDataArray, $urlFail);
+                    return $this->process_payment_hosted(
+                        $order,
+                        $order_id,
+                        $shortMethodName,
+                        $preferredId,
+                        $paymentMethodInformation,
+                        $supportProviderMethods,
+                        $bookDataArray,
+                        $urlFail
+                    );
                 } else {
-                    $bookPaymentResult = $this->process_payment_simplified($order_id, $shortMethodName,
-                        $paymentMethodInformation, $supportProviderMethods, $bookDataArray);
+                    $bookPaymentResult = $this->process_payment_simplified(
+                        $order_id,
+                        $shortMethodName,
+                        $paymentMethodInformation,
+                        $supportProviderMethods,
+                        $bookDataArray,
+                        $order
+                    );
                 }
             } catch (Exception $bookPaymentException) {
                 wc_add_notice(__($bookPaymentException->getMessage(), 'WC_Payment_Gateway'), 'error');
@@ -1878,7 +1905,7 @@ function woocommerce_gateway_resurs_bank_init()
                 return;
             }
 
-            return $this->process_payment_handle_payment_result($order, $order_id, $bookPaymentResult);
+            return $this->process_payment_handle_payment_result($order, $order_id, $bookPaymentResult, $preferredId);
         }
 
         /**
@@ -1953,7 +1980,6 @@ function woocommerce_gateway_resurs_bank_init()
              */
             $omniPaymentMethod = isset($_REQUEST['paymentMethod']) && ! empty($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : "resurs_bank_omnicheckout";
 
-
             $errorString = "";
             $errorCode   = "";
             // Default json data response
@@ -1968,7 +1994,6 @@ function woocommerce_gateway_resurs_bank_init()
 
             $returnResult['resursData']['reqId']    = $requestedPaymentId;
             $returnResult['resursData']['reqLocId'] = $requestedUpdateOrder;
-
             $returnResult['success'] = false;
 
             if (isset($_REQUEST['updateReference'])) {
@@ -2179,6 +2204,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $returnResult['errorCode']   = 403;
                 $responseCode                = 403;
             }
+
             $this->returnJsonResponse($returnResult, $responseCode, $resursOrder);
         }
 
@@ -2290,6 +2316,12 @@ function woocommerce_gateway_resurs_bank_init()
                             }
                         }
                         $getRedirectUrl = $this->get_return_url($order);
+
+                        $customerId = getResursWooCustomerId($order);
+                        if (!is_null($customerId)) {
+                            $this->flow->addMetaData($paymentId, 'CustomerId', $customerId);
+                        }
+
                         $order->update_status('processing',
                             __('The payment are signed and booked', 'WC_Payment_Gateway'));
                         WC()->cart->empty_cart();
@@ -4523,7 +4555,8 @@ function initializeResursFlow(
             get_currentuserinfo();
         }
         if (isset($current_user->user_login)) {
-            $initFlow->setLoggedInUser($current_user->user_login);
+            // Used for aftershop and is not used for metadata
+            $initFlow->setLoggedInUser(getResursWooCustomerId());
         }
     } catch (Exception $e) {
     }
@@ -4643,6 +4676,32 @@ function isResursSimulation()
     }
 
     return repairResursSimulation();
+}
+
+/**
+ * Get current customer id
+ * @param WC_Order $order
+ * @return int|null
+ */
+function getResursWooCustomerId($order=null) {
+    $return = null;
+
+    if (function_exists('wp_get_current_user')) {
+        $current_user = wp_get_current_user();
+    } else {
+        $current_user = get_currentuserinfo();
+    }
+
+    if (isset($current_user->ID)) {
+        $return = $current_user->ID;
+    }
+
+    // Created orders has higher priority since this id might have been created during order processing
+    if (!is_null($order)) {
+        $return = $order->get_user_id();
+    }
+
+    return $return;
 }
 
 /**
@@ -4780,6 +4839,36 @@ function resurs_omnicheckout_order_button_html($classButtonHtml)
     if ( ! isResursOmni()) {
         echo $classButtonHtml;
     }
+}
+
+/**
+ * Add metadata into order before it is created. Multiple metadata allowed.
+ *
+ * @param $key
+ * @param $value
+ * @param array $bookDataArray
+ * @param bool $isHosted
+ * @return array
+ */
+function resurs_add_customer_meta($key, $value, $bookDataArray = array(), $isHosted = false)
+{
+
+    if (!is_array($bookDataArray)) {
+        $bookDataArray = array();
+    }
+
+    if (!isset($bookDataArray['metaData'])) {
+        $bookDataArray['metaData'] = array();
+    }
+
+    if (!$isHosted) {
+        $bookDataArray['metaData'][] = array('key' => $key, 'value' => $value);
+    } else {
+        $bookDataArray['metaData'][] = array('key' => $key);
+        $bookDataArray['metaData'][] = array($key => $value);
+    }
+
+    return $bookDataArray;
 }
 
 /**
