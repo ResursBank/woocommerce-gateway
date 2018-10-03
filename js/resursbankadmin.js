@@ -469,17 +469,26 @@ function wfcComboControl(checkboxObject) {
     }
 }
 
-function changeResursFee(feeObject) {
-    var feeId = feeObject.id.substr(4);
+function changeResursFee(chosenFeeObject) {
+    var feeId = chosenFeeObject.id.substr(4);
+    feeObject = document.getElementById('fee_' + feeId);
     var currentValue = feeObject.innerHTML;
+
+    // If the editing pen image is there, this is after 2.2.10. In that case, make sure the html is clear from this image.
+    if (currentValue.indexOf('pen16x') > -1) {
+        currentValue = '';
+    }
+
     if (!isNaN(currentValue) || currentValue == "") {
-        feeObject.innerHTML = '<input id="feeText_' + currentValue + '" type="text" size="8" value="' + currentValue + '" onblur="resetRbFeeValue(\'' + feeObject.id + '\', this)" onkeyup="feeValueTrigger(event, \'' + feeObject.id + '\', this)">';
-        $RB('#feeText_' + currentValue).on("keypress", function (event) {
+        feeObject.innerHTML = '<input id="feeText_' + feeId + '" type="text" size="8" value="' + currentValue.trim() + '" onblur="resetRbFeeValue(\'' + feeObject.id + '\', this)" onkeyup="feeValueTrigger(event, \'' + feeObject.id + '\', this)">';
+        $RB('#feeText_' + feeId).on("keypress", function (event) {
             return event.keyCode != 13;
         });
-        var feeTextObject = $RB('#feeText_' + currentValue);
+        var feeTextObject = $RB('#feeText_' + feeId);
         feeTextObject.focus();
-        feeTextObject[0].setSelectionRange(feeTextObject.val().length, feeTextObject.val().length);
+        if (typeof feeTextObject[0] !== "undefined") {
+            feeTextObject[0].setSelectionRange(feeTextObject.val().length, feeTextObject.val().length);
+        }
 
     }
 }
@@ -506,10 +515,20 @@ function resetRbFeeValue(targetColumn, sourceField) {
                     $RB('#fee_' + feeId).html(oldValue);
                     $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">' + adminJs.couldNotSetNewFee + '</div>');
                 } else {
+                    if (sourceField.value == 0 || sourceField.value == '') {
+                        $RB('#' + targetColumn).html('<img src="'+adminJs.resursFeePen+'">');
+                    }
+
                     $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-success">' + adminJs.newFeeHasBeenSet + '</div>');
                 }
             }
         }, {"feeId": feeId, "feeValue": sourceField.value});
+    } else {
+        if (sourceField.value.trim() === '') {
+            $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">' + adminJs.useZeroToReset + '</div>');
+        } else {
+            $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">' + adminJs.notAllowedValue + '</div>');
+        }
     }
 }
 

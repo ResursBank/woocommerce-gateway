@@ -948,9 +948,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     if ( ! isResursOmni(true)) { ?>
                                         <td class="id"><?php echo $methodArray->id; ?></td>
                                         <td class="fee" id="fee_<?php echo $methodArray->id; ?>"
-                                            onclick="changeResursFee(this)"><?php
-                                            $priceValue = $this->getOptionByNamespace("price",
-                                                "woocommerce_resurs_bank_nr_" . $curId);
+                                            onclick="changeResursFee(this)">
+                                            <?php
+                                            $priceValue = $this->getOptionByNamespace(
+                                                "price",
+                                                "woocommerce_resurs_bank_nr_" . $curId
+                                            );
+                                            if (empty($priceValue)) {
+                                                // Injecting ourselves in the current structure
+                                                $priceValue = '<img id="fim_'.$methodArray->id.'" onclick="changeResursFee(this)" src="' . plugin_dir_url(__FILE__) . 'img/pen16x.png' . '">';
+                                            }
                                             echo $priceValue;
                                             ?></td>
 
