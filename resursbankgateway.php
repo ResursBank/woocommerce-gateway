@@ -20,7 +20,7 @@ define('RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce');
 
 require_once(__DIR__ . '/vendor/autoload.php');
 
-include('functions.php');
+include('functions_settings.php');
 
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
@@ -34,9 +34,7 @@ if (function_exists('add_action')) {
 
 $resursGlobalNotice = false;
 
-/**
- * Initialize Resurs Bank Plugin
- */
+// Initialize Resurs Bank Plugin when plugins is finally loaded
 function woocommerce_gateway_resurs_bank_init()
 {
     if ( ! class_exists('WC_Payment_Gateway')) {
@@ -80,7 +78,7 @@ function woocommerce_gateway_resurs_bank_init()
     load_plugin_textdomain('WC_Payment_Gateway', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
     /**
-     * Resurs Bank Gateway class
+     * Class WC_Resurs_Bank
      */
     class WC_Resurs_Bank extends WC_Payment_Gateway
     {
@@ -3318,24 +3316,27 @@ function woocommerce_gateway_resurs_bank_init()
         $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? strftime("%Y-%m-%d, %H:%M", $callbackUriCacheTime) : "";
 
         $adminJs = array(
-            'resursSpinner'          => plugin_dir_url(__FILE__) . "loader.gif",
-            'resursSpinnerLocal'     => plugin_dir_url(__FILE__) . "loaderLocal.gif",
-            'callbackUrisCache'      => __('The list of urls below is cached from an earlier response from Resurs Bank',
+            'resursSpinner' => plugin_dir_url(__FILE__) . 'loader.gif',
+            'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'loaderLocal.gif',
+            'resursFeePen' => plugin_dir_url(__FILE__) . 'img/pen16x.png',
+            'callbackUrisCache' => __('The list of urls below is cached from an earlier response from Resurs Bank',
                 'WC_Payment_Gateway'),
-            'callbackUrisCacheTime'  => $lastFetchedCacheTime,
-            'callbacks_registered'   => __('callbacks has been registered', 'WC_Payment_Gateway'),
-            'update_callbacks'       => __('Update callbacks again', 'WC_Payment_Gateway'),
-            'requestForCallbacks'    => $requestForCallbacks,
-            'noCallbacksSet'         => __('No registered callbacks could be found', 'WC_Payment_Gateway'),
-            'annulCantBeAlone'       => __('This setting requires waitForFraudControl to be active',
+            'callbackUrisCacheTime' => $lastFetchedCacheTime,
+            'callbacks_registered' => __('callbacks has been registered', 'WC_Payment_Gateway'),
+            'update_callbacks' => __('Update callbacks again', 'WC_Payment_Gateway'),
+            'useZeroToReset' => __('To remove the fee properly, set the value to 0', 'WC_Payment_Gateway'),
+            'notAllowedValue' => __('The entered value is not allowed here', 'WC_Payment_Gateway'),
+            'requestForCallbacks' => $requestForCallbacks,
+            'noCallbacksSet' => __('No registered callbacks could be found', 'WC_Payment_Gateway'),
+            'annulCantBeAlone' => __('This setting requires waitForFraudControl to be active',
                 'WC_Payment_Gateway'),
-            'couldNotSetNewFee'      => __('Unable to set new fee', 'WC_Payment_Gateway'),
-            'newFeeHasBeenSet'       => __('Fee has been saved', 'WC_Payment_Gateway'),
-            'callbacks_pending'      => __('Waiting for callback', 'WC_Payment_Gateway'),
+            'couldNotSetNewFee' => __('Unable to set new fee', 'WC_Payment_Gateway'),
+            'newFeeHasBeenSet' => __('Fee has been saved', 'WC_Payment_Gateway'),
+            'callbacks_pending' => __('Waiting for callback', 'WC_Payment_Gateway'),
             'callbacks_not_received' => __('Callback not yet received', 'WC_Payment_Gateway'),
-            'callbacks_slow'         => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.',
+            'callbacks_slow' => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.',
                 'WC_Payment_Gateway')),
-            'resursBankTabLogo'      => $resursLogo
+            'resursBankTabLogo' => $resursLogo
         );
         wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");
@@ -3368,8 +3369,22 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function start_session()
     {
-        if ( ! session_id()) {
-            session_start();
+        /** @var bool $do_not_start_session Using this filter and setting return value to true will be the same as disabling the session during this phase */
+        $do_not_start_session = (bool)apply_filters("resursbank_start_session_before", null);
+
+        /** @var bool $session_outside_admin Disable session creation when in admin if true (will make a !is_admin()-check) - https://resursbankplugins.atlassian.net/browse/WOO-247 */
+        $session_outside_admin = (bool)apply_filters("resursbank_start_session_outside_admin_only", null);
+
+        if (!(bool)$do_not_start_session) {
+            if ((bool)$session_outside_admin) {
+                if (!is_admin() && !session_id()) {
+                    session_start();
+                }
+            } else {
+                if (!session_id()) {
+                    session_start();
+                }
+            }
         }
     }
 
@@ -3585,10 +3600,6 @@ function woocommerce_gateway_resurs_bank_init()
                                     'WC_Payment_Gateway') . '</span>';
                             $displayAnnuity .= '</div>';
                         }
-                        //$fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __( $read_more, 'WC_Payment_Gateway' ) . '</button>';
-
-                    } else {
-                        //$displayAnnuity = __('Annuity factors can not be displayed: Payment method is missing in merchant configuration.', 'WC_Payment_Gateway');
                     }
                 } catch (\Exception $annuityException) {
                     // In the multilingual demoshop there might be exceptions when the session is lost.

@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Most of those functions are related to the configuration in wp-admin
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -522,6 +526,7 @@ if ( ! function_exists( 'getResursWooFormFields' ) ) {
 		return $returnArray;
 	}
 }
+
 if ( is_admin() ) {
 	if ( ! function_exists( 'write_resurs_class_to_file' ) ) {
 		function write_resurs_class_to_file( $payment_method ) {
@@ -1012,7 +1017,6 @@ EOT;
 			@file_put_contents( $path, $class );
 		}
 	}
-
 	if ( ! function_exists( 'generatePaymentMethodHtml' ) ) {
 		function generatePaymentMethodHtml( $methodArray = array(), $returnAs = "html" ) {
 			$methodTable = "";
@@ -1103,6 +1107,7 @@ EOT;
 		}
 	}
 }
+
 if ( ! function_exists( "callbackUpdateRequest" ) ) {
 	/**
 	 * Checks, in adminUI if there is need for callback requests.
