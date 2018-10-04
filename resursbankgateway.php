@@ -1627,7 +1627,8 @@ function woocommerce_gateway_resurs_bank_init()
 
             $customerId = getResursWooCustomerId($order);
             if (!is_null($customerId)) {
-                $bookDataArray = resurs_add_customer_meta('CustomerId', $customerId, $bookDataArray, true);
+                $this->flow->setMetaData('CustomerId', $customerId);
+                $this->flow->setMetaData('hostedTime', time());
             }
 
             if ($paymentMethodInformation->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods) {
@@ -1698,7 +1699,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                 $customerId = getResursWooCustomerId($order);
                 if (!is_null($customerId)) {
-                    $bookDataArray = resurs_add_customer_meta('CustomerId', $customerId, $bookDataArray);
+                    $this->flow->setMetaData('CustomerId', $customerId);
+                    $this->flow->setMetaData('simplifiedTime', time());
                 }
 
                 // If woocommerce forms do offer phone and email, while our own don't, use them (moved to the section of setCustomer)

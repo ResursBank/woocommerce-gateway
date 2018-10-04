@@ -182,6 +182,13 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		$bookDataOmni        = self::createResursOmniOrder();
 		$omniRef = WC()->session->get( 'omniRef' );
 		try {
+
+            $customerId = getResursWooCustomerId();
+            if (!is_null($customerId)) {
+                $this->flow->setMetaData('CustomerId', $customerId);
+                $this->flow->setMetaData('iframeTime', time());
+            }
+
 			$flowBook  = $this->flow->createPayment( $omniRef, $bookDataOmni );
 			$flowFrame = is_string( $flowBook ) ? $flowBook : "";
 			$flowFrame .= '<noscript><b>' . __( 'OmniCheckout will not work properly without Javascript functions enabled', 'WC_Payment_Gateway' ) . '</b></noscript>';
@@ -214,11 +221,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		if ( ! empty( $storeId ) ) {
 			$bookDataOmni['storeId'] = $storeId;
 		}
-
-        $customerId = getResursWooCustomerId($order);
-		if (!is_null($customerId)) {
-            $bookDataOmni = resurs_add_customer_meta('CustomerId', $customerId, $bookDataOmni);
-        }
 
 		return $bookDataOmni;
 	}
