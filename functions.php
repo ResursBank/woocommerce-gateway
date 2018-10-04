@@ -657,7 +657,9 @@ if ( is_admin() ) {
             			\$countryList = array('se', 'no', 'dk', 'fi');
  		    			\$countryConfig = \$countryHandler->getCountryConfig();
  		    			\$this->demoCountry = \$_SESSION['rb_country'];
- 		    			\$this->demoMethod = \$this->flow->sanitizePaymentMethods(get_transient('resursMethods' . \$this->demoCountry));
+ 		    			//\$this->demoMethod = \$this->flow->sanitizePaymentMethods(get_transient('resursMethods' . \$this->demoCountry));
+y
+ 		    			\$this->demoMethod = get_transient('resursMethods' . \$this->demoCountry);
  		    			\$matchMethod = false;
  		    			
  		    			if (is_array(\$this->demoMethod)) {
