@@ -186,7 +186,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
             $customerId = getResursWooCustomerId();
             if (!is_null($customerId)) {
                 $this->flow->setMetaData('CustomerId', $customerId);
-                $this->flow->setMetaData('iframeTime', time());
             }
 
 			$flowBook  = $this->flow->createPayment( $omniRef, $bookDataOmni );
