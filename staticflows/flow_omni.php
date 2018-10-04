@@ -386,7 +386,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 						return $array;
 					}
 				}
-				$array['#omniInfo'] = $omniUpdateResponse;
+				$array['#omniInfo'] = null;
 			}
 		}
 
