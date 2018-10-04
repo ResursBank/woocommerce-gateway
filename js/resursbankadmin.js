@@ -469,6 +469,12 @@ function wfcComboControl(checkboxObject) {
     }
 }
 
+function feeValueTrigger(event, targetColumn, sourceField, oldValue) {
+    if (event.keyCode == 13) {
+        resetRbFeeValue(targetColumn, sourceField, oldValue);
+    }
+}
+
 function changeResursFee(chosenFeeObject) {
     var feeId = chosenFeeObject.id.substr(4);
     feeObject = document.getElementById('fee_' + feeId);
@@ -480,7 +486,7 @@ function changeResursFee(chosenFeeObject) {
     }
 
     if (!isNaN(currentValue) || currentValue == "") {
-        feeObject.innerHTML = '<input id="feeText_' + feeId + '" type="text" size="8" value="' + currentValue.trim() + '" onblur="resetRbFeeValue(\'' + feeObject.id + '\', this)" onkeyup="feeValueTrigger(event, \'' + feeObject.id + '\', this)">';
+        feeObject.innerHTML = '<input id="feeText_' + feeId + '" type="text" size="8" value="' + currentValue.trim() + '" onblur="resetRbFeeValue(\'' + feeObject.id + '\', this, \'' + currentValue.trim() + '\')" onkeyup="feeValueTrigger(event, \'' + feeObject.id + '\', this, \'' + currentValue.trim() + '\')">';
         $RB('#feeText_' + feeId).on("keypress", function (event) {
             return event.keyCode != 13;
         });
@@ -493,17 +499,26 @@ function changeResursFee(chosenFeeObject) {
     }
 }
 
-function feeValueTrigger(event, targetColumn, sourceField) {
-    if (event.keyCode == 13) {
-        resetRbFeeValue(targetColumn, sourceField);
-    }
-}
-
-function resetRbFeeValue(targetColumn, sourceField) {
+function resetRbFeeValue(targetColumn, sourceField, oldValue) {
     $RB('#' + targetColumn).html(sourceField.value);
     var feeId = targetColumn.substr(4);
+    var convertValue = parseFloat(sourceField.value.replace(',','.'));
 
-    if (!isNaN(sourceField.value) && sourceField.value >= 0 && sourceField.value !== "") {
+    if (!isNaN(convertValue) && convertValue > 0) {
+        $RB('#fee_' + feeId).html(convertValue);
+    }
+
+    if (sourceField.value == '' || isNaN(sourceField.value)) {
+        $RB('#' + targetColumn).html('<img src="'+adminJs.resursFeePen+'">');
+        convertValue = 0;
+    }
+
+    if (sourceField.value === oldValue) {
+        return;
+    }
+
+    if (!isNaN(convertValue)) {
+        sourceField.value = convertValue;
         $RB('#process_' + feeId).html('<img src="' + adminJs.resursSpinner + '" border="0">');
         runResursAdminCallback("setNewPaymentFee", function (paymentFeeResult) {
             if (typeof paymentFeeResult["response"] !== "undefined" && typeof paymentFeeResult["response"]["setNewPaymentFeeResponse"]) {
@@ -515,10 +530,6 @@ function resetRbFeeValue(targetColumn, sourceField) {
                     $RB('#fee_' + feeId).html(oldValue);
                     $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">' + adminJs.couldNotSetNewFee + '</div>');
                 } else {
-                    if (sourceField.value == 0 || sourceField.value == '') {
-                        $RB('#' + targetColumn).html('<img src="'+adminJs.resursFeePen+'">');
-                    }
-
                     $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-success">' + adminJs.newFeeHasBeenSet + '</div>');
                 }
             }
@@ -526,8 +537,10 @@ function resetRbFeeValue(targetColumn, sourceField) {
     } else {
         if (sourceField.value.trim() === '') {
             $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">' + adminJs.useZeroToReset + '</div>');
+            $RB('#' + targetColumn).html(oldValue);
         } else {
             $RB('#process_' + feeId).html('<div class="labelBoot labelBoot-danger">' + adminJs.notAllowedValue + '</div>');
+            $RB('#' + targetColumn).html(oldValue);
         }
     }
 }
