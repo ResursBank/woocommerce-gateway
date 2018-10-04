@@ -209,10 +209,16 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 			'successUrl' => $getUrls['successUrl'],
 			'backUrl'    => $getUrls['backUrl']
 		);
+
 		$storeId      = apply_filters( "resursbank_set_storeid", null );
 		if ( ! empty( $storeId ) ) {
 			$bookDataOmni['storeId'] = $storeId;
 		}
+
+        $customerId = getResursWooCustomerId($order);
+		if (!is_null($customerId)) {
+            $bookDataOmni = resurs_add_customer_meta('CustomerId', $customerId, $bookDataOmni);
+        }
 
 		return $bookDataOmni;
 	}
