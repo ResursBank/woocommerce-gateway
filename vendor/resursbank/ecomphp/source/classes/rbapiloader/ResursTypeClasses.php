@@ -4,15 +4,28 @@ namespace Resursbank\RBEcomPHP;
 
 /**
  * Class RESURS_FLOW_TYPES
+ *
  * @since 1.0.26
  * @since 1.1.26
  * @since 1.2.0
  */
 abstract class RESURS_FLOW_TYPES
 {
+    const NOT_SET = 0;
+    const SIMPLIFIED_FLOW = 1;
+    const HOSTED_FLOW = 2;
+    const RESURS_CHECKOUT = 3;
+
+    /** @var int You lazy? */
+    const RCO = 3;
+
+    /** @deprecated Redundant name */
     const FLOW_NOT_SET = 0;
+    /** @deprecated Redundant name */
     const FLOW_SIMPLIFIED_FLOW = 1;
+    /** @deprecated Redundant name */
     const FLOW_HOSTED_FLOW = 2;
+    /** @deprecated Redundant name */
     const FLOW_RESURS_CHECKOUT = 3;
 
     /** @var int METHOD_MINIMALISTIC Minimalistic orderLine specification, with data necessary for matching */
@@ -27,10 +40,20 @@ abstract class RESURS_FLOW_TYPES
  */
 abstract class RESURS_COUNTRY
 {
+    const SE = 1;
+    const DK = 2;
+    const NO = 3;
+    const FI = 4;
+
+    /** @deprecated Redundant name */
     const COUNTRY_NOT_SET = 0;
+    /** @deprecated Redundant name */
     const COUNTRY_SE = 1;
+    /** @deprecated Redundant name */
     const COUNTRY_DK = 2;
+    /** @deprecated Redundant name */
     const COUNTRY_NO = 3;
+    /** @deprecated Redundant name */
     const COUNTRY_FI = 4;
 }
 
@@ -39,6 +62,7 @@ abstract class RESURS_COUNTRY
  * @since 1.0.26
  * @since 1.1.26
  * @since 1.2.0
+ * @deprecated Never in use
  */
 abstract class RESURS_CHECKOUT_CALL_TYPES
 {
@@ -47,7 +71,8 @@ abstract class RESURS_CHECKOUT_CALL_TYPES
 }
 
 /**
- * Class RESURS_CALLBACK_TYPES
+ * Class RESURS_CALLBACK_TYPES Bitmask based types so that more than one type can be chosen in one call
+ *
  * @since 1.0.26
  * @since 1.1.26
  * @since 1.2.0
@@ -55,28 +80,55 @@ abstract class RESURS_CHECKOUT_CALL_TYPES
  */
 abstract class RESURS_CALLBACK_TYPES
 {
+    const NOT_SET = 0;
+    const UNFREEZE = 1;
+    const ANNULMENT = 2;
+    const AUTOMATIC_FRAUD_CONTROL = 4;
+    const FINALIZATION = 8;
+    const TEST = 16;
+    const UPDATE = 32;
+    const BOOKED = 64;
+
+    /** @deprecated Use NOT_SET */
     const CALLBACK_TYPE_NOT_SET = 0;
+    /** @deprecated Use UNFREEZE */
     const CALLBACK_TYPE_UNFREEZE = 1;
+    /** @deprecated Use ANNULMENT */
     const CALLBACK_TYPE_ANNULMENT = 2;
+    /** @deprecated Use AUTOMATIC_FRAUD_CONTROL */
     const CALLBACK_TYPE_AUTOMATIC_FRAUD_CONTROL = 4;
+    /** @deprecated Use FINALIZATION */
     const CALLBACK_TYPE_FINALIZATION = 8;
+    /** @deprecated Use TEST */
     const CALLBACK_TYPE_TEST = 16;
+    /** @deprecated Use UPDATE */
     const CALLBACK_TYPE_UPDATE = 32;
+    /** @deprecated Use BOOKED */
     const CALLBACK_TYPE_BOOKED = 64;
 }
 
 /**
- * Class RESURS_AFTERSHOP_RENDER_TYPES
+ * Class RESURS_AFTERSHOP_RENDER_TYPES Bitmask based types so that more than one type can be chosen in one call
  * @since 1.0.26
  * @since 1.1.26
  * @since 1.2.0
  */
 abstract class RESURS_AFTERSHOP_RENDER_TYPES
 {
+    const FINALIZE = 1;
+    const CREDIT = 2;
+    const ANNUL = 4;
+    const AUTHORIZE = 8;
+
+    /** @deprecated Redundant name */
     const AFTERSHOP_NO_CHOICE = 0;
+    /** @deprecated Redundant name */
     const AFTERSHOP_FINALIZE = 1;
+    /** @deprecated Redundant name */
     const AFTERSHOP_CREDIT = 2;
+    /** @deprecated Redundant name */
     const AFTERSHOP_ANNUL = 4;
+    /** @deprecated Redundant name */
     const AFTERSHOP_AUTHORIZE = 8;
 }
 
@@ -100,9 +152,18 @@ abstract class RESURS_METAHASH_TYPES
  */
 abstract class RESURS_CURL_METHODS
 {
+    const GET = 0;
+    const POST = 1;
+    const PUT = 2;
+    const DELETE = 3;
+
+    /** @deprecated Redundant name */
     const METHOD_GET = 0;
+    /** @deprecated Redundant name */
     const METHOD_POST = 1;
+    /** @deprecated Redundant name */
     const METHOD_PUT = 2;
+    /** @deprecated Redundant name */
     const METHOD_DELETE = 3;
 }
 
@@ -137,15 +198,22 @@ abstract class RESURS_PAYMENT_STATUS_RETURNCODES
     const PAYMENT_ANNULLED = 40;    // Fully annulled
     const PAYMENT_CREDITED = 50;    // Fully credited
 
-    // Fallback statuses
+    /** @deprecated Fallback status only, use PAYMENT_ANNULLED */
     const PAYMENT_CANCELLED = 40;   // Fully annulled (this is practically a prestashop based name)
+    /** @deprecated Fallback status only, use PAYMENT_CREDITED */
     const PAYMENT_REFUND = 50;      // Fully credited (this is practically a prestashop based name)
 }
 
 abstract class RESURS_ENVIRONMENTS
 {
+    const PRODUCTION = 0;
+    const TEST = 1;
+
+    /** @deprecated Redundant name */
     const ENVIRONMENT_PRODUCTION = 0;
+    /** @deprecated Redundant name */
     const ENVIRONMENT_TEST = 1;
+    /** @deprecated Not in use */
     const ENVIRONMENT_NOT_SET = 2;
 }
 
@@ -211,80 +279,13 @@ abstract class ResursCheckoutCallTypes extends RESURS_CHECKOUT_CALL_TYPES
 }
 
 /**
- * Class ResursCallbackTypes Callbacks that can be registered with Resurs Bank.
+ * Class ResursCallbackTypes Callbacks that can be registered with Resurs Bank. Do not use this.
+ *
  * @since 1.0.0
  * @deprecated RESURS_CALLBACK_TYPES
  */
 abstract class ResursCallbackTypes extends RESURS_CALLBACK_TYPES
 {
-    /**
-     * Callbacktype not defined
-     * @deprecated Use CALLBACK_TYPE_NOT_SET
-     */
-    const UNDEFINED = 0;
-
-    /**
-     * Callback UNFREEZE
-     *
-     * Informs when an payment is unfrozen after manual fraud screening. This means that the payment may be debited (captured) and the goods can be delivered.
-     * @link https://test.resurs.com/docs/display/ecom/UNFREEZE
-     * @deprecated Use CALLBACK_TYPE_UNFREEZE
-     */
-    const UNFREEZE = 1;
-
-    /**
-     * Callback ANNULMENT
-     *
-     * Will be sent once a payment is fully annulled at Resurs Bank, for example when manual fraud screening implies fraudulent usage. Annulling part of the payment will not trigger this event.
-     * If the representative is not listening to this callback orders might be orphaned (i e without connected payment) and products bound to these orders never released.
-     * @link https://test.resurs.com/docs/display/ecom/ANNULMENT
-     * @deprecated Use CALLBACK_TYPE_ANNULMENT
-     */
-    const ANNULMENT = 2;
-
-    /**
-     * Callback AUTOMATIC_FRAUD_CONTROL
-     *
-     * Will be sent once a payment is fully annulled at Resurs Bank, for example when manual fraud screening implies fraudulent usage. Annulling part of the payment will not trigger this event.
-     * @link https://test.resurs.com/docs/display/ecom/AUTOMATIC_FRAUD_CONTROL
-     * @deprecated Use CALLBACK_TYPE_AUTOMATIC_FRAUD_CONTROL
-     */
-    const AUTOMATIC_FRAUD_CONTROL = 3;
-
-    /**
-     * Callback FINALIZATION
-     *
-     * Once a payment is finalized automatically at Resurs Bank, for this will trigger this event, when the parameter finalizeIfBooked parmeter is set to true in paymentData. This callback will only be called if you are implementing the paymentData method with finilizedIfBooked parameter set to true, in the Simplified Shop Flow Service.
-     * @link https://test.resurs.com/docs/display/ecom/FINALIZATION
-     * @deprecated Use CALLBACK_TYPE_FINALIZATION
-     */
-    const FINALIZATION = 4;
-
-    /**
-     * Callback TEST
-     *
-     * To test the callback mechanism. Can be used in integration testing to assure that communication works. A call is made to DeveloperService (triggerTestEvent) and Resurs Bank immediately does a callback. Note that TEST callback must be registered in the same way as all the other callbacks before it can be used.
-     * @link https://test.resurs.com/docs/display/ecom/TEST
-     * @deprecated CALLBACK_TYPE_TEST
-     */
-    const TEST = 5;
-    /**
-     * Callback UPDATE
-     *
-     * Will be sent when a payment is updated. Resurs Bank will do a HTTP/POST call with parameter paymentId and the xml for paymentDiff to the registered URL.
-     * @link https://test.resurs.com/docs/display/ecom/UPDATE
-     * @deprecated Use CALLBACK_TYPE_UPDATE
-     */
-    const UPDATE = 6;
-
-    /**
-     * Callback BOOKED
-     *
-     * Trigger: The order is in Resurs Bank system and ready for finalization
-     * @link https://test.resurs.com/docs/display/ecom/BOOKED
-     * @deprecated Use CALLBACK_TYPE_BOOKED
-     */
-    const BOOKED = 7;
 }
 
 /**
