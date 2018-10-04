@@ -1627,12 +1627,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             $customerId = getResursWooCustomerId($order);
             if (!is_null($customerId)) {
-                $bookDataArray = resurs_add_customer_meta(
-                    'CustomerId',
-                    $customerId,
-                    $bookDataArray,
-                    true
-                );
+                $bookDataArray = resurs_add_customer_meta('CustomerId', $customerId, $bookDataArray, true);
             }
 
             if ($paymentMethodInformation->type == "PAYMENT_PROVIDER" && ! $supportProviderMethods) {
@@ -1703,11 +1698,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                 $customerId = getResursWooCustomerId($order);
                 if (!is_null($customerId)) {
-                    $bookDataArray = resurs_add_customer_meta(
-                        'CustomerId',
-                        $customerId,
-                        $bookDataArray
-                    );
+                    $bookDataArray = resurs_add_customer_meta('CustomerId', $customerId, $bookDataArray);
                 }
 
                 // If woocommerce forms do offer phone and email, while our own don't, use them (moved to the section of setCustomer)
@@ -2316,12 +2307,6 @@ function woocommerce_gateway_resurs_bank_init()
                             }
                         }
                         $getRedirectUrl = $this->get_return_url($order);
-
-                        $customerId = getResursWooCustomerId($order);
-                        if (!is_null($customerId)) {
-                            $this->flow->addMetaData($paymentId, 'CustomerId', $customerId);
-                        }
-
                         $order->update_status('processing',
                             __('The payment are signed and booked', 'WC_Payment_Gateway'));
                         WC()->cart->empty_cart();
@@ -4852,7 +4837,6 @@ function resurs_omnicheckout_order_button_html($classButtonHtml)
  */
 function resurs_add_customer_meta($key, $value, $bookDataArray = array(), $isHosted = false)
 {
-
     if (!is_array($bookDataArray)) {
         $bookDataArray = array();
     }
@@ -4864,8 +4848,7 @@ function resurs_add_customer_meta($key, $value, $bookDataArray = array(), $isHos
     if (!$isHosted) {
         $bookDataArray['metaData'][] = array('key' => $key, 'value' => $value);
     } else {
-        $bookDataArray['metaData'][] = array('key' => $key);
-        $bookDataArray['metaData'][] = array($key => $value);
+        $bookDataArray['metaData'][] = array($key=>$value);
     }
 
     return $bookDataArray;
