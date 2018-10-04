@@ -4827,34 +4827,6 @@ function resurs_omnicheckout_order_button_html($classButtonHtml)
 }
 
 /**
- * Add metadata into order before it is created. Multiple metadata allowed.
- *
- * @param $key
- * @param $value
- * @param array $bookDataArray
- * @param bool $isHosted
- * @return array
- */
-function resurs_add_customer_meta($key, $value, $bookDataArray = array(), $isHosted = false)
-{
-    if (!is_array($bookDataArray)) {
-        $bookDataArray = array();
-    }
-
-    if (!isset($bookDataArray['metaData'])) {
-        $bookDataArray['metaData'] = array();
-    }
-
-    if (!$isHosted) {
-        $bookDataArray['metaData'][] = array('key' => $key, 'value' => $value);
-    } else {
-        $bookDataArray['metaData'][] = array($key=>$value);
-    }
-
-    return $bookDataArray;
-}
-
-/**
  * Payment methods validator for OmniCheckout
  *
  * @param $paymentGatewaysCheck
