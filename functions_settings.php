@@ -663,7 +663,7 @@ if ( is_admin() ) {
  		    			\$countryConfig = \$countryHandler->getCountryConfig();
  		    			\$this->demoCountry = \$_SESSION['rb_country'];
  		    			//\$this->demoMethod = \$this->flow->sanitizePaymentMethods(get_transient('resursMethods' . \$this->demoCountry));
-y
+
  		    			\$this->demoMethod = get_transient('resursMethods' . \$this->demoCountry);
  		    			\$matchMethod = false;
  		    			
