@@ -623,7 +623,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     // Let's make sure that we can clean up mistakes.
                                     $countryBasedPaymentMethods[$countryId] = array();
                                 }
-                                if (empty($countryBasedPaymentMethods[$countryId]) || (is_array($countryBasedPaymentMethods[$countryId]) && ! count($countryBasedPaymentMethods[$countryId]))) {
+
+                                $transientTest = get_transient('resursMethods' . $countryId,
+                                    $countryBasedPaymentMethods[$countryId]);
+
+                                if (empty($countryBasedPaymentMethods[$countryId]) || (is_array($countryBasedPaymentMethods[$countryId]) && ! count($countryBasedPaymentMethods[$countryId])) || empty($transientTest)) {
                                     $demoShopFlow->setAuthentication($countryCredentials['login'],
                                         $countryCredentials['password']);
                                     $countryBasedPaymentMethods[$countryId] = $demoShopFlow->getPaymentMethods(array(), true);

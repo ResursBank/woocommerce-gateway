@@ -261,8 +261,6 @@ class RESURS_DEPRECATED_FLOW
      */
     public function canHideFormField($formField = "", $canThrow = false)
     {
-        //$canHideSet = false;
-
         if (is_array($this->templateFieldsByMethodResponse) && count($this->templateFieldsByMethodResponse) && isset($this->templateFieldsByMethodResponse['fields']) && isset($this->templateFieldsByMethodResponse['display'])) {
             $currentDisplay = $this->templateFieldsByMethodResponse['display'];
             if (in_array($formField, $currentDisplay)) {
@@ -283,7 +281,6 @@ class RESURS_DEPRECATED_FLOW
         return $canHideSet;
     }
 
-
     /**
      * Get field set rules for web-forms
      *
@@ -302,10 +299,13 @@ class RESURS_DEPRECATED_FLOW
      * @param string $specificType
      *
      * @return array
-     * @deprecated Build your own integration
+     * @deprecated Use this if you don't want to think by yourself but on your own risk
      */
-    public function getTemplateFieldsByMethodType($paymentMethodName = "", $customerType = "", $specificType = "")
-    {
+    public function getTemplateFieldsByMethodType(
+        $paymentMethodName = "",
+        $customerType = "",
+        $specificType = ""
+    ) {
         /** @noinspection PhpDeprecationInspection */
         $templateRules = $this->getFormTemplateRules();
         //$returnedRules     = array();
@@ -387,8 +387,9 @@ class RESURS_DEPRECATED_FLOW
      * @throws \Exception
      * @deprecated Build your own integration
      */
-    public function getTemplateFieldsByMethod($paymentMethodName = "")
-    {
+    public function getTemplateFieldsByMethod(
+        $paymentMethodName = ""
+    ) {
         /** @noinspection PhpDeprecationInspection */
         return $this->getTemplateFieldsByMethodType($this->getPaymentMethodSpecific($paymentMethodName));
     }
@@ -402,9 +403,11 @@ class RESURS_DEPRECATED_FLOW
      * @throws \Exception
      * @deprecated Build your own integration
      */
-    public function getFormFieldsByMethod($paymentMethodName = "")
-    {
+    public function getFormFieldsByMethod(
+        $paymentMethodName = ""
+    ) {
         /** @noinspection PhpDeprecationInspection */
         return $this->getTemplateFieldsByMethod($paymentMethodName);
     }
 }
+
