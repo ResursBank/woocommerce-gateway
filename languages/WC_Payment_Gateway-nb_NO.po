@@ -1,0 +1,828 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Untitled project\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-09-24 15:40+0200\n"
+"PO-Revision-Date: 2018-10-05 10:26+0200\n"
+"Last-Translator: patric johnsson\n"
+"Language-Team: Nynorsk (Norway)\n"
+"Language: nn-NO\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz\n"
+"X-Loco-Source-Locale: sv-SE\n"
+"X-Loco-Project-Id: 55049\n"
+"X-Loco-Api-Version: 1.0.20 20180914-1"
+
+#: functions.php:31 includes/resurs_bank_nr_109.php:36
+#: includes/resurs_bank_nr_110.php:36 includes/resurs_bank_nr_111.php:36
+#: includes/resurs_bank_nr_112.php:36 staticflows/flow_omni.php:93
+#: loco:5ba8e96fa08ef15d01101bd1
+msgid "Enable/Disable"
+msgstr "Aktiver/Deaktiver"
+
+#: functions.php:36 loco:5ba8e96fa08ef15d01101bd2
+msgid "Country"
+msgstr "Land "
+
+#: functions.php:39 loco:5ba8e96fa08ef15d01101bd3
+msgid "Sweden"
+msgstr "Sverige"
+
+#: functions.php:40 loco:5ba8e96fa08ef15d01101bd4
+msgid "Denmark"
+msgstr "Danmark"
+
+#: functions.php:41 loco:5ba8e96fa08ef15d01101bd5
+msgid "Finland"
+msgstr "Finland"
+
+#: functions.php:42 loco:5ba8e96fa08ef15d01101bd6
+msgid "Norway"
+msgstr "Norge"
+
+#: functions.php:45 staticflows/flow_omni.php:120 loco:5ba8e96fa08ef15d01101bd7
+msgid "The country for which the payment services should be used"
+msgstr "Landet der betalingstjenesten skal brukes"
+
+#: functions.php:49 loco:5ba8e96fa08ef15d01101bd8
+msgid "Flow type"
+msgstr "Flow-type"
+
+#: functions.php:52 resursbank_settings.php:163 loco:5ba8e96fa08ef15d01101bd9
+msgid "Simplified Shop Flow: Payments goes through Resurs Bank API (Default)"
+msgstr ""
+"Forenklet betalings-flow: Betalinger går gjennom Resurs Bank API (Standard)"
+
+#: functions.php:53 resursbank_settings.php:164 loco:5ba8e96fa08ef15d01101bda
+msgid ""
+"Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment"
+msgstr ""
+"Hosted Shop Flow: Kunden omdirigeres til Resurs Bank for å fullføre "
+"betalingen"
+
+#: functions.php:54 resursbank_settings.php:165 loco:5ba8e96fa08ef15d01101bdb
+msgid ""
+"Omni Checkout: Fully integrated payment solutions based on iframes (as much "
+"as possible including initial customer data are handled by Resurs Bank "
+"without leaving the checkout page)"
+msgstr ""
+"Resurs Checkout: Fullt integrerte betalingsløsning basert på iFrames (så mye "
+"som mulig inkludert innledende kundedata behandles av Resurs Bank uten å "
+"forlate kassen)"
+
+#: functions.php:57 loco:5ba8e96fa08ef15d01101bdc
+msgid "What kind of shop flow you want to use"
+msgstr "Hva slags butikk-flow ønsker du å bruke"
+
+#: functions.php:61 loco:5ba8e96fa08ef15d01101bdd
+msgid "Title"
+msgstr "Tittel"
+
+#: functions.php:64 loco:5ba8e96fa08ef15d01101bde
+msgid ""
+"This controls the payment method title, which the user sees during checkout."
+msgstr ""
+"Dette kontrollerer betalingsmetodenes tittel som kunder ser under checkout."
+
+#: functions.php:68 loco:5ba8e96fa08ef15d01101bdf
+msgid "Description"
+msgstr "Beskrivelse"
+
+#: functions.php:71 includes/resurs_bank_nr_109.php:62
+#: includes/resurs_bank_nr_110.php:62 includes/resurs_bank_nr_111.php:62
+#: includes/resurs_bank_nr_112.php:62 staticflows/flow_omni.php:108
+#: loco:5ba8e96fa08ef15d01101be0
+msgid ""
+"This controls the payment method description which the user sees during "
+"checkout."
+msgstr ""
+"Dette kontrollerer betalingsmetodenes beskrivelse som kunder ser under "
+"checkout."
+
+#: functions.php:75 loco:5ba8e96fa08ef15d01101be1
+msgid "Web services username"
+msgstr "Web service brukernavn"
+
+#: functions.php:77 loco:5ba8e96fa08ef15d01101be2
+msgid "Resurs Bank web services username"
+msgstr "Resurs Bank web service brukernavn"
+
+#: functions.php:82 loco:5ba8e96fa08ef15d01101be3
+msgid "Web services password"
+msgstr "Web service passord"
+
+#: functions.php:85 loco:5ba8e96fa08ef15d01101be4
+msgid "Resurs Bank web services password"
+msgstr "Resurs Bank web service passord"
+
+#: functions.php:89 loco:5ba8e96fa08ef15d01101be5
+msgid "BaseURL Webservices Live-Environment"
+msgstr "BaseURL Webservices Live-Environment"
+
+#: functions.php:94 loco:5ba8e96fa08ef15d01101be6
+msgid "BaseURL Webservices Test-Environment"
+msgstr "BaseURL Webservices for Test-Environment "
+
+#: functions.php:99 loco:5ba8e96fa08ef15d01101be7
+msgid "Server environment"
+msgstr "Server område"
+
+#: functions.php:108 loco:5ba8e96fa08ef15d01101be8
+msgid ""
+"Replacement URL for callbacks if different from default homeurl settings"
+msgstr ""
+"Erstattings-URL for callbacks hvis forskjellig fra standard homeurl-"
+"innstillinger"
+
+#: functions.php:109 loco:5ba8e96fa08ef15d01101be9
+msgid ""
+"If your callback URL has another URL than the defaults, you may enter the "
+"URL here. Default value is your site-URL. If this value is empty, the URL "
+"will be automatically generated."
+msgstr ""
+"Hvis din callback-URL har en annen URL enn standardinnstillingene, kan du "
+"skrive inn nettadressen her. Standardverdien er webadressen din. Hvis denne "
+"verdien er tom, genereres nettadressen automatisk"
+
+#: functions.php:114 functions.php:117 resursbankgateway.php:2541
+#: loco:5ba8e96fa08ef15d01101bea
+msgid "Register Callbacks"
+msgstr "Registrer Callback"
+
+#: functions.php:120 functions.php:123 resursbankgateway.php:2542
+#: loco:5ba8e96fa08ef15d01101beb
+msgid "Update available payment methods"
+msgstr "Oppdatere tilgjengelige betalingsmetodene"
+
+#: functions.php:129 loco:5ba8e96fa08ef15d01101bec
+msgid "The tax rate that will be added to the payment methods"
+msgstr "Skattesatsen som vil bli lagt til betalingsmetodene"
+
+#: functions.php:133 loco:5ba8e96fa08ef15d01101bed
+msgid "During payment process, also handle order by reducing order stock"
+msgstr ""
+"Under betalingsprosessen, håndtere også bestillingen ved å redusere "
+"ordrebeholdningen"
+
+#: functions.php:140 functions.php:151 loco:5ba8e96fa08ef15d01101bee
+msgid ""
+"Defines whether the plugin should wait for the fraud control when booking "
+"payments, or not"
+msgstr ""
+"Definerer om plugin skal vente på svindelkontroll ved registrering av "
+"betalinger, eller ikke"
+
+#: functions.php:162 loco:5ba8e96fa08ef15d01101bef
+msgid ""
+"Defines if a payment should be annulled immediately if Resurs Bank returns a "
+"FROZEN state"
+msgstr ""
+"Definerer om en betaling skal bli annulert direkte hvis Resurs Bank "
+"returnerer FROZEN"
+
+#: functions.php:173 loco:5ba8e96fa08ef15d01101bf0
+msgid "Defines if a payment should be debited immediately on a booked payment"
+msgstr ""
+"Definerer om betalingen skal bli debitert umiddelbart ved en registrert "
+"betaling"
+
+#: functions.php:177 loco:5ba8e96fa08ef15d01101bf1
+msgid "Restoring Payment Method gateway files"
+msgstr "Gjenoppretter Payment Method gateway-filer"
+
+#: functions.php:178 loco:5ba8e96fa08ef15d01101bf2
+msgid ""
+"If a payment gateway file (in the includes folder) is missing, they will be "
+"restored automatically if they disappear (e.g. when upgrading the plugin). "
+"Checking this box limits automatic restorations, so they only gets activates "
+"when administrators are logged in"
+msgstr ""
+"Hvis en betalingsgateway-fil (i den inkluderte mappen) mangler, blir de "
+"automatisk gjenopprettet hvis de forsvinner (for eksempel når du oppgraderer "
+"plugin). Ved å sjekke denne boksen begrenses automatiske restaureringer, "
+"slik at de bare aktiveres når administratorene er logget inn"
+
+#: functions.php:180 loco:5ba8e96fa08ef15d01101bf3
+msgid "Only administrators may restore gateway files"
+msgstr "Bare administratorer kan gjenopprette gateway filer"
+
+#: functions.php:183 loco:5ba8e96fa08ef15d01101bf4
+msgid "URL to custom CSS for costOfPurchase"
+msgstr "URL til egendefinert CSS for costOfPurchase"
+
+#: functions.php:184 loco:5ba8e96fa08ef15d01101bf5
+msgid ""
+"Define your custom CSS for the cost of purchase example (if empty, a default "
+"file will be used)"
+msgstr ""
+"Definer din custom CSS for prisen af kjøpseksempel (hvis denne er tom, vil "
+"en standardfil bli brukt)"
+
+#: functions.php:189 loco:5ba8e96fa08ef15d01101bf6
+msgid "Handle NAT connections"
+msgstr "Håndtere NAT forbindelser"
+
+#: functions.php:196 loco:5ba8e96fa08ef15d01101bf7
+msgid ""
+"Defines if the plugin should perform a simple check against proxies on "
+"customer ip addresses (Not recommended to activate since it opens up for "
+"exploits, but if you have many connecting customers that seem to be on NATed "
+"networks, this may help a bit)"
+msgstr ""
+"Defineres om plugin skal utføre en enkel kontroll mot proxyer på kundens ip-"
+"adresser (Ikke anbefalt for å aktivere fordi den åpner opp for utnyttelse, "
+"men hvis du har mange tilkoblingskunder som ser ut til å være på NATed-"
+"nettverk, kan dette hjelpe litt)"
+
+#: functions.php:200 loco:5ba8e96fa08ef15d01101bf8
+msgid "getAddressBox Enabled"
+msgstr "getAddressBox aktivert"
+
+#: functions.php:201 loco:5ba8e96fa08ef15d01101bf9
+msgid ""
+"If enabled, a box for social security numbers will be shown on the checkout. "
+"For Sweden, there will also be a capability to retrieve the customer home "
+"address, while active."
+msgstr ""
+"Hvis aktivert, vil en boks for personnummer bli vist i kassen. Mens aktiv "
+"vil det for Sverige også være mulig å hente kundens hjemmeadresse"
+
+#: functions.php:210 loco:5ba8e96fa08ef15d01101bfa
+msgid "Streamlined customer field behaviour"
+msgstr "Strømlinjeformet kundefeltadferd"
+
+#: functions.php:211 loco:5ba8e96fa08ef15d01101bfb
+msgid ""
+"Fields that are required to complete an order from Resurs Bank, are hidden "
+"when active, since the fields required for Resurs Bank are inherited from "
+"WooCommerce fields by default."
+msgstr ""
+"Felt som kreves for å fullføre en bestilling fra Resurs Bank er skjult når "
+"de er aktive, siden feltene som kreves for Resurs Bank er overført fra "
+"WooCommerce-feltene som default"
+
+#: functions.php:230 loco:5ba8e96fa08ef15d01101bfc
+msgid "Demoshopläge"
+msgstr "Demoshop-modus"
+
+#: functions.php:231 loco:5ba8e96fa08ef15d01101bfd
+msgid ""
+"Define if this shop is a demo store or not, which opens for more "
+"functionality (This option also forces the use of test environment)"
+msgstr ""
+"Definer om denne butikken er en demo butikk eller ikke, hvilket åpner opp "
+"for mer funksjonalitet (dette alternativet tvinger også bruken av testmiljøet"
+
+#: functions.php:240 loco:5ba8e96fa08ef15d01101bfe
+msgid "Make getAddress fetch live data while in test mode"
+msgstr "Få getAddress til å hente live data mens du er i testmodus"
+
+#: functions.php:241 loco:5ba8e96fa08ef15d01101bff
+msgid ""
+"If enabled, live data will be available on getAddress-requests while in demo "
+"shop. Credentials for production are required. Feature does not work for "
+"Omni Checkout."
+msgstr ""
+"Hvis aktivert vil live data være tilgjengelig på getAddress-forespørsler "
+"mens du er i demo-butikk. Credentials for produksjon er påkrevd. Funksjonen "
+"virker ikke for Resurs Checkout"
+
+#: functions.php:250 loco:5ba8e96fa08ef15d01101c00
+msgid "Web services username (getAddress/Production)"
+msgstr "Web service brukernavn (getAddress/Produksjon)"
+
+#: functions.php:252 loco:5ba8e96fa08ef15d01101c01
+msgid "Resurs Bank web services username (getaddress/Production)"
+msgstr "Resurs Bank web services brukernavn (getAddress/Produksjon)"
+
+#: functions.php:257 loco:5ba8e96fa08ef15d01101c02
+msgid "Web services password (getAddress/Production)"
+msgstr "Web service passord (getAdress/produksjon)"
+
+#: functions.php:260 loco:5ba8e96fa08ef15d01101c03
+msgid "Resurs Bank web services password (getAddress/Production)"
+msgstr "Resurs Bank web service passord (getAdress/produksjon)"
+
+#: functions.php:264 loco:5ba8e96fa08ef15d01101c04
+msgid "Prevent caching of included javascripts"
+msgstr "Forhindre caching av inkluderte javascripts"
+
+#: functions.php:265 loco:5ba8e96fa08ef15d01101c05
+msgid ""
+"Enable this feature, if resursbank.js tend to cache older versions even "
+"after the codebase are updated"
+msgstr ""
+"Aktiver denne løsningen om resursbank.js forsøker cache eldre versjoner selv "
+"etter kodebasen er oppdatert"
+
+#: includes/resurs_bank_nr_109.php:44 includes/resurs_bank_nr_110.php:44
+#: includes/resurs_bank_nr_111.php:44 includes/resurs_bank_nr_112.php:44
+#: staticflows/flow_omni.php:101 loco:5ba8e96fa08ef15d01101c06
+msgid ""
+"This controls the payment method title which the user sees during checkout."
+msgstr ""
+"Dette kontrollerer betalingsmetode-tittelen som kunder ser under checkout"
+
+#: includes/resurs_bank_nr_109.php:48 includes/resurs_bank_nr_110.php:48
+#: includes/resurs_bank_nr_111.php:48 includes/resurs_bank_nr_112.php:48
+#: loco:5ba8e96fa08ef15d01101c07
+msgid "Custom payment method icon"
+msgstr "Tilpasset betalingsmetode-ikon"
+
+#: includes/resurs_bank_nr_109.php:51 includes/resurs_bank_nr_110.php:51
+#: includes/resurs_bank_nr_111.php:51 includes/resurs_bank_nr_112.php:51
+#: loco:5ba8e96fa08ef15d01101c08
+msgid ""
+"Used for branded logotypes as icons for the specific payment method. The "
+"image type must be a http/https-link. Suggested link is local, uploaded to "
+"WordPress own media storage."
+msgstr ""
+"Brukes for merkede logoer som ikoner for den spesifikke betalingsmetoden. "
+"Bildetypen må være en http/https-link. Foreslått lenke er lokal, opplastet "
+"til WordPress egen media lagring"
+
+#: includes/resurs_bank_nr_109.php:54 includes/resurs_bank_nr_110.php:54
+#: includes/resurs_bank_nr_111.php:54 includes/resurs_bank_nr_112.php:54
+#: loco:5ba8e96fa08ef15d01101c09
+msgid "Enable/Disable payment method icon"
+msgstr "Aktiver/Deaktiver betalingsmetode-ikon"
+
+#: includes/resurs_bank_nr_109.php:69 includes/resurs_bank_nr_110.php:69
+#: includes/resurs_bank_nr_111.php:69 includes/resurs_bank_nr_112.php:69
+#: loco:5ba8e96fa08ef15d01101c0a
+msgid "Payment fee for this payment method"
+msgstr "Gebyr for denne betalingsmetode"
+
+#: includes/resurs_bank_nr_109.php:73 includes/resurs_bank_nr_110.php:73
+#: includes/resurs_bank_nr_111.php:73 includes/resurs_bank_nr_112.php:73
+#: loco:5ba8e96fa08ef15d01101c0b
+msgid "Description of this payment method fee"
+msgstr "Beskrivelse av betalingsmetodens gebyr"
+
+#: resursbank_settings.php:26 loco:5ba8e96fa08ef15d01101c0c
+msgid "Resurs Bank"
+msgstr "Resurs Bank"
+
+#: resursbank_settings.php:52 loco:5ba8e96fa08ef15d01101c0d
+msgid "Resurs Bank Administration"
+msgstr "Resurs Bank administrasjon"
+
+#: resursbank_settings.php:169 loco:5ba8e96fa08ef15d01101c0e
+msgid "Resurs Bank payment gateway configuration"
+msgstr "Resurs Bank betalings-gateaway konfigurasjon"
+
+#: resursbankgateway.php:188 loco:5ba8e96fa08ef15d01101c0f
+msgid "Payment method gateways are updated"
+msgstr "Gateway for betalingsmetoden er oppdatert"
+
+#: resursbankgateway.php:209 loco:5ba8e96fa08ef15d01101c10
+msgid "Change the flow type"
+msgstr "Endre flow-type"
+
+#: resursbankgateway.php:212 loco:5ba8e96fa08ef15d01101c11
+msgid "Back to shop"
+msgstr "Tilbake til butikken"
+
+#: resursbankgateway.php:213 loco:5ba8e96fa08ef15d01101c12
+msgid "Back to checkout"
+msgstr "Tilbake til checkout"
+
+#: resursbankgateway.php:217 loco:5ba8e96fa08ef15d01101c13
+msgid "Changing flows when the plugin is not in demo mode is not possible"
+msgstr "Endring av flowen når plugin ikke er i demomodus, er ikke mulig"
+
+#: resursbankgateway.php:279 loco:5ba8e96fa08ef15d01101c14
+msgid "Resurs Bank denied purchase"
+msgstr "Resurs Bank avslo kjøpet"
+
+#: resursbankgateway.php:423 loco:5ba8e96fa08ef15d01101c15
+msgid "The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED"
+msgstr "Resurs Bank event AUTOMATIC_FRAUD_CONTROL returnerte THAWED"
+
+#: resursbankgateway.php:426 loco:5ba8e96fa08ef15d01101c16
+msgid "The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN"
+msgstr "Resurs Bank event AUTOMATIC_FRAUD_CONTROL returnerte FROZEN"
+
+#: resursbankgateway.php:436 loco:5ba8e96fa08ef15d01101c17
+msgid "ANNULMENT event received from Resurs Bank"
+msgstr "ANNULERT event mottatt fra Resurs Bank"
+
+#: resursbankgateway.php:439 loco:5ba8e96fa08ef15d01101c18
+msgid "FINALIZATION event received from Resurs Bank"
+msgstr "FINALIZATION event mottatt fra Resurs Bank"
+
+#: resursbankgateway.php:762 loco:5ba8e96fa08ef15d01101c19
+msgid "Contact government id"
+msgstr "Kontakt personnummer"
+
+#: resursbankgateway.php:763 loco:5ba8e96fa08ef15d01101c1a
+msgid "Applicant government ID"
+msgstr "Søkers personnummer"
+
+#: resursbankgateway.php:764 loco:5ba8e96fa08ef15d01101c1b
+msgid "Applicant full name"
+msgstr "Søkerens fulle navn"
+
+#: resursbankgateway.php:765 loco:5ba8e96fa08ef15d01101c1c
+msgid "Applicant email address"
+msgstr "Søkerens e-post adresse"
+
+#: resursbankgateway.php:766 loco:5ba8e96fa08ef15d01101c1d
+msgid "Applicant telephone number"
+msgstr "Søkerens telefonnummer"
+
+#: resursbankgateway.php:767 loco:5ba8e96fa08ef15d01101c1e
+msgid "Applicant mobile number"
+msgstr "Søkerens mobilnummer"
+
+#: resursbankgateway.php:768 loco:5ba8e96fa08ef15d01101c1f
+msgid "Card number"
+msgstr "Kortnummer"
+
+#: resursbankgateway.php:809 resursbankgateway.php:817
+#: resursbankgateway.php:2827 loco:5ba8e96fa08ef15d01101c20
+msgid "Read more"
+msgstr "Les mer"
+
+#: resursbankgateway.php:830 loco:5ba8e96fa08ef15d01101c21
+msgid ""
+"Your environment is currently in test mode and the payment amount is lower "
+"or higher that the payment method allows.<br>In production mode, this "
+"payment method will be hidden."
+msgstr ""
+"Ditt miljø er for øyeblikket i testmodus og betalingsbeløpet er lavere eller "
+"høyere enn betalingsmetoden tillater. <br>I produksjonsmodus vil denne "
+"betalingsmetoden bli skjult"
+
+#: resursbankgateway.php:997 loco:5ba8e96fa08ef15d01101c22
+msgid ""
+"An error occured during the update of the booked payment (hostedFlow) - the "
+"payment id which was never received properly"
+msgstr ""
+"Det oppstod en feil under oppdateringen for betalingen (Hosted flow) – "
+"betalings-ID ble ikke mottatt riktig"
+
+#: resursbankgateway.php:1051 resursbankgateway.php:1427
+#: resursbankgateway.php:1492 loco:5ba8e96fa08ef15d01101c23
+msgid ""
+"The payment can not complete. Contact customer services for more information."
+msgstr ""
+"Betalingen kan ikke fullføres. Kontakt kundeservice for mer informasjon"
+
+#: resursbankgateway.php:1055 loco:5ba8e96fa08ef15d01101c24
+msgid ""
+"An error occured during the update of the booked payment. The payment ID was "
+"never received properly in the payment process"
+msgstr ""
+"Det oppstod en feil under oppdateringen av betalingen. Betalings-IDen ble "
+"ikke riktig mottatt i betalingsprosessen"
+
+#: resursbankgateway.php:1056 resursbankgateway.php:1060
+#: resursbankgateway.php:1496 loco:5ba8e96fa08ef15d01101c25
+msgid "An unknown error occured. Please, try again later"
+msgstr "En ukjent feil oppstod. Vennligst prøv igjen senere"
+
+#: resursbankgateway.php:1404 loco:5ba8e96fa08ef15d01101c26
+msgid "The payment failed during purchase"
+msgstr "Betalingen feilet under kjøp"
+
+#: resursbankgateway.php:1405 loco:5ba8e96fa08ef15d01101c27
+msgid ""
+"The purchase from Resurs Bank was by some reason not accepted. Please "
+"contact customer services, or try again with another payment method."
+msgstr ""
+"Kjøpet fra Resurs Bank ble av en eller annen grunn ikke akseptert. Ta "
+"kontakt med kundeservice, eller prøv igjen med en annen betalingsmetode"
+
+#: resursbankgateway.php:1415 resursbankgateway.php:1487
+#: loco:5ba8e96fa08ef15d01101c28
+msgid "The payment are signed and booked"
+msgstr "Betalingen er signert og registrert"
+
+#: resursbankgateway.php:1458 loco:5ba8e96fa08ef15d01101c29
+msgid "The payment already exists"
+msgstr "Betalingen finnes allerede"
+
+#: resursbankgateway.php:1464 loco:5ba8e96fa08ef15d01101c2a
+msgid ""
+"We could not finish your order. Please, contact support for more information."
+msgstr ""
+"Vi kunne ikke fullføre din bestilling. Vennlingst kontakt support for mer "
+"informasjon"
+
+#: resursbankgateway.php:1468 loco:5ba8e96fa08ef15d01101c2b
+msgid "An unknown error occured in signing method. Please, try again later"
+msgstr "En ukjent feil oppstod ved signering. Vennligst prøv igjen senere"
+
+#: resursbankgateway.php:1485 loco:5ba8e96fa08ef15d01101c2c
+msgid "The payment are frozen, while waiting for manual control"
+msgstr "Betalingen er fryst i vente av manuell kontroll"
+
+#: resursbankgateway.php:1489 loco:5ba8e96fa08ef15d01101c2d
+msgid "The payment are signed and debited"
+msgstr "Betalingen er signert og debitert"
+
+#: resursbankgateway.php:1495 loco:5ba8e96fa08ef15d01101c2e
+msgid ""
+"An error occured during the update of the booked payment. The payment id was "
+"never received properly in signing response"
+msgstr ""
+"Det oppstod en feil under oppdateringen av betalingen. Betalings-IDen ble "
+"ikke riktig mottatt i signeringsprosessen"
+
+#: resursbankgateway.php:1500 loco:5ba8e96fa08ef15d01101c2f
+msgid "Something went wrong during the signing process."
+msgstr "Noe gikk feil under signeringsprosessen"
+
+#: resursbankgateway.php:1884 loco:5ba8e96fa08ef15d01101c30
+msgid "The field"
+msgstr "Feltet"
+
+#: resursbankgateway.php:1884 loco:5ba8e96fa08ef15d01101c31
+msgid "has invalid information"
+msgstr "har ugyldig informasjon"
+
+#: resursbankgateway.php:1884 loco:5ba8e96fa08ef15d01101c32
+msgid "It can't be empty"
+msgstr "Det kan ikke være tomt"
+
+#: resursbankgateway.php:2027 loco:5ba8e96fa08ef15d01101c33
+msgid "Resurs Bank API Configuration"
+msgstr "Resurs Bank API konfigurasjon"
+
+#: resursbankgateway.php:2114 loco:5ba8e96fa08ef15d01101c34
+msgid "Can not get the address from current government ID"
+msgstr "Kan ikke hente adressen for gjeldende personnummer"
+
+#: resursbankgateway.php:2154 loco:5ba8e96fa08ef15d01101c35
+msgid "Close"
+msgstr "Steng"
+
+#: resursbankgateway.php:2321 loco:5ba8e96fa08ef15d01101c36
+msgid "Can not finalize the payment"
+msgstr "Kan ikke fullføre betalingen"
+
+#: resursbankgateway.php:2410 loco:5ba8e96fa08ef15d01101c37
+msgid "Private"
+msgstr "Privat"
+
+#: resursbankgateway.php:2411 loco:5ba8e96fa08ef15d01101c38
+msgid "Company"
+msgstr "Bedrift"
+
+#: resursbankgateway.php:2416 loco:5ba8e96fa08ef15d01101c39
+msgid "Government ID"
+msgstr "Personnummer"
+
+#: resursbankgateway.php:2417 loco:5ba8e96fa08ef15d01101c3a
+msgid "Enter your government id (social security number)"
+msgstr "Skriv inn ditt personnummer"
+
+#: resursbankgateway.php:2420 loco:5ba8e96fa08ef15d01101c3b
+msgid "Get address"
+msgstr "Hent adresse"
+
+#: resursbankgateway.php:2492 loco:5ba8e96fa08ef15d01101c3c
+msgid "Enter social security number"
+msgstr "Fyll inn fødselsnummer"
+
+#: resursbankgateway.php:2493 loco:5ba8e96fa08ef15d01101c3d
+msgid "Enter corporate government identity"
+msgstr "Oppgi bedriftens organisasjonsnummer"
+
+#: resursbankgateway.php:2494 loco:5ba8e96fa08ef15d01101c3e
+msgid "Government id"
+msgstr "Personnummer"
+
+#: resursbankgateway.php:2495 loco:5ba8e96fa08ef15d01101c3f
+msgid "Corporate government id"
+msgstr "Organisasjonsnummer"
+
+#: resursbankgateway.php:2498 loco:5ba8e96fa08ef15d01101c40
+msgid "Changing delivery address requires signing"
+msgstr "Endring av leveringsadresse krever signering"
+
+#: resursbankgateway.php:2499 loco:5ba8e96fa08ef15d01101c41
+msgid "I can not show errors since the element is missing"
+msgstr "Jeg kan ikke vise feilen siden det mangler elementer"
+
+#: resursbankgateway.php:2500 loco:5ba8e96fa08ef15d01101c42
+msgid ""
+"The purchase has failed, due to an internal server error: The shop could not "
+"properly update the order."
+msgstr ""
+"Kjøpet feilet på grunn av internal server error: Butikken kan ikke oppdatere "
+"orderen riktig"
+
+#: resursbankgateway.php:2501 loco:5ba8e96fa08ef15d01101c43
+msgid ""
+"The purchase was rejected by Resurs Bank. Please contact customer services, "
+"or try again with another payment method."
+msgstr ""
+"Kjøpet ble avvist av Resurs Bank. Vennligst kontakt kundeservice, eller prøv "
+"igjen med en annen betalignsmetode"
+
+#: resursbankgateway.php:2502 loco:5ba8e96fa08ef15d01101c44
+msgid ""
+"Something went wrong when we tried to book your order. Please contact "
+"customer support for more information."
+msgstr ""
+"Noe gikk feil når vi forsøkte å registrere din ordre. Vennligst kontakt "
+"kunderservice for informasjon"
+
+#: resursbankgateway.php:2503 loco:5ba8e96fa08ef15d01101c45
+msgid ""
+"An internal error occured while trying to book the order. Please contact "
+"customer support for more information."
+msgstr ""
+"En intern feil oppstod ved registrering av ordre. Vennligst kontakt "
+"kundeservice for mer informasjon"
+
+#: resursbankgateway.php:2504 loco:5ba8e96fa08ef15d01101c46
+msgid "An internal error occured while trying to book the order:"
+msgstr "En intern feil oppstod ved registrering av ordre:"
+
+#: resursbankgateway.php:2505 loco:5ba8e96fa08ef15d01101c47
+msgid "Please contact customer support for more information."
+msgstr "Vennligst kontakt kundeservice for mer informasjon"
+
+#: resursbankgateway.php:2550 loco:5ba8e96fa08ef15d01101c48
+msgid ""
+"The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or "
+"older. You should consider upgrading to 5.4 or higher."
+msgstr ""
+"Resurs Bank Addon for WooCommerce virker kanskje ikke i PHP 5.3 eller eldre. "
+"Du bør vurdere å oppgradere til 5,4 eller høyere"
+
+#: resursbankgateway.php:2767 loco:5ba8e96fa08ef15d01101c49
+msgid "The order is booked"
+msgstr "Orderen er registrert"
+
+#: resursbankgateway.php:2769 loco:5ba8e96fa08ef15d01101c4a
+msgid "The order is debited"
+msgstr "Orderen er debitert"
+
+#: resursbankgateway.php:2771 loco:5ba8e96fa08ef15d01101c4b
+msgid "The order is credited"
+msgstr "Orderen er kreditert"
+
+#: resursbankgateway.php:2773 loco:5ba8e96fa08ef15d01101c4c
+msgid "The order is annulled"
+msgstr "Orderen er annulert"
+
+#: resursbankgateway.php:2793 loco:5ba8e96fa08ef15d01101c4d
+msgid "Payment ID"
+msgstr "Betalings-ID"
+
+#: resursbankgateway.php:2796 loco:5ba8e96fa08ef15d01101c4e
+msgid "Payment method ID"
+msgstr "Betalingsmetode-ID"
+
+#: resursbankgateway.php:2799 loco:5ba8e96fa08ef15d01101c4f
+msgid "Payment method name"
+msgstr "Betalingsmetode-navn "
+
+#: resursbankgateway.php:2802 loco:5ba8e96fa08ef15d01101c50
+msgid "Payment method type"
+msgstr "Betalingsmetod-type"
+
+#: resursbankgateway.php:2805 loco:5ba8e96fa08ef15d01101c51
+msgid "Payment amount"
+msgstr "Betalingsbeløp"
+
+#: resursbankgateway.php:2808 loco:5ba8e96fa08ef15d01101c52
+msgid "Payment limit"
+msgstr "Betalingsgrense"
+
+#: resursbankgateway.php:2811 loco:5ba8e96fa08ef15d01101c53
+msgid "Fraud"
+msgstr "Svindel"
+
+#: resursbankgateway.php:2812 resursbankgateway.php:2815
+#: loco:5ba8e96fa08ef15d01101c54
+msgid "Yes"
+msgstr "Ja"
+
+#: resursbankgateway.php:2812 resursbankgateway.php:2815
+#: loco:5ba8e96fa08ef15d01101c55
+msgid "No"
+msgstr "Nei"
+
+#: resursbankgateway.php:2814 loco:5ba8e96fa08ef15d01101c56
+msgid "Frozen"
+msgstr "Fryst"
+
+#: resursbankgateway.php:2817 loco:5ba8e96fa08ef15d01101c57
+msgid "Customer name"
+msgstr "Kunde navn"
+
+#: resursbankgateway.php:2820 loco:5ba8e96fa08ef15d01101c58
+msgid "Delivery address"
+msgstr "Leveringsadresse"
+
+#: resursbankgateway.php:3268 loco:5ba8e96fa08ef15d01101c59
+msgid "There are currently no payment methods available"
+msgstr "Det er for tiden ingen betalingsmetoder tilgjengelige"
+
+#: staticflows/flow_omni.php:67 staticflows/flow_omni.php:213
+#: loco:5ba8e96fa08ef15d01101c5a
+msgid ""
+"We are unable to load Resurs Checkout for the moment. Please try again later."
+msgstr ""
+"Vi har ikke mulighet til å laste Resurs Checkout for øyeblikket. Vennligst "
+"prøv igjen senere"
+
+#: staticflows/flow_omni.php:81 loco:5ba8e96fa08ef15d01101c5b
+msgid "Enabled"
+msgstr "Aktivert"
+
+#: staticflows/flow_omni.php:81 loco:5ba8e96fa08ef15d01101c5c
+msgid "Disabled"
+msgstr "Deaktivert"
+
+#: staticflows/flow_omni.php:112 loco:5ba8e96fa08ef15d01101c5d
+msgid "iFrame location"
+msgstr "iFrame-plassering"
+
+#: staticflows/flow_omni.php:115 loco:5ba8e96fa08ef15d01101c5e
+msgid "After checkout form (Default)"
+msgstr "Etter kassen-skjema (Standard)"
+
+#: staticflows/flow_omni.php:116 loco:5ba8e96fa08ef15d01101c5f
+msgid "Before order review"
+msgstr "Ordreoversikt"
+
+#: staticflows/flow_omni.php:117 loco:5ba8e96fa08ef15d01101c60
+msgid "In payment method list"
+msgstr "I betalingsmetode-listen"
+
+#: staticflows/flow_omni.php:124 loco:5ba8e96fa08ef15d01101c61
+msgid "Reload checkout on cart changes"
+msgstr "Oppdater checkout ved endringer i handlevogn"
+
+#: staticflows/flow_omni.php:131 loco:5ba8e96fa08ef15d01101c62
+msgid ""
+"If you experience problems during the checkout (the iframe does not reload "
+"properly when the cart is updated), activating will reload the checkout page "
+"completely instead of just the iframe"
+msgstr ""
+"Hvis du opplever problemer rundt checkout (hvis iFramen ikke oppdateres på "
+"nytt når vognen er oppdatert), vil aktivering laste opp checkout-siden på "
+"nytt, isteden for bare iFramen"
+
+#: staticflows/flow_omni.php:135 loco:5ba8e96fa08ef15d01101c63
+msgid "Remove all default customer fields when loading Omni Checkout iframe"
+msgstr "Fjern alle standard kundefelt når du laster inn Resurs Checkout iFrame"
+
+#: staticflows/flow_omni.php:142 loco:5ba8e96fa08ef15d01101c64
+msgid ""
+"Normally, OmniCheckout has all necessary customer fields located in the "
+"iFrame. The plugin removes those fields automatically from the checkout. "
+"However, templates may not always clean up the fields properly. This option "
+"fixes this, but may affect the checkout in other ways than expected."
+msgstr ""
+"Normalt har Resurs Checkout alle nødvendige kundefelt i iFramen. Pluginet "
+"fjerner disse feltene automatisk fra kassen. Maler kan imidlertid ikke "
+"alltid rydde opp feltene riktig. Dette alternativet løser dette, men kan "
+"påvirke kassen på andre måter enn forventet."
+
+#: staticflows/flow_omni.php:208 loco:5ba8e96fa08ef15d01101c65
+msgid ""
+"OmniCheckout will not work properly without Javascript functions enabled"
+msgstr ""
+"Resurs Checkout vil ikke fungere optimalt uten å aktivere Javascript "
+"funksjoner"
+
+#: staticflows/flow_omni.php:210 loco:5ba8e96fa08ef15d01101c66
+msgid "Custom test environment URL"
+msgstr "Egendefiniert test-environment URL"
+
+#. Plugin Name of the plugin/theme
+#: loco:5ba8e96fa08ef15d01101c67
+msgid "Resurs Bank Payment Gateway for WooCommerce"
+msgstr "Resurs Banks betalings-Gateway for WooCommerce"
+
+#. Plugin URI of the plugin/theme
+#: loco:5ba8e96fa08ef15d01101c68
+msgid ""
+"https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/"
+msgstr ""
+"https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/"
+
+#. Description of the plugin/theme
+#: loco:5ba8e96fa08ef15d01101c69
+msgid "Extends WooCommerce with a Resurs Bank gateway"
+msgstr "Utvider WooCommerce med en Resurs Bank gateway"
+
+#. Author of the plugin/theme
+#: loco:5ba8e96fa08ef15d01101c6a
+msgid "Resurs Bank AB"
+msgstr "Resurs Bank AB "
+
+#. Author URI of the plugin/theme
+#: loco:5ba8e96fa08ef15d01101c6b
+msgid "https://test.resurs.com/docs/display/ecom/WooCommerce"
+msgstr "https://test.resurs.com/docs/display/ecom/WooCommerce"
