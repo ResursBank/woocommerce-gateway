@@ -333,9 +333,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             </td>
         ';
         } else {
-            /*
-             * The scriptloader in this section will be set up as a callback for "afterclicks"
-             */
+            // The scriptloader in this section will be set up as a callback for "afterclicks"
             $returnTextBox .= '
                 <td style="cursor: pointer;">
                     <span onclick="resursEditProtectedField(this, \'' . $namespace . '\')" id="' . $namespace . '_' . $settingKey . '">' . __('Click to edit',
@@ -1107,13 +1105,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                         $this->methodLabel = '<br>' . __('Default title set by Resurs Bank is ',
                                 'WC_Payment_Gateway') . '<b> ' . $methodDescription . '</b>';
-                        $curSet            = getResursOption('title', $namespace);
+                        //$curSet            = getResursOption('title', $namespace);
                         echo $this->setTextBox('title', $namespace);
                         echo $this->setTextBox('description', $namespace);
                         echo $this->setTextBox('price', $namespace);
                         echo $this->setTextBox('priceDescription', $namespace);
                         echo $this->setCheckBox('enableMethodIcon', $namespace);
                         echo $this->setTextBox('icon', $namespace);
+
                     } else {
                         echo "<br>";
                         echo '<div id="listUnavailable" class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The payment method editor is not availabe while Resurs Checkout is active',
@@ -1128,6 +1127,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '<b>curlmodule debug data</b><br>';
                     echo '<pre>';
                     print_r($getDebugData);
+                    echo "<b>Payment methods that tend to automatically DEBIT orders as soon as money are transferred to merchant</b>\n";
+                    print_r($this->flow->getAutoDebitableTypes());
                     $sslUnsafe = $this->flow->getSslIsUnsafe();
                     echo __("During the URL calls, SSL certificate validation has been disabled",
                             'WC_Payment_Gateway') . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";

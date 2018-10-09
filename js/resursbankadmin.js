@@ -300,30 +300,63 @@ function runResursAdminCallback(callbackName) {
     });
 }
 
+function setCbString(th, str) {
+    th.innerHTML = str;
+}
+
+function removeResursCallback(callbackName) {
+    // Fix this with nonces
+}
+
 function showResursCallbackArray(cbArrayResponse) {
     var useCacheNote = false;   // For future use
+    //var maxCbUrlLength = 80;
+    var maxCbUrlLength = 1024;
     if (typeof cbArrayResponse !== "undefined" && typeof cbArrayResponse["response"] !== "undefined" && typeof cbArrayResponse["response"] !== null && typeof cbArrayResponse["success"] && cbArrayResponse["success"] !== false) {
         if (typeof cbArrayResponse["response"]["getMyCallbacksResponse"] !== "undefined") {
             var callbackListSize = 0;
             var callbackResponse = cbArrayResponse["response"]["getMyCallbacksResponse"];
 
-            var isCached = callbackResponse["cached"];
-            $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
+            var isCached = callbackResponse['cached'];
+            $RB.each(callbackResponse['callbacks'], function (cbName, cbObj) {
                 callbackListSize++;
             });
             if (callbackListSize > 0) {
                 var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0" width="100%">';
-                callbackContent += '<thead class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic rbCallbackStaticLeft">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></thead>';
+                callbackContent += '<th class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic rbCallbackStaticLeft">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></th>';
                 if (useCacheNote && isCached) {
                     callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td></tr>';
                 }
                 $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
+                    var cbObjString = "";
+                    var cbStatus = "";
                     // uriTemplates must not be null
                     if (cbName !== "" && typeof cbObj !== "undefined") {
-                        callbackContent += '<tr><th class="rbCallbackTableStatic rbCallbackStaticLeft">' + cbName + '</th><td class="rbCallbackTableStatic rbCallbackTableFont" ' + (isCached ? 'style="font-style:italic !important;"' : "") + ' width="75%">' + cbObj + "</td></tr>";
+                        // Shorten string to make the table fit more data (besides, word wrapping does not work on long strings)
+                        if (cbObj.length > maxCbUrlLength) {
+                            cbObjString = cbObj.substr(0, maxCbUrlLength) + " [...]";
+                        } else {
+                            cbObjString = cbObj;
+                        }
+                        callbackContent += '<tr><td class="rbCallbackTableStatic rbCallbackStaticLeft" width="20%">';
+                        callbackContent += '<div style="font-weight: bold;">' + cbName + '<div>';
+                        callbackContent += '<div>'+cbStatus+'<div>';
+                        callbackContent += '</td>';
+
+                        callbackContent += '<td width="80%" class="rbCallbackTableStatic rbCallbackStaticRight rbCallbackTableFont" ' + (isCached ? ' style="font-style:italic !important;"' : "") + ' width="75%">';
+                        callbackContent += '<div style="cursor:pointer;" onclick="setCbString(this, \''+cbObj+'\')">' + cbObjString + '</div>';
+                        callbackContent += '</td>';
+
+                        // Requires at least nonces and a referer check, so this is skipped for now
+                        //callbackContent += '<td onclick="removeResursCallback(\''+cbName+'\')">X</td>'
+
+                        callbackContent += '</tr>';
+
+
                     }
                 });
-                callbackContent += "</table><br>";
+                callbackContent += '</table>' +
+                    "<br>";
                 callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
                 $RB('#callbackContent').html(callbackContent);
             } else {
