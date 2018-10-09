@@ -702,7 +702,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     if (isset($paymentFeeData['feeId']) && isset($paymentFeeData['feeValue'])) {
                                         $feeId                     = preg_replace('/^[a-z0-9]$/i', '',
                                             $paymentFeeData['feeId']);
-                                        $feeValue                  = intval($paymentFeeData['feeValue']);
+                                        $feeValue                  = doubleval($paymentFeeData['feeValue']);
                                         $methodNameSpace           = "woocommerce_resurs_bank_nr_" . $feeId . "_settings";
                                         $responseArray['feeId']    = $feeId;
                                         $responseArray['oldValue'] = getResursOption("price", $methodNameSpace);
@@ -3348,7 +3348,7 @@ function woocommerce_gateway_resurs_bank_init()
             'annulCantBeAlone' => __('This setting requires waitForFraudControl to be active',
                 'WC_Payment_Gateway'),
             'couldNotSetNewFee' => __('Unable to set new fee', 'WC_Payment_Gateway'),
-            'newFeeHasBeenSet' => __('Fee has been saved', 'WC_Payment_Gateway'),
+            'newFeeHasBeenSet' => __('Fee has been updated', 'WC_Payment_Gateway'),
             'callbacks_pending' => __('Waiting for callback', 'WC_Payment_Gateway'),
             'callbacks_not_received' => __('Callback not yet received', 'WC_Payment_Gateway'),
             'callbacks_slow' => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.',

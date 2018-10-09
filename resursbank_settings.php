@@ -141,7 +141,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         } else {
             foreach ($this->oldFormFields as $fieldKey => $fieldData) {
                 if (isset($_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey])) {
-                    $saveArray[$fieldKey] = $_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey];
+                    $setFieldValue = $_POST[$this->CONFIG_NAMESPACE . "_" . $fieldKey];
+                    if (preg_match("/woocommerce_resurs_bank_nr_/i", $this->CONFIG_NAMESPACE) && $fieldKey == 'price') {
+                        // Fees should always be considered properly converted values
+                        $setFieldValue = doubleval(preg_replace("/,/", '.', $setFieldValue));
+                    }
+                    $saveArray[$fieldKey] = $setFieldValue;
                 } else {
                     /*
                      * Handling of checkboxes that is located on different pages
@@ -961,6 +966,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                             if (empty($priceValue)) {
                                                 // Injecting ourselves in the current structure
                                                 $priceValue = '<img id="fim_'.$methodArray->id.'" onclick="changeResursFee(this)" src="' . plugin_dir_url(__FILE__) . 'img/pen16x.png' . '">';
+                                            } else {
+                                                // Make sure that noone sets wrong values
+                                                $priceValue = preg_replace("/,/", '.', $priceValue);
+                                                $priceValue = doubleval($priceValue);
                                             }
                                             echo $priceValue;
                                             ?></td>
