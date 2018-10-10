@@ -374,7 +374,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 				/** @var \Resursbank\RBEcomPHP\ResursBank $flow */
 				$flow              = initializeResursFlow();
 				$omniUpdateResponse = $flow->updateCheckoutOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
-				if ( omniOption( "omniFrameNotReloading" ) ) {
+				if ( omniOption( 'omniFrameNotReloading' ) ) {
 					$array['#omniActions'] = '<script>document.location.reload(true);</script>';
 				} else {
 					$omniUpdateResponse = $flow->updateCheckoutOrderLines( $currentOmniRef, $paymentSpec['specLines'] );
@@ -393,13 +393,13 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank {
 		return $array;
 	}
 
-	/**
-	 * Get specLines for startPaymentSession
-	 *
-	 * @param  array $cart WooCommerce cart containing order items
-	 *
-	 * @return array       The specLines for startPaymentSession
-	 */
+    /**
+     * Get specLines for startPaymentSession
+     *
+     * @param  array $cart WooCommerce cart containing order items
+     * @return array       The specLines for startPaymentSession
+     * @throws Exception
+     */
 	protected static function get_spec_lines( $cart ) {
 		$spec_lines = array();
 		foreach ( $cart as $item ) {
@@ -635,23 +635,9 @@ if ( hasResursOmni() ) {
  *
  * @return bool|mixed|void
  */
-function omniOption( $key = "" ) {
-	$response = get_option( 'woocommerce_resurs_bank_omnicheckout_settings' )[ $key ];
-	if ( empty( $response ) ) {
-		$response = get_option( $key );
-	}
-	if ( $response === "true" ) {
-		return true;
-	}
-	if ( $response === "false" ) {
-		return false;
-	}
-	if ( $response === "yes" ) {
-		return true;
-	}
-	if ( $response === "no" ) {
-		return false;
-	}
+function omniOption($key = '')
+{
+    $response = getResursOption($key, 'woocommerce_resurs_bank_omnicheckout_settings');
 
-	return $response;
+    return $response;
 }
