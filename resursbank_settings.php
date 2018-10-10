@@ -1127,8 +1127,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '<b>curlmodule debug data</b><br>';
                     echo '<pre>';
                     print_r($getDebugData);
-                    echo "<b>Payment methods that tend to automatically DEBIT orders as soon as money are transferred to merchant</b>\n";
-                    print_r($this->flow->getAutoDebitableTypes());
+                    if (method_exists($this->flow, 'getAutoDebitableTypes')) {
+                        echo "<b>Payment methods that tend to automatically DEBIT orders as soon as money are transferred to merchant</b>\n";
+                        print_r($this->flow->getAutoDebitableTypes());
+                    }
                     $sslUnsafe = $this->flow->getSslIsUnsafe();
                     echo __("During the URL calls, SSL certificate validation has been disabled",
                             'WC_Payment_Gateway') . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";

@@ -4264,7 +4264,6 @@ function getResursFlag($flagKey = null)
     $allFlags   = array();
     $flagRow    = getResursOption("devFlags");
     $flagsArray = explode(",", $flagRow);
-
     $multiArrayFlags = array('AUTO_DEBIT');
 
     if (is_array($flagsArray)) {
@@ -4278,7 +4277,7 @@ function getResursFlag($flagKey = null)
                     }
                 } else {
                     if (in_array($flagEx[0], $multiArrayFlags)) {
-                        if (!is_array($allFlags[$flagEx[0]])) {
+                        if (!isset($allFlags[$flagEx[0]]) || !is_array($allFlags[$flagEx[0]])) {
                             $allFlags[$flagEx[0]] = array();
                         }
                         $allFlags[$flagEx[0]][] = $flagEx[1];
