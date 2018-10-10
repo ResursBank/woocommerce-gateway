@@ -3641,6 +3641,10 @@ class ResursBank
      */
     public function setCountryByCountryCode($countryCodeString = "")
     {
+        // If this is an array, something probably went terribly wrong (seen in WC)
+        if (is_array($countryCodeString)) {
+            $countryCodeString = implode('', $countryCodeString);
+        }
         if (strtolower($countryCodeString) == "dk") {
             $this->setCountry(RESURS_COUNTRY::COUNTRY_DK);
         } elseif (strtolower($countryCodeString) == "no") {
@@ -6150,7 +6154,6 @@ class ResursBank
                 return $this->getOrderStatusByPaymentStatuses($paymentData);
                 break;
             case RESURS_CALLBACK_TYPES::FINALIZATION:
-                // ACT ON PAYMENT_PROVIDER HERE
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
             case RESURS_CALLBACK_TYPES::UNFREEZE:
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;

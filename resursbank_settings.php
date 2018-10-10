@@ -388,7 +388,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     ';
 
         $className = 'resursConfigSelect';
-        $multVar = '';
+        $multiVar = '';
         if ($listCount > 1) {
             $className = 'resursConfigSelectMulti';
             $multiVar = '[]';
@@ -397,7 +397,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $returnDropDown .= '
                     <select class="'.$className.'" ' . $scriptLoader . '
                     ' . ($listCount > 1 ? "size=\"" . $listCount . "\" multiple " : "") . '
-                        name="' . $namespace . '_' . $settingKey . '[]"
+                        name="' . $namespace . '_' . $settingKey . $multiVar . '"
                         id="' . $namespace . '_' . $settingKey . '">
                     ';
             $savedValue     = $this->getOptionByNamespace($settingKey, $namespace);
