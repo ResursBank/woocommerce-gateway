@@ -325,8 +325,6 @@ function showResursCallbackArray(cbArrayResponse) {
                 var callbackContent = '<table class="wc_gateways widefat rbCallbackTable" cellspacing="0" cellpadding="0" width="100%">';
                 callbackContent += '<tr>' +
                     '<th class="rbCallbackTableStatic">Callback</th>' +
-                    '<th class="rbCallbackTableStatic">Status</th>' +
-                    '<th class="rbCallbackTableStatic">URI</th>' +
                     '</tr>';
                 if (useCacheNote && isCached) {
                     callbackContent += '<tr>' +
@@ -350,9 +348,10 @@ function showResursCallbackArray(cbArrayResponse) {
                         callbackContent += '<div>' + cbStatus + '</div>';
                         callbackContent += '</td>';
 
-                        callbackContent += '<td width="10%"><select class="rbCallbackStaticSelectBox">' +
+                        // For future use
+                        /*callbackContent += '<td width="10%"><select class="rbCallbackStaticSelectBox">' +
                             '<option value="completed">Completed</option>' +
-                            '</select></td>';
+                            '</select></td>';*/
 
                         callbackContent += '<td width="80%" class="rbCallbackTableStatic rbCallbackStaticRight rbCallbackTableFont" ' + (isCached ? ' style="font-style:italic !important;"' : "") + ' width="75%">';
                         callbackContent += '<div style="cursor:pointer;" onclick="setCbString(this, \'' + cbObj + '\')">' + cbObjString + '</div>';
@@ -360,10 +359,7 @@ function showResursCallbackArray(cbArrayResponse) {
 
                         // Requires at least nonces and a referer check, so this is skipped for now
                         //callbackContent += '<td onclick="removeResursCallback(\''+cbName+'\')">X</td>'
-
                         callbackContent += '</tr>';
-
-
                     }
                 });
                 callbackContent += '</table>' +
