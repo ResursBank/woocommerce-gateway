@@ -185,6 +185,17 @@
     word-wrap: break-word;
     word-break: break-all;
 }
+.rbCallbackStaticSelectBox {
+    font-size: 12px !important;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+.rbCallbackTable {
+    padding: 0px !important;
+    margin: 0px !important;
+    border-spacing: 0px !important;
+    word-spacing: 0px !important;
+}
 
 .rbCallbackTableFont {
     font-size: 12px !important;

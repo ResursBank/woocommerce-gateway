@@ -915,14 +915,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                 // Developers and merchans should normally not need to touch this section unless they really
                 // know what they're doing.
-                $defaults = array(
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING => 'processing',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED => 'refunded',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED => 'completed',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING => 'on-hold',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED => 'cancelled',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET => 'on-hold',
-                );
+                $defaults = resurs_payment_status_defaults();
                 $paymentStatus = $defaults;
 
                 //$woocommerceOrder->add_order_note( __( 'Updated order based on Resurs Bank Payment Status', 'WC_Payment_Gateway' ) . " (Payment_Processing)");
@@ -3368,7 +3361,9 @@ function woocommerce_gateway_resurs_bank_init()
             'callbacks_not_received' => __('Callback not yet received', 'WC_Payment_Gateway'),
             'callbacks_slow' => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.',
                 'WC_Payment_Gateway')),
-            'resursBankTabLogo' => $resursLogo
+            'resursBankTabLogo' => $resursLogo,
+            'resursStatusDefaults' => resurs_payment_status_defaults(),
+            'resursCallbackStatus' => resurs_payment_status_callbacks(),
         );
         wp_localize_script('resursBankAdminScript', 'adminJs', $adminJs);
         $configUrl = home_url("/");
@@ -4786,6 +4781,36 @@ function isResursHosted()
     }
 
     return false;
+}
+
+/**
+ * Returns list of default statuses on callbacks
+ * @return array
+ */
+function resurs_payment_status_defaults() {
+    return array(
+        RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING => 'processing',
+        RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED => 'refunded',
+        RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED => 'completed',
+        RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING => 'on-hold',
+        RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED => 'cancelled',
+        RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET => 'on-hold',
+    );
+}
+
+/**
+ * Returns list of configured statuses on callbacks
+ * @return array|bool
+ */
+function resurs_payment_status_callbacks() {
+    $callbackStatus = getResursOption('resurs_payment_status_callback');
+    if (!is_array($callbackStatus)) {
+        $callbackStatus = array();
+    }
+    foreach (resurs_payment_status_defaults() as $id => $status) {
+        $callbackStatus[$id] = isset($callbackStatus[$id]) && !empty($callbackStatus[$id]) ? $callbackStatus[$id] : $status;
+    }
+    return $callbackStatus;
 }
 
 /**

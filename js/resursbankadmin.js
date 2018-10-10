@@ -322,10 +322,16 @@ function showResursCallbackArray(cbArrayResponse) {
                 callbackListSize++;
             });
             if (callbackListSize > 0) {
-                var callbackContent = '<table class="wc_gateways widefat" cellspacing="0" cellpadding="0" width="100%">';
-                callbackContent += '<th class="rbCallbackTableStatic"><tr><th class="rbCallbackTableStatic rbCallbackStaticLeft">Callback</th><th class="rbCallbackTableStatic">URI</th></tr></th>';
+                var callbackContent = '<table class="wc_gateways widefat rbCallbackTable" cellspacing="0" cellpadding="0" width="100%">';
+                callbackContent += '<tr>' +
+                    '<th class="rbCallbackTableStatic">Callback</th>' +
+                    '<th class="rbCallbackTableStatic">Status</th>' +
+                    '<th class="rbCallbackTableStatic">URI</th>' +
+                    '</tr>';
                 if (useCacheNote && isCached) {
-                    callbackContent += '<tr><td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td></tr>';
+                    callbackContent += '<tr>' +
+                        '<td colspan="2" style="padding: 2px !important;font-style: italic;">' + adminJs["callbackUrisCache"] + (adminJs["callbackUrisCacheTime"] != "" ? " (" + adminJs["callbackUrisCacheTime"] + ")" : "") + '</td>' +
+                        '</tr>';
                 }
                 $RB.each(callbackResponse["callbacks"], function (cbName, cbObj) {
                     var cbObjString = "";
@@ -339,15 +345,17 @@ function showResursCallbackArray(cbArrayResponse) {
                             cbObjString = cbObj;
                         }
                         callbackContent += '<tr>' +
-                            '<td class="rbCallbackTableStatic rbCallbackStaticLeft" width="20%">';
+                            '<td class="rbCallbackTableStatic rbCallbackStaticLeft" width="10%">';
                         callbackContent += '<div style="font-weight: bold;">' + cbName + '</div>';
-                        callbackContent += '<div>'+cbStatus+'<br><select>' +
-                            '<option value="completed">Completed</option>' +
-                            '</select></div>';
+                        callbackContent += '<div>' + cbStatus + '</div>';
                         callbackContent += '</td>';
 
+                        callbackContent += '<td width="10%"><select class="rbCallbackStaticSelectBox">' +
+                            '<option value="completed">Completed</option>' +
+                            '</select></td>';
+
                         callbackContent += '<td width="80%" class="rbCallbackTableStatic rbCallbackStaticRight rbCallbackTableFont" ' + (isCached ? ' style="font-style:italic !important;"' : "") + ' width="75%">';
-                        callbackContent += '<div style="cursor:pointer;" onclick="setCbString(this, \''+cbObj+'\')">' + cbObjString + '</div>';
+                        callbackContent += '<div style="cursor:pointer;" onclick="setCbString(this, \'' + cbObj + '\')">' + cbObjString + '</div>';
                         callbackContent += '</td>';
 
                         // Requires at least nonces and a referer check, so this is skipped for now
