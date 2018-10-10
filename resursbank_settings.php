@@ -831,7 +831,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <?php if ( ! isResursOmni(true)) {
                                     ?>
                                     <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
-                                    <th class="fee"><?php echo __('Fee', 'WC_Payment_Gateway') ?></th>
+                                    <?php
+                                    if (getResursFlag('FEE_EDITOR')) {
+                                        ?>
+                                        <th class="fee"><?php echo __('Fee', 'WC_Payment_Gateway') ?></th>
+                                        <?php
+                                    }
+                                    ?>
                                     <th class="status"><?php echo __('Enable/Disable', 'WC_Payment_Gateway') ?></th>
                                 <?php } ?>
                                 <th class="process"></th>
@@ -954,23 +960,32 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                                     if ( ! isResursOmni(true)) { ?>
                                         <td class="id"><?php echo $methodArray->id; ?></td>
-                                        <td class="fee" id="fee_<?php echo $methodArray->id; ?>"
-                                            onclick="changeResursFee(this)">
+
+                                        <?php
+                                        if (getResursFlag('FEE_EDITOR')) {
+                                            ?>
+
+                                            <td class="fee" id="fee_<?php echo $methodArray->id; ?>"
+                                                onclick="changeResursFee(this)">
+                                                <?php
+                                                $priceValue = $this->getOptionByNamespace(
+                                                    "price",
+                                                    "woocommerce_resurs_bank_nr_" . $curId
+                                                );
+                                                if (empty($priceValue)) {
+                                                    // Injecting ourselves in the current structure
+                                                    $priceValue = '<img id="fim_' . $methodArray->id . '" onclick="changeResursFee(this)" src="' . plugin_dir_url(__FILE__) . 'img/pen16x.png' . '">';
+                                                } else {
+                                                    // Make sure that noone sets wrong values
+                                                    $priceValue = preg_replace("/,/", '.', $priceValue);
+                                                    $priceValue = doubleval($priceValue);
+                                                }
+                                                echo $priceValue;
+                                                ?></td>
+
                                             <?php
-                                            $priceValue = $this->getOptionByNamespace(
-                                                "price",
-                                                "woocommerce_resurs_bank_nr_" . $curId
-                                            );
-                                            if (empty($priceValue)) {
-                                                // Injecting ourselves in the current structure
-                                                $priceValue = '<img id="fim_'.$methodArray->id.'" onclick="changeResursFee(this)" src="' . plugin_dir_url(__FILE__) . 'img/pen16x.png' . '">';
-                                            } else {
-                                                // Make sure that noone sets wrong values
-                                                $priceValue = preg_replace("/,/", '.', $priceValue);
-                                                $priceValue = doubleval($priceValue);
-                                            }
-                                            echo $priceValue;
-                                            ?></td>
+                                        }
+                                            ?>
 
                                         <?php if ( ! $isEnabled) { ?>
                                             <td id="status_<?php echo $curId; ?>" class="status"
