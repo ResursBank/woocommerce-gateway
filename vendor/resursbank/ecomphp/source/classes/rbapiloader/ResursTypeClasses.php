@@ -185,6 +185,9 @@ abstract class RESURS_CALLBACK_REACHABILITY
 /**
  * Class RESURS_PAYMENT_STATUS_RETURNCODES Order status return codes
  *
+ * Changed values to bitmasked data as of 1.3.14 (1.1.41 + 1.0.41), so we can fetch
+ * multiple values in one request.
+ *
  * @since 1.0.26
  * @since 1.1.26
  * @since 1.2.0
@@ -192,16 +195,17 @@ abstract class RESURS_CALLBACK_REACHABILITY
 abstract class RESURS_PAYMENT_STATUS_RETURNCODES
 {
     const PAYMENT_STATUS_COULD_NOT_BE_SET = 0;     // Waiting for callback or frozen
-    const PAYMENT_PENDING = 10;     // Waiting for callback or frozen
-    const PAYMENT_PROCESSING = 20;  // Booked, waiting for next action
-    const PAYMENT_COMPLETED = 30;   // Fully finalized (debited)
-    const PAYMENT_ANNULLED = 40;    // Fully annulled
-    const PAYMENT_CREDITED = 50;    // Fully credited
+    const PAYMENT_PENDING = 1;     // Waiting for callback or frozen
+    const PAYMENT_PROCESSING = 2;  // Booked, waiting for next action
+    const PAYMENT_COMPLETED = 4;   // Fully finalized (debited)
+    const PAYMENT_ANNULLED = 8;    // Fully annulled
+    const PAYMENT_CREDITED = 16;    // Fully credited
+    const PAYMENT_AUTOMATICALLY_DEBITED = 32;    // Fully credited
 
     /** @deprecated Fallback status only, use PAYMENT_ANNULLED */
-    const PAYMENT_CANCELLED = 40;   // Fully annulled (this is practically a prestashop based name)
+    const PAYMENT_CANCELLED = 8;   // Fully annulled (this is practically a prestashop based name)
     /** @deprecated Fallback status only, use PAYMENT_CREDITED */
-    const PAYMENT_REFUND = 50;      // Fully credited (this is practically a prestashop based name)
+    const PAYMENT_REFUND = 16;      // Fully credited (this is practically a prestashop based name)
 }
 
 abstract class RESURS_ENVIRONMENTS

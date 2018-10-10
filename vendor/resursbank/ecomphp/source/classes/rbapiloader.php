@@ -58,7 +58,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', '1.3.13');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20181004');
+    define('ECOMPHP_MODIFY_DATE', '20181008');
 }
 
 /**
@@ -163,6 +163,9 @@ class ResursBank
     private $hasServicesInitialization = false;
     /** @var bool Future functionality to backtrace customer ip address to something else than REMOTE_ADDR (if proxified) */
     private $preferCustomerProxy = false;
+
+    /** @var bool Indicates if there was deprecated calls in progress during the use of ECom */
+    private $hasDeprecatedCall = false;
 
     ///// Communication
     /**
@@ -389,6 +392,11 @@ class ResursBank
     /** @var null When using clearOcShop(), the Resurs Checkout tailing script (resizer) will be stored here */
     private $ocShopScript = null;
 
+    /** @var array Payment method types (from getPaymentMethods) that probably is automatically debiting as soon as transfers been made */
+    private $autoDebitableTypes = array();
+
+    /** @var bool Discover payments that probably has been automatically debited - default is active */
+    private $autoDebitableTypesActive = true;
 
     /////////// INITIALIZERS
 
@@ -423,6 +431,9 @@ class ResursBank
         if ($this->hasSoap()) {
             $this->SOAP_AVAILABLE = true;
         }
+
+        // Methods that for sure will FINALIZE payments before shipping for ECom
+        $this->setAutoDebitableTypes('SWISH');
 
         $this->checkoutShopUrl = $this->hasHttps(true) . "://" . $theHost;
         $this->soapOptions['cache_wsdl'] = (defined('WSDL_CACHE_BOTH') ? WSDL_CACHE_BOTH : true);
@@ -2840,6 +2851,11 @@ class ResursBank
     }
 
     /**
+     * Adds metaData to a payment (before creation)
+     *
+     * Note that addMetaData adds metaData to a payment AFTER creation. This method occurs DURING a bookPayment
+     * rather than after it has been booked.
+     *
      * @param $key
      * @param $value
      * @since 1.0.40
@@ -6049,7 +6065,7 @@ class ResursBank
      * Generic orderstatus content information that checks payment statuses instead of callback input and decides what
      * happened to the payment
      *
-     * @param array $paymentData
+     * @param array$paymentData
      *
      * @return int
      * @throws \Exception
@@ -6084,8 +6100,9 @@ class ResursBank
      * @param string $paymentIdOrPaymentObject
      * @param int $byCallbackEvent If this variable is set, controls are also being made, compared to what happened on a callback event
      * @param array|string $callbackEventDataArrayOrString On for example AUTOMATIC_FRAUD_CONTROL, a result based on THAWED or FROZEN are received, which you should add here
+     * @param null $paymentMethodObject
      * @return int
-     * @throws \Exception
+     * @throws Exception
      * @since 1.0.26
      * @since 1.1.26
      * @since 1.2.0
@@ -6093,7 +6110,8 @@ class ResursBank
     public function getOrderStatusByPayment(
         $paymentIdOrPaymentObject = '',
         $byCallbackEvent = RESURS_CALLBACK_TYPES::NOT_SET,
-        $callbackEventDataArrayOrString = array()
+        $callbackEventDataArrayOrString = array(),
+        $paymentMethodObject = null
     ) {
 
         if (is_string($paymentIdOrPaymentObject)) {
@@ -6132,6 +6150,7 @@ class ResursBank
                 return $this->getOrderStatusByPaymentStatuses($paymentData);
                 break;
             case RESURS_CALLBACK_TYPES::FINALIZATION:
+                // ACT ON PAYMENT_PROVIDER HERE
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
             case RESURS_CALLBACK_TYPES::UNFREEZE:
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
@@ -6204,5 +6223,119 @@ class ResursBank
         }
 
         return false;
+    }
+
+    /**
+     * Prepare automatically debitable payment method types (Internal function to set up destroyed (if) arrays for types
+     * @since 1.0.41
+     * @since 1.1.41
+     * @since 1.3.14
+     */
+    private function prepareAutoDebitableTypes() {
+        if (!is_array($this->autoDebitableTypes)) {
+            $this->autoDebitableTypes = array();
+        }
+    }
+
+    /**
+     * Returns true if the payment method type tend to auto debit themselves.
+     *
+     * @param string $type
+     * @return bool
+     * @since 1.0.41
+     * @since 1.1.41
+     * @since 1.3.14
+     */
+    public function isAutoDebitableType($type = '') {
+        $return = false;
+
+        $this->prepareAutoDebitableTypes();
+        if (in_array($type, $this->autoDebitableTypes)) {
+            return true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Add new payment method type that should consider automatically debited before shipping
+     *
+     * @param string $type Example SWISH
+     * @since 1.0.41
+     * @since 1.1.41
+     * @since 1.3.14
+     */
+    public function setAutoDebitableType($type='') {
+        $this->prepareAutoDebitableTypes();
+        if (!empty($type) && !in_array($type, $this->autoDebitableTypes)) {
+            $this->autoDebitableTypes[] = $type;
+        }
+    }
+
+    /**
+     * Get the current list of auto debitable types
+     *
+     * @return array
+     * @since 1.0.41
+     * @since 1.1.41
+     * @since 1.3.14
+     */
+    public function getAutoDebitableTypes() {
+        $this->prepareAutoDebitableTypes();
+        return $this->autoDebitableTypes;
+    }
+
+    /**
+     * Returns true if the auto discovery of automatically debited payments is active
+     * @return bool
+     * @since 1.0.41
+     * @since 1.1.41
+     * @since 1.3.14
+     */
+    public function getAutoDebitableTypeState() {
+        return $this->autoDebitableTypesActive;
+    }
+
+    /**
+     * Activates or disables the auto debited payments discovery. Default enables this function.
+     *
+     * @param bool $activation
+     * @since 1.0.41
+     * @since 1.1.41
+     * @since 1.3.14
+     */
+    public function setAutoDebitableTypes($activation = true) {
+        $this->autoDebitableTypesActive = $activation;
+    }
+
+
+    /**
+     * v1.1 method compatibility
+     *
+     * @param null $func
+     * @param array $args
+     * @return mixed
+     * @throws Exception
+     */
+    public function __call($func = null, $args = array())
+    {
+        if (class_exists(
+                'Resursbank_Obsolete_Functions',
+                ECOM_CLASS_EXISTS_AUTOLOAD) ||
+            class_exists(
+                '\Resursbank\RBEcomPHP\Resursbank_Obsolete_Functions', ECOM_CLASS_EXISTS_AUTOLOAD
+            )
+        ) {
+            $obsoleteCaller = new Resursbank_Obsolete_Functions($this);
+            if (method_exists($obsoleteCaller, $func)) {
+                $this->hasDeprecatedCall = true;
+                return call_user_func_array(array($obsoleteCaller, $func), $args);
+            }
+        }
+        throw new \Exception(
+            'Method (' .
+            $func .
+            ') not found in ECom Library, neither in the current release nor in the deprecation library',
+            501); // 501 NOT IMPLEMENTED
     }
 }
