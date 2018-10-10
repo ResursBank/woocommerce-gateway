@@ -338,9 +338,12 @@ function showResursCallbackArray(cbArrayResponse) {
                         } else {
                             cbObjString = cbObj;
                         }
-                        callbackContent += '<tr><td class="rbCallbackTableStatic rbCallbackStaticLeft" width="20%">';
-                        callbackContent += '<div style="font-weight: bold;">' + cbName + '<div>';
-                        callbackContent += '<div>'+cbStatus+'<div>';
+                        callbackContent += '<tr>' +
+                            '<td class="rbCallbackTableStatic rbCallbackStaticLeft" width="20%">';
+                        callbackContent += '<div style="font-weight: bold;">' + cbName + '</div>';
+                        callbackContent += '<div>'+cbStatus+'<br><select>' +
+                            '<option value="completed">Completed</option>' +
+                            '</select></div>';
                         callbackContent += '</td>';
 
                         callbackContent += '<td width="80%" class="rbCallbackTableStatic rbCallbackStaticRight rbCallbackTableFont" ' + (isCached ? ' style="font-style:italic !important;"' : "") + ' width="75%">';
