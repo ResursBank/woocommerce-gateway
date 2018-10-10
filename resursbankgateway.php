@@ -4548,6 +4548,12 @@ function initializeResursFlow(
             }
         }
     }
+    $autoDebitMethodList = getResursOption('autoDebitMethods');
+    if (is_array($autoDebitMethodList)) {
+        foreach ($autoDebitMethodList as $metodType) {
+            $initFlow->setAutoDebitableType($metodType);
+        }
+    }
 
     $initFlow->setUserAgent(RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
     $initFlow->setEnvironment($useEnvironment);

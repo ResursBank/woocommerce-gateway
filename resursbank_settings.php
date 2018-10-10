@@ -376,9 +376,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         if ( ! is_array($optionsList)) {
             $optionsList = array();
         }
-        /*
-         * Failover to prior forms.
-         */
+
+        // Failover to prior forms.
         if (is_array($optionsList) && isset($formSettings['options']) && count($formSettings['options']) && ! count($optionsList)) {
             $optionsList = $formSettings['options'];
         }
@@ -387,16 +386,29 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
                     <td>
                     ';
+
+        $className = 'resursConfigSelect';
+        $multVar = '';
+        if ($listCount > 1) {
+            $className = 'resursConfigSelectMulti';
+            $multiVar = '[]';
+        }
         if (count($optionsList) > 0) {
             $returnDropDown .= '
-                    <select class="resursConfigSelect" ' . $scriptLoader . '
+                    <select class="'.$className.'" ' . $scriptLoader . '
                     ' . ($listCount > 1 ? "size=\"" . $listCount . "\" multiple " : "") . '
-                        name="' . $namespace . '_' . $settingKey . '"
+                        name="' . $namespace . '_' . $settingKey . '[]"
                         id="' . $namespace . '_' . $settingKey . '">
                     ';
             $savedValue     = $this->getOptionByNamespace($settingKey, $namespace);
             foreach ($optionsList as $optionKey => $optionValue) {
-                $returnDropDown .= '<option value="' . $optionKey . '" ' . ($optionKey == $savedValue ? "selected" : "") . '>' . $optionValue . '</option>';
+                $matchingSavedValue = false;
+                if (is_array($savedValue) && in_array($optionValue, $savedValue)) {
+                    $matchingSavedValue = true;
+                } else if (is_string($savedValue) && $optionKey === $savedValue) {
+                    $matchingSavedValue = true;
+                }
+                $returnDropDown .= '<option value="' . $optionKey . '" ' . ($matchingSavedValue ? "selected" : "") . '>' . $optionValue . '</option>';
             }
             $returnDropDown .= '
                     </select><br>
@@ -685,6 +697,17 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             }
         }
 
+        $paymentMethodTypes = array();
+        if (is_array($this->paymentMethods)) {
+            foreach ($this->paymentMethods as $pMethod) {
+                if ($pMethod->type === 'PAYMENT_PROVIDER') {
+                    if (!isset($paymentMethodTypes[$pMethod->specificType])) {
+                        $paymentMethodTypes[$pMethod->specificType] = $pMethod->specificType;
+                    }
+                }
+            }
+        }
+
         ?>
         <div class="wrap">
             <?php
@@ -727,6 +750,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <th></th>
                     <td>
                     ';
+
                     if (callbackUpdateRequest()) {
                         echo '<div id="callbacksRequireUpdate" style="margin-top: 8px;" class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . __('Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...',
                                 'WC_Payment_Gateway') . '</div><br><br>';
@@ -1066,12 +1090,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
                     //echo $this->setCheckBox( 'secureFieldsNotNull', $namespace );
                 } elseif ($section == "advanced") {
-                    //echo $this->setCheckBox('includeEmptyTaxClasses', $namespace);
-
                     echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
                     echo $this->setSeparator(__('Callbacks', 'WC_Payment_Gateway'));
+                    echo $this->setDropDown('autoDebitStatus', $namespace);
+                    echo $this->setDropDown('autoDebitMethods', $namespace, $paymentMethodTypes, '', (count($paymentMethodTypes)));
                     echo $this->setCheckBox('callbackUpdateAutomation', $namespace);
                     echo $this->setTextBox('callbackUpdateInterval', $namespace);
                     echo $this->setSeparator(__('Customer and store', 'WC_Payment_Gateway'));
@@ -1139,16 +1163,21 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 if ($this->curlInDebug) {
                     $getDebugData = $this->flow->getDebug();
                     echo '<tr><td colspan="2">';
-                    echo '<b>curlmodule debug data</b><br>';
                     echo '<pre>';
-                    print_r($getDebugData);
                     if (method_exists($this->flow, 'getAutoDebitableTypes')) {
                         echo "<b>Payment methods that tend to automatically DEBIT orders as soon as money are transferred to merchant</b>\n";
                         print_r($this->flow->getAutoDebitableTypes());
+                        echo '<hr>';
                     }
+
                     $sslUnsafe = $this->flow->getSslIsUnsafe();
                     echo __("During the URL calls, SSL certificate validation has been disabled",
                             'WC_Payment_Gateway') . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";
+
+                    echo '<hr>';
+
+                    echo "<b>curlmodule debug data</b>\n";
+                    print_r($getDebugData);
                     echo '</pre>';
                     echo '</td></tr>';
                 }

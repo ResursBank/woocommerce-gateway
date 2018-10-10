@@ -331,9 +331,10 @@ a.labelBoot:focus, a.labelBoot:hover {
 .resursConfigSelect {
     height: 40px !important;
     width: 800px !important;
-    /*-webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
-    border-radius: 10px;*/
+}
+.resursConfigSelectMulti {
+    height: auto !important;
+    width: 800px !important;
 }
 .resursConfigSelectShort {
     height: 40px !important;
