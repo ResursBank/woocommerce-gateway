@@ -863,7 +863,7 @@ function woocommerce_gateway_resurs_bank_init()
                         RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE);
 
                     if ($callbackUpdateStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
-                        $order->add_order_note(__('UPDATE received from Resurs Bank and the payment seems to have been finalized. The used payment method indicated that instant finalization is available.',
+                        $order->add_order_note(__('UPDATE event received from Resurs Bank. The order seem to be FINALIZED and the payment method this order uses, indicates that it supports instant finalization. If it\'s not already completed you might have to update the order manually.',
                             'WC_Payment_Gateway'));
                     } else {
                         $order->add_order_note(__('UPDATE event received from Resurs Bank.', 'WC_Payment_Gateway'));
