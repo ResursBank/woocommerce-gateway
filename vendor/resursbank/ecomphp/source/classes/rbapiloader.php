@@ -398,6 +398,8 @@ class ResursBank
     /** @var bool Discover payments that probably has been automatically debited - default is active */
     private $autoDebitableTypesActive = true;
 
+    private $autoDebitablePaymentMethod;
+
     /////////// INITIALIZERS
 
     /**
@@ -433,7 +435,7 @@ class ResursBank
         }
 
         // Methods that for sure will FINALIZE payments before shipping for ECom
-        $this->setAutoDebitableTypes('SWISH');
+        $this->setAutoDebitableType('SWISH');
 
         $this->checkoutShopUrl = $this->hasHttps(true) . "://" . $theHost;
         $this->soapOptions['cache_wsdl'] = (defined('WSDL_CACHE_BOTH') ? WSDL_CACHE_BOTH : true);
@@ -2734,6 +2736,10 @@ class ResursBank
      */
     public function getPaymentMethodSpecific($specificMethodName = '')
     {
+        if (isset($specificMethodName->totalAmount) && isset($specificMethodName->paymentMethodId)) {
+            $specificMethodName = $specificMethodName->paymentMethodId;
+        }
+
         $methods = $this->getPaymentMethods(array(), true);
         $methodArray = array();
         if (is_array($methods)) {
@@ -6079,23 +6085,28 @@ class ResursBank
      */
     private function getOrderStatusByPaymentStatuses($paymentData = array())
     {
+        $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+
         /** @noinspection PhpUndefinedFieldInspection */
         $resursTotalAmount = $paymentData->totalAmount;
         if ($this->canDebit($paymentData)) {
-            return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
+            $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
         }
+
         if (!$this->canDebit($paymentData) && $this->getIsDebited($paymentData) && $resursTotalAmount > 0) {
-            return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
+            $return = (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | $this->getInstantFinalizationStatus($paymentData));
         }
+
         if ($this->getIsAnnulled($paymentData) && !$this->getIsCredited($paymentData) && $resursTotalAmount == 0) {
-            return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED; // ANNULLED / CANCELLED
+            $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED; // ANNULLED / CANCELLED
         }
+
         if ($this->getIsCredited($paymentData) && $resursTotalAmount == 0) {
-            return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED; // CREDITED / REFUND
+            $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED; // CREDITED / REFUND
         }
 
         // Return generic
-        return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+        return $return;
     }
 
     /**
@@ -6154,7 +6165,7 @@ class ResursBank
                 return $this->getOrderStatusByPaymentStatuses($paymentData);
                 break;
             case RESURS_CALLBACK_TYPES::FINALIZATION:
-                return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
+                return (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | $this->getInstantFinalizationStatus($paymentData));
             case RESURS_CALLBACK_TYPES::UNFREEZE:
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
             case RESURS_CALLBACK_TYPES::UPDATE:
@@ -6164,7 +6175,7 @@ class ResursBank
                 break;
         }
 
-        // case RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE
+        // If nothing was hit in the above check, use the suggested pre analyze status.
         $returnThisAfterAll = $preAnalyzePayment;
 
         return $returnThisAfterAll;
@@ -6186,7 +6197,7 @@ class ResursBank
                 return "pending";
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
                 return "processing";
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED;
+            case $returnCode & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED;
                 return "completed";
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
                 return "annul";
@@ -6226,6 +6237,36 @@ class ResursBank
         }
 
         return false;
+    }
+
+    /**
+     * Get, if exists, the status code for automatically debited on matching payments
+     *
+     * Method that returns the current returncode for automatically finalized if payment method
+     * is matched with an "instant finalization"-type. If not, PAYMENT_STATUS_COULD_NOT_BE_SET (0) will
+     * return, which will (if you so wish) be matched with false. If getAutoDebitableTypeState() returns false
+     * this method will always return PAYMENT_STATUS_COULD_NOT_BE_SET (meaning, someone has disabled the feature).
+     *
+     * @param array $paymentData
+     * @return int
+     * @throws Exception
+     * @since 1.0.41
+     * @since 1.1.41
+     * @since 1.3.14
+     */
+    public function getInstantFinalizationStatus($paymentData=array()) {
+        $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+
+        // Make this cached on reruns
+        if (!is_object($this->autoDebitablePaymentMethod)) {
+             $this->autoDebitablePaymentMethod = $this->getPaymentMethodSpecific($paymentData);
+        }
+
+        if ($this->getAutoDebitableTypeState() && $this->autoDebitablePaymentMethod->type === 'PAYMENT_PROVIDER' && $this->isAutoDebitableType($this->autoDebitablePaymentMethod->specificType)) {
+            $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED;
+        }
+
+        return $return;
     }
 
     /**
