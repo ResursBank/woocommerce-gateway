@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2018-10-10 12:00+0200\n"
-"PO-Revision-Date: 2018-10-10 12:00+0200\n"
+"POT-Creation-Date: 2018-10-11 12:51+0200\n"
+"PO-Revision-Date: 2018-10-11 12:52+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 1.8.7.1\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-WPHeader: resursbankgateway.php\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -20,135 +20,15 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: functions_gateway.php:51 resursbankgateway.php:3752
-msgid ""
-"It seems this order has already been finalized from an external system - if "
-"your order is finished you may update it here aswell"
-msgstr ""
-"Det ser ut som att ordern redan har blivit debiterad från ett externt system "
-"- om din order är klar kan du uppdatera den härifrån också"
-
-#: functions_gateway.php:101 resursbankgateway.php:3802
-msgid "Referenced data don't exist"
-msgstr "Datat du försöker hämta finns inte"
-
-#: functions_gateway.php:102 resursbankgateway.php:3803
-msgid ""
-"This error might occur when for example a payment doesn't exist at Resurs "
-"Bank. Normally this happens when payments have failed or aborted before it "
-"can be completed"
-msgstr ""
-"Det här felet kan uppstå när till exempel en betalning inte finns på Resurs "
-"Bank. Normalt sker detta när betalningarna har misslyckats eller avbrutits "
-"innan den kan slutföras"
-
-#: functions_gateway.php:108 resursbankgateway.php:3809
-msgid "The order was denied at Resurs Bank and therefore has not been created"
-msgstr "Ordern har nekats hos Resurs Bank och har därför inte skapats"
-
-#: functions_gateway.php:118 resursbankgateway.php:3819
-msgid ""
-"Following error ocurred when we tried to fetch information about the payment"
-msgstr "Följande fel uppstod när vi försökte hämta information om betalningen"
-
-#: functions_gateway.php:174 resursbankgateway.php:3875
-msgid "The order is booked"
-msgstr "Ordern är bokad"
-
-#: functions_gateway.php:177 resursbankgateway.php:3878
-msgid "The order is debited"
-msgstr "Ordern är debiterad"
-
-#: functions_gateway.php:179 resursbankgateway.php:3880
-msgid "The order is partially debited"
-msgstr "Ordern är delvis debiterad"
-
-#: functions_gateway.php:182 resursbankgateway.php:3883
-msgid "The order is credited"
-msgstr "Ordern är krediterad"
-
-#: functions_gateway.php:184 resursbankgateway.php:3885
-msgid "The order is annulled"
-msgstr "Ordern är annullerad"
-
-#: functions_gateway.php:219 resursbankgateway.php:3920
-msgid "Payment ID"
-msgstr "Betalnings-id"
-
-#: functions_gateway.php:223 resursbankgateway.php:3924
-msgid "Payment method ID"
-msgstr "Betalmetodens id"
-
-#: functions_gateway.php:227 resursbankgateway.php:3928
-msgid "Store ID"
-msgstr "Butiks-ID (Store ID)"
-
-#: functions_gateway.php:231 resursbankgateway.php:3932
-msgid "Payment method name"
-msgstr "Betalmetodens namn"
-
-#: functions_gateway.php:235 resursbankgateway.php:3936
-msgid "Payment method type"
-msgstr "Betalmetodens typ"
-
-#: functions_gateway.php:239 resursbankgateway.php:3940
-msgid "Payment amount"
-msgstr "Orderbelopp"
-
-#: functions_gateway.php:244 resursbankgateway.php:3945
-msgid "Payment limit"
-msgstr "Betalningens limit"
-
-#: functions_gateway.php:249 resursbankgateway.php:3950
-msgid "Fraud"
-msgstr "Bedrägeri"
-
-#: functions_gateway.php:251 functions_gateway.php:255
-#: resursbank_settings.php:1152 resursbankgateway.php:3952
-#: resursbankgateway.php:3956
-msgid "Yes"
-msgstr "Ja"
-
-#: functions_gateway.php:251 functions_gateway.php:255
-#: resursbank_settings.php:1152 resursbankgateway.php:3952
-#: resursbankgateway.php:3956
-msgid "No"
-msgstr "Nej"
-
-#: functions_gateway.php:253 resursbankgateway.php:3954
-msgid "Frozen"
-msgstr "Frusen"
-
-#: functions_gateway.php:257 resursbankgateway.php:3958
-msgid "Customer name"
-msgstr "Kundens namn"
-
-#: functions_gateway.php:261 resursbankgateway.php:3962
-msgid "Delivery address"
-msgstr "Leveransadress"
-
-#: functions_gateway.php:315 resursbankgateway.php:1324
-#: resursbankgateway.php:4016
-msgid "Read more"
-msgstr "Läs mer"
-
-#: functions_gateway.php:499 resursbankgateway.php:4200
-msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
-msgstr ""
-"Borttagning av orderrad: Resurs Bank API anropades för ta bort orderrader"
-
-#: functions_gateway.php:1135 resursbankgateway.php:4892
-msgid "There are currently no payment methods available"
-msgstr "Det finns för närvarande inga betalningsmetoder tillgängliga"
-
 #: functions_settings.php:100 functions_settings.php:409
-#: functions_settings.php:461 functions_settings.php:463
-#: functions_settings.php:510 includes/resurs_bank_nr_109.php:169
+#: functions_settings.php:469 functions_settings.php:471
+#: functions_settings.php:518 includes/resurs_bank_nr_109.php:169
 #: includes/resurs_bank_nr_110.php:169 includes/resurs_bank_nr_111.php:169
 #: includes/resurs_bank_nr_112.php:169 includes/resurs_bank_nr_114.php:169
 #: includes/resurs_bank_nr_PSPCARD.php:169
 #: includes/resurs_bank_nr_PSPMOCK.php:169
-#: includes/resurs_bank_nr_PSP_INTERNET.php:169 resursbank_settings.php:841
+#: includes/resurs_bank_nr_PSP_INTERNET.php:169
+#: includes/resurs_bank_nr_SWISH.php:169 resursbank_settings.php:865
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktivera"
 
@@ -157,9 +37,9 @@ msgstr "Aktivera/inaktivera"
 #: functions_settings.php:255 functions_settings.php:294
 #: functions_settings.php:306 functions_settings.php:318
 #: functions_settings.php:330 functions_settings.php:342
-#: functions_settings.php:377 functions_settings.php:1172
-#: resursbank_settings.php:915 resursbank_settings.php:1003
-#: resursbankgateway.php:541 resursbankgateway.php:559
+#: functions_settings.php:377 functions_settings.php:1180
+#: resursbank_settings.php:939 resursbank_settings.php:1027
+#: resursbankgateway.php:542 resursbankgateway.php:560
 #: staticflows/flow_omni.php:111
 msgid "Enabled"
 msgstr "Aktiverad"
@@ -185,7 +65,7 @@ msgstr ""
 "Den här funktionen försöker använda det interna post-ID: t som Ordernr i "
 "stället för de referenser som skapas av pluginet"
 
-#: functions_settings.php:114 resursbank_settings.php:826
+#: functions_settings.php:114 resursbank_settings.php:850
 msgid "Country"
 msgstr "Land"
 
@@ -205,7 +85,7 @@ msgstr "Finland"
 msgid "Norway"
 msgstr "Norge"
 
-#: functions_settings.php:123 functions_settings.php:547
+#: functions_settings.php:123 functions_settings.php:555
 msgid "The country for which the payment services should be used"
 msgstr "Välj det land som betalalternativen skall användas i"
 
@@ -223,13 +103,13 @@ msgstr ""
 "(i så stor utsträckning om möjligt, där kunduppgifter initialt hanteras av "
 "Resurs Bank utan att lämna kassan)"
 
-#: functions_settings.php:133 resursbank_settings.php:583
+#: functions_settings.php:133 resursbank_settings.php:595
 msgid "Simplified Shop Flow: Payments goes through Resurs Bank API (Default)"
 msgstr ""
 "Förenklat flöde (Simplified Shop Flow): Betalningar hantera genom Resurs "
 "Banks API (Standard)"
 
-#: functions_settings.php:135 resursbank_settings.php:585
+#: functions_settings.php:135 resursbank_settings.php:597
 msgid ""
 "Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment"
 msgstr ""
@@ -239,9 +119,9 @@ msgstr ""
 msgid "What kind of shop flow you want to use"
 msgstr "Vilken typ av flöde du vill använda"
 
-#: functions_settings.php:143 functions_settings.php:466
-#: functions_settings.php:515 functions_settings.php:1115
-#: resursbank_settings.php:816
+#: functions_settings.php:143 functions_settings.php:474
+#: functions_settings.php:523 functions_settings.php:1123
+#: resursbank_settings.php:840
 msgid "Title"
 msgstr "Titel"
 
@@ -250,18 +130,19 @@ msgid ""
 "This controls the payment method title, which the user sees during checkout."
 msgstr "Det här kontrollerar betalmetodens titel som kunden ser i kassan."
 
-#: functions_settings.php:151 functions_settings.php:486
-#: functions_settings.php:523
+#: functions_settings.php:151 functions_settings.php:494
+#: functions_settings.php:531
 msgid "Description"
 msgstr "Beskrivning"
 
-#: functions_settings.php:154 functions_settings.php:489
-#: functions_settings.php:526 includes/resurs_bank_nr_109.php:195
+#: functions_settings.php:154 functions_settings.php:497
+#: functions_settings.php:534 includes/resurs_bank_nr_109.php:195
 #: includes/resurs_bank_nr_110.php:195 includes/resurs_bank_nr_111.php:195
 #: includes/resurs_bank_nr_112.php:195 includes/resurs_bank_nr_114.php:195
 #: includes/resurs_bank_nr_PSPCARD.php:195
 #: includes/resurs_bank_nr_PSPMOCK.php:195
 #: includes/resurs_bank_nr_PSP_INTERNET.php:195
+#: includes/resurs_bank_nr_SWISH.php:195
 msgid ""
 "This controls the payment method description which the user sees during "
 "checkout."
@@ -624,7 +505,7 @@ msgstr ""
 "saltnyckel, varje gång du går in i administrationspanelen efter att en "
 "specifik tid har gått."
 
-#: functions_settings.php:413 functions_settings.php:593
+#: functions_settings.php:413 functions_settings.php:601
 msgid "Keep standard customer fields open for Resurs Checkout in test"
 msgstr "Behåll standardfälten öppna för Resurs Checkout i test"
 
@@ -652,7 +533,7 @@ msgstr "Nuvarande vald betalmetod för delbetalningsfaktorer"
 
 #: functions_settings.php:440
 msgid "Order status on instant finalizations"
-msgstr ""
+msgstr "Orderstatus vid omedelbar debitering"
 
 #: functions_settings.php:441
 msgid ""
@@ -690,7 +571,11 @@ msgstr "Väntar (on-hold)"
 msgid "Annulled (cancelled)"
 msgstr "Annullerad (cancelled)"
 
-#: functions_settings.php:469
+#: functions_settings.php:455
+msgid "Instant debitable payment methods"
+msgstr "Direktdebiterbara betalmetoder"
+
+#: functions_settings.php:477
 msgid ""
 "If you are leaving this field empty, the default title will be used in the "
 "checkout"
@@ -698,21 +583,23 @@ msgstr ""
 "Om du lämnar detta fältet tomt, så kommer standardvärdet att användas i "
 "kassan"
 
-#: functions_settings.php:474 includes/resurs_bank_nr_109.php:181
+#: functions_settings.php:482 includes/resurs_bank_nr_109.php:181
 #: includes/resurs_bank_nr_110.php:181 includes/resurs_bank_nr_111.php:181
 #: includes/resurs_bank_nr_112.php:181 includes/resurs_bank_nr_114.php:181
 #: includes/resurs_bank_nr_PSPCARD.php:181
 #: includes/resurs_bank_nr_PSPMOCK.php:181
 #: includes/resurs_bank_nr_PSP_INTERNET.php:181
+#: includes/resurs_bank_nr_SWISH.php:181
 msgid "Custom payment method icon"
 msgstr "Anpassningsbar ikon för betalmetod"
 
-#: functions_settings.php:477 includes/resurs_bank_nr_109.php:184
+#: functions_settings.php:485 includes/resurs_bank_nr_109.php:184
 #: includes/resurs_bank_nr_110.php:184 includes/resurs_bank_nr_111.php:184
 #: includes/resurs_bank_nr_112.php:184 includes/resurs_bank_nr_114.php:184
 #: includes/resurs_bank_nr_PSPCARD.php:184
 #: includes/resurs_bank_nr_PSPMOCK.php:184
 #: includes/resurs_bank_nr_PSP_INTERNET.php:184
+#: includes/resurs_bank_nr_SWISH.php:184
 msgid ""
 "Used for branded logotypes as icons for the specific payment method. The "
 "image type must be a http/https-link. Suggested link is local, uploaded to "
@@ -722,45 +609,48 @@ msgstr ""
 "måste vara en länk av typen http/https. Föreslagsvis används en lokal länk, "
 "genom att man laddar upp bilden till WordPress egna lagringsställe."
 
-#: functions_settings.php:481 includes/resurs_bank_nr_109.php:187
+#: functions_settings.php:489 includes/resurs_bank_nr_109.php:187
 #: includes/resurs_bank_nr_110.php:187 includes/resurs_bank_nr_111.php:187
 #: includes/resurs_bank_nr_112.php:187 includes/resurs_bank_nr_114.php:187
 #: includes/resurs_bank_nr_PSPCARD.php:187
 #: includes/resurs_bank_nr_PSPMOCK.php:187
 #: includes/resurs_bank_nr_PSP_INTERNET.php:187
+#: includes/resurs_bank_nr_SWISH.php:187
 msgid "Enable/Disable payment method icon"
 msgstr "Aktivera/Avaktivera betalmetodens ikon"
 
-#: functions_settings.php:497 includes/resurs_bank_nr_109.php:202
+#: functions_settings.php:505 includes/resurs_bank_nr_109.php:202
 #: includes/resurs_bank_nr_110.php:202 includes/resurs_bank_nr_111.php:202
 #: includes/resurs_bank_nr_112.php:202 includes/resurs_bank_nr_114.php:202
 #: includes/resurs_bank_nr_PSPCARD.php:202
 #: includes/resurs_bank_nr_PSPMOCK.php:202
 #: includes/resurs_bank_nr_PSP_INTERNET.php:202
+#: includes/resurs_bank_nr_SWISH.php:202
 msgid "Payment fee for this payment method"
 msgstr "Avgift för att använda betalalternativet (exkl. moms)"
 
-#: functions_settings.php:501 includes/resurs_bank_nr_109.php:206
+#: functions_settings.php:509 includes/resurs_bank_nr_109.php:206
 #: includes/resurs_bank_nr_110.php:206 includes/resurs_bank_nr_111.php:206
 #: includes/resurs_bank_nr_112.php:206 includes/resurs_bank_nr_114.php:206
 #: includes/resurs_bank_nr_PSPCARD.php:206
 #: includes/resurs_bank_nr_PSPMOCK.php:206
 #: includes/resurs_bank_nr_PSP_INTERNET.php:206
+#: includes/resurs_bank_nr_SWISH.php:206
 msgid "Description of this payment method fee"
 msgstr "Beskrivning av betalalternativets avgift"
 
-#: functions_settings.php:518
+#: functions_settings.php:526
 msgid ""
 "This controls the title of Resurs Checkout as a payment method in the "
 "checkout"
 msgstr ""
 "Detta kontrollerar titeln på Resurs Checkout som betalningsmetod i kassan"
 
-#: functions_settings.php:531
+#: functions_settings.php:539
 msgid "Change the (CSS)-shape of the iframe"
 msgstr "Ändra (CSS)-form på iframen"
 
-#: functions_settings.php:534
+#: functions_settings.php:542
 msgid ""
 "This controls the shape of the iframe CSS (meaning you may use CSS code here "
 "to change the background and shape of the iframe)"
@@ -768,37 +658,37 @@ msgstr ""
 "Detta kontrollerar formen på iframens CSS (vilket innebär att du kan använda "
 "denna CSS-kod för att ändra bakgrund och form på iframen)"
 
-#: functions_settings.php:539
+#: functions_settings.php:547
 msgid "iFrame location"
 msgstr "Plats för iFrame"
 
-#: functions_settings.php:542
+#: functions_settings.php:550
 msgid "After checkout form (Default)"
 msgstr "Efter orderformulären (Standard)"
 
-#: functions_settings.php:543
+#: functions_settings.php:551
 msgid "Before order review"
 msgstr "Före orderns sammanställning"
 
-#: functions_settings.php:544
+#: functions_settings.php:552
 msgid "In payment method list"
 msgstr "I listan med betalmetoder"
 
-#: functions_settings.php:552
+#: functions_settings.php:560
 msgid "No methods on Checkout (Experimental)"
 msgstr "Inga  betalmetoder vid Checkouten (Experimentell)"
 
-#: functions_settings.php:555
+#: functions_settings.php:563
 msgid "Remove payment methods list if Resurs Checkout is the only gateway"
 msgstr ""
 "Tar bort listan med betalningsmetoder i listan om Resurs Checkout är den "
 "enda gatewayen"
 
-#: functions_settings.php:560
+#: functions_settings.php:568
 msgid "Reload checkout on cart changes"
 msgstr "Ladda om checkout-sidan om varukorgen uppdateras"
 
-#: functions_settings.php:563
+#: functions_settings.php:571
 msgid ""
 "If you experience problems during the checkout (the iframe does not reload "
 "properly when the cart is updated), activating will reload the checkout page "
@@ -808,12 +698,12 @@ msgstr ""
 "ordentligt när varukorgen uppdateras), kan du aktivera den här funktionen "
 "för att ladda om hela sidan i stället för bara iframen."
 
-#: functions_settings.php:568
+#: functions_settings.php:576
 msgid "Remove all default customer fields when loading Omni Checkout iframe"
 msgstr ""
 "Ta bort samtliga fält ifrån orderformulären, när Resurs Checkout laddas."
 
-#: functions_settings.php:572
+#: functions_settings.php:580
 msgid ""
 "Normally, OmniCheckout has all necessary customer fields located in the "
 "iFrame. The plugin removes those fields automatically from the checkout. "
@@ -825,7 +715,7 @@ msgstr ""
 "inte av att rensa upp alla nödvändiga fälten ordentligt. Denna inställningen "
 "löser det, men kan ha negativ effekt på andra egenskaper i kassan."
 
-#: functions_settings.php:577
+#: functions_settings.php:585
 msgid ""
 "Use standard customer fields to update shipping methods when postal code "
 "changes (Experimental)"
@@ -833,7 +723,7 @@ msgstr ""
 "Använd kundernas standardformulär för att uppdatera fraktmetoder, när "
 "postnummer uppdateras (Experimentell)"
 
-#: functions_settings.php:581
+#: functions_settings.php:589
 msgid ""
 "Normally, this plugin removes all customer data fields from the checkout as "
 "it gets the information from the iframe. In this case, however, we will try "
@@ -845,11 +735,11 @@ msgstr ""
 "dessa fälten (dolda) för att uppdatera fraktsätten, när postnumret "
 "uppdateras. Detta är en betafunktion."
 
-#: functions_settings.php:586
+#: functions_settings.php:594
 msgid "Checkout form fields must not be empty"
 msgstr "Fälten får inte vara tomma"
 
-#: functions_settings.php:589
+#: functions_settings.php:597
 msgid ""
 "This setting secures that this plugin is returning an array, if WooCommerce "
 "for some passes over completely empty data (null) during the checkout process"
@@ -858,7 +748,7 @@ msgstr ""
 "WooCommerce av någon anledning skickar över totalt tomma data (null) under "
 "utcheckningsprocessen."
 
-#: functions_settings.php:597
+#: functions_settings.php:605
 msgid ""
 "If your plugin is running in test, enable this settings, to not hide the "
 "standard form fields"
@@ -866,25 +756,25 @@ msgstr ""
 "Om pluginet körs i test, aktivera denna inställning, för att inte dölja "
 "standardformulären"
 
-#: functions_settings.php:1114 resursbank_settings.php:815
+#: functions_settings.php:1122 resursbank_settings.php:839
 msgid "Method"
 msgstr "Metod"
 
-#: functions_settings.php:1116 resursbank_settings.php:833
+#: functions_settings.php:1124 resursbank_settings.php:857
 msgid "ID"
 msgstr "ID"
 
-#: functions_settings.php:1117
+#: functions_settings.php:1125
 msgid "Status"
 msgstr "Status"
 
-#: functions_settings.php:1118
+#: functions_settings.php:1126
 msgid "Process"
 msgstr "Process"
 
-#: functions_settings.php:1164 resursbank_settings.php:945
-#: resursbank_settings.php:995 resursbankgateway.php:522
-#: resursbankgateway.php:555 staticflows/flow_omni.php:111
+#: functions_settings.php:1172 resursbank_settings.php:969
+#: resursbank_settings.php:1019 resursbankgateway.php:523
+#: resursbankgateway.php:556 staticflows/flow_omni.php:111
 msgid "Disabled"
 msgstr "Avaktiverad"
 
@@ -893,6 +783,7 @@ msgstr "Avaktiverad"
 #: includes/resurs_bank_nr_114.php:123 includes/resurs_bank_nr_PSPCARD.php:123
 #: includes/resurs_bank_nr_PSPMOCK.php:123
 #: includes/resurs_bank_nr_PSP_INTERNET.php:123
+#: includes/resurs_bank_nr_SWISH.php:123
 msgid ""
 "In demo mode, this payment method is shown regardless of the total payment "
 "amount and the payment method limits"
@@ -905,6 +796,7 @@ msgstr ""
 #: includes/resurs_bank_nr_114.php:123 includes/resurs_bank_nr_PSPCARD.php:123
 #: includes/resurs_bank_nr_PSPMOCK.php:123
 #: includes/resurs_bank_nr_PSP_INTERNET.php:123
+#: includes/resurs_bank_nr_SWISH.php:123
 msgid "Restricted"
 msgstr "Begränsad"
 
@@ -913,6 +805,7 @@ msgstr "Begränsad"
 #: includes/resurs_bank_nr_114.php:177 includes/resurs_bank_nr_PSPCARD.php:177
 #: includes/resurs_bank_nr_PSPMOCK.php:177
 #: includes/resurs_bank_nr_PSP_INTERNET.php:177
+#: includes/resurs_bank_nr_SWISH.php:177
 msgid ""
 "This controls the payment method title which the user sees during checkout."
 msgstr "Det här kontrollerar betalmetodens titel som kunden ser i kassan."
@@ -945,23 +838,23 @@ msgstr "Klicka för att redigera"
 msgid "Save"
 msgstr "Spara"
 
-#: resursbank_settings.php:405
+#: resursbank_settings.php:417
 msgid "No selectable options are available for this option"
 msgstr "Det finns inga valbara alternativ för den här inställningen"
 
-#: resursbank_settings.php:522
+#: resursbank_settings.php:534
 msgid "Plugin information"
 msgstr "Information om pluginet"
 
-#: resursbank_settings.php:543
+#: resursbank_settings.php:555
 msgid "Available"
 msgstr "Tillgänglig"
 
-#: resursbank_settings.php:546
+#: resursbank_settings.php:558
 msgid "Not available"
 msgstr "Ej tillgänglig"
 
-#: resursbank_settings.php:555
+#: resursbank_settings.php:567
 msgid ""
 "This plugin needs read/write access to the includes directory located in the "
 "path of the plugin or it will not be able to save the payment method "
@@ -971,7 +864,7 @@ msgstr ""
 "samma ställe som pluginet, annars kommer det inte fungera att spara "
 "konfigurationen för betalmetoderna."
 
-#: resursbank_settings.php:587
+#: resursbank_settings.php:599
 msgid ""
 "Omni Checkout: Fully integrated payment solutions based on iframes (as much "
 "as possible including initial customer data are handled by Resurs Bank "
@@ -981,47 +874,47 @@ msgstr ""
 "(i så stor utsträckning om möjligt, där kunduppgifter initialt hanteras av "
 "Resurs Bank utan att lämna kassan)"
 
-#: resursbank_settings.php:676
+#: resursbank_settings.php:688
 msgid "Authentication error"
 msgstr "Autentiseringsfel"
 
-#: resursbank_settings.php:678
+#: resursbank_settings.php:690
 msgid "The service can not be reached for the moment (HTTP Error "
 msgstr "Servicen kan inte nås för tillfället (HTTP Fel "
 
-#: resursbank_settings.php:681
+#: resursbank_settings.php:693
 msgid "Unreachable service, code "
 msgstr "Onåbar tjänst, kod "
 
-#: resursbank_settings.php:692
+#: resursbank_settings.php:715
 msgid "Resurs Bank Configuration - Shop flow"
 msgstr "Inställningar för Resurs Bank - Shopflöde"
 
-#: resursbank_settings.php:694
+#: resursbank_settings.php:717
 msgid "Resurs Bank Configuration - Advanced settings"
 msgstr "Inställningar för Resurs Bank - Avancerade inställningar"
 
-#: resursbank_settings.php:696
+#: resursbank_settings.php:719
 msgid "Resurs Bank Configuration"
 msgstr "Inställningar för Resurs Bank"
 
-#: resursbank_settings.php:699
+#: resursbank_settings.php:722
 msgid "Resurs Bank payment gateway configuration"
 msgstr "Resus Bank payment gateway configuration"
 
-#: resursbank_settings.php:708
+#: resursbank_settings.php:731
 msgid "Plugin and checkout"
 msgstr "Plugin och kassa"
 
-#: resursbank_settings.php:713
+#: resursbank_settings.php:736
 msgid "API Settings"
 msgstr "API-inställningar"
 
-#: resursbank_settings.php:721 resursbank_settings.php:1074
+#: resursbank_settings.php:744 resursbank_settings.php:1096
 msgid "Callbacks"
 msgstr "Callbacks"
 
-#: resursbank_settings.php:731
+#: resursbank_settings.php:755
 msgid ""
 "Your callbacks requires an update. The plugin will do this for you as soon "
 "as this page has is done loading..."
@@ -1029,36 +922,36 @@ msgstr ""
 "Dina callbacks behöver en uppdatering. Pluginet kommer att göra detta åt dig "
 "så fort siddan laddats klart..."
 
-#: resursbank_settings.php:736
+#: resursbank_settings.php:760
 msgid "Callback URLs registered at Resurs Bank"
 msgstr "Callbacks registrerade hos Resurs Bank"
 
-#: resursbank_settings.php:737
+#: resursbank_settings.php:761
 msgid "curl module is set to enter debug mode"
 msgstr "curl-modulen har ställts in för att avlusa"
 
-#: resursbank_settings.php:754
+#: resursbank_settings.php:778
 msgid "Callback health"
 msgstr "Callbacks hälsokontroll"
 
-#: resursbank_settings.php:757
+#: resursbank_settings.php:781
 msgid "Last test run"
 msgstr "Senaste testkörningen"
 
-#: resursbank_settings.php:760 resursbank_settings.php:766
-#: resursbankgateway.php:646
+#: resursbank_settings.php:784 resursbank_settings.php:790
+#: resursbankgateway.php:647
 msgid "Never"
 msgstr "Aldrig"
 
-#: resursbank_settings.php:763
+#: resursbank_settings.php:787
 msgid "Last test received"
 msgstr "Senast mottagna test"
 
-#: resursbank_settings.php:775 resursbank_settings.php:1107
+#: resursbank_settings.php:799 resursbank_settings.php:1130
 msgid "Payment methods"
 msgstr "Betalningsmetoder"
 
-#: resursbank_settings.php:784
+#: resursbank_settings.php:808
 msgid ""
 "The list of available payment methods will appear, when credentials has been "
 "entered"
@@ -1066,7 +959,7 @@ msgstr ""
 "Listan över tillgängliga betalningsmetoder dyker upp när "
 "inloggningsuppgifter är ifyllda"
 
-#: resursbank_settings.php:788
+#: resursbank_settings.php:812
 msgid ""
 "Payment method titles/descriptions are not editable when using Resurs "
 "Checkout as they are handled by Resurs Bank, server side. Contact support if "
@@ -1076,7 +969,7 @@ msgstr ""
 "Resurs Checkout används eftersom de hanteras av Resurs Bank serversida. "
 "Kontakta supporten om du vill göra några ändringar"
 
-#: resursbank_settings.php:793
+#: resursbank_settings.php:817
 msgid ""
 "The list of available payment methods is not available due to an error at "
 "Resurs Bank! See the error message below."
@@ -1084,19 +977,19 @@ msgstr ""
 "Listan med betalmetoder är inte tillgänglig för närvarande, på grund av ett "
 "fel hos Resurs Bank! Se felmeddelandet nedan."
 
-#: resursbank_settings.php:817
+#: resursbank_settings.php:841
 msgid "AnnuityFactor"
 msgstr "Delbetalningsfaktor"
 
-#: resursbank_settings.php:819
+#: resursbank_settings.php:843
 msgid "Activate/disable by clicking the X-boxes"
 msgstr "Aktivera/avaktivera genom att klicka på X:en"
 
-#: resursbank_settings.php:837
+#: resursbank_settings.php:861
 msgid "Fee"
 msgstr "Avgift"
 
-#: resursbank_settings.php:1025
+#: resursbank_settings.php:1049
 msgid ""
 "Shop flow settings are not editable when using Resurs Checkout - Contact "
 "support if you want to do any changes"
@@ -1104,7 +997,7 @@ msgstr ""
 "Inställningarna för shopflödet är inte möjliga att redigera när Resurs "
 "Checkout är aktivt - Kontakta supporten om du vill göra några förändringar"
 
-#: resursbank_settings.php:1043
+#: resursbank_settings.php:1067
 msgid ""
 "When all the below settings are unchecked, you are running the plugin with a "
 "Resurs Bank preferred configuration"
@@ -1112,80 +1005,90 @@ msgstr ""
 "När alla inställningarna nedan är avmarkerade, så använder pluginet en, av "
 "Resurs Bank föredragen, konfiguration."
 
-#: resursbank_settings.php:1049
+#: resursbank_settings.php:1073
 msgid "Next invoice number to use"
 msgstr "Nästa fakturanummer att använda"
 
-#: resursbank_settings.php:1056
+#: resursbank_settings.php:1080
 msgid "Visuals"
 msgstr "Visuellt"
 
-#: resursbank_settings.php:1059
+#: resursbank_settings.php:1083
 msgid "Checkout"
 msgstr "Kassan"
 
-#: resursbank_settings.php:1064
+#: resursbank_settings.php:1088
 msgid "Advanced"
 msgstr "Avancerat"
 
-#: resursbank_settings.php:1071
+#: resursbank_settings.php:1093
 msgid "URL Settings"
 msgstr "URL-inställningar"
 
-#: resursbank_settings.php:1078
+#: resursbank_settings.php:1101
 msgid "Customer and store"
 msgstr "Kunder och butik"
 
-#: resursbank_settings.php:1083
+#: resursbank_settings.php:1106
 msgid "Testing and development"
 msgstr "Test och utveckling"
 
-#: resursbank_settings.php:1087
+#: resursbank_settings.php:1110
 msgid "Miscellaneous"
 msgstr "Blandat"
 
-#: resursbank_settings.php:1090
+#: resursbank_settings.php:1113
 msgid "Special test occasions"
 msgstr "Speciella test-tillfällen"
 
-#: resursbank_settings.php:1101
+#: resursbank_settings.php:1124
 msgid "Network"
 msgstr "Nätverk"
 
-#: resursbank_settings.php:1103
+#: resursbank_settings.php:1126
 msgid "Maintenance"
 msgstr "Underhåll"
 
-#: resursbank_settings.php:1104
+#: resursbank_settings.php:1127
 msgid "Clean up "
 msgstr "Städa upp"
 
-#: resursbank_settings.php:1105
+#: resursbank_settings.php:1128
 msgid "Resurs settings"
 msgstr "Resurs inställningar"
 
-#: resursbank_settings.php:1109
+#: resursbank_settings.php:1132
 msgid "Cached data"
 msgstr "Cachelagrad data"
 
-#: resursbank_settings.php:1122
+#: resursbank_settings.php:1145
 msgid "Default title set by Resurs Bank is "
 msgstr "Standardtiteln som satts av Resurs Bank är"
 
-#: resursbank_settings.php:1134
+#: resursbank_settings.php:1157
 msgid ""
 "The payment method editor is not availabe while Resurs Checkout is active"
 msgstr ""
 "Redigeraren för betalningsmetoder är inte tillgänglig när Resurs Checkout är "
 "aktiv"
 
-#: resursbank_settings.php:1138
+#: resursbank_settings.php:1161
 msgid "Save above configuration with the button below"
 msgstr "Spara ovanstående data med hjälp av knappen nedan"
 
-#: resursbank_settings.php:1151
+#: resursbank_settings.php:1174
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
+
+#: resursbank_settings.php:1175 resursbankgateway.php:3975
+#: resursbankgateway.php:3979
+msgid "Yes"
+msgstr "Ja"
+
+#: resursbank_settings.php:1175 resursbankgateway.php:3975
+#: resursbankgateway.php:3979
+msgid "No"
+msgstr "Nej"
 
 #: resursbankgateway.php:220
 msgid "Payment method gateways are updated"
@@ -1211,57 +1114,79 @@ msgstr "Det går inte att byta flödestyp om inte butiken är satt i demoläge"
 msgid "Resurs Bank denied purchase"
 msgstr "Resurs Bank nekade köpet"
 
-#: resursbankgateway.php:486
+#: resursbankgateway.php:487
 msgid "Please reload or save this page to have this list updated"
 msgstr "Ladda om eller spara denna sidan för att uppdatera listan"
 
-#: resursbankgateway.php:567
+#: resursbankgateway.php:568
 msgid "Configuration has not yet been initiated."
 msgstr "Konfigurationen har ännu inte initierats"
 
-#: resursbankgateway.php:642
+#: resursbankgateway.php:643
 msgid "Test callback received"
 msgstr "Testcallbacken har tagits emot"
 
-#: resursbankgateway.php:746
+#: resursbankgateway.php:747
 msgid "The Resurs Bank event "
 msgstr "Resurs Bank eventet"
 
-#: resursbankgateway.php:759
+#: resursbankgateway.php:760
 msgid "The Resurs Bank event UNFREEZE received"
 msgstr "Resurs Banks event UNFREEZE har tagit emot (uppfrys)"
 
-#: resursbankgateway.php:768
+#: resursbankgateway.php:769
 msgid "The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED"
 msgstr "Resurs Banks event AUTOMATIC_FRAUD_CONTROL returnerade THAWED (tinad)"
 
-#: resursbankgateway.php:773
+#: resursbankgateway.php:774
 msgid "The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN"
 msgstr ""
 "Resurs Banks event AUTOMATIC_FRAUD_CONTROL returnerade FROZEN (frusen order)"
 
-#: resursbankgateway.php:788
+#: resursbankgateway.php:789
 msgid "ANNULMENT event received from Resurs Bank"
 msgstr "Annullerings-event (ANNULMENT) mottaget från Resurs Bank"
 
-#: resursbankgateway.php:797
-msgid "FINALIZATION event received from Resurs Bank"
-msgstr "Debiterings-event (FINALIZATION) mottaget från Resurs Bank"
+#: resursbankgateway.php:800
+msgid ""
+"FINALIZATION event received from Resurs Bank, but the used payment method "
+"indicated that instant finalization is available for it. If it's not already "
+"completed you might have to update the order manually."
+msgstr ""
+"FINALIZATION-callbacken emottogs från Resurs Bank, men betalmetoden "
+"indikerar att omedelbar debitering är tillgänglig för den. Om ordern inte "
+"redan är slutförd kan du behöva uppdatera den manuellt."
 
-#: resursbankgateway.php:816
+#: resursbankgateway.php:802
+msgid "FINALIZATION event received from Resurs Bank."
+msgstr "FINALIZATION-event har emottagits från Resurs Bank."
+
+#: resursbankgateway.php:823
 msgid "BOOKED event received from Resurs Bank"
 msgstr "Boknings-event (BOOKED) mottaget från Resurs Bank"
 
-#: resursbankgateway.php:857
-msgid "UPDATE event received from Resurs Bank"
-msgstr "UPDATE-eventet mottogs från Resurs Bank"
+#: resursbankgateway.php:866
+msgid ""
+"UPDATE event received from Resurs Bank. The order seem to be FINALIZED and "
+"the payment method this order uses, indicates that it supports instant "
+"finalization. If it's not already completed you might have to update the "
+"order manually."
+msgstr ""
+"UPDATE-callback mottogs från Resurs Bank. Ordern ser ut att vara slutförd "
+"och betalmetoden som ordern använder, indikerar att den stödjer omedelbara "
+"debiteringar. Om den inte redan är slutförd kan du behöva uppdatera ordern "
+"manuellt."
 
-#: resursbankgateway.php:882
+#: resursbankgateway.php:869
+msgid "UPDATE event received from Resurs Bank."
+msgstr "UPDATE-event emottogs från Resurs Bank."
+
+#: resursbankgateway.php:896
 msgid "Updated order based on Resurs Bank current order status"
 msgstr ""
 "Uppdaterade ordern baserat på status Resurs Banks nuvarande orderstatus"
 
-#: resursbankgateway.php:888
+#: resursbankgateway.php:902
 msgid ""
 "Request order status update upon Resurs Bank current payment order status, "
 "left unchanged since the order is already updated"
@@ -1269,51 +1194,55 @@ msgstr ""
 "Förfrågan att uppdatera orderstatus från Resurs Bank förändrades inte "
 "eftersom ordern redan är uppdaterad"
 
-#: resursbankgateway.php:957
+#: resursbankgateway.php:976
 msgid "Resurs Bank annulled the order"
 msgstr "Resurs Bank annullerade ordern"
 
-#: resursbankgateway.php:1092 staticflows/flow_omni.php:429
+#: resursbankgateway.php:1115 staticflows/flow_omni.php:429
 msgid "Article description missing"
 msgstr "Artikelbeskrivning saknas"
 
-#: resursbankgateway.php:1140 staticflows/flow_omni.php:468
+#: resursbankgateway.php:1163 staticflows/flow_omni.php:468
 msgid "Shipping"
 msgstr "Frakt"
 
-#: resursbankgateway.php:1290
+#: resursbankgateway.php:1313
 msgid "Contact government id"
 msgstr "Kontaktpersonens personnummer"
 
-#: resursbankgateway.php:1291
+#: resursbankgateway.php:1314
 msgid "Applicant government ID"
 msgstr "Sökande personnummer"
 
-#: resursbankgateway.php:1292
+#: resursbankgateway.php:1315
 msgid "Applicant full name"
 msgstr "Sökandes fullständiga namn"
 
-#: resursbankgateway.php:1293
+#: resursbankgateway.php:1316
 msgid "Applicant email address"
 msgstr "E-postaddress"
 
-#: resursbankgateway.php:1294
+#: resursbankgateway.php:1317
 msgid "Applicant telephone number"
 msgstr "Telefonnummer"
 
-#: resursbankgateway.php:1295
+#: resursbankgateway.php:1318
 msgid "Applicant mobile number"
 msgstr "Mobilnummer"
 
-#: resursbankgateway.php:1296
+#: resursbankgateway.php:1319
 msgid "Card number"
 msgstr "Kortnummer"
 
-#: resursbankgateway.php:1299
+#: resursbankgateway.php:1322
 msgid "Company government ID"
 msgstr "Organisationsnummer"
 
-#: resursbankgateway.php:1492
+#: resursbankgateway.php:1347 resursbankgateway.php:4039
+msgid "Read more"
+msgstr "Läs mer"
+
+#: resursbankgateway.php:1515
 msgid ""
 "Something went wrong while trying to get the required form fields for the "
 "payment methods"
@@ -1321,11 +1250,11 @@ msgstr ""
 "Något gick fel när vi försökte hitta de krävda formulärsfälten för "
 "betalmetoderna"
 
-#: resursbankgateway.php:1648 resursbankgateway.php:1702
+#: resursbankgateway.php:1671 resursbankgateway.php:1725
 msgid "The payment method is not available for the selected payment flow"
 msgstr "Betalningsmetoden är inte tillgänglig i det valda betalflödet"
 
-#: resursbankgateway.php:1672
+#: resursbankgateway.php:1695
 msgid ""
 "An error occured during the update of the booked payment (hostedFlow) - the "
 "payment id which was never received properly"
@@ -1333,11 +1262,11 @@ msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen (hostedFlow) - "
 "betalningsid emottogs aldrig ordentligt"
 
-#: resursbankgateway.php:1751 resursbankgateway.php:2409
+#: resursbankgateway.php:1774 resursbankgateway.php:2432
 msgid "Order is debited and completed"
 msgstr "Ordern är debiterad och färdig"
 
-#: resursbankgateway.php:1794
+#: resursbankgateway.php:1817
 msgid ""
 "Payment can not complete. A problem with the signing url occurred. Contact "
 "customer services for more information."
@@ -1345,13 +1274,13 @@ msgstr ""
 "Betalningen kan inte färdigställas. Ett problem med signeringen uppstod. "
 "Kontakta kundservice för mer information"
 
-#: resursbankgateway.php:1799 resursbankgateway.php:2336
-#: resursbankgateway.php:2421
+#: resursbankgateway.php:1822 resursbankgateway.php:2359
+#: resursbankgateway.php:2444
 msgid ""
 "The payment can not complete. Contact customer services for more information."
 msgstr "Ordern kan inte slutföras. Kontakta kundservice för mer information."
 
-#: resursbankgateway.php:1805
+#: resursbankgateway.php:1828
 msgid ""
 "An error occured during the update of the booked payment. The payment ID was "
 "never received properly in the payment process"
@@ -1359,16 +1288,16 @@ msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen. Betalnings-id emottogs "
 "aldrig i betalprocessen."
 
-#: resursbankgateway.php:1807 resursbankgateway.php:1812
-#: resursbankgateway.php:2428
+#: resursbankgateway.php:1830 resursbankgateway.php:1835
+#: resursbankgateway.php:2451
 msgid "An unknown error occured. Please, try again later"
 msgstr "Ett okänt fel har uppstått. Vänligen försök igen senare."
 
-#: resursbankgateway.php:2306
+#: resursbankgateway.php:2329
 msgid "The payment failed during purchase"
 msgstr "Betalningen misslyckades"
 
-#: resursbankgateway.php:2307
+#: resursbankgateway.php:2330
 msgid ""
 "The purchase from Resurs Bank was by some reason not accepted. Please "
 "contact customer services, or try again with another payment method."
@@ -1376,34 +1305,34 @@ msgstr ""
 "Köpet har nekats av Resurs Bank. Vänligen kontakta kundtjänst eller försök "
 "igen med en annan betalningsmetod."
 
-#: resursbankgateway.php:2325 resursbankgateway.php:2404
+#: resursbankgateway.php:2348 resursbankgateway.php:2427
 msgid "The payment are signed and booked"
 msgstr "Betalningen är signerad och bokad"
 
-#: resursbankgateway.php:2371
+#: resursbankgateway.php:2394
 msgid "The payment already exists"
 msgstr "Ordern finns redan"
 
-#: resursbankgateway.php:2377
+#: resursbankgateway.php:2400
 msgid ""
 "We could not finish your order. Please, contact support for more information."
 msgstr ""
 "Vi kunde inte färdigställa din order. Vänligen, kontakta kundtjänst för mer "
 "information."
 
-#: resursbankgateway.php:2382
+#: resursbankgateway.php:2405
 msgid "An unknown error occured in signing method. Please, try again later"
 msgstr "Ett fel uppstod vid signeringen. Väligen försök igen senare"
 
-#: resursbankgateway.php:2402
+#: resursbankgateway.php:2425
 msgid "The payment are frozen, while waiting for manual control"
 msgstr "Betalningen är frusen i väntan på manuell kontroll"
 
-#: resursbankgateway.php:2418
+#: resursbankgateway.php:2441
 msgid "The payment are signed and debited"
 msgstr "Betalningen är signerad och debiterad"
 
-#: resursbankgateway.php:2426
+#: resursbankgateway.php:2449
 msgid ""
 "An error occured during the update of the booked payment. The payment id was "
 "never received properly in signing response"
@@ -1411,100 +1340,100 @@ msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen. Betalningsid emottogs "
 "aldrig ordentligt under signeringsprocessen."
 
-#: resursbankgateway.php:2433
+#: resursbankgateway.php:2456
 msgid "Something went wrong during the signing process."
 msgstr "Ett fel uppstod under signeringsprocessen."
 
-#: resursbankgateway.php:2514
+#: resursbankgateway.php:2537
 msgid "The field"
 msgstr "Fältet för"
 
-#: resursbankgateway.php:2515
+#: resursbankgateway.php:2538
 msgid "has invalid information"
 msgstr "har felaktig information"
 
-#: resursbankgateway.php:2516
+#: resursbankgateway.php:2539
 msgid "It can't be empty"
 msgstr "Det får inte vara tomt"
 
-#: resursbankgateway.php:2725
+#: resursbankgateway.php:2748
 msgid "Can not get the address from current government ID"
 msgstr "Kan inte hämta adressen från angivet personnummer/organisationsnummer."
 
-#: resursbankgateway.php:2768
+#: resursbankgateway.php:2791
 msgid "Close"
 msgstr "Stäng"
 
-#: resursbankgateway.php:2993
+#: resursbankgateway.php:3016
 msgid "Error"
 msgstr "Fel"
 
-#: resursbankgateway.php:2996
+#: resursbankgateway.php:3019
 msgid "Finalization failed"
 msgstr "Finaliseringen misslyckades"
 
-#: resursbankgateway.php:3003
+#: resursbankgateway.php:3026
 msgid "This order has already been finalized externally"
 msgstr "Den här ordern har redan debiterats externt"
 
-#: resursbankgateway.php:3007
+#: resursbankgateway.php:3030
 msgid "This order is in a state at Resurs Bank where it can not be finalized"
 msgstr ""
 "Den här ordern har en annan status hos Resurs bank där den inte kan debiteras"
 
-#: resursbankgateway.php:3026
+#: resursbankgateway.php:3049
 msgid "Cancelled status set: Resurs Bank API was called for cancellation"
 msgstr "Avbruten status: Resurs Bank API anropades för att avbryta order"
 
-#: resursbankgateway.php:3043
+#: resursbankgateway.php:3066
 msgid "Refunded status set: Resurs Bank API was called for cancellation"
 msgstr "Återbetald status: Resurs Bank API anropades för att avbryta order"
 
-#: resursbankgateway.php:3081
+#: resursbankgateway.php:3104
 msgid "Private"
 msgstr "Privat"
 
-#: resursbankgateway.php:3082
+#: resursbankgateway.php:3105
 msgid "Company"
 msgstr "Företag"
 
-#: resursbankgateway.php:3149
+#: resursbankgateway.php:3172
 msgid "Government ID"
 msgstr "Personnummer"
 
-#: resursbankgateway.php:3150
+#: resursbankgateway.php:3173
 msgid "Enter your government id (social security number)"
 msgstr "Ange ditt personnummer"
 
-#: resursbankgateway.php:3162
+#: resursbankgateway.php:3185
 msgid "Get address"
 msgstr "Hämta adress"
 
-#: resursbankgateway.php:3265
+#: resursbankgateway.php:3288
 msgid "Enter social security number"
 msgstr "Skriv in ditt personnummer"
 
-#: resursbankgateway.php:3266
+#: resursbankgateway.php:3289
 msgid "Enter corporate government identity"
 msgstr "Skriv in ditt organisationsnummer"
 
-#: resursbankgateway.php:3267
+#: resursbankgateway.php:3290
 msgid "Government id"
 msgstr "Personnummer"
 
-#: resursbankgateway.php:3268
+#: resursbankgateway.php:3291
 msgid "Corporate government id"
 msgstr "Organisationsnummer"
 
-#: resursbankgateway.php:3283
+#: resursbankgateway.php:3306
 msgid "Changing delivery address requires signing"
 msgstr "Ändring av leveransadress kräver e-signering."
 
-#: resursbankgateway.php:3284
+#: resursbankgateway.php:3307
 msgid "I can not show errors since the element is missing"
 msgstr "Kan inte visa några felmeddelanden eftersom elementet saknas"
 
-#: resursbankgateway.php:3286
+#: resursbankgateway.php:3309
 msgid ""
 "The purchase has failed, due to an internal server error: The shop could not "
 "properly update the order."
@@ -1512,11 +1441,11 @@ msgstr ""
 "Köpet misslyckades på grund av ett internt serverfel. Butiken kunde inte "
 "uppdatera ordern ordentligt."
 
-#: resursbankgateway.php:3288
+#: resursbankgateway.php:3311
 msgid "The purchase was processed, but the payment reference failed to update"
 msgstr "Köpet har hanterats, men betalningsreferensen kunde inte uppdateras"
 
-#: resursbankgateway.php:3290
+#: resursbankgateway.php:3313
 msgid ""
 "The purchase was rejected by Resurs Bank. Please contact customer services, "
 "or try again with another payment method."
@@ -1524,7 +1453,7 @@ msgstr ""
 "Köpet har nekats av Resurs Bank. Vänligen kontakta kundtjänst eller försök "
 "igen med en annan betalningsmetod."
 
-#: resursbankgateway.php:3292
+#: resursbankgateway.php:3315
 msgid ""
 "Something went wrong when we tried to book your order. Please contact "
 "customer support for more information."
@@ -1532,7 +1461,7 @@ msgstr ""
 "Något gick fel när vi försökte boka din order. Vänligen kontakta kundtjänst "
 "för mer information."
 
-#: resursbankgateway.php:3294
+#: resursbankgateway.php:3317
 msgid ""
 "An internal error occured while trying to book the order. Please contact "
 "customer support for more information."
@@ -1540,60 +1469,60 @@ msgstr ""
 "Ett internt serverfel uppstod när vi försökte boka ordern. Vän ligen "
 "kontakta kundtjänst för mer information."
 
-#: resursbankgateway.php:3296
+#: resursbankgateway.php:3319
 msgid "An internal error occured while trying to book the order:"
 msgstr "Ett internt fel uppstod när vi försökte boka din order:"
 
-#: resursbankgateway.php:3298
+#: resursbankgateway.php:3321
 msgid "Please contact customer support for more information."
 msgstr "Vänligen kontakta kundtjänst för mer information."
 
-#: resursbankgateway.php:3353
+#: resursbankgateway.php:3376
 msgid ""
 "The list of urls below is cached from an earlier response from Resurs Bank"
 msgstr "Listan med urler nedan är cachad från tidigare svar från Resurs Bank"
 
-#: resursbankgateway.php:3356
+#: resursbankgateway.php:3379
 msgid "callbacks has been registered"
 msgstr "callbacks har registrerats"
 
-#: resursbankgateway.php:3357
+#: resursbankgateway.php:3380
 msgid "Update callbacks again"
 msgstr "Uppdatera callbacks igen"
 
-#: resursbankgateway.php:3358
+#: resursbankgateway.php:3381
 msgid "To remove the fee properly, set the value to 0"
 msgstr "För att ta bort avgiften ordentligt, sätt värdet till 0"
 
-#: resursbankgateway.php:3359
+#: resursbankgateway.php:3382
 msgid "The entered value is not allowed here"
 msgstr "Det angivna värdet är inte tillåtet här"
 
-#: resursbankgateway.php:3361
+#: resursbankgateway.php:3384
 msgid "No registered callbacks could be found"
 msgstr "Kunde inte hitta några registrerade callbacks"
 
-#: resursbankgateway.php:3362
+#: resursbankgateway.php:3385
 msgid "This setting requires waitForFraudControl to be active"
 msgstr "Den här inställningen kräver att waitForFraudControl är aktiv"
 
-#: resursbankgateway.php:3364
+#: resursbankgateway.php:3387
 msgid "Unable to set new fee"
 msgstr "Kan inte ställa in ny avgift"
 
-#: resursbankgateway.php:3365
+#: resursbankgateway.php:3388
 msgid "Fee has been updated"
 msgstr "Avgiften har uppdateras"
 
-#: resursbankgateway.php:3366
+#: resursbankgateway.php:3389
 msgid "Waiting for callback"
 msgstr "Väntar på callback"
 
-#: resursbankgateway.php:3367
+#: resursbankgateway.php:3390
 msgid "Callback not yet received"
 msgstr "Callbacken har ännu inte mottagits"
 
-#: resursbankgateway.php:3368
+#: resursbankgateway.php:3391
 msgid ""
 "It seems that your site has not received any callbacks yet.\\nEither your "
 "site are unreachable, or the callback tester is for the moment slow."
@@ -1602,7 +1531,7 @@ msgstr ""
 "Antingen kan vi inte nå din webbplats, eller så är callbacktestningen för "
 "närvarande fruktansvärt långsam."
 
-#: resursbankgateway.php:3385
+#: resursbankgateway.php:3408
 msgid ""
 "The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or "
 "older. You should consider upgrading to 5.4 or higher."
@@ -1610,11 +1539,11 @@ msgstr ""
 "Resurs Banks tillägg för WooCommerce kanske inte fungerar korrekt i PHP 5.3, "
 "eller äldre. Du bör överväga att uppgradera till 5.4 eller högre."
 
-#: resursbankgateway.php:3540
+#: resursbankgateway.php:3563
 msgid "Resurs Reference"
 msgstr "Resurs referens"
 
-#: resursbankgateway.php:3624
+#: resursbankgateway.php:3647
 msgid ""
 "Test enabled: In production, this information is shown when the minimum "
 "amount is above"
@@ -1622,25 +1551,129 @@ msgstr ""
 "Test aktiverat: I produktion visas denna information när minsta belopp "
 "överstiger"
 
-#: resursbankgateway.php:3627
+#: resursbankgateway.php:3650
 msgid "Part pay from"
 msgstr "Delbetala från"
 
-#: resursbankgateway.php:3628
+#: resursbankgateway.php:3651
 msgid "per month"
 msgstr "per månad"
 
-#: resursbankgateway.php:3630
+#: resursbankgateway.php:3653
 msgid "Info"
 msgstr "Info"
 
-#: resursbankgateway.php:3638
+#: resursbankgateway.php:3661
 msgid "Annuity factors can not be displayed for the moment"
 msgstr "Delbetalningsfaktorerna kan för närvarande inte visas"
 
-#: resursbankgateway.php:3673
+#: resursbankgateway.php:3696
 msgid "Refund"
 msgstr "Återbetala"
+
+#: resursbankgateway.php:3775
+msgid ""
+"It seems this order has already been finalized from an external system - if "
+"your order is finished you may update it here aswell"
+msgstr ""
+"Det ser ut som att ordern redan har blivit debiterad från ett externt system "
+"- om din order är klar kan du uppdatera den härifrån också"
+
+#: resursbankgateway.php:3825
+msgid "Referenced data don't exist"
+msgstr "Datat du försöker hämta finns inte"
+
+#: resursbankgateway.php:3826
+msgid ""
+"This error might occur when for example a payment doesn't exist at Resurs "
+"Bank. Normally this happens when payments have failed or aborted before it "
+"can be completed"
+msgstr ""
+"Det här felet kan uppstå när till exempel en betalning inte finns på Resurs "
+"Bank. Normalt sker detta när betalningarna har misslyckats eller avbrutits "
+"innan den kan slutföras"
+
+#: resursbankgateway.php:3832
+msgid "The order was denied at Resurs Bank and therefore has not been created"
+msgstr "Ordern har nekats hos Resurs Bank och har därför inte skapats"
+
+#: resursbankgateway.php:3842
+msgid ""
+"Following error ocurred when we tried to fetch information about the payment"
+msgstr "Följande fel uppstod när vi försökte hämta information om betalningen"
+
+#: resursbankgateway.php:3898
+msgid "The order is booked"
+msgstr "Ordern är bokad"
+
+#: resursbankgateway.php:3901
+msgid "The order is debited"
+msgstr "Ordern är debiterad"
+
+#: resursbankgateway.php:3903
+msgid "The order is partially debited"
+msgstr "Ordern är delvis debiterad"
+
+#: resursbankgateway.php:3906
+msgid "The order is credited"
+msgstr "Ordern är krediterad"
+
+#: resursbankgateway.php:3908
+msgid "The order is annulled"
+msgstr "Ordern är annullerad"
+
+#: resursbankgateway.php:3943
+msgid "Payment ID"
+msgstr "Betalnings-id"
+
+#: resursbankgateway.php:3947
+msgid "Payment method ID"
+msgstr "Betalmetodens id"
+
+#: resursbankgateway.php:3951
+msgid "Store ID"
+msgstr "Butiks-ID (Store ID)"
+
+#: resursbankgateway.php:3955
+msgid "Payment method name"
+msgstr "Betalmetodens namn"
+
+#: resursbankgateway.php:3959
+msgid "Payment method type"
+msgstr "Betalmetodens typ"
+
+#: resursbankgateway.php:3963
+msgid "Payment amount"
+msgstr "Orderbelopp"
+
+#: resursbankgateway.php:3968
+msgid "Payment limit"
+msgstr "Betalningens limit"
+
+#: resursbankgateway.php:3973
+msgid "Fraud"
+msgstr "Bedrägeri"
+
+#: resursbankgateway.php:3977
+msgid "Frozen"
+msgstr "Frusen"
+
+#: resursbankgateway.php:3981
+msgid "Customer name"
+msgstr "Kundens namn"
+
+#: resursbankgateway.php:3985
+msgid "Delivery address"
+msgstr "Leveransadress"
+
+#: resursbankgateway.php:4222
+msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
+msgstr ""
+"Borttagning av orderrad: Resurs Bank API anropades för ta bort orderrader"
+
+#: resursbankgateway.php:4920
+msgid "There are currently no payment methods available"
+msgstr "Det finns för närvarande inga betalningsmetoder tillgängliga"
 
 #: staticflows/flow_omni.php:86 staticflows/flow_omni.php:198
 msgid ""
@@ -1660,26 +1693,28 @@ msgstr ""
 msgid "Custom test environment URL"
 msgstr "Anpassad URL till testmiljö"
 
-#. Plugin Name of the plugin/theme
-msgid "Resurs Bank Payment Gateway for WooCommerce"
-msgstr "Resurs Bank AB betalningslösning för WooCommerce"
+#~ msgid ""
+#~ "FINALIZATION event received from Resurs Bank, but the used payment method "
+#~ "indicated that instant finalization is available for it."
+#~ msgstr ""
+#~ "FINALIZATION eventet togs emot från Resurs Bank, men den använda "
+#~ "betalmetoden indikerar att omedelbara debiteringar är tillgängliga för "
+#~ "den."
 
-#. Plugin URI of the plugin/theme
-msgid ""
-"https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/"
-msgstr ""
+#~ msgid "FINALIZATION event received from Resurs Bank"
+#~ msgstr "Debiterings-event (FINALIZATION) mottaget från Resurs Bank"
 
-#. Description of the plugin/theme
-msgid "Extends WooCommerce with a Resurs Bank gateway"
-msgstr "Resurs Bank AB betalningslösning för WooCommerce"
+#~ msgid "UPDATE event received from Resurs Bank"
+#~ msgstr "UPDATE-eventet mottogs från Resurs Bank"
 
-#. Author of the plugin/theme
-msgid "Resurs Bank AB"
-msgstr "Resurs Bank AB"
+#~ msgid "Resurs Bank Payment Gateway for WooCommerce"
+#~ msgstr "Resurs Bank AB betalningslösning för WooCommerce"
 
-#. Author URI of the plugin/theme
-msgid "https://test.resurs.com/docs/display/ecom/WooCommerce"
-msgstr ""
+#~ msgid "Extends WooCommerce with a Resurs Bank gateway"
+#~ msgstr "Resurs Bank AB betalningslösning för WooCommerce"
+
+#~ msgid "Resurs Bank AB"
+#~ msgstr "Resurs Bank AB"
 
 #~ msgid "Something went wrong during communication with Resurs Bank"
 #~ msgstr "Något gick fel under kommunikationen med Resurs Bank"

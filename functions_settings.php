@@ -452,7 +452,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ),
                 'autoDebitMethods' => array(
-                    'title' => __('Direktdebiterbara betalmetoder', 'WC_Payment_Gateway'),
+                    'title' => __('Instant debitable payment methods', 'WC_Payment_Gateway'),
                     'description' => __('', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(),

@@ -797,7 +797,7 @@ function woocommerce_gateway_resurs_bank_init()
                         RESURS_CALLBACK_TYPES::FINALIZATION);
 
                     if ($finalizationStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
-                        $order->add_order_note(__('FINALIZATION event received from Resurs Bank, but the used payment method indicated that instant finalization is available for it.', 'WC_Payment_Gateway'));
+                        $order->add_order_note(__('FINALIZATION event received from Resurs Bank, but the used payment method indicated that instant finalization is available for it. If it\'s not already completed you might have to update the order manually.', 'WC_Payment_Gateway'));
                     } else {
                         $order->add_order_note(__('FINALIZATION event received from Resurs Bank.', 'WC_Payment_Gateway'));
                         $order->payment_complete();
