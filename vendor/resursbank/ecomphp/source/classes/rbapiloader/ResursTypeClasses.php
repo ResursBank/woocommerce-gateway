@@ -191,21 +191,23 @@ abstract class RESURS_CALLBACK_REACHABILITY
  * @since 1.0.26
  * @since 1.1.26
  * @since 1.2.0
+ * @link https://test.resurs.com/docs/x/QwH1 EComPHP: Instant FINALIZATION / Bitmasking constants
+ * @link https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
  */
 abstract class RESURS_PAYMENT_STATUS_RETURNCODES
 {
-    const PAYMENT_STATUS_COULD_NOT_BE_SET = 0;     // Waiting for callback or frozen
-    const PAYMENT_PENDING = 1;     // Waiting for callback or frozen
-    const PAYMENT_PROCESSING = 2;  // Booked, waiting for next action
-    const PAYMENT_COMPLETED = 4;   // Fully finalized (debited)
-    const PAYMENT_ANNULLED = 8;    // Fully annulled
-    const PAYMENT_CREDITED = 16;    // Fully credited
-    const PAYMENT_AUTOMATICALLY_DEBITED = 32;    // Fully credited
+    const PAYMENT_STATUS_COULD_NOT_BE_SET = 0;  // No flags are set
+    const PAYMENT_PENDING = 1;
+    const PAYMENT_PROCESSING = 2;
+    const PAYMENT_COMPLETED = 4;
+    const PAYMENT_ANNULLED = 8;
+    const PAYMENT_CREDITED = 16;
+    const PAYMENT_AUTOMATICALLY_DEBITED = 32;
 
     /** @deprecated Fallback status only, use PAYMENT_ANNULLED */
-    const PAYMENT_CANCELLED = 8;   // Fully annulled (this is practically a prestashop based name)
+    const PAYMENT_CANCELLED = 8;
     /** @deprecated Fallback status only, use PAYMENT_CREDITED */
-    const PAYMENT_REFUND = 16;      // Fully credited (this is practically a prestashop based name)
+    const PAYMENT_REFUND = 16;
 }
 
 abstract class RESURS_ENVIRONMENTS
