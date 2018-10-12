@@ -406,6 +406,7 @@ function woocommerce_gateway_resurs_bank_init()
                 header('HTTP/1.0 204 CallbackWithoutDigestTriggerOK');
                 die();
             }
+
             if ($event_type == "noevent") {
                 $myResponse   = null;
                 $myBool       = false;
@@ -705,8 +706,8 @@ function woocommerce_gateway_resurs_bank_init()
                                         $feeValue                  = doubleval($paymentFeeData['feeValue']);
                                         $methodNameSpace           = "woocommerce_resurs_bank_nr_" . $feeId . "_settings";
                                         $responseArray['feeId']    = $feeId;
-                                        $responseArray['oldValue'] = getResursOption("price", $methodNameSpace);
-                                        $responseArray['update']   = setResursOption("price", $feeValue,
+                                        $responseArray['oldValue'] = getResursOption('price', $methodNameSpace);
+                                        $responseArray['update']   = setResursOption('price', $feeValue,
                                             $methodNameSpace) === true ? 1 : 0;
                                     }
                                 }
@@ -792,10 +793,16 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'FINALIZATION':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
+                    $finalizationStatus = $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
                         RESURS_CALLBACK_TYPES::FINALIZATION);
-                    $order->add_order_note(__('FINALIZATION event received from Resurs Bank', 'WC_Payment_Gateway'));
-                    $order->payment_complete();
+
+                    if ($finalizationStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                        $order->add_order_note(__('FINALIZATION event received from Resurs Bank, but the used payment method indicated that instant finalization is available for it. If it\'s not already completed you might have to update the order manually.', 'WC_Payment_Gateway'));
+                    } else {
+                        $order->add_order_note(__('FINALIZATION event received from Resurs Bank.', 'WC_Payment_Gateway'));
+                        $order->payment_complete();
+                    }
+
                     ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'BOOKED':
@@ -852,9 +859,16 @@ function woocommerce_gateway_resurs_bank_init()
 					}
 				}*/
                 case 'UPDATE':
-                    $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
+                    $callbackUpdateStatus = $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
                         RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE);
-                    $order->add_order_note(__('UPDATE event received from Resurs Bank', 'WC_Payment_Gateway'));
+
+                    if ($callbackUpdateStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                        $order->add_order_note(__('UPDATE event received from Resurs Bank. The order seem to be FINALIZED and the payment method this order uses, indicates that it supports instant finalization. If it\'s not already completed you might have to update the order manually.',
+                            'WC_Payment_Gateway'));
+                    } else {
+                        $order->add_order_note(__('UPDATE event received from Resurs Bank.', 'WC_Payment_Gateway'));
+                    }
+
                     break;
                 default:
                     break;
@@ -939,10 +953,15 @@ function woocommerce_gateway_resurs_bank_init()
                             $suggestedStatus);
 
                         return $suggestedStatus;
-                    case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED:
-                        $this->synchronizeResursOrderStatus($currentWcStatus,
-                            $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED], $woocommerceOrder,
-                            $suggestedStatus);
+                    case $suggestedStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED:
+
+                        if ($suggestedStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED && getResursOption('autoDebitStatus') !== "default") {
+                            $woocommerceOrder->update_status(getResursOption('autoDebitStatus'));
+                        } else {
+                            $this->synchronizeResursOrderStatus($currentWcStatus,
+                                $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED], $woocommerceOrder,
+                                $suggestedStatus);
+                        }
 
                         return $suggestedStatus;
                     case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
@@ -1007,6 +1026,10 @@ function woocommerce_gateway_resurs_bank_init()
                     $uriTemplate .= '&digest={digest}';
                 }
                 $uriTemplate  .= '&ts=' . strftime("%y%m%d%H%M", time());
+                $xDebugTest = getResursFlag('XDEBUG_SESSION_START');
+                if (!empty($xDebugTest)) {
+                    $uriTemplate .= "&XDEBUG_SESSION_START=" . $xDebugTest;
+                }
                 $callbackType = $this->flow->getCallbackTypeByString($type);
                 $this->flow->setCallbackDigestSalt(get_transient('resurs_bank_digest_salt'));
                 $this->flow->setRegisterCallback($callbackType, $uriTemplate);
@@ -1183,7 +1206,7 @@ function woocommerce_gateway_resurs_bank_init()
                     } else {
                         $rate = 0;
                     }
-                    if ( ! empty($fee->id)) {
+                    if ( ! empty($fee->id) && $fee->amount > 0) {
                         $spec_lines[] = array(
                             'id'                   => $fee->id,
                             'artNo'                => $fee->id,
@@ -4157,17 +4180,17 @@ function resurs_remove_order_item($item_id)
         if (empty($productId)) {
             $testItemType = r_wc_get_order_item_type_by_item_id($item_id);
             $testItemName = r_wc_get_order_item_type_by_item_id($item_id);
-            if ($testItemType === "shipping") {
+            if ($testItemType === 'shipping') {
                 $clientPaymentSpec[] = array(
-                    'artNo'    => "00_frakt",
+                    'artNo'    => '00_frakt',
                     'quantity' => 1
                 );
-            } elseif ($testItemType === "coupon") {
+            } elseif ($testItemType === 'coupon') {
                 $clientPaymentSpec[] = array(
                     'artNo'    => $testItemName . "_kupong",
                     'quantity' => 1
                 );
-            } elseif ($testItemType === "fee") {
+            } elseif ($testItemType === 'fee') {
                 if (function_exists('wc_get_order')) {
                     $current_order       = wc_get_order($orderId);
                     $feeName             = '00_' . str_replace(' ', '_', $current_order->payment_method_title) . "_fee";
@@ -4177,7 +4200,6 @@ function resurs_remove_order_item($item_id)
                     );
                 } else {
                     $order_failover_test = new WC_Order($orderId);
-                    ///$payment_fee = array_values($order->get_items('fee'))[0];
                     $feeName             = '00_' . str_replace(' ', '_',
                             $order_failover_test->payment_method_title) . "_fee";
                     $clientPaymentSpec[] = array(
@@ -4541,11 +4563,17 @@ function initializeResursFlow(
                 $initFlow->setFlag($flagKey, $flagValue);
             } else {
                 foreach ($flagValue as $autoDebitName) {
-                    if (method_exists($initFlow, 'setAutoDebitableTypes')) {
+                    if (method_exists($initFlow, 'setAutoDebitableType')) {
                         $initFlow->setAutoDebitableType($autoDebitName);
                     }
                 }
             }
+        }
+    }
+    $autoDebitMethodList = getResursOption('autoDebitMethods');
+    if (is_array($autoDebitMethodList)) {
+        foreach ($autoDebitMethodList as $metodType) {
+            $initFlow->setAutoDebitableType($metodType);
         }
     }
 

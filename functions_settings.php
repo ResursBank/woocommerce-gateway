@@ -436,6 +436,29 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => 'https://google.com/?test+landingpage'
                 ),
+                'autoDebitStatus' => array(
+                    'title' => __('Order status on instant finalizations', 'WC_Payment_Gateway'),
+                    'description' => __('Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed by direct debiting which finalizes orders before they are shipped. To prevent this, you can set up a specific status for such payment methods when Resurs callback event FINALIZATIOn occurs', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'default' => __('Use default (Completed)', 'WC_Payment_Gateway'),
+                        'processing' => __('Processing', 'WC_Payment_Gateway'),
+                        'credited' => __('Credited (refunded)', 'WC_Payment_Gateway'),
+                        'completed' => __('Completed', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending (on-hold)', 'WC_Payment_Gateway'),
+                        'annulled' => __('Annulled (cancelled)', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'default',
+                    'desc_tip' => true,
+                ),
+                'autoDebitMethods' => array(
+                    'title' => __('Instant debitable payment methods', 'WC_Payment_Gateway'),
+                    'description' => __('', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(),
+                    'default' => array('SWISH'=>'SWISH'),
+                    'desc_tip' => true,
+                ),
             );
         } else {
             if ($formSectionName == "paymentmethods") {
