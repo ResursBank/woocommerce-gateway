@@ -6125,8 +6125,7 @@ class ResursBank
     public function getOrderStatusByPayment(
         $paymentIdOrPaymentObject = '',
         $byCallbackEvent = RESURS_CALLBACK_TYPES::NOT_SET,
-        $callbackEventDataArrayOrString = array(),
-        $paymentMethodObject = null
+        $callbackEventDataArrayOrString = array()
     ) {
 
         if (is_string($paymentIdOrPaymentObject)) {
