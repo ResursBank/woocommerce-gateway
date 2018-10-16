@@ -115,6 +115,7 @@ abstract class RESURS_CALLBACK_TYPES
  */
 abstract class RESURS_AFTERSHOP_RENDER_TYPES
 {
+    const NONE = 0;
     const FINALIZE = 1;
     const CREDIT = 2;
     const ANNUL = 4;
