@@ -2996,25 +2996,15 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'processing':
                     break;
                 case 'completed':
-                    /*$optionDisableAftershop = getResursOption( "disableAftershopFunctions" );
-					if ( $optionDisableAftershop ) {
-						break;
-					}*/
-                    $flowCode         = 0;
                     $flowErrorMessage = "";
                     if ($resursFlow->canDebit($payment)) {
                         try {
                             $resursFlow->paymentFinalize($payment_id);
                             wp_set_object_terms($order_id, array($old_status_slug), 'shop_order_status', false);
                         } catch (Exception $e) {
-                            $flowCode = $e->getCode();
-                            if ($flowCode == 29) {
-                                // If the internal error code is 29 (ALREADY_EXISTS_INVOICE_ID, ref: https://test.resurs.com/docs/x/jgEF), try to repair the problem
-                                // that cuases this.
-                                $resursFlow->getNextInvoiceNumberByDebits();
-                            }
+                            // Checking code 29 is not necessary since this is automated in EComPHP
                             $flowErrorMessage = "[" . __('Error',
-                                    'WC_Payment_Gateway') . " " . $flowCode . "] " . $e->getMessage();
+                                    'WC_Payment_Gateway') . " " . $e->getCode() . "] " . $e->getMessage();
                             $order->update_status($old_status_slug);
                             $order->add_order_note(__('Finalization failed',
                                     'WC_Payment_Gateway') . ": " . $flowErrorMessage);
@@ -3023,12 +3013,20 @@ function woocommerce_gateway_resurs_bank_init()
                         // Generate a notice if the order has been debited from for example payment admin.
                         // This notice requires that an order is not debitable (if it is, there's more to debit anyway, so in that case the above finalization event will occur)
                         if ($resursFlow->getIsDebited()) {
-                            $order->add_order_note(__('This order has already been finalized externally',
-                                'WC_Payment_Gateway'));
+                            if ($resursFlow->getInstantFinalizationStatus($payment) & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                                $order->add_order_note(__('This order is now marked completed as a result of the payment method behaviour (automatic finalization).', 'WC_Payment_Gateway'));
+                            } else {
+                                $order->add_order_note(__('This order has already been finalized externally', 'WC_Payment_Gateway'));
+                            }
                         } else {
-                            // Generate error message if the order is something else than debited and debitable
-                            $orderNote = __('This order is in a state at Resurs Bank where it can not be finalized',
-                                'WC_Payment_Gateway');
+                            if ($resursFlow->getInstantFinalizationStatus($payment) & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                                $orderNote = __('The payment method for this order indicates that the payment has been automatically finalized.',
+                                    'WC_Payment_Gateway');
+                            } else {
+                                // Generate error message if the order is something else than debited and debitable
+                                $orderNote = __('This order is in a state at Resurs Bank where it can not be finalized',
+                                    'WC_Payment_Gateway');
+                            }
                             $order->add_order_note($orderNote);
                             $flowErrorMessage = $orderNote;
                         }
@@ -3768,12 +3766,19 @@ function resurs_order_data_info_after_shipping($order = null)
     resurs_order_data_info($order, 'AS');
 }
 
-function resurs_no_debit_debited()
+function resurs_no_debit_debited($instant = false)
 {
+    if (!$instant) {
+        $message = __('It seems this order has already been finalized from an external system - if your order is finished you may update it here aswell',
+            'WC_Payment_Gateway');
+    } else {
+        $message = __('It seems this order has been instantly finalized due to the payment method type. This means that you probably must handle it manually.',
+            'WC_Payment_Gateway');
+    }
+
     ?>
     <div class="notice notice-error">
-        <p><?php _e('It seems this order has already been finalized from an external system - if your order is finished you may update it here aswell',
-                'WC_Payment_Gateway'); ?></p>
+        <p><?php echo $message; ?></p>
     </div>
     <?php
 }
@@ -3854,7 +3859,11 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             $notIn           = array("completed", "cancelled", "refunded");
             if ( ! $rb->canDebit($resursPaymentInfo) && $rb->getIsDebited($resursPaymentInfo) && ! in_array($currentWcStatus,
                     $notIn)) {
-                resurs_no_debit_debited();
+                if ($rb->getInstantFinalizationStatus($resursPaymentInfo) & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                    resurs_no_debit_debited(true);
+                } else {
+                    resurs_no_debit_debited();
+                }
             }
         } catch (Exception $e) {
             $hasError = $e->getMessage();
