@@ -5487,6 +5487,30 @@ class ResursBank
     /////////// AFTER SHOP ROUTINES
 
     /**
+     * @param array $paymentArrayOrPaymentId
+     * @return bool
+     * @throws Exception
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    public function isFraud($paymentArrayOrPaymentId = array()) {
+        return (bool)$this->getPaymentContent($paymentArrayOrPaymentId, 'fraud');
+    }
+
+    /**
+     * @param array $paymentArrayOrPaymentId
+     * @return bool
+     * @throws Exception
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    public function isFrozen($paymentArrayOrPaymentId = array()) {
+        return (bool)$this->getPaymentContent($paymentArrayOrPaymentId, 'frozen');
+    }
+
+    /**
      * Find out if a payment is creditable
      *
      * @param array $paymentArrayOrPaymentId The current payment if already requested. If this variable is sent as astring, the function will first make a getPayment automatically.
@@ -5496,9 +5520,9 @@ class ResursBank
      */
     public function canCredit($paymentArrayOrPaymentId = array())
     {
-        $Status = (array)$this->getPaymentContent($paymentArrayOrPaymentId, "status");
+        $status = (array)$this->getPaymentContent($paymentArrayOrPaymentId, 'status');
         // IS_CREDITED - CREDITABLE
-        if (in_array("CREDITABLE", $Status)) {
+        if (in_array("CREDITABLE", $status)) {
             return true;
         }
 
@@ -5515,9 +5539,9 @@ class ResursBank
      */
     public function canDebit($paymentArrayOrPaymentId = array())
     {
-        $Status = (array)$this->getPaymentContent($paymentArrayOrPaymentId, "status");
+        $status = (array)$this->getPaymentContent($paymentArrayOrPaymentId, 'status');
         // IS_DEBITED - DEBITABLE
-        if (in_array("DEBITABLE", $Status)) {
+        if (in_array("DEBITABLE", $status)) {
             return true;
         }
 

@@ -438,7 +438,8 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'autoDebitStatus' => array(
                     'title' => __('Order status on instant finalizations', 'WC_Payment_Gateway'),
-                    'description' => __('Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed by direct debiting which finalizes orders before they are shipped. To prevent this, you can set up a specific status for such payment methods when Resurs callback event FINALIZATIOn occurs', 'WC_Payment_Gateway'),
+                    'description' => __('Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed by direct debiting which finalizes orders before they are shipped. To prevent this, you can set up a specific status for such payment methods when Resurs callback event FINALIZATIOn occurs',
+                        'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default (Completed)', 'WC_Payment_Gateway'),
@@ -456,7 +457,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'description' => __('', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(),
-                    'default' => array('SWISH'=>'SWISH'),
+                    'default' => array('SWISH' => 'SWISH'),
                     'desc_tip' => true,
                 ),
             );
@@ -610,9 +611,10 @@ if (!function_exists('getResursWooFormFields')) {
                 }
             }
         }
-
-        return $returnArray;
     }
+
+    return $returnArray;
+}
 }
 
 if (is_admin()) {
