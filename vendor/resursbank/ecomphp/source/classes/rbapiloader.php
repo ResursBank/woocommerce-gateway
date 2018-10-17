@@ -2964,8 +2964,9 @@ class ResursBank
         $methodArray = array();
         if (is_array($methods)) {
             foreach ($methods as $objectMethod) {
-                if (isset($objectMethod->id) && strtolower($objectMethod->id) === strtolower($specificMethodId)) {
+                if (isset($objectMethod->id) && !empty($specificMethodId) && strtolower($objectMethod->id) === strtolower($specificMethodId)) {
                     $methodArray = $objectMethod;
+                    break;
                 }
             }
         }
@@ -6016,8 +6017,16 @@ class ResursBank
      */
     public function paymentFinalize($paymentId = "", $customPayloadItemList = array(), $runOnce = false)
     {
-        $afterShopObject = $this->getAfterShopObjectByPayload($paymentId, $customPayloadItemList,
-            RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE);
+        try {
+            $afterShopObject = $this->getAfterShopObjectByPayload($paymentId, $customPayloadItemList,
+                RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE);
+        } catch (Exception $afterShopObjectException) {
+            // No rows to finalize? Check if this was auto debited by internal rules, or throw back error.
+            if ($afterShopObjectException->getCode() === \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA && $this->getOrderStatusByPayment($paymentId) & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                return true;
+            }
+            throw $afterShopObjectException;
+        }
         $this->aftershopPrepareMetaData($paymentId);
         try {
             $afterShopResponseCode = $this->postService("finalizePayment", $afterShopObject, true);
