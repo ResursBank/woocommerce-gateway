@@ -1,8 +1,10 @@
 # Resurs Bank payment gateway for WooCommerce
 
- * Compatible with WooCommerce 2.6 up to 3.3.x
- * Plugin verified with PHP version 5.4 - 7.1 
- * Addon scripts verified with PHP 5.3 - 7.2 (EComPHP 1.3.x and NetCURL 6.0.20)
+The plugin was once written for v2.6 and up. If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually changes to match the requirements, to upgrade without upgrade warnings, from WooCommerce. However, as WooCommerce upgrades internal function the guarantee that older versions (like WC 2.6) won't work. In that case you really should consider upgrading WooCommerce also, unless not already done.
+
+ * Compatibility: WooCommerce 2.6 up to 3.4.x
+ * Plugin verified with PHP version 5.4 - 7.1
+ * Addon scripts verified with PHP 5.3 - 7.2 (EComPHP 1.3.x and NetCURL 6.0.20+)
 
 ## Getting started / Installing
 
@@ -26,7 +28,7 @@ The below requisites usually is active in a webserver/phpcore.
 ## Bundled prerequisites
 
  * [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
- * [NetCURL](https://docs.tornevall.net/x/CYBiAQ) (Bundled) [Bitbucket](https://www.netcurl.org)
+ * [NetCURL](http://www.netcurl.org/docs) (Bundled) [Bitbucket](https://www.netcurl.org)
 
 SoapClient uses PHP streams to communicate and covers everything but the functions located in the hosted flow/checkout (meaning simplified flow, aftershop flow (finalization, annullments, crediting), payment methods listings and much more)
 
