@@ -899,7 +899,7 @@ function woocommerce_gateway_resurs_bank_init()
                 return true;
             }
 
-            $woocommerceOrder->add_order_note(__('Request order status update upon Resurs Bank current payment order status, left unchanged since the order is already updated',
+            $woocommerceOrder->add_order_note(__('Request order status update upon Resurs Bank current payment order status left unchanged since the order is already updated',
                     'WC_Payment_Gateway') . " (" . $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ")");
 
             return false;
