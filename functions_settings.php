@@ -10,6 +10,8 @@ if (!defined('ABSPATH')) {
 
 require_once(__DIR__ . "/vendor/autoload.php");
 
+use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
+
 load_plugin_textdomain('WC_Payment_Gateway', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
 if (!function_exists('getResursWooFormFields')) {
@@ -37,7 +39,7 @@ if (!function_exists('getResursWooFormFields')) {
 
     function resursFormFieldArray($formSectionName = '')
     {
-        global $wpdb, $woocommerce;
+        global $wpdb;
 
         $returnArray = array();
         $hasForcedSection = false;
@@ -93,7 +95,6 @@ if (!function_exists('getResursWooFormFields')) {
             $rate_name = ucwords($rate_name);
             $rate_select[$rate->tax_rate_class] = $rate_name;
         }
-
         if ($formSectionName == "defaults") {
             $returnArray = array(
                 'enabled' => array(
@@ -460,163 +461,253 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => array('SWISH' => 'SWISH'),
                     'desc_tip' => true,
                 ),
+                'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING => array(
+                    'title' => __('Payment processing', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'description' => __('Default: Processing', 'WC_Payment_Gateway'),
+                    'options' => array(
+                        'default' => __('Use default', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'processing' => __('Processing', 'WC_Payment_Gateway'),
+                        'refunded' => __('Refunded', 'WC_Payment_Gateway'),
+                        'completed' => __('Completed', 'WC_Payment_Gateway'),
+                        'on-hold' => __('On hold', 'WC_Payment_Gateway'),
+                        'cancelled' => __('Cancelled', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'processing',
+                    'desc_tip' => true,
+                ),
+                'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED => array(
+                    'title' => __('Payment completed', 'WC_Payment_Gateway'),
+                    'description' => __('Default: Completed', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'default' => __('Use default', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'processing' => __('Processing', 'WC_Payment_Gateway'),
+                        'refunded' => __('Refunded', 'WC_Payment_Gateway'),
+                        'completed' => __('Completed', 'WC_Payment_Gateway'),
+                        'on-hold' => __('On hold', 'WC_Payment_Gateway'),
+                        'cancelled' => __('Cancelled', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'completed',
+                    'desc_tip' => true,
+                ),
+                'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED => array(
+                    'title' => __('Payment annulled', 'WC_Payment_Gateway'),
+                    'description' => __('Default: Cancelled', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'default' => __('Use default', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'processing' => __('Processing', 'WC_Payment_Gateway'),
+                        'refunded' => __('Refunded', 'WC_Payment_Gateway'),
+                        'completed' => __('Completed', 'WC_Payment_Gateway'),
+                        'on-hold' => __('On hold', 'WC_Payment_Gateway'),
+                        'cancelled' => __('Cancelled', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'cancelled',
+                    'desc_tip' => true,
+                ),
+                'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED => array(
+                    'title' => __('Payment credited', 'WC_Payment_Gateway'),
+                    'description' => __('Default: Refunded', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'default' => __('Use default', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'processing' => __('Processing', 'WC_Payment_Gateway'),
+                        'refunded' => __('Refunded', 'WC_Payment_Gateway'),
+                        'completed' => __('Completed', 'WC_Payment_Gateway'),
+                        'on-hold' => __('On hold', 'WC_Payment_Gateway'),
+                        'cancelled' => __('Cancelled', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'refunded',
+                    'desc_tip' => true,
+                ),
+                'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED => array(
+                    'title' => __('Payment automatically debited', 'WC_Payment_Gateway'),
+                    'description' => __('Default: Completed', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'default' => __('Use default', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'processing' => __('Processing', 'WC_Payment_Gateway'),
+                        'refunded' => __('Refunded', 'WC_Payment_Gateway'),
+                        'completed' => __('Completed', 'WC_Payment_Gateway'),
+                        'on-hold' => __('On hold', 'WC_Payment_Gateway'),
+                        'cancelled' => __('Cancelled', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'completed',
+                    'desc_tip' => true,
+                ),
+                'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_FLAGGED_FRAUD => array(
+                    'title' => __('Payment flagged fraud', 'WC_Payment_Gateway'),
+                    'description' => __('Default: On hold', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'default' => __('Use default', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'processing' => __('Processing', 'WC_Payment_Gateway'),
+                        'refunded' => __('Refunded', 'WC_Payment_Gateway'),
+                        'completed' => __('Completed', 'WC_Payment_Gateway'),
+                        'on-hold' => __('On hold', 'WC_Payment_Gateway'),
+                        'cancelled' => __('Cancelled', 'WC_Payment_Gateway'),
+                    ),
+                    'default' => 'on-hold',
+                    'desc_tip' => true,
+                ),
             );
-        } else {
-            if ($formSectionName == "paymentmethods") {
-                //$icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
-                $icon = "";
-                $returnArray = array(
-                    'enabled' => array(
-                        'title' => __('Enable/Disable', 'woocommerce'),
-                        'type' => 'checkbox',
-                        'label' => __('Enable/Disable', 'woocommerce'),
+        } elseif ($formSectionName == "paymentmethods") {
+            //$icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
+            $icon = "";
+            $returnArray = array(
+                'enabled' => array(
+                    'title' => __('Enable/Disable', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => __('Enable/Disable', 'woocommerce'),
+                ),
+                'title' => array(
+                    'title' => __('Title', 'woocommerce'),
+                    'type' => 'text',
+                    'default' => '',
+                    'description' => __('If you are leaving this field empty, the default title will be used in the checkout',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'icon' => array(
+                    'title' => __('Custom payment method icon', 'WC_Payment_Gateway'),
+                    'type' => 'text',
+                    'default' => $icon,
+                    'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.',
+                        'WC_Payment_Gateway'),
+                ),
+                'enableMethodIcon' => array(
+                    'title' => __('Enable/Disable payment method icon', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'label' => 'Enable displaying of logotype at payment method choice',
+                ),
+                'description' => array(
+                    'title' => __('Description', 'woocommerce'),
+                    'type' => 'textarea',
+                    'default' => '',
+                    'description' => __('This controls the payment method description which the user sees during checkout.',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'price' => array(
+                    'title' => 'Avgift',
+                    'type' => 'number',
+                    'default' => 0,
+                    'description' => __('Payment fee for this payment method', 'WC_Payment_Gateway'),
+                    'desc_tip' => false,
+                ),
+                'priceDescription' => array(
+                    'title' => __('Description of this payment method fee', 'WC_Payment_Gateway'),
+                    'type' => 'textarea',
+                    'default' => '',
+                ),
+            );
+        } elseif ($formSectionName == "resurs_bank_omnicheckout") {
+            $returnArray = array(
+                'enabled' => array(
+                    'title' => __('Enable/Disable', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => 'Aktivera Resurs Checkout',
+                ),
+                'title' => array(
+                    'title' => __('Title', 'woocommerce'),
+                    'type' => 'text',
+                    'default' => 'Resurs Checkout',
+                    'description' => __('This controls the title of Resurs Checkout as a payment method in the checkout',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'description' => array(
+                    'title' => __('Description', 'woocommerce'),
+                    'type' => 'textarea',
+                    'default' => 'Betala med Resurs Checkout',
+                    'description' => __('This controls the payment method description which the user sees during checkout.',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'iframeShape' => array(
+                    'title' => __('Change the (CSS)-shape of the iframe', 'woocommerce'),
+                    'type' => 'text',
+                    'default' => '',
+                    'description' => __('This controls the shape of the iframe CSS (meaning you may use CSS code here to change the background and shape of the iframe)',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'iFrameLocation' => array(
+                    'title' => __('iFrame location', 'WC_Payment_Gateway'),
+                    'type' => 'select',
+                    'options' => array(
+                        'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
+                        'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
+                        'inMethods' => __('In payment method list', 'WC_Payment_Gateway'),
                     ),
-                    'title' => array(
-                        'title' => __('Title', 'woocommerce'),
-                        'type' => 'text',
-                        'default' => '',
-                        'description' => __('If you are leaving this field empty, the default title will be used in the checkout',
-                            'WC_Payment_Gateway'),
-                        'desc_tip' => true,
-                    ),
-                    'icon' => array(
-                        'title' => __('Custom payment method icon', 'WC_Payment_Gateway'),
-                        'type' => 'text',
-                        'default' => $icon,
-                        'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.',
-                            'WC_Payment_Gateway'),
-                    ),
-                    'enableMethodIcon' => array(
-                        'title' => __('Enable/Disable payment method icon', 'WC_Payment_Gateway'),
-                        'type' => 'checkbox',
-                        'label' => 'Enable displaying of logotype at payment method choice',
-                    ),
-                    'description' => array(
-                        'title' => __('Description', 'woocommerce'),
-                        'type' => 'textarea',
-                        'default' => '',
-                        'description' => __('This controls the payment method description which the user sees during checkout.',
-                            'WC_Payment_Gateway'),
-                        'desc_tip' => true,
-                    ),
-                    'price' => array(
-                        'title' => 'Avgift',
-                        'type' => 'number',
-                        'default' => 0,
-                        'description' => __('Payment fee for this payment method', 'WC_Payment_Gateway'),
-                        'desc_tip' => false,
-                    ),
-                    'priceDescription' => array(
-                        'title' => __('Description of this payment method fee', 'WC_Payment_Gateway'),
-                        'type' => 'textarea',
-                        'default' => '',
-                    ),
-                );
-            } else {
-                if ($formSectionName == "resurs_bank_omnicheckout") {
-                    $returnArray = array(
-                        'enabled' => array(
-                            'title' => __('Enable/Disable', 'woocommerce'),
-                            'type' => 'checkbox',
-                            'label' => 'Aktivera Resurs Checkout',
-                        ),
-                        'title' => array(
-                            'title' => __('Title', 'woocommerce'),
-                            'type' => 'text',
-                            'default' => 'Resurs Checkout',
-                            'description' => __('This controls the title of Resurs Checkout as a payment method in the checkout',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => true,
-                        ),
-                        'description' => array(
-                            'title' => __('Description', 'woocommerce'),
-                            'type' => 'textarea',
-                            'default' => 'Betala med Resurs Checkout',
-                            'description' => __('This controls the payment method description which the user sees during checkout.',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => true,
-                        ),
-                        'iframeShape' => array(
-                            'title' => __('Change the (CSS)-shape of the iframe', 'woocommerce'),
-                            'type' => 'text',
-                            'default' => '',
-                            'description' => __('This controls the shape of the iframe CSS (meaning you may use CSS code here to change the background and shape of the iframe)',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => true,
-                        ),
-                        'iFrameLocation' => array(
-                            'title' => __('iFrame location', 'WC_Payment_Gateway'),
-                            'type' => 'select',
-                            'options' => array(
-                                'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
-                                'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
-                                'inMethods' => __('In payment method list', 'WC_Payment_Gateway'),
-                            ),
-                            'default' => 'afterCheckoutForm',
-                            'description' => __('The country for which the payment services should be used',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => true,
-                        ),
-                        'removeGatewayListOnOmni' => array(
-                            'title' => __('No methods on Checkout (Experimental)', 'WC_Payment_Gateway'),
-                            'type' => 'checkbox',
-                            'default' => 'false',
-                            'description' => __('Remove payment methods list if Resurs Checkout is the only gateway',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => false,
-                        ),
-                        'omniFrameNotReloading' => array(
-                            'title' => __('Reload checkout on cart changes', 'WC_Payment_Gateway'),
-                            'type' => 'checkbox',
-                            'default' => 'false',
-                            'description' => __('If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => false,
-                        ),
-                        'cleanOmniCustomerFields' => array(
-                            'title' => __('Remove all default customer fields when loading Omni Checkout iframe',
-                                'WC_Payment_Gateway'),
-                            'type' => 'checkbox',
-                            'default' => 'false',
-                            'description' => __('Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected.',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => true,
-                        ),
-                        'useStandardFieldsForShipping' => array(
-                            'title' => __('Use standard customer fields to update shipping methods when postal code changes (Experimental)',
-                                'WC_Payment_Gateway'),
-                            'type' => 'checkbox',
-                            'default' => 'false',
-                            'description' => __('Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function.',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => true,
-                        ),
-                        'secureFieldsNotNull' => array(
-                            'title' => __('Checkout form fields must not be empty', 'WC_Payment_Gateway'),
-                            'type' => 'checkbox',
-                            'default' => 'false',
-                            'description' => __('This setting secures that this plugin is returning an array, if WooCommerce for some passes over completely empty data (null) during the checkout process'),
-                            'desc_tip' => true,
-                        ),
-                        'showResursCheckoutStandardFieldsTest' => array(
-                            'title' => __('Keep standard customer fields open for Resurs Checkout in test',
-                                'WC_Payment_Gateway'),
-                            'type' => 'checkbox',
-                            'default' => 'false',
-                            'description' => __('If your plugin is running in test, enable this settings, to not hide the standard form fields',
-                                'WC_Payment_Gateway'),
-                            'desc_tip' => true,
-                        ),
-                    );
-                }
-            }
+                    'default' => 'afterCheckoutForm',
+                    'description' => __('The country for which the payment services should be used',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'removeGatewayListOnOmni' => array(
+                    'title' => __('No methods on Checkout (Experimental)', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('Remove payment methods list if Resurs Checkout is the only gateway',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => false,
+                ),
+                'omniFrameNotReloading' => array(
+                    'title' => __('Reload checkout on cart changes', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => false,
+                ),
+                'cleanOmniCustomerFields' => array(
+                    'title' => __('Remove all default customer fields when loading Omni Checkout iframe',
+                        'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected.',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'useStandardFieldsForShipping' => array(
+                    'title' => __('Use standard customer fields to update shipping methods when postal code changes (Experimental)',
+                        'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function.',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+                'secureFieldsNotNull' => array(
+                    'title' => __('Checkout form fields must not be empty', 'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('This setting secures that this plugin is returning an array, if WooCommerce for some passes over completely empty data (null) during the checkout process'),
+                    'desc_tip' => true,
+                ),
+                'showResursCheckoutStandardFieldsTest' => array(
+                    'title' => __('Keep standard customer fields open for Resurs Checkout in test',
+                        'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('If your plugin is running in test, enable this settings, to not hide the standard form fields',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
+            );
         }
+
+        return $returnArray;
     }
-
-    return $returnArray;
 }
-}
-
 if (is_admin()) {
     if (!function_exists('write_resurs_class_to_file')) {
         function write_resurs_class_to_file($payment_method)
@@ -1199,44 +1290,43 @@ EOT;
             return $methodTable;
         }
     }
-}
-
-if (!function_exists("callbackUpdateRequest")) {
-    /**
-     * Checks, in adminUI if there is need for callback requests.
-     *
-     * @return bool
-     */
-    function callbackUpdateRequest()
-    {
-        /*
-         * Prepare callback checker, if logged into admin interface.
+    if (!function_exists('callbackUpdateRequest')) {
+        /**
+         * Checks, in adminUI if there is need for callback requests.
          *
-         * This function enabled background updates of callback updating, instead of running on load in foreground, which probably makes the
-         * administration GUI feel slower than necessary.
+         * @return bool
          */
-        $requestForCallbacks = false;
-        $callbackUpdateInterval = "";
-        $login = getResursOption("login");
-        $password = getResursOption("password");
-        if (!empty($login) && !empty($password) && is_admin()) {
+        function callbackUpdateRequest()
+        {
             /*
-             * Make sure callbacks are up to date with an interval
+             * Prepare callback checker, if logged into admin interface.
+             *
+             * This function enabled background updates of callback updating, instead of running on load in foreground, which probably makes the
+             * administration GUI feel slower than necessary.
              */
-            $cbuInterval = getResursOption("callbackUpdateInterval");
-            $callbackUpdateInterval = !empty($cbuInterval) ? intval($cbuInterval) : 7;
-            if ($callbackUpdateInterval > 7 || $callbackUpdateInterval < 0) {
-                $callbackUpdateInterval = 7;
+            $requestForCallbacks = false;
+            $callbackUpdateInterval = '';
+            $login = getResursOption('login');
+            $password = getResursOption('password');
+            if (!empty($login) && !empty($password) && is_admin()) {
+                /*
+                 * Make sure callbacks are up to date with an interval
+                 */
+                $cbuInterval = getResursOption('callbackUpdateInterval');
+                $callbackUpdateInterval = !empty($cbuInterval) ? intval($cbuInterval) : 7;
+                if ($callbackUpdateInterval > 7 || $callbackUpdateInterval < 0) {
+                    $callbackUpdateInterval = 7;
+                }
+                $lastCallbackRequest = get_transient('resurs_bank_last_callback_setup');
+                $lastCallbackRequestDiff = time() - $lastCallbackRequest;
+                $dayInterval = $callbackUpdateInterval * 86400;
+                $cbuAutomation = getResursOption("callbackUpdateAutomation");
+                if (($cbuAutomation && $lastCallbackRequestDiff >= $dayInterval) || empty($lastCallbackRequest)) {
+                    $requestForCallbacks = true;
+                }
             }
-            $lastCallbackRequest = get_transient('resurs_bank_last_callback_setup');
-            $lastCallbackRequestDiff = time() - $lastCallbackRequest;
-            $dayInterval = $callbackUpdateInterval * 86400;
-            $cbuAutomation = getResursOption("callbackUpdateAutomation");
-            if (($cbuAutomation && $lastCallbackRequestDiff >= $dayInterval) || empty($lastCallbackRequest)) {
-                $requestForCallbacks = true;
-            }
-        }
 
-        return $requestForCallbacks;
+            return $requestForCallbacks;
+        }
     }
 }

@@ -204,6 +204,7 @@ abstract class RESURS_PAYMENT_STATUS_RETURNCODES
     const PAYMENT_ANNULLED = 8;
     const PAYMENT_CREDITED = 16;
     const PAYMENT_AUTOMATICALLY_DEBITED = 32;
+    const PAYMENT_FLAGGED_FRAUD = 64;
 
     /** @deprecated Fallback status only, use PAYMENT_ANNULLED */
     const PAYMENT_CANCELLED = 8;
