@@ -455,7 +455,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'autoDebitMethods' => array(
                     'title' => __('Instant debitable payment methods', 'WC_Payment_Gateway'),
-                    'description' => __('', 'WC_Payment_Gateway'),
+                    'description' => __('Payment methods that are considered instantly debitable during a payment process', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(),
                     'default' => array('SWISH' => 'SWISH'),
@@ -464,7 +464,7 @@ if (!function_exists('getResursWooFormFields')) {
                 'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING => array(
                     'title' => __('Payment processing', 'WC_Payment_Gateway'),
                     'type' => 'select',
-                    'description' => __('Default: Processing', 'WC_Payment_Gateway'),
+                    'description' => __('Status code for an order set by Resurs Bank during callbacks, transforms into this WooCommerce status. Default: Processing', 'WC_Payment_Gateway'),
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
                         'pending' => __('Pending', 'WC_Payment_Gateway'),
@@ -479,7 +479,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED => array(
                     'title' => __('Payment completed', 'WC_Payment_Gateway'),
-                    'description' => __('Default: Completed', 'WC_Payment_Gateway'),
+                    'description' => __('Status code for an order set by Resurs Bank during callbacks, transforms into this WooCommerce status. Default: Completed', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
@@ -495,7 +495,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED => array(
                     'title' => __('Payment annulled', 'WC_Payment_Gateway'),
-                    'description' => __('Default: Cancelled', 'WC_Payment_Gateway'),
+                    'description' => __('Status code for an order set by Resurs Bank during callbacks, transforms into this WooCommerce status. Default: Cancelled', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
@@ -511,7 +511,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED => array(
                     'title' => __('Payment credited', 'WC_Payment_Gateway'),
-                    'description' => __('Default: Refunded', 'WC_Payment_Gateway'),
+                    'description' => __('Status code for an order set by Resurs Bank during callbacks, transforms into this WooCommerce status. Default: Refunded', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
@@ -527,7 +527,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED => array(
                     'title' => __('Payment automatically debited', 'WC_Payment_Gateway'),
-                    'description' => __('Default: Completed', 'WC_Payment_Gateway'),
+                    'description' => __('Status code for an order set by Resurs Bank during callbacks, transforms into this WooCommerce status. Default: Completed', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
@@ -543,7 +543,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'Status_' . RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_FLAGGED_FRAUD => array(
                     'title' => __('Payment flagged fraud', 'WC_Payment_Gateway'),
-                    'description' => __('Default: On hold', 'WC_Payment_Gateway'),
+                    'description' => __('Status code for an order set by Resurs Bank during callbacks, transforms into this WooCommerce status. Default: On hold', 'WC_Payment_Gateway'),
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),

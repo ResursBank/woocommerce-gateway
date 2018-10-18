@@ -661,9 +661,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 }
                                 $this->paymentMethods = array_merge($this->paymentMethods,
                                     $countryBasedPaymentMethods[$countryId]);
-                                //foreach ($countryBasedPaymentMethods[ $countryId ] as $oArr) {
-                                //      $this->paymentMethods[] = $oArr;
-                                //}
 
                                 set_transient("resursAllMethods", $this->paymentMethods);
                             }
