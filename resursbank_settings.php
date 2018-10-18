@@ -2,9 +2,11 @@
 
 // Running this configuration engine before it has been completed may break the former version of the plugin.
 
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 }
+
+use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
 
 include('functions_settings.php');
 
@@ -31,8 +33,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     function __construct()
     {
         /** @var $flow Resursbank\RBEcomPHP\ResursBank */
-        $this->flow          = initializeResursFlow();
-        $this->label         = __('Resurs Bank', 'woocommerce');
+        $this->flow = initializeResursFlow();
+        $this->label = __('Resurs Bank', 'woocommerce');
         $this->oldFormFields = getResursWooFormFields();
         add_filter('woocommerce_settings_tabs_array', array($this, "resurs_settings_tab"), 50);
         add_action('woocommerce_settings_' . $this->id, array($this, 'resursbank_settings_show'), 10);
@@ -41,10 +43,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         $this->NET = new \TorneLIB\MODULE_NETWORK();
 
-        if ( ! hasResursOptionValue('enabled', 'woocommerce_resurs_bank_omnicheckout_settings')) {
+        if (!hasResursOptionValue('enabled', 'woocommerce_resurs_bank_omnicheckout_settings')) {
             $this->resurs_settings_save('resurs_bank_omnicheckout');
         }
-        if ( ! hasResursOptionValue('enabled')) {
+        if (!hasResursOptionValue('enabled')) {
             $this->resurs_settings_save();
         }
         parent::__construct();
@@ -55,8 +57,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
     public function get_sections()
     {
-        $sections           = array();    // Adaptive array.
-        $this->spinner      = plugin_dir_url(__FILE__) . "loader.gif";
+        $sections = array();    // Adaptive array.
+        $this->spinner = plugin_dir_url(__FILE__) . "loader.gif";
         $this->spinnerLocal = plugin_dir_url(__FILE__) . "spinnerLocal.gif";
 
         $sections[''] = __('Basic settings', 'WC_Payment_Gateway');
@@ -103,30 +105,30 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public function resurs_settings_save($setSection = "")
     {
         $section = "woocommerce_resurs-bank";
-        if (isset($_REQUEST['section']) && ! empty($_REQUEST['section'])) {
+        if (isset($_REQUEST['section']) && !empty($_REQUEST['section'])) {
             $section = $_REQUEST['section'];
             if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-                $section                = "woocommerce_" . $section;
+                $section = "woocommerce_" . $section;
                 $this->CONFIG_NAMESPACE = $section;
             } elseif (preg_match("/^woocommerce_resurs_bank_nr_(.*?)$/i", $section)) {
                 $this->CONFIG_NAMESPACE = $section;
             } elseif ($section == "resurs_bank_omnicheckout") {
-                $section                = "woocommerce_" . $section;
+                $section = "woocommerce_" . $section;
                 $this->CONFIG_NAMESPACE = $section;
             } else {
                 $section = "woocommerce_resurs-bank";
             }
         }
-        if ( ! empty($setSection)) {
+        if (!empty($setSection)) {
             $section = $setSection;
         }
 
         $this->oldFormFields = getResursWooFormFields($this->CONFIG_NAMESPACE);
 
         /** @var $saveAll Sets a saveAll function to active, so that we can save all settings in the same times for which the parameters can be found in oldFormFields */
-        $saveAll   = true;
+        $saveAll = true;
         $saveArray = array();
-        if (is_array($_POST) && count($_POST) && ! $saveAll) {
+        if (is_array($_POST) && count($_POST) && !$saveAll) {
             /*
              * In the past, we looped through the form field to save everything in the same time, but since we're changing the way how the saves
              * are being made (by moving settings into different settings) we'll use postvars instead, so there is no risk of overwriting settings
@@ -165,7 +167,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         $saveArray[$fieldKey] = $curOption;
                     } else {
                         $curOption = $this->getOptionByNamespace($fieldKey, $this->CONFIG_NAMESPACE);
-                        if ( ! empty($curOption)) {
+                        if (!empty($curOption)) {
                             $saveArray[$fieldKey] = $curOption;
                         } else {
                             $saveArray[$fieldKey] = isset($fieldData['default']) ? $fieldData['default'] : "";
@@ -186,11 +188,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     private function getOptionByNamespace($optionKey, $namespace)
     {
         $useNamespace = $namespace;
-        if ( ! preg_match("/_settings$/i", $namespace)) {
+        if (!preg_match("/_settings$/i", $namespace)) {
             $useNamespace .= "_settings";
         }
         $this->oldFormFields = resursFormFieldArray();
-        $returnedOption      = null;
+        $returnedOption = null;
         if (hasResursOptionValue($optionKey, $useNamespace)) {
             $returnedOption = getResursOption($optionKey, $useNamespace);
         } else {
@@ -225,14 +227,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     private function setCheckBox($settingKey = '', $namespace = 'woocommerce_resurs-bank_settings', $scriptLoader = "")
     {
         $properNameSpace = $namespace;
-        if ( ! preg_match("/_settings$/", $namespace)) {
+        if (!preg_match("/_settings$/", $namespace)) {
             $properNameSpace = $namespace . "_settings";
         }
-        $isChecked    = $this->getOptionByNamespace($settingKey, $namespace);
+        $isChecked = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
 
         $issetResursOption = issetResursOption($settingKey, $properNameSpace);
-        if ( ! $issetResursOption) {
+        if (!$issetResursOption) {
             if (isset($formSettings['default'])) {
                 if ($formSettings['default'] == "false") {
                     $isChecked = false;
@@ -241,7 +243,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         }
 
         $extraInfoMark = "";
-        if (isset($formSettings['info']) && ! empty($formSettings['info'])) {
+        if (isset($formSettings['info']) && !empty($formSettings['info'])) {
             $extraInfoMark = '<span class="dashicons resurs-help-tip" onmouseover="$RB(\'#extraInfo' . $settingKey . '\').show(\'medium\')" onmouseout="$RB(\'#extraInfo' . $settingKey . '\').hide(\'medium\')"></span>';
         }
         $returnCheckbox = '
@@ -251,12 +253,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <input type="hidden" name="has_' . $settingKey . '">
                     <input type="checkbox" name="' . $namespace . '_' . $settingKey . '" id="' . $namespace . '_' . $settingKey . '" ' . ($isChecked ? 'checked="checked"' : "") . ' value="yes" ' . $scriptLoader . '>' . (isset($this->oldFormFields[$settingKey]['label']) ? $this->oldFormFields[$settingKey]['label'] : "") . '<br>
                     <br>
-                       <i>' . (isset($this->oldFormFields[$settingKey]['description']) && ! empty($this->oldFormFields[$settingKey]['description']) ? $this->oldFormFields[$settingKey]['description'] : "") . '</i>
+                       <i>' . (isset($this->oldFormFields[$settingKey]['description']) && !empty($this->oldFormFields[$settingKey]['description']) ? $this->oldFormFields[$settingKey]['description'] : "") . '</i>
                     </td>
                 </tr>
         ';
 
-        if ( ! empty($extraInfoMark)) {
+        if (!empty($extraInfoMark)) {
             $returnCheckbox .= '
             <tr id="extraInfo' . $settingKey . '" style="display: none;">
                 <td></td>
@@ -277,7 +279,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      */
     private function setHidden($settingKey = '', $namespace = '', $scriptLoader = "")
     {
-        $UseValue     = $this->getOptionByNamespace($settingKey, $namespace);
+        $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
         $formSettings = $this->getFormSettings($settingKey);
         if (empty($UseValue) && isset($formSettings['default'])) {
             $UseValue = $formSettings['default'];
@@ -300,10 +302,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      */
     private function setTextBox($settingKey = '', $namespace = '', $scriptLoader = "")
     {
-        $UseValue      = $this->getOptionByNamespace($settingKey, $namespace);
-        $formSettings  = $this->getFormSettings($settingKey);
+        $UseValue = $this->getOptionByNamespace($settingKey, $namespace);
+        $formSettings = $this->getFormSettings($settingKey);
         $textFieldType = isset($formSettings['type']) ? $formSettings['type'] : "text";
-        $isPassword    = false;
+        $isPassword = false;
         if ($textFieldType == "password") {
             $isPassword = true;
         }
@@ -314,12 +316,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         ';
 
         $setLabel = isset($this->oldFormFields[$settingKey]['label']) ? $this->oldFormFields[$settingKey]['label'] : "";
-        if ( ! empty($this->methodLabel)) {
-            $setLabel          = $this->methodLabel;
+        if (!empty($this->methodLabel)) {
+            $setLabel = $this->methodLabel;
             $this->methodLabel = null;
         }
 
-        if ( ! $isPassword) {
+        if (!$isPassword) {
             $returnTextBox .= '
                     <td>
                         <input ' . $scriptLoader . ' type="text"
@@ -359,9 +361,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     /**
      * @param string $settingKey
      * @param string $namespace
-     * @param array  $optionsList
+     * @param array $optionsList
      * @param string $scriptLoader
-     * @param int    $listCount
+     * @param int $listCount
      *
      * @return string
      */
@@ -373,17 +375,19 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $listCount = 1
     ) {
         $formSettings = $this->getFormSettings($settingKey);
-        if ( ! is_array($optionsList)) {
+        if (!is_array($optionsList)) {
             $optionsList = array();
         }
 
         // Failover to prior forms.
-        if (is_array($optionsList) && isset($formSettings['options']) && count($formSettings['options']) && ! count($optionsList)) {
+        if (is_array($optionsList) && isset($formSettings['options']) && count($formSettings['options']) && !count($optionsList)) {
             $optionsList = $formSettings['options'];
         }
         $returnDropDown = '
                 <tr>
-                    <th scope="row">' . $this->oldFormFields[$settingKey]['title'] . '</th>
+                    <th scope="row">' .
+            (isset($this->oldFormFields[$settingKey]['title']) &&
+            !empty($this->oldFormFields[$settingKey]['title']) ? $this->oldFormFields[$settingKey]['title'] : $settingKey) . '</th>
                     <td>
                     ';
 
@@ -395,18 +399,20 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         }
         if (count($optionsList) > 0) {
             $returnDropDown .= '
-                    <select class="'.$className.'" ' . $scriptLoader . '
+                    <select class="' . $className . '" ' . $scriptLoader . '
                     ' . ($listCount > 1 ? "size=\"" . $listCount . "\" multiple " : "") . '
                         name="' . $namespace . '_' . $settingKey . $multiVar . '"
                         id="' . $namespace . '_' . $settingKey . '">
                     ';
-            $savedValue     = $this->getOptionByNamespace($settingKey, $namespace);
+            $savedValue = $this->getOptionByNamespace($settingKey, $namespace);
             foreach ($optionsList as $optionKey => $optionValue) {
                 $matchingSavedValue = false;
                 if (is_array($savedValue) && in_array($optionValue, $savedValue)) {
                     $matchingSavedValue = true;
-                } else if (is_string($savedValue) && $optionKey === $savedValue) {
-                    $matchingSavedValue = true;
+                } else {
+                    if (is_string($savedValue) && $optionKey === $savedValue) {
+                        $matchingSavedValue = true;
+                    }
                 }
                 $returnDropDown .= '<option value="' . $optionKey . '" ' . ($matchingSavedValue ? "selected" : "") . '>' . $optionValue . '</option>';
             }
@@ -445,7 +451,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     private function UnusedPaymentClassesCleanup($temp_class_files)
     {
         $allIncludes = array();
-        $path        = plugin_dir_path(__FILE__) . 'includes/';
+        $path = plugin_dir_path(__FILE__) . 'includes/';
         $globInclude = glob(plugin_dir_path(__FILE__) . 'includes/*.php');
         if (is_array($globInclude)) {
             foreach ($globInclude as $filename) {
@@ -454,12 +460,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         }
         // Prevent the plugin from sending legacy data to this controller
         foreach ($temp_class_files as $fileRow) {
-            $newFileRow         = "resurs_bank_nr_" . $fileRow . ".php";
+            $newFileRow = "resurs_bank_nr_" . $fileRow . ".php";
             $temp_class_files[] = $newFileRow;
         }
         if (is_array($temp_class_files)) {
             foreach ($allIncludes as $exclude) {
-                if ( ! in_array($exclude, $temp_class_files)) {
+                if (!in_array($exclude, $temp_class_files)) {
                     @unlink($path . $exclude);
                 }
             }
@@ -473,7 +479,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      */
     private function canWrite()
     {
-        $path     = plugin_dir_path(__FILE__) . 'includes/';
+        $path = plugin_dir_path(__FILE__) . 'includes/';
         $filename = $path . "this" . rand(1000, 9999);
         @file_put_contents($filename, null);
         if (file_exists($filename)) {
@@ -520,19 +526,19 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     function getPluginInformation()
     {
 
-        $hasSoap     = class_exists("\SoapClient") ? true : false;
+        $hasSoap = class_exists("\SoapClient") ? true : false;
         $hasCurlInit = true;
-        $hasSsl      = true;
-        if ( ! function_exists('curl_init')) {
+        $hasSsl = true;
+        if (!function_exists('curl_init')) {
             $hasCurlInit = false;
         }
         $streamWrappers = @stream_get_wrappers();
-        if ( ! in_array('https', $streamWrappers)) {
+        if (!in_array('https', $streamWrappers)) {
             $hasSsl = false;
         }
 
         $pluginInfo = $this->setSeparator(__('Plugin information', 'WC_Payment_Gateway'));
-        $topCss     = 'style="vertical-align: top !important;" valign="top"';
+        $topCss = 'style="vertical-align: top !important;" valign="top"';
         //$topCursor  = 'style="vertical-align: top !important;cursor:pointer;" valign="top"';
         $pluginInfo .= '<tr><td ' . $topCss . '>Plugin/Gateway</td><td ' . $topCss . '>v' . rbWcGwVersion() . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>PHP</td><td ' . $topCss . '>' . (defined('PHP_VERSION') ? "v" . PHP_VERSION : "") . '</td></tr>';
@@ -563,7 +569,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      */
     public function resursbank_settings_show()
     {
-        if ( ! $this->canWrite()) {
+        if (!$this->canWrite()) {
             echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('This plugin needs read/write access to the includes directory located in the path of the plugin or it will not be able to save the payment method configuration.',
                     'WC_Payment_Gateway') . '</div>';
 
@@ -581,11 +587,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         }
-        $url       = admin_url('admin.php');
-        $url       = add_query_arg('page', isset($_REQUEST['page']) ? $_REQUEST['page'] : "", $url);
-        $url       = add_query_arg('tab', isset($_REQUEST['tab']) ? $_REQUEST['tab'] : "", $url);
-        $url       = add_query_arg('section', isset($_REQUEST['section']) ? $_REQUEST['section'] : "", $url);
-        $section   = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
+        $url = admin_url('admin.php');
+        $url = add_query_arg('page', isset($_REQUEST['page']) ? $_REQUEST['page'] : "", $url);
+        $url = add_query_arg('tab', isset($_REQUEST['tab']) ? $_REQUEST['tab'] : "", $url);
+        $url = add_query_arg('section', isset($_REQUEST['section']) ? $_REQUEST['section'] : "", $url);
+        $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         $namespace = $this->CONFIG_NAMESPACE;
 
         if (isset($_REQUEST['save'])) {
@@ -594,21 +600,21 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         }
         $longSimplified = __('Simplified Shop Flow: Payments goes through Resurs Bank API (Default)',
             'WC_Payment_Gateway');
-        $longHosted     = __('Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment',
+        $longHosted = __('Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment',
             'WC_Payment_Gateway');
-        $longOmni       = __('Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)',
+        $longOmni = __('Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)',
             'WC_Payment_Gateway');
 
-        $methodDescription      = "";
-        $paymentMethodsError    = null;
-        $class_files            = array();
+        $methodDescription = "";
+        $paymentMethodsError = null;
+        $class_files = array();
         $countryCredentialArray = array();
         if (isResursDemo() && class_exists("CountryHandler")) {
             $countryHandler = new CountryHandler();
-            $countryList    = array('se', 'no', 'dk', 'fi');
-            $countryConfig  = $countryHandler->getCountryConfig();
+            $countryList = array('se', 'no', 'dk', 'fi');
+            $countryConfig = $countryHandler->getCountryConfig();
             foreach ($countryList as $countryId) {
-                if (isset($countryConfig[$countryId]) && isset($countryConfig[$countryId]['account']) && ! empty($countryConfig[$countryId]['account'])) {
+                if (isset($countryConfig[$countryId]) && isset($countryConfig[$countryId]['account']) && !empty($countryConfig[$countryId]['account'])) {
                     $countryCredentialArray[$countryId] = $countryConfig[$countryId]['account'];
                 }
             }
@@ -616,7 +622,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
         $hasCountries = false;
         try {
-            if ( ! preg_match("/^resurs_bank_nr/i", $section)) {
+            if (!preg_match("/^resurs_bank_nr/i", $section)) {
                 // If we're in demoshop mode go another direction
                 if (isResursDemo() && is_array($countryCredentialArray) && count($countryCredentialArray)) {
                     try {
@@ -632,7 +638,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         foreach ($countryCredentialArray as $countryId => $countryCredentials) {
                             if (isset($countryCredentials['login']) && isset($countryCredentials['password'])) {
                                 // To unslow this part of the plugin, we'd run transient methods storage
-                                if ( ! isset($_REQUEST['reset'])) {
+                                if (!isset($_REQUEST['reset'])) {
                                     $countryBasedPaymentMethods[$countryId] = get_transient('resursMethods' . $countryId);
                                 } else {
                                     // Let's make sure that we can clean up mistakes.
@@ -642,10 +648,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 $transientTest = get_transient('resursMethods' . $countryId,
                                     $countryBasedPaymentMethods[$countryId]);
 
-                                if (empty($countryBasedPaymentMethods[$countryId]) || (is_array($countryBasedPaymentMethods[$countryId]) && ! count($countryBasedPaymentMethods[$countryId])) || empty($transientTest)) {
+                                if (empty($countryBasedPaymentMethods[$countryId]) || (is_array($countryBasedPaymentMethods[$countryId]) && !count($countryBasedPaymentMethods[$countryId])) || empty($transientTest)) {
                                     $demoShopFlow->setAuthentication($countryCredentials['login'],
                                         $countryCredentials['password']);
-                                    $countryBasedPaymentMethods[$countryId] = $demoShopFlow->getPaymentMethods(array(), true);
+                                    $countryBasedPaymentMethods[$countryId] = $demoShopFlow->getPaymentMethods(array(),
+                                        true);
                                     foreach ($countryBasedPaymentMethods[$countryId] as $countryObject) {
                                         $countryObject->country = $countryId;
                                     }
@@ -654,9 +661,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 }
                                 $this->paymentMethods = array_merge($this->paymentMethods,
                                     $countryBasedPaymentMethods[$countryId]);
-                                //foreach ($countryBasedPaymentMethods[ $countryId ] as $oArr) {
-                                //      $this->paymentMethods[] = $oArr;
-                                //}
 
                                 set_transient("resursAllMethods", $this->paymentMethods);
                             }
@@ -679,10 +683,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 // Make sure there is an overrider on PSP
                 $this->flow->setSimplifiedPsp(true);
                 $this->paymentMethods = $this->flow->getPaymentMethodSpecific($theMethod);
-                $methodDescription    = isset($this->paymentMethods->description) ? $this->paymentMethods->description : "";
+                $methodDescription = isset($this->paymentMethods->description) ? $this->paymentMethods->description : "";
             }
         } catch (Exception $e) {
-            $errorCode    = $e->getCode();
+            $errorCode = $e->getCode();
             $errorMessage = $e->getMessage();
             if ($errorCode == 401) {
                 $paymentMethodsError = __('Authentication error', 'WC_Payment_Gateway');
@@ -720,7 +724,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         'WC_Payment_Gateway') . ' - ' . $methodDescription . ' (' . $theMethod . ')</h1>';
             } else {
                 echo '<h1>' . __('Resurs Bank payment gateway configuration', 'WC_Payment_Gateway') . '</h1>
-                    v' . rbWcGwVersion() . (defined('PHP_VERSION') ? "/PHP v" . PHP_VERSION : "") . ' ' . (! empty($currentVersion) ? $currentVersion : "");
+                    v' . rbWcGwVersion() . (defined('PHP_VERSION') ? "/PHP v" . PHP_VERSION : "") . ' ' . (!empty($currentVersion) ? $currentVersion : "");
             }
             ?>
             <!-- Table layout auto fixes issues for woocom 3.4.0 as it has added a fixed value to it in this version -->
@@ -762,9 +766,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 'WC_Payment_Gateway') . "]" : "") . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
-                    $login    = getResursOption("login");
+                    $login = getResursOption("login");
                     $password = getResursOption("password");
-                    if ( ! empty($login) && ! empty($password)) {
+                    if (!empty($login) && !empty($password)) {
                         $callbackUriCacheTime = time() - get_transient("resurs_callback_templates_cache_last");
                         if ($callbackUriCacheTime >= 86400) {
                             echo '<img src="' . $this->spinner . '" border="0">';
@@ -804,7 +808,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     <td id="currentResursPaymentMethods">
                     ';
                     if (empty($paymentMethodsError)) {
-                        if ( ! count($this->paymentMethods)) {
+                        if (!count($this->paymentMethods)) {
                             echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered',
                                     'WC_Payment_Gateway') . '</div><br><br>';
                         } else {
@@ -818,14 +822,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 'WC_Payment_Gateway') . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
                     }
 
-                    if (isset($this->paymentMethods['error']) && ! empty($this->paymentMethods['error'])) {
+                    if (isset($this->paymentMethods['error']) && !empty($this->paymentMethods['error'])) {
                         $this->paymentMethods = array();
                     }
                     if (count($this->paymentMethods)) {
                         foreach ($this->paymentMethods as $methodArray) {
-                            $curId           = isset($methodArray->id) ? $methodArray->id : "";
+                            $curId = isset($methodArray->id) ? $methodArray->id : "";
                             $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                            if ( ! hasResursOptionValue('enabled', $optionNamespace)) {
+                            if (!hasResursOptionValue('enabled', $optionNamespace)) {
                                 $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
                             }
                         }
@@ -852,7 +856,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 }
                                 ?>
 
-                                <?php if ( ! isResursOmni(true)) {
+                                <?php if (!isResursOmni(true)) {
                                     ?>
                                     <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
                                     <?php
@@ -884,20 +888,20 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             $url = add_query_arg('tab', $_REQUEST['tab'], $url);
 
                             foreach ($sortByDescription as $methodArray) {
-                                $curId           = isset($methodArray->id) ? $methodArray->id : "";
+                                $curId = isset($methodArray->id) ? $methodArray->id : "";
                                 $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                                if ( ! hasResursOptionValue('enabled', $optionNamespace)) {
+                                if (!hasResursOptionValue('enabled', $optionNamespace)) {
                                     $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
                                 }
                                 write_resurs_class_to_file($methodArray);
                                 $settingsControl = get_option($optionNamespace);
-                                $isEnabled       = false;
+                                $isEnabled = false;
                                 if (is_array($settingsControl) && count($settingsControl)) {
                                     if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
                                         $isEnabled = true;
                                     }
                                 }
-                                $annuityMethod   = resursOption("resursAnnuityMethod");
+                                $annuityMethod = resursOption("resursAnnuityMethod");
                                 $annuityDuration = resursOption("resursAnnuityDuration");
 
                                 $maTitle = $methodArray->description;
@@ -907,7 +911,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     setResursOption("title", '', $optionNamespace);
                                     $settingsControl['title'] = "";
                                 }
-                                if (isset($settingsControl['title']) && ! empty($settingsControl['title']) && ! isResursOmni(true)) {
+                                if (isset($settingsControl['title']) && !empty($settingsControl['title']) && !isResursOmni(true)) {
                                     $maTitle = $settingsControl['title'];
                                 }
 
@@ -915,7 +919,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 <tr>
                                     <td width="1%">&nbsp;</td>
                                     <td class="name" width="300px">
-                                        <?php if ( ! isResursOmni(true)) { ?>
+                                        <?php if (!isResursOmni(true)) { ?>
                                             <a href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
                                         <?php } else {
                                             echo $methodArray->description;
@@ -940,7 +944,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                                       onclick="runResursAdminCallback('annuityToggle', '<?php echo $curId; ?>');<?php echo $scriptit; ?>">-</span>
                                                 <?php
                                                 $annuityFactors = null;
-                                                $selector       = null;
+                                                $selector = null;
                                                 try {
                                                     $annuityFactors = $this->flow->getAnnuityFactors($methodArray->id);
                                                 } catch (\Exception $annuityException) {
@@ -982,7 +986,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                         <?php
                                     }
 
-                                    if ( ! isResursOmni(true)) { ?>
+                                    if (!isResursOmni(true)) { ?>
                                         <td class="id"><?php echo $methodArray->id; ?></td>
 
                                         <?php
@@ -1009,9 +1013,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                                             <?php
                                         }
-                                            ?>
+                                        ?>
 
-                                        <?php if ( ! $isEnabled) { ?>
+                                        <?php if (!$isEnabled) { ?>
                                             <td id="status_<?php echo $curId; ?>" class="status"
                                                 style="cursor: pointer;"
                                                 onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
@@ -1058,10 +1062,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         }
 
                         $styleRecommended = "display: none";
-                        $waitForFraud     = getResursOption("waitForFraudControl");
-                        $annulIfFrozen    = getResursOption("annulIfFrozen");
+                        $waitForFraud = getResursOption("waitForFraudControl");
+                        $annulIfFrozen = getResursOption("annulIfFrozen");
                         $finalizeIfBooked = getResursOption("finalizeIfBooked");
-                        if ( ! $waitForFraud && ! $annulIfFrozen && ! $finalizeIfBooked) {
+                        if (!$waitForFraud && !$annulIfFrozen && !$finalizeIfBooked) {
                             $styleRecommended = "";
                         }
                         echo '<div id="shopwFlowRecommendedSettings" style="' . $styleRecommended . '">' . __('When all the below settings are unchecked, you are running the plugin with a Resurs Bank preferred configuration',
@@ -1074,7 +1078,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 'WC_Payment_Gateway') . ": " . $nextInvoice . '</td></tr>';
                     }
                 } elseif ($section == "resurs_bank_omnicheckout") {
-                    $namespace              = "woocommerce_" . $section;
+                    $namespace = "woocommerce_" . $section;
                     $this->CONFIG_NAMESPACE = $namespace;
                     echo $this->setCheckBox('enabled', $namespace);
                     echo $this->setSeparator(__('Visuals', 'WC_Payment_Gateway'));
@@ -1093,16 +1097,36 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
+
                     echo $this->setSeparator(__('Callbacks', 'WC_Payment_Gateway'));
                     echo $this->setDropDown('autoDebitStatus', $namespace);
-                    echo $this->setDropDown('autoDebitMethods', $namespace, $paymentMethodTypes, '', (count($paymentMethodTypes)));
+                    echo $this->setDropDown('autoDebitMethods', $namespace, $paymentMethodTypes, '',
+                        (count($paymentMethodTypes)));
+
+                    echo $this->setSeparator(__('Custom order statuses on callbacks', 'WC_Payment_Gateway'),
+                        'configSeparateTitleSmall');
+
+                    $statusForm = resursFormFieldArray();
+                    foreach ($statusForm as $itemName => $itemArray) {
+                        if (preg_match('/^Status_\d/', $itemName)) {
+                            echo $this->setDropDown($itemName, $namespace);
+                        }
+                    }
+
+                    /*Bekräftad
+                    Misstänkt bedrägeri
+                    Completed
+                    Annulled
+                    Credited*/
+
+                    echo $this->setSeparator(__('Miscellaneous callback configuration', 'WC_Payment_Gateway'),
+                        'configSeparateTitleSmall');
                     echo $this->setCheckBox('callbackUpdateAutomation', $namespace);
                     echo $this->setTextBox('callbackUpdateInterval', $namespace);
+
                     echo $this->setSeparator(__('Customer and store', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setCheckBox('reduceOrderStock', $namespace);
-                    //echo $this->setSeparator( __( 'Special aftershopFlow Settings', 'WC_Payment_Gateway' ) );
-                    //echo $this->setCheckBox( 'disableAftershopFunctions', $namespace );
                     echo $this->setSeparator(__('Testing and development', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('devResursSimulation', $namespace);
                     echo $this->setTextBox('devSimulateSuccessUrl', $namespace);
@@ -1136,8 +1160,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->getPluginInformation();
 
                 } elseif (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-                    if ( ! isResursOmni(true)) {
-                        $namespace              = "woocommerce_" . $section;
+                    if (!isResursOmni(true)) {
+                        $namespace = "woocommerce_" . $section;
                         $this->CONFIG_NAMESPACE = $namespace;
 
                         echo $this->setCheckBox('enabled', $namespace);
@@ -1197,7 +1221,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     {
         global $wpdb;
         $rate_select = array();
-        $rates       = $wpdb->get_results($wpdb->prepare(
+        $rates = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates
 				ORDER BY tax_rate_order
 				LIMIT %d
@@ -1210,8 +1234,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             if ('' === $rate_name) {
                 $rate_name = 'standard';
             }
-            $rate_name                          = str_replace('-', ' ', $rate_name);
-            $rate_name                          = ucwords($rate_name);
+            $rate_name = str_replace('-', ' ', $rate_name);
+            $rate_name = ucwords($rate_name);
             $rate_select[$rate->tax_rate_class] = $rate_name;
         }
 
