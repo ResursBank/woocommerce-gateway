@@ -365,12 +365,21 @@ function showResursCallbackArray(cbArrayResponse) {
                 callbackContent += '</table>' +
                     "<br>";
                 callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
+
+                if (typeof adminJs['afterUpdateResursCallbacks'] !== 'undefined') {
+                    callbackContent += adminJs['afterUpdateResursCallbacks'];
+                }
+
                 $RB('#callbackContent').html(callbackContent);
             } else {
                 // Affects what?
                 //$RB('#callbackContent').html('<b><i>' + adminJs["noCallbacksSet"] + '</i></b>');
                 //if (adminJs["requestForCallbacks"] == "1") {}
                 callbackContent = '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
+                if (typeof adminJs['afterUpdateResursCallbacks'] !== 'undefined') {
+                    callbackContent += adminJs['afterUpdateResursCallbacks'];
+                }
+
                 $RB('#callbackContent').html(callbackContent);
 
             }
