@@ -796,7 +796,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $finalizationStatus = $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
                         RESURS_CALLBACK_TYPES::FINALIZATION);
 
-                    if ($finalizationStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                    if ($finalizationStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                         $order->add_order_note(__('FINALIZATION event received from Resurs Bank, but the used payment method indicated that instant finalization is available for it. If it\'s not already completed you might have to update the order manually.', 'WC_Payment_Gateway'));
                     } else {
                         $order->add_order_note(__('FINALIZATION event received from Resurs Bank.', 'WC_Payment_Gateway'));
@@ -862,7 +862,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $callbackUpdateStatus = $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
                         RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE);
 
-                    if ($callbackUpdateStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                    if ($callbackUpdateStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                         $order->add_order_note(__('UPDATE event received from Resurs Bank. The order seem to be FINALIZED and the payment method this order uses, indicates that it supports instant finalization. If it\'s not already completed you might have to update the order manually.',
                             'WC_Payment_Gateway'));
                     } else {
@@ -891,16 +891,28 @@ function woocommerce_gateway_resurs_bank_init()
             $woocommerceOrder,
             $suggestedStatusCode
         ) {
-            if ($currentStatus != $newStatus) {
+            resursEventLogger("SynchronizeResursOrderStatus $currentStatus -> $newStatus");
+
+            $updateStatus = true;
+            if (empty($currentStatus) && empty($newStatus)) {
+                resursEventLogger("One status is empty, so I won't touch it.");
+                return false;
+            }
+
+            if ($currentStatus === $newStatus) {
+                resursEventLogger("Changing status from $currentStatus to $newStatus is not necessary.");
+            }
+
+            if ($updateStatus && $currentStatus != $newStatus) {
                 $woocommerceOrder->update_status($newStatus);
                 $woocommerceOrder->add_order_note(__('Updated order based on Resurs Bank current order status',
-                        'WC_Payment_Gateway') . " (" . $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ")");
+                        'WC_Payment_Gateway') . ' (' . $suggestedStatusCode . ':' . $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ')');
 
                 return true;
             }
 
             $woocommerceOrder->add_order_note(__('Request order status update upon Resurs Bank current payment order status left unchanged since the order is already updated',
-                    'WC_Payment_Gateway') . " (" . $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ")");
+                    'WC_Payment_Gateway') . ' (' . $suggestedStatusCode . ':' . $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ')');
 
             return false;
         }
@@ -960,6 +972,14 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 }
 
+                resursEventLogger('Callback Event ' . $this->flow->getCallbackTypeString($byCallbackEvent) . '.');
+                resursEventLogger(print_r($paymentIdOrPaymentObject, true));
+                resursEventLogger('Current Status: ' . $currentWcStatus);
+                resursEventLogger('Suggested status: ' . $suggestedStatus . ' ('.$paymentStatus[$suggestedStatus].')');
+                resursEventLogger('Stored statuses listed.');
+                resursEventLogger(print_r($paymentStatus, true));
+                resursEventLogger('Callback EVENT Information End');
+
                 switch ($suggestedStatus) {
                     case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING:
                         $this->synchronizeResursOrderStatus($currentWcStatus,
@@ -973,9 +993,9 @@ function woocommerce_gateway_resurs_bank_init()
                             $suggestedStatus);
 
                         return $suggestedStatus;
-                    case $suggestedStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED:
+                    case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED):
 
-                        if ($suggestedStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED && getResursOption('autoDebitStatus') !== "default") {
+                        if ($suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                             $woocommerceOrder->update_status(getResursOption('autoDebitStatus'));
                         } else {
                             $this->synchronizeResursOrderStatus($currentWcStatus,
@@ -2928,7 +2948,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $payment_method = $order->get_payment_method();
             }
 
-            $payment_id = get_post_meta(! isWooCommerce3() ? $order->id : $order->get_id(), 'paymentId', true);
+            $payment_id = get_post_meta(!isWooCommerce3() ? $order->id : $order->get_id(), 'paymentId', true);
             if (false === (boolean)preg_match('/resurs_bank/', $payment_method)) {
                 return;
             }
@@ -3019,13 +3039,17 @@ function woocommerce_gateway_resurs_bank_init()
                     $flowErrorMessage = "";
                     if ($resursFlow->canDebit($payment)) {
                         try {
-                            $resursFlow->paymentFinalize($payment_id);
+                            $successFinalize = $resursFlow->paymentFinalize($payment_id);
+                            resursEventLogger($payment_id . ': Finalization - Payment Content');
+                            resursEventLogger(print_r($payment, true));
+                            resursEventLogger($payment_id . ': Finalization ' . $successFinalize ? 'OK' : 'NOT OK');
                             wp_set_object_terms($order_id, array($old_status_slug), 'shop_order_status', false);
                         } catch (Exception $e) {
                             // Checking code 29 is not necessary since this is automated in EComPHP
                             $flowErrorMessage = "[" . __('Error',
                                     'WC_Payment_Gateway') . " " . $e->getCode() . "] " . $e->getMessage();
                             $order->update_status($old_status_slug);
+                            resursEventLogger($payment_id . ': FinalizationException ' . $e->getCode() . ' - ' . $e->getMessage() . '. Old status (' . $old_status_slug . ') restored.');
                             $order->add_order_note(__('Finalization failed',
                                     'WC_Payment_Gateway') . ": " . $flowErrorMessage);
                         }
@@ -3033,22 +3057,27 @@ function woocommerce_gateway_resurs_bank_init()
                         // Generate a notice if the order has been debited from for example payment admin.
                         // This notice requires that an order is not debitable (if it is, there's more to debit anyway, so in that case the above finalization event will occur)
                         if ($resursFlow->getIsDebited()) {
-                            if ($resursFlow->getInstantFinalizationStatus($payment) & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                            if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
+                                resursEventLogger($payment_id . ': InstantFinalization/IsDebited detected.');
                                 $order->add_order_note(__('This order is now marked completed as a result of the payment method behaviour (automatic finalization).', 'WC_Payment_Gateway'));
                             } else {
+                                resursEventLogger($payment_id . ': Already finalized.');
                                 $order->add_order_note(__('This order has already been finalized externally', 'WC_Payment_Gateway'));
                             }
                         } else {
-                            if ($resursFlow->getInstantFinalizationStatus($payment) & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                            if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
+                                resursEventLogger($payment_id . ': InstantFinalization/DebitedNotDetected detected for.');
                                 $orderNote = __('The payment method for this order indicates that the payment has been automatically finalized.',
                                     'WC_Payment_Gateway');
                             } else {
+                                resursEventLogger($payment_id . ': Can not finalize due to the current remote order status.');
                                 // Generate error message if the order is something else than debited and debitable
-                                $orderNote = __('This order is in a state at Resurs Bank where it can not be finalized',
-                                    'WC_Payment_Gateway');
+                                //$orderNote = __('This order is in a state at Resurs Bank where it can not be finalized', 'WC_Payment_Gateway');
                             }
-                            $order->add_order_note($orderNote);
-                            $flowErrorMessage = $orderNote;
+                            if (!empty($orderNote)) {
+                                $order->add_order_note($orderNote);
+                                $flowErrorMessage = $orderNote;
+                            }
                         }
                     }
                     if ( ! empty($flowErrorMessage)) {
@@ -3889,7 +3918,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             $notIn           = array("completed", "cancelled", "refunded");
             if ( ! $rb->canDebit($resursPaymentInfo) && $rb->getIsDebited($resursPaymentInfo) && ! in_array($currentWcStatus,
                     $notIn)) {
-                if ($rb->getInstantFinalizationStatus($resursPaymentInfo) & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED) {
+                if ($rb->getInstantFinalizationStatus($resursPaymentInfo) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                     resurs_no_debit_debited(true);
                 } else {
                     resurs_no_debit_debited();
@@ -5052,8 +5081,8 @@ function getResursLogActive()
     if (!file_exists(getResursLogDestination())) {
         $return = false;
     }
-    if (!file_exists($plugDest . "/logs/resurs.log")) {
-        @file_put_contents(getResursLogDestination() . "/resurs.log", time() . ": " . "Log initialization");
+    if (!file_exists(getResursLogDestination() . "/resurs.log")) {
+        @file_put_contents(getResursLogDestination() . "/resurs.log", time() . ": " . "Log initialization\n");
     }
     if (!file_exists(getResursLogDestination() . "/resurs.log")) {
         $return = false;
@@ -5074,11 +5103,14 @@ function getResursLogDestination() {
  */
 function resursEventLogger($dataString = '') {
     if (getResursOption('logResursEvents') && getResursLogActive()) {
-        @file_put_contents(getResursLogDestination() . "/resurs.log", "[" . strftime('%Y-%m-%d %H:%M:%S', time()), "] " . $dataString);
+        $writeFile = getResursLogDestination() . '/resurs.log';
+        @file_put_contents(
+            $writeFile, '[' . strftime('%Y-%m-%d %H:%M:%S', time()) . '] ' . $dataString . "\n",
+            FILE_APPEND
+        );
         return true;
     }
     return false;
 }
 
 isResursSimulation();
-
