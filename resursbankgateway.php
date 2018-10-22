@@ -5072,7 +5072,7 @@ function getResursLogDestination() {
  * @param string $dataString
  * @return bool
  */
-function resursCallbackLogger($dataString = '') {
+function resursEventLogger($dataString = '') {
     if (getResursOption('logResursEvents') && getResursLogActive()) {
         @file_put_contents(getResursLogDestination() . "/resurs.log", "[" . strftime('%Y-%m-%d %H:%M:%S', time()), "] " . $dataString);
         return true;
