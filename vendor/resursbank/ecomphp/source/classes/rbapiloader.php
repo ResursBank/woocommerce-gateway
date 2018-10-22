@@ -1489,7 +1489,7 @@ class ResursBank
      * @param int $callbackType
      * @return null|string
      */
-    private function getCallbackTypeString($callbackType = RESURS_CALLBACK_TYPES::NOT_SET)
+    public function getCallbackTypeString($callbackType = RESURS_CALLBACK_TYPES::NOT_SET)
     {
         $return = null;
 
@@ -6464,7 +6464,7 @@ class ResursBank
                 return "pending";
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
                 return "processing";
-            case $returnCode & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED;
+            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED);
                 // Return completed by default here, regardless of what actually has happened to the order
                 // to maintain compatibility. If the payment has been finalized instantly, it is not here you'd
                 // like to use another status. It's in your own code.
