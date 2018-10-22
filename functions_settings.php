@@ -410,6 +410,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'label' => __('Enable/Disable', 'WC_Payment_Gateway'),
                     'default' => 'false'
                 ),
+                'logResursEvents' => array(
+                    'title' => __('Log Resurs Bank events', 'WC_Payment_Gateway'),
+                    'description' => __('Log events like callbacks, status updates on received callbacks, etc',
+                        'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'label' => __('Enable/Disable', 'WC_Payment_Gateway'),
+                    'default' => 'false'
+                ),
                 'showResursCheckoutStandardFieldsTest' => array(
                     'title' => __('Keep standard customer fields open for Resurs Checkout in test',
                         'WC_Payment_Gateway'),
