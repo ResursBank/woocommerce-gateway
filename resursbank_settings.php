@@ -1113,12 +1113,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         }
                     }
 
-                    /*Bekräftad
-                    Misstänkt bedrägeri
-                    Completed
-                    Annulled
-                    Credited*/
-
                     echo $this->setSeparator(__('Miscellaneous callback configuration', 'WC_Payment_Gateway'),
                         'configSeparateTitleSmall');
                     echo $this->setCheckBox('callbackUpdateAutomation', $namespace);
@@ -1128,6 +1122,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setCheckBox('reduceOrderStock', $namespace);
                     echo $this->setSeparator(__('Testing and development', 'WC_Payment_Gateway'));
+                    echo $this->setCheckBox('logResursEvents', $namespace);
                     echo $this->setCheckBox('devResursSimulation', $namespace);
                     echo $this->setTextBox('devSimulateSuccessUrl', $namespace);
                     echo $this->setCheckBox('showResursCheckoutStandardFieldsTest', $namespace);

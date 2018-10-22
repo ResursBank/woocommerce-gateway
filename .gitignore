@@ -18,3 +18,4 @@ Makefile
 /vendor/tornevall/tornelib-php-crypto/source/GSM0338.TXT
 /vendor/tornevall/tornelib-php-crypto/phpunit.xml
 /vendor/tornevall/tornelib-php-netcurl/composer.json
+logs/resurs.log

@@ -5042,5 +5042,43 @@ function isWooCommerce3($checkVersion = '3.0.0')
     return hasWooCommerce($checkVersion);
 }
 
+function getResursLogActive()
+{
+    $return = true;
+    if (!file_exists(getResursLogDestination())) {
+        @mkdir(getResursLogDestination());
+    }
+    // Not writable (if this is not delivered with the plugin, something went wrong)
+    if (!file_exists(getResursLogDestination())) {
+        $return = false;
+    }
+    if (!file_exists($plugDest . "/logs/resurs.log")) {
+        @file_put_contents(getResursLogDestination() . "/resurs.log", time() . ": " . "Log initialization");
+    }
+    if (!file_exists(getResursLogDestination() . "/resurs.log")) {
+        $return = false;
+    }
+    return $return;
+}
+
+/**
+ * @return string
+ */
+function getResursLogDestination() {
+    return plugin_dir_path(__FILE__) . "/logs/";
+}
+
+/**
+ * @param string $dataString
+ * @return bool
+ */
+function resursCallbackLogger($dataString = '') {
+    if (getResursOption('logResursEvents') && getResursLogActive()) {
+        @file_put_contents(getResursLogDestination() . "/resurs.log", "[" . strftime('%Y-%m-%d %H:%M:%S', time()), "] " . $dataString);
+        return true;
+    }
+    return false;
+}
+
 isResursSimulation();
 
