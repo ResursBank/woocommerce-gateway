@@ -505,7 +505,7 @@ function checkLastCallback() {
 
 function devFlagsControl(o) {
     if (o.value == '?') {
-        o.title = 'Examples: DISABLE_SSL_VALIDATION, ALLOW_PSP, DEBUG';
+        o.title = 'Examples: DISABLE_SSL_VALIDATION, ALLOW_PSP, DEBUG, AUTO_DEBIT=METHODTYPE, XDEBUG_SESSION_START=IDE, FEE_EDITOR';
     }
 }
 
