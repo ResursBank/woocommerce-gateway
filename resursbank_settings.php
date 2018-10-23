@@ -542,13 +542,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         //$topCursor  = 'style="vertical-align: top !important;cursor:pointer;" valign="top"';
         $pluginInfo .= '<tr><td ' . $topCss . '>Plugin/Gateway</td><td ' . $topCss . '>v' . rbWcGwVersion() . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>PHP</td><td ' . $topCss . '>' . (defined('PHP_VERSION') ? "v" . PHP_VERSION : "") . '</td></tr>';
-        $pluginInfo .= '<tr><td onclick="doGetRWecomTags()" ' . $topCss . '>EComPHP</td><td ' . $topCss . '>' . $this->flow->getVersionFull() . '<br>
+        $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWecomTags()" ' . $topCss . '><i>EComPHP</i></td><td ' . $topCss . '>' . $this->flow->getVersionFull() . '<br>
             <div id="rwoecomtag" style="display:none;"></div>
         </td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>curl driver</td><td ' . $topCss . '>' . $this->displayAvail($hasCurlInit) . ($hasCurlInit ? "v" . $this->getCurlInformation('version') : "") . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>SoapClient</td><td ' . $topCss . '>' . $this->displayAvail($hasSoap) . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>SSL/https (wrapper)</td><td ' . $topCss . '>' . $this->displayAvail($hasSsl) . (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : "") . '</td></tr>';
-        $pluginInfo .= '<tr><td onclick="doGetRWcurlTags()" ' . $topCss . '>Communication</td><td ' . $topCss . '> NETCURL-v' . $this->getDefined('NETCURL_RELEASE') . ' / MODULE_CURL-v' . $this->getDefined('NETCURL_CURL_RELEASE') . ' / MODULE_SOAP-v' . $this->getDefined('NETCURL_SIMPLESOAP_RELEASE') . '<br>
+        $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '> NETCURL-v' . $this->getDefined('NETCURL_RELEASE') . ' / MODULE_CURL-v' . $this->getDefined('NETCURL_CURL_RELEASE') . ' / MODULE_SOAP-v' . $this->getDefined('NETCURL_SIMPLESOAP_RELEASE') . '<br>
             <div id="rwocurltag" style="display:none;"></div>
         </td></tr>';
 
@@ -1053,14 +1053,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes',
                                 'WC_Payment_Gateway') . '</div><br><br>';
                     } else {
-
-                        $nextInvoice = null;
-                        try {
-                            $nextInvoice = $this->flow->getNextInvoiceNumberByDebits(5);
-                        } catch (\Exception $e) {
-                            $nextInvoice = $e->getMessage();
-                        }
-
                         $styleRecommended = "display: none";
                         $waitForFraud = getResursOption("waitForFraudControl");
                         $annulIfFrozen = getResursOption("annulIfFrozen");
@@ -1075,7 +1067,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo $this->setCheckBox('finalizeIfBooked', $namespace, 'onchange="wfcComboControl(this)"');
                         echo $this->setSeparator("Invoice numbering");
                         echo '<tr><td colspan="2">' . __('Next invoice number to use',
-                                'WC_Payment_Gateway') . ": " . $nextInvoice . '</td></tr>';
+                                'WC_Payment_Gateway') .': <span id="nextInvoiceSequence"><img src="' . $this->spinnerLocal . '"></span></td></tr>';
                     }
                 } elseif ($section == "resurs_bank_omnicheckout") {
                     $namespace = "woocommerce_" . $section;

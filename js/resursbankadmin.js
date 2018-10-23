@@ -5,6 +5,16 @@
 var $RB = jQuery.noConflict();
 
 $RB(document).ready(function ($) {
+
+    if ($RB('#nextInvoiceSequence').length > 0) {
+        runResursAdminCallback('getNextInvoiceSequence', function(x) {
+            console.dir(x);
+            if (typeof x['response'] !== 'undefined') {
+                $RB('#nextInvoiceSequence').html(x['response']['getNextInvoiceSequenceResponse']['nextInvoice']);
+            }
+        });
+    }
+
     // Only run this when the elements are correct
     if (jQuery('#callbackContent').length > 0) {
         if (typeof adminJs["requestForCallbacks"] !== "undefined" && (adminJs["requestForCallbacks"] === false || adminJs["requestForCallbacks"] == "" || null === adminJs["requestForCallbacks"])) {

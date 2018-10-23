@@ -632,9 +632,16 @@ function woocommerce_gateway_resurs_bank_init()
                                 $curlTags                    = $NET->getGitTagsByUrl('https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git');
                                 $responseArray['netCurlTag'] = is_array($curlTags) && count($curlTags) ? array_pop($curlTags) : array();
                             } elseif ($_REQUEST['run'] == 'getEcomTag') {
-                                $NET                      = new \TorneLIB\MODULE_NETWORK();
-                                $ecomTags                 = $NET->getGitTagsByUrl('https://Tornevall-Resurs@bitbucket.org/resursbankplugins/resurs-ecomphp.git');
+                                $NET = new \TorneLIB\MODULE_NETWORK();
+                                $ecomTags = $NET->getGitTagsByUrl('https://bitbucket.org/resursbankplugins/resurs-ecomphp.git');
                                 $responseArray['ecomTag'] = is_array($ecomTags) && count($ecomTags) ? array_pop($ecomTags) : array();
+                            } elseif ($_REQUEST['run'] == 'getNextInvoiceSequence') {
+                                try {
+                                    $nextInvoice = $this->flow->getNextInvoiceNumberByDebits(5);
+                                    $responseArray['nextInvoice'] = $nextInvoice;
+                                } catch (Exception $e) {
+                                    $responseArray['nextInvoice'] = $e->getMessage() . ' ['.$e->getCode().']';
+                                }
                             } elseif ($_REQUEST['run'] == 'getLastCallbackTimestamp') {
                                 $lastRecv                 = get_transient('resurs_callbacks_received');
                                 $myBool                   = true;
@@ -713,7 +720,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 }
                             }
                             $myResponse = array(
-                                $_REQUEST['run'] . "Response" => $responseArray
+                                $_REQUEST['run'] . 'Response' => $responseArray
                             );
                         }
                     }
