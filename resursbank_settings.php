@@ -1095,16 +1095,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setDropDown('autoDebitMethods', $namespace, $paymentMethodTypes, '',
                         (count($paymentMethodTypes)));
 
-                    echo $this->setSeparator(__('Custom order statuses on callbacks', 'WC_Payment_Gateway'),
-                        'configSeparateTitleSmall');
-
-                    $statusForm = resursFormFieldArray();
-                    foreach ($statusForm as $itemName => $itemArray) {
-                        if (preg_match('/^Status_\d/', $itemName)) {
-                            echo $this->setDropDown($itemName, $namespace);
-                        }
-                    }
-
                     echo $this->setSeparator(__('Miscellaneous callback configuration', 'WC_Payment_Gateway'),
                         'configSeparateTitleSmall');
                     echo $this->setCheckBox('callbackUpdateAutomation', $namespace);
