@@ -414,6 +414,16 @@ class ResursBank
     private $internalFlags = array();
 
     /**
+     * Include fraud statuses in orderstatus returns (manual inspection flagged)
+     *
+     * @var bool
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    private $fraudStatusAllowed = false;
+
+    /**
      * @var RESURS_FLOW_TYPES
      */
     private $enforceService = null;
@@ -1488,6 +1498,7 @@ class ResursBank
      *
      * @param int $callbackType
      * @return null|string
+     * @since 1.3.13 Private changed to public
      */
     public function getCallbackTypeString($callbackType = RESURS_CALLBACK_TYPES::NOT_SET)
     {
@@ -6366,12 +6377,32 @@ class ResursBank
             $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
         }
 
-        if ($this->isFraud($paymentData)) {
-            $return += RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_FLAGGED_FRAUD;
+        if ($this->getFraudFlagStatus() && $this->isFraud($paymentData)) {
+            $return += RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_MANUAL_INSPECTION;
         }
 
         // Return generic
         return $return;
+    }
+
+    /**
+     * @param bool $enable
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    public function setFraudFlagStatus($enable = true) {
+        $this->fraudStatusAllowed = $enable;
+    }
+
+    /**
+     * @return mixed
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    public function getFraudFlagStatus() {
+        return $this->fraudStatusAllowed;
     }
 
     /**
