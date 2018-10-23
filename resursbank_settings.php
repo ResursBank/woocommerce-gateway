@@ -1067,7 +1067,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo $this->setCheckBox('finalizeIfBooked', $namespace, 'onchange="wfcComboControl(this)"');
                         echo $this->setSeparator("Invoice numbering");
                         echo '<tr><td colspan="2">' . __('Next invoice number to use',
-                                'WC_Payment_Gateway') .': <span id="nextInvoiceSequence"><img src="' . $this->spinnerLocal . '"></span></td></tr>';
+                                'WC_Payment_Gateway') .': <span id="nextInvoiceSequence"><img src="' . $this->spinner . '"></span></td></tr>';
                     }
                 } elseif ($section == "resurs_bank_omnicheckout") {
                     $namespace = "woocommerce_" . $section;
