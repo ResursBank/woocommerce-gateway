@@ -414,6 +414,16 @@ class ResursBank
     private $internalFlags = array();
 
     /**
+     * Include fraud statuses in orderstatus returns (manual inspection flagged)
+     *
+     * @var bool
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    private $fraudStatusAllowed = false;
+
+    /**
      * @var RESURS_FLOW_TYPES
      */
     private $enforceService = null;
@@ -1310,7 +1320,7 @@ class ResursBank
      *
      * @return string
      */
-    public function setTestUrl($newUrl = '', $FlowType = RESURS_FLOW_TYPES::FLOW_NOT_SET)
+    public function setTestUrl($newUrl = '', $FlowType = RESURS_FLOW_TYPES::NOT_SET)
     {
         if (!preg_match("/^http/i", $newUrl)) {
             /*
@@ -1323,11 +1333,11 @@ class ResursBank
                 $newUrl = "https://" . $newUrl;
             }
         }
-        if ($FlowType == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+        if ($FlowType == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
             $this->env_test = $newUrl;
-        } elseif ($FlowType == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW) {
+        } elseif ($FlowType == RESURS_FLOW_TYPES::HOSTED_FLOW) {
             $this->env_hosted_test = $newUrl;
-        } elseif ($FlowType == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+        } elseif ($FlowType == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             $this->env_omni_test = $newUrl;
         } else {
             /*
@@ -1488,6 +1498,7 @@ class ResursBank
      *
      * @param int $callbackType
      * @return null|string
+     * @since 1.3.13 Private changed to public
      */
     public function getCallbackTypeString($callbackType = RESURS_CALLBACK_TYPES::NOT_SET)
     {
@@ -1999,7 +2010,7 @@ class ResursBank
      * @deprecated 1.0.26 Use setPreferredPaymentFlowService
      * @deprecated 1.1.26 Use setPreferredPaymentFlowService
      */
-    public function setPreferredPaymentService($flowType = RESURS_FLOW_TYPES::FLOW_NOT_SET)
+    public function setPreferredPaymentService($flowType = RESURS_FLOW_TYPES::NOT_SET)
     {
         $this->setPreferredPaymentFlowService($flowType);
     }
@@ -2057,16 +2068,16 @@ class ResursBank
      * @since 1.1.26
      * @since 1.2.0
      */
-    public function setPreferredPaymentFlowService($flowType = RESURS_FLOW_TYPES::FLOW_NOT_SET)
+    public function setPreferredPaymentFlowService($flowType = RESURS_FLOW_TYPES::NOT_SET)
     {
         $this->enforceService = $flowType;
-        if ($flowType == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW) {
+        if ($flowType == RESURS_FLOW_TYPES::HOSTED_FLOW) {
             $this->isHostedFlow = true;
             $this->isOmniFlow = false;
-        } elseif ($flowType == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+        } elseif ($flowType == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             $this->isHostedFlow = false;
             $this->isOmniFlow = true;
-        } elseif ($flowType == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+        } elseif ($flowType == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
             $this->isHostedFlow = false;
             $this->isOmniFlow = false;
         } else {
@@ -2085,7 +2096,17 @@ class ResursBank
      */
     public function getPreferredPaymentFlowService()
     {
-        return $this->enforceService;
+        $return = $this->enforceService;
+
+        if (is_null($this->enforceService)) {
+            $return = RESURS_FLOW_TYPES::NOT_SET;
+        }
+
+        if ($this->getFlag('USE_AFTERSHOP_RENDERING') === true) {
+            $return = RESURS_FLOW_TYPES::SIMPLIFIED_FLOW;
+        }
+
+        return $return;
     }
 
     /**
@@ -2479,7 +2500,7 @@ class ResursBank
                     if ($type == "PAYMENT_PROVIDER") {
                         $addMethod = false;
                     }
-                } elseif ($paymentSevice != RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+                } elseif ($paymentSevice != RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                     if (!$getAllMethods && $type == "PAYMENT_PROVIDER") {
                         $addMethod = false;
                     }
@@ -3945,10 +3966,10 @@ class ResursBank
      * @since 1.0.2
      * @since 1.1.2
      */
-    private function renderPaymentSpec($overrideFlow = RESURS_FLOW_TYPES::FLOW_NOT_SET)
+    private function renderPaymentSpec($overrideFlow = RESURS_FLOW_TYPES::NOT_SET)
     {
         $myFlow = $this->getPreferredPaymentFlowService();
-        if ($overrideFlow !== RESURS_FLOW_TYPES::FLOW_NOT_SET) {
+        if ($overrideFlow !== RESURS_FLOW_TYPES::NOT_SET) {
             $myFlow = $overrideFlow;
         }
         $paymentSpec = array();
@@ -3965,10 +3986,10 @@ class ResursBank
                         $this->SpecLines[$specIndex]['unitMeasure'] = $this->defaultUnitMeasure;
                     }
                 }
-                if ($myFlow === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+                if ($myFlow === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
                     $this->SpecLines[$specIndex]['id'] = ($specIndex) + 1;
                 }
-                if ($myFlow === RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW || $myFlow === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+                if ($myFlow === RESURS_FLOW_TYPES::HOSTED_FLOW || $myFlow === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
                     if (!isset($specRow['totalVatAmount'])) {
                         $this->SpecLines[$specIndex]['totalVatAmount'] = ($specRow['unitAmountWithoutVat'] * $specRow['vatPct'] / 100) * $specRow['quantity'];
                         $this->SpecLines[$specIndex]['totalAmount'] = ($specRow['unitAmountWithoutVat'] + ($specRow['unitAmountWithoutVat'] * $specRow['vatPct'] / 100)) * $specRow['quantity'];
@@ -3983,7 +4004,7 @@ class ResursBank
                     $paymentSpec['totalVatAmount'] += $this->SpecLines[$specIndex]['totalVatAmount'];
                 }
             }
-            if ($myFlow === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+            if ($myFlow === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
                 // Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
                 $this->Payload['orderData'] = array(
                     'specLines' => $this->sanitizePaymentSpec($this->SpecLines, $myFlow),
@@ -3991,7 +4012,7 @@ class ResursBank
                     'totalVatAmount' => $paymentSpec['totalVatAmount']
                 );
             }
-            if ($myFlow === RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW) {
+            if ($myFlow === RESURS_FLOW_TYPES::HOSTED_FLOW) {
                 // Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
                 $this->Payload['orderData'] = array(
                     'orderLines' => $this->sanitizePaymentSpec($this->SpecLines, $myFlow),
@@ -3999,7 +4020,7 @@ class ResursBank
                     'totalVatAmount' => $paymentSpec['totalVatAmount']
                 );
             }
-            if ($myFlow == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+            if ($myFlow == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 // Do not forget to pass over $myFlow-overriders to sanitizer as it might be sent from additionalDebitOfPayment rather than a regular bookPayment sometimes
                 $this->Payload['orderLines'] = $this->sanitizePaymentSpec($this->SpecLines, $myFlow);
             }
@@ -4039,7 +4060,7 @@ class ResursBank
         }
         $myFlow = $this->getPreferredPaymentFlowService();
         try {
-            if ($myFlow !== RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+            if ($myFlow !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 $this->desiredPaymentMethod = $payment_id_or_method;
                 $paymentMethodInfo = $this->getPaymentMethodSpecific($payment_id_or_method);
                 if (isset($paymentMethodInfo->type) && $paymentMethodInfo->type === 'PAYMENT_PROVIDER') {
@@ -4111,7 +4132,7 @@ class ResursBank
         //$this->addMetaDataHash($payment_id_or_method);
 
         // Using this function to validate that card data info is properly set up during the deprecation state in >= 1.0.2/1.1.1
-        if ($myFlow == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+        if ($myFlow == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
             $paymentMethodInfo = $this->getPaymentMethodSpecific($payment_id_or_method);
             if (isset($paymentMethodInfo) && is_object($paymentMethodInfo)) {
                 if (isset($paymentMethodInfo->specificType) && $paymentMethodInfo->specificType == "CARD" || $paymentMethodInfo->specificType == "NEWCARD" || $paymentMethodInfo->specificType == "REVOLVING_CREDIT") {
@@ -4122,7 +4143,7 @@ class ResursBank
             $this->resetPayload();
 
             return $myFlowResponse;
-        } elseif ($myFlow == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+        } elseif ($myFlow == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             $checkoutUrl = $this->getCheckoutUrl() . "/checkout/payments/" . $payment_id_or_method;
             try {
                 $checkoutResponse = $this->CURL->doPost($checkoutUrl, $this->Payload,
@@ -4150,7 +4171,7 @@ class ResursBank
             }
 
             return isset($parsedResponse) ? $parsedResponse : null;
-        } elseif ($myFlow == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW) {
+        } elseif ($myFlow == RESURS_FLOW_TYPES::HOSTED_FLOW) {
             $hostedUrl = $this->getHostedUrl();
             try {
                 $hostedResponse = $this->CURL->doPost($hostedUrl, $this->Payload,
@@ -4259,8 +4280,9 @@ class ResursBank
             $customerData = $payload['customer'];
         }
 
-        // Sanitize the orderlines with the simplest content available (The "minimalisticflow" gives us artNo, description, price, quantiy)
-        $orderData = $this->sanitizePaymentSpec($this->getOrderLines(), RESURS_FLOW_TYPES::FLOW_MINIMALISTIC);
+        // Sanitize the orderlines with the simplest content available (The "minimalisticflow" gives us artNo,
+        // description, price, quantiy)
+        $orderData = $this->sanitizePaymentSpec($this->getOrderLines(), RESURS_FLOW_TYPES::MINIMALISTIC);
         if ($this->BIT->isBit(RESURS_METAHASH_TYPES::HASH_ORDERLINES, $hashLevel)) {
             $hashes['orderLines'] = $orderData;
         }
@@ -4414,10 +4436,11 @@ class ResursBank
         if (empty($this->defaultUnitMeasure)) {
             $this->setDefaultUnitMeasure();
         }
-        if (!$this->enforceService) {
-            $this->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW);
+        if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::NOT_SET) {
+            $this->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
         }
-        if ($this->enforceService === RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+
+        if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             if (empty($payment_id_or_method) && empty($this->preferredId)) {
                 throw new Exception("A payment method or payment id must be defined",
                     \RESURS_EXCEPTIONS::CREATEPAYMENT_NO_ID_SET);
@@ -4448,7 +4471,7 @@ class ResursBank
             $this->Payload['orderLines'] = $this->SpecLines;
             $this->renderPaymentSpec();
         }
-        if ($this->enforceService === RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW || $this->enforceService === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+        if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::HOSTED_FLOW || $this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
             if (!isset($paymentDataPayload ['paymentData'])) {
                 $paymentDataPayload ['paymentData'] = array();
             }
@@ -4456,7 +4479,7 @@ class ResursBank
             $paymentDataPayload['paymentData']['preferredId'] = $this->getPreferredPaymentId();
             $paymentDataPayload['paymentData']['customerIpAddress'] = $this->getCustomerIp();
 
-            if ($this->enforceService === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+            if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
                 if (!isset($this->Payload['storeId']) && !empty($this->storeId)) {
                     $this->Payload['storeId'] = $this->storeId;
                 }
@@ -4477,11 +4500,11 @@ class ResursBank
             }
             $this->handlePayload($paymentDataPayload, true);
         }
-        if (($this->enforceService == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT || $this->enforceService == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW)) {
-            // Convert signing to checkouturls if exists (not receommended as failurl might not always be the backurl)
+        if (($this->getPreferredPaymentFlowService() == RESURS_FLOW_TYPES::RESURS_CHECKOUT || $this->getPreferredPaymentFlowService() == RESURS_FLOW_TYPES::HOSTED_FLOW)) {
+            // Convert signing to checkout urls if exists (not recommended as failUrl might not always be the backUrl)
             // However, those variables will only be replaced in the correct payload if they are not already there.
             if (isset($this->Payload['signing'])) {
-                if ($this->enforceService == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW) {
+                if ($this->getPreferredPaymentFlowService() == RESURS_FLOW_TYPES::HOSTED_FLOW) {
                     if (isset($this->Payload['signing']['forceSigning'])) {
                         $this->Payload['forceSigning'] = $this->Payload['signing']['forceSigning'];
                     }
@@ -4500,8 +4523,9 @@ class ResursBank
                 }
                 unset($this->Payload['signing']);
             }
-            // Rules for customer only applies to checkout. As this also involves the hosted flow (see above) this must only specifically occur on the checkout
-            if ($this->enforceService == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+            // Rules for customer only applies to checkout. As this also involves the hosted flow (see above) this
+            // must only specifically occur on the checkout
+            if ($this->getPreferredPaymentFlowService() == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 if (!isset($this->Payload['storeId']) && !empty($this->storeId)) {
                     $this->Payload['storeId'] = $this->storeId;
                 }
@@ -4527,8 +4551,8 @@ class ResursBank
                 }
             }
         }
-        // If card data has been included in the payload, make sure that the card data is validated if the payload has been sent
-        // by manual hands (deprecated mode)
+        // If card data has been included in the payload, make sure that the card data is validated if the payload
+        // has been sent by manual hands (deprecated mode)
         if (isset($this->Payload['card'])) {
             /** @noinspection PhpUndefinedFieldInspection */
             if (isset($this->PaymentMethod->specificType)) {
@@ -4701,7 +4725,7 @@ class ResursBank
      * @since 1.0.4
      * @since 1.1.4
      */
-    public function sanitizePaymentSpec($specLines = array(), $myFlowOverrider = RESURS_FLOW_TYPES::FLOW_NOT_SET)
+    public function sanitizePaymentSpec($specLines = array(), $myFlowOverrider = RESURS_FLOW_TYPES::NOT_SET)
     {
         $specRules = array(
             'checkout' => array(
@@ -4743,17 +4767,17 @@ class ResursBank
         );
         if (is_array($specLines)) {
             $myFlow = $this->getPreferredPaymentFlowService();
-            if ($myFlowOverrider !== RESURS_FLOW_TYPES::FLOW_NOT_SET) {
+            if ($myFlowOverrider !== RESURS_FLOW_TYPES::NOT_SET) {
                 $myFlow = $myFlowOverrider;
             }
             $mySpecRules = array();
-            if ($myFlow == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+            if ($myFlow == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
                 $mySpecRules = $specRules['simplified'];
-            } elseif ($myFlow == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW) {
+            } elseif ($myFlow == RESURS_FLOW_TYPES::HOSTED_FLOW) {
                 $mySpecRules = $specRules['hosted'];
-            } elseif ($myFlow == RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT) {
+            } elseif ($myFlow == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 $mySpecRules = $specRules['checkout'];
-            } elseif ($myFlow == RESURS_FLOW_TYPES::FLOW_MINIMALISTIC) {
+            } elseif ($myFlow == RESURS_FLOW_TYPES::MINIMALISTIC) {
                 $mySpecRules = $specRules['minimalistic'];
             }
             $hasMeasure = false;
@@ -4768,7 +4792,7 @@ class ResursBank
                     }
                 }
                 // Add unit measure if missing
-                if (!$hasMeasure && $myFlow != RESURS_FLOW_TYPES::FLOW_MINIMALISTIC) {
+                if (!$hasMeasure && $myFlow != RESURS_FLOW_TYPES::MINIMALISTIC) {
                     $specArray['unitMeasure'] = $this->defaultUnitMeasure;
                 }
                 $specLines[$specIndex] = $specArray;
@@ -4857,10 +4881,12 @@ class ResursBank
             'postalArea' => $postalArea,
             'postalCode' => $postalCode
         );
+
         $trimAddress = trim($addressRow2); // PHP Compatibility
         if (!empty($trimAddress)) {
             $ReturnAddress['addressRow2'] = $addressRow2;
         }
+
         $targetCountry = $this->getCountry();
         if (empty($country) && !empty($targetCountry)) {
             $country = $targetCountry;
@@ -4868,7 +4894,8 @@ class ResursBank
             // Giving internal country data more influence on this method
             $this->setCountryByCountryCode($targetCountry);
         }
-        if (is_null($this->enforceService)) {
+
+        if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::NOT_SET) {
             /**
              * EComPHP might get a bit confused here, if no preferred flow is set. Normally, we don't have to know this,
              * but in this case (since EComPHP actually points at the simplified flow by default) we need to tell it
@@ -4876,9 +4903,10 @@ class ResursBank
              *
              * @link https://resursbankplugins.atlassian.net/browse/ECOMPHP-238
              */
-            $this->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW);
+            $this->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
         }
-        if ($this->enforceService === RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+
+        if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
             $ReturnAddress['country'] = $country;
         } else {
             $ReturnAddress['countryCode'] = $country;
@@ -5175,14 +5203,14 @@ class ResursBank
         // Address and deliveryAddress should move to the correct location
         if (isset($this->Payload['address'])) {
             $this->Payload['customer']['address'] = $this->Payload['address'];
-            if ($myFlow == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW && isset($this->Payload['customer']['address']['country'])) {
+            if ($myFlow == RESURS_FLOW_TYPES::HOSTED_FLOW && isset($this->Payload['customer']['address']['country'])) {
                 $this->Payload['customer']['address']['countryCode'] = $this->Payload['customer']['address']['country'];
             }
             unset($this->Payload['address']);
         }
         if (isset($this->Payload['deliveryAddress'])) {
             $this->Payload['customer']['deliveryAddress'] = $this->Payload['deliveryAddress'];
-            if ($myFlow == RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW && isset($this->Payload['customer']['deliveryAddress']['country'])) {
+            if ($myFlow == RESURS_FLOW_TYPES::HOSTED_FLOW && isset($this->Payload['customer']['deliveryAddress']['country'])) {
                 $this->Payload['customer']['deliveryAddress']['countryCode'] = $this->Payload['customer']['deliveryAddress']['country'];
             }
             unset($this->Payload['deliveryAddress']);
@@ -5370,7 +5398,7 @@ class ResursBank
             $outputOrderLines = $orderLines;
         }
         $sanitizedOutputOrderLines = $this->sanitizePaymentSpec($outputOrderLines,
-            RESURS_FLOW_TYPES::FLOW_RESURS_CHECKOUT);
+            RESURS_FLOW_TYPES::RESURS_CHECKOUT);
         $updateOrderLinesResponse = $this->CURL->doPut($this->getCheckoutUrl() . "/checkout/payments/" . $paymentId,
             array('orderLines' => $sanitizedOutputOrderLines), NETCURL_POST_DATATYPES::DATATYPE_JSON);
         $updateOrderLinesResponseCode = $this->CURL->getCode($updateOrderLinesResponse);
@@ -5439,7 +5467,7 @@ class ResursBank
     private function validateCardData($specificType = "")
     {
         // Keeps compatibility with card data sets
-        if (isset($this->Payload['orderData']['totalAmount']) && $this->getPreferredPaymentFlowService() == RESURS_FLOW_TYPES::FLOW_SIMPLIFIED_FLOW) {
+        if (isset($this->Payload['orderData']['totalAmount']) && $this->getPreferredPaymentFlowService() == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
             $cardInfo = isset($this->Payload['card']) ? $this->Payload['card'] : array();
             if ((isset($cardInfo['cardNumber']) && empty($cardInfo['cardNumber'])) || !isset($cardInfo['cardNumber'])) {
                 if ((isset($cardInfo['amount']) && empty($cardInfo['amount'])) || !isset($cardInfo['amount'])) {
@@ -5982,11 +6010,12 @@ class ResursBank
 
         if (count($customPayloadItemList)) {
             // If there is a customized specrowArray injected, no appending should occur.
-            //$this->SpecLines += $this->objectsIntoArray($customPayloadItemList);
             $this->SpecLines = $this->objectsIntoArray($customPayloadItemList);
         }
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
+        $this->setFlag('USE_AFTERSHOP_RENDERING', true);
         $orderDataArray = $this->getOrderData();
+        $this->deleteFlag('USE_AFTERSHOP_RENDERING');
 
         if (isset($orderDataArray['specLines'])) {
             $orderDataArray['partPaymentSpec'] = $orderDataArray;
@@ -6366,12 +6395,32 @@ class ResursBank
             $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
         }
 
-        if ($this->isFraud($paymentData)) {
-            $return += RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_FLAGGED_FRAUD;
+        if ($this->getFraudFlagStatus() && $this->isFraud($paymentData)) {
+            $return += RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_MANUAL_INSPECTION;
         }
 
         // Return generic
         return $return;
+    }
+
+    /**
+     * @param bool $enable
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    public function setFraudFlagStatus($enable = true) {
+        $this->fraudStatusAllowed = $enable;
+    }
+
+    /**
+     * @return mixed
+     * @since 1.0.40
+     * @since 1.1.40
+     * @since 1.3.13
+     */
+    public function getFraudFlagStatus() {
+        return $this->fraudStatusAllowed;
     }
 
     /**

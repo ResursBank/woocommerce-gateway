@@ -19,6 +19,9 @@ abstract class RESURS_FLOW_TYPES
     /** @var int You lazy? */
     const RCO = 3;
 
+    /** @var int Absolutely minimalistic flow with data necessary to render anything at all (and matching data) */
+    const MINIMALISTIC = 98;
+
     /** @deprecated Redundant name */
     const FLOW_NOT_SET = 0;
     /** @deprecated Redundant name */
@@ -28,7 +31,7 @@ abstract class RESURS_FLOW_TYPES
     /** @deprecated Redundant name */
     const FLOW_RESURS_CHECKOUT = 3;
 
-    /** @var int METHOD_MINIMALISTIC Minimalistic orderLine specification, with data necessary for matching */
+    /** @deprecated Redundant name */
     const FLOW_MINIMALISTIC = 98;
 }
 
@@ -204,7 +207,7 @@ abstract class RESURS_PAYMENT_STATUS_RETURNCODES
     const PAYMENT_ANNULLED = 8;
     const PAYMENT_CREDITED = 16;
     const PAYMENT_AUTOMATICALLY_DEBITED = 32;
-    const PAYMENT_FLAGGED_FRAUD = 64;
+    const PAYMENT_MANUAL_INSPECTION = 64;   // When an order by some reason gets stuck in manual inspections
 
     /** @deprecated Fallback status only, use PAYMENT_ANNULLED */
     const PAYMENT_CANCELLED = 8;
