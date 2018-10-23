@@ -957,7 +957,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                 // Developers and merchants should normally not need to touch this section unless they really know what they're doing.
 
-                $paymentStatusDefaults = array(
+                $paymentStatus = array(
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING => 'processing',
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED => 'refunded',
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED => 'completed',
@@ -965,28 +965,6 @@ function woocommerce_gateway_resurs_bank_init()
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED => 'cancelled',
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET => 'on-hold',
                 );
-                $paymentStatus = $paymentStatusDefaults;
-
-                $statusForm = resursFormFieldArray();
-                foreach ($statusForm as $itemName => $itemArray) {
-                    if (preg_match('/^Status_\d$/', $itemName, $statusMatch)) {
-                        if (isset($statusMatch[0])) {
-                            $curStatusSetting = getResursOption($statusMatch[0]);
-                            if (!empty($curStatusSetting)) {
-                                $statEx = explode('_', $statusMatch[0]);
-                                // Make sure we ignore status data that contains wrong formatting
-                                if (isset($statEx[1])) {
-                                    $savedStatus = $statEx[1];
-                                    // If current saved status is anything but default or differing to the default status
-                                    // manipulate the output result during synchronized save.
-                                    if ($curStatusSetting !== 'default' && $curStatusSetting !== $paymentStatus[$savedStatus]) {
-                                        $paymentStatus[$savedStatus] = $curStatusSetting;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
 
                 resursEventLogger('Callback Event ' . $this->flow->getCallbackTypeString($byCallbackEvent) . '.');
                 resursEventLogger(print_r($paymentIdOrPaymentObject, true));
