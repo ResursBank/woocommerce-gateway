@@ -475,7 +475,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'description' => __('Status code for an order set by Resurs Bank during callbacks, transforms into this WooCommerce status. Default: Processing', 'WC_Payment_Gateway'),
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
-                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending payment', 'WC_Payment_Gateway'),
                         'processing' => __('Processing', 'WC_Payment_Gateway'),
                         'refunded' => __('Refunded', 'WC_Payment_Gateway'),
                         'completed' => __('Completed', 'WC_Payment_Gateway'),
@@ -491,7 +491,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
-                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending payment', 'WC_Payment_Gateway'),
                         'processing' => __('Processing', 'WC_Payment_Gateway'),
                         'refunded' => __('Refunded', 'WC_Payment_Gateway'),
                         'completed' => __('Completed', 'WC_Payment_Gateway'),
@@ -507,7 +507,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
-                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending payment', 'WC_Payment_Gateway'),
                         'processing' => __('Processing', 'WC_Payment_Gateway'),
                         'refunded' => __('Refunded', 'WC_Payment_Gateway'),
                         'completed' => __('Completed', 'WC_Payment_Gateway'),
@@ -523,7 +523,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
-                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending payment', 'WC_Payment_Gateway'),
                         'processing' => __('Processing', 'WC_Payment_Gateway'),
                         'refunded' => __('Refunded', 'WC_Payment_Gateway'),
                         'completed' => __('Completed', 'WC_Payment_Gateway'),
@@ -539,7 +539,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
-                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending payment', 'WC_Payment_Gateway'),
                         'processing' => __('Processing', 'WC_Payment_Gateway'),
                         'refunded' => __('Refunded', 'WC_Payment_Gateway'),
                         'completed' => __('Completed', 'WC_Payment_Gateway'),
@@ -555,7 +555,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'select',
                     'options' => array(
                         'default' => __('Use default', 'WC_Payment_Gateway'),
-                        'pending' => __('Pending', 'WC_Payment_Gateway'),
+                        'pending' => __('Pending payment', 'WC_Payment_Gateway'),
                         'processing' => __('Processing', 'WC_Payment_Gateway'),
                         'refunded' => __('Refunded', 'WC_Payment_Gateway'),
                         'completed' => __('Completed', 'WC_Payment_Gateway'),

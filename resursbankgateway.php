@@ -2204,10 +2204,9 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                         $resursOrder = new WC_Checkout();
                         try {
-                            /*
-                             * As we work with the session, we'd try to get the current order that way.
-                             * process_checkout() does a lot of background work for this.
-                             */
+                            // As we work with the session, we'd try to get the current order that way.
+                            // process_checkout() does a lot of background work for this.
+
                             $internalErrorMessage = "";
                             $internalErrorCode = 0;
                             try {
