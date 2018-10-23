@@ -910,16 +910,21 @@ function woocommerce_gateway_resurs_bank_init()
                 resursEventLogger("Changing status from $currentStatus to $newStatus is not necessary.");
             }
 
+            $suggestedString = $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode);
+            if (empty($suggestedString)) {
+                $suggestedString = 'Suggested status code string could not be defined';
+            }
+
             if ($updateStatus && $currentStatus != $newStatus) {
                 $woocommerceOrder->update_status($newStatus);
                 $woocommerceOrder->add_order_note(__('Updated order based on Resurs Bank current order status',
-                        'WC_Payment_Gateway') . ' (' . $suggestedStatusCode . ':' . $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ')');
+                        'WC_Payment_Gateway') . ' (' . $suggestedString . ')');
 
                 return true;
             }
 
             $woocommerceOrder->add_order_note(__('Request order status update upon Resurs Bank current payment order status left unchanged since the order is already updated',
-                    'WC_Payment_Gateway') . ' (' . $suggestedStatusCode . ':' . $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode) . ')');
+                    'WC_Payment_Gateway') . ' (' . $suggestedString . ')');
 
             return false;
         }
