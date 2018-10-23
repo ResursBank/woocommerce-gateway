@@ -5118,7 +5118,7 @@ function getResursLogActive()
  */
 function getResursLogDestination()
 {
-    return plugin_dir_path(__FILE__) . "/logs/";
+    return plugin_dir_path(__FILE__) . '/logs/';
 }
 
 /**

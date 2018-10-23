@@ -7,7 +7,7 @@ var $RB = jQuery.noConflict();
 $RB(document).ready(function ($) {
 
     if ($RB('#nextInvoiceSequence').length > 0) {
-        runResursAdminCallback('getNextInvoiceSequence', function(x) {
+        runResursAdminCallback('getNextInvoiceSequence', function (x) {
             console.dir(x);
             if (typeof x['response'] !== 'undefined') {
                 $RB('#nextInvoiceSequence').html(x['response']['getNextInvoiceSequenceResponse']['nextInvoice']);
@@ -429,6 +429,7 @@ function doGetRWcurlTags() {
     $RB('#rwocurltag').show();
     runResursAdminCallback("getNetCurlTag", "getNetCurlTag");
 }
+
 function doGetRWecomTags() {
     $RB('#rwoecomtag').html('<img src="' + adminJs.resursSpinner + '">');
     $RB('#rwoecomtag').show();
@@ -441,6 +442,7 @@ function getNetCurlTag(info) {
         $RB('#rwocurltag').html("<b>netcurl response:</b> " + curlTagData["netCurlTag"]);
     }
 }
+
 function getEcomTag(info) {
     if (typeof info["response"] !== "undefined" && info["response"]["getEcomTagResponse"] != "undefined") {
         var ecomTagData = info["response"]["getEcomTagResponse"];
@@ -561,14 +563,14 @@ function changeResursFee(chosenFeeObject) {
 function resetRbFeeValue(targetColumn, sourceField, oldValue) {
     $RB('#' + targetColumn).html(sourceField.value);
     var feeId = targetColumn.substr(4);
-    var convertValue = parseFloat(sourceField.value.replace(',','.'));
+    var convertValue = parseFloat(sourceField.value.replace(',', '.'));
 
     if (!isNaN(convertValue) && convertValue > 0) {
         $RB('#fee_' + feeId).html(convertValue);
     }
 
     if (sourceField.value == '' || isNaN(sourceField.value)) {
-        $RB('#' + targetColumn).html('<img src="'+adminJs.resursFeePen+'">');
+        $RB('#' + targetColumn).html('<img src="' + adminJs.resursFeePen + '">');
         convertValue = 0;
     }
 
