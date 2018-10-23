@@ -3057,6 +3057,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $flowErrorMessage = "";
                     if ($resursFlow->canDebit($payment)) {
                         try {
+                            $resursFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
                             $successFinalize = $resursFlow->paymentFinalize($payment_id);
                             resursEventLogger($payment_id . ': Finalization - Payment Content');
                             resursEventLogger(print_r($payment, true));
