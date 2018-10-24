@@ -410,4 +410,3 @@ class RESURS_DEPRECATED_FLOW
         return $this->getTemplateFieldsByMethod($paymentMethodName);
     }
 }
-

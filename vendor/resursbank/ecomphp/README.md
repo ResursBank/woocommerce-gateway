@@ -26,9 +26,9 @@ For Ubuntu, you can quickly fetch those with apt-get like below, if your system 
 There might be a slight chance that you also need openssl or similar, as our services runs on https-only (normally openssl are delivered automatically, but sometimes they do not - apt-get install openssl might work in those cases if you have access to the server).
 
 
-# PHP 7.2
+# PHP 7.3
 
-Tests are verified with the deprecated suite up to PHP 7.2.3 as of 20 march 2018.
+Tests are verified with the deprecated suite up to PHP 7.3 (RC3) as of 24 october 2018.
 
 
 ## What this library do and do not
