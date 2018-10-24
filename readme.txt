@@ -13,7 +13,7 @@ Resurs Bank Payment Gateway for WooCommerce.
 
 == Description ==
 
-= Notes=
+= Important Notes =
 
 As of v2.2.12, we do support SWISH and similar "instant debitable" payment methods, where payments tend to be finalized/debited long before shipping has been made. You can read more about it [here](https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12)
 
