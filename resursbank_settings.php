@@ -621,8 +621,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         }
 
         $hasCountries = false;
+        $loginInfo = getResursOption('login');
+
         try {
-            if (!preg_match("/^resurs_bank_nr/i", $section)) {
+            if (!preg_match("/^resurs_bank_nr/i", $section) && !empty($loginInfo)) {
                 // If we're in demoshop mode go another direction
                 if (isResursDemo() && is_array($countryCredentialArray) && count($countryCredentialArray)) {
                     try {
@@ -679,11 +681,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
                 $this->UnusedPaymentClassesCleanup($class_files);
             } else {
-                $theMethod = preg_replace("/^resurs_bank_nr_(.*?)/", '$1', $section);
-                // Make sure there is an overrider on PSP
-                $this->flow->setSimplifiedPsp(true);
-                $this->paymentMethods = $this->flow->getPaymentMethodSpecific($theMethod);
-                $methodDescription = isset($this->paymentMethods->description) ? $this->paymentMethods->description : "";
+                if (!empty($loginInfo)) {
+                    $theMethod = preg_replace("/^resurs_bank_nr_(.*?)/", '$1', $section);
+                    // Make sure there is an overrider on PSP
+                    $this->flow->setSimplifiedPsp(true);
+                    $this->paymentMethods = $this->flow->getPaymentMethodSpecific($theMethod);
+                    $methodDescription = isset($this->paymentMethods->description) ? $this->paymentMethods->description : "";
+                }
             }
         } catch (Exception $e) {
             $errorCode = $e->getCode();
@@ -807,19 +811,25 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     </th>
                     <td id="currentResursPaymentMethods">
                     ';
-                    if (empty($paymentMethodsError)) {
-                        if (!count($this->paymentMethods)) {
-                            echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered',
-                                    'WC_Payment_Gateway') . '</div><br><br>';
-                        } else {
-                            if (isResursOmni(true)) {
-                                echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Payment method titles/descriptions are not editable when using Resurs Checkout as they are handled by Resurs Bank, server side. Contact support if you want to do any changes',
+                    if (!empty($loginInfo)) {
+                        if (empty($paymentMethodsError)) {
+                            if (!count($this->paymentMethods)) {
+                                echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods will appear, when credentials has been entered',
                                         'WC_Payment_Gateway') . '</div><br><br>';
+                            } else {
+                                if (isResursOmni(true)) {
+                                    echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __('Payment method titles/descriptions are not editable when using Resurs Checkout as they are handled by Resurs Bank, server side. Contact support if you want to do any changes',
+                                            'WC_Payment_Gateway') . '</div><br><br>';
+                                }
                             }
+                        } else {
+                            echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.',
+                                    'WC_Payment_Gateway') . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
                         }
                     } else {
-                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.',
+                        echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __('To activate this part of the plugin, your credentials to the web services must be entered above',
                                 'WC_Payment_Gateway') . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
+
                     }
 
                     if (isset($this->paymentMethods['error']) && !empty($this->paymentMethods['error'])) {
