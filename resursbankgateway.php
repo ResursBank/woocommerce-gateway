@@ -5117,4 +5117,23 @@ function resursEventLogger($dataString = '')
     return false;
 }
 
+if (!function_exists('getHadMisplacedIframeLocation')) {
+    /**
+     * Makes sure that you can reselect a deprecated setting for the iframe location
+     * when using RCO if it has been selected once in a time
+     * @return bool|mixed|void
+     * @since 2.2.13
+     */
+    function getHadMisplacedIframeLocation()
+    {
+        $currentIframeLocation = omniOption('iFrameLocation');
+        $hadIframeInMethods = get_option('rb_iframe_location_was_in_methods');
+        if ($currentIframeLocation === 'inMethods') {
+            $hadIframeInMethods = true;
+            update_option('rb_iframe_location_was_in_methods', $hadIframeInMethods);
+        }
+        return $hadIframeInMethods;
+    }
+}
+
 isResursSimulation();
