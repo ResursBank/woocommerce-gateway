@@ -558,7 +558,6 @@ if (!function_exists('getResursWooFormFields')) {
                     'options' => array(
                         'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
                         'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
-                        'inMethods' => __('In payment method list (Not recommended)', 'WC_Payment_Gateway'),
                     ),
                     'default' => 'afterCheckoutForm',
                     'description' => __('Sets up where the iframe for Resurs Checkout should appear. The first versions of this plugin automatically rendered the checkout in the payment method list. Do not do this as things might break.',
@@ -616,12 +615,21 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ),
             );
+
+            // If this store ever had the setting for iframe location in payment method list (or have)
+            // this will be continuosly readded to the above configuration.
+            if (!isset($returnArray['iFrameLocation']['options']['inMethods']) && getHadMisplacedIframeLocation()) {
+                $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list (Deprecated, not recommended to use)', 'WC_Payment_Gateway');
+            }
+
         }
 
         return $returnArray;
     }
 }
+
 if (is_admin()) {
+
     if (!function_exists('write_resurs_class_to_file')) {
         function write_resurs_class_to_file($payment_method)
         {
