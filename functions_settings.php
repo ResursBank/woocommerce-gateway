@@ -558,7 +558,6 @@ if (!function_exists('getResursWooFormFields')) {
                     'options' => array(
                         'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
                         'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
-                        'inMethods' => __('In payment method list', 'WC_Payment_Gateway'),
                     ),
                     'default' => 'afterCheckoutForm',
                     'description' => __('The country for which the payment services should be used',
@@ -618,10 +617,37 @@ if (!function_exists('getResursWooFormFields')) {
             );
         }
 
+        // If this store ever had the setting for iframe location in payment method list (or have)
+        // this will be continuosly readded to the above configuration.
+        if (getHadMisplacedIframeLocation()) {
+            $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list', 'WC_Payment_Gateway');
+        }
+
         return $returnArray;
     }
 }
+
 if (is_admin()) {
+
+    if (!function_exists('getHadMisplacedIframeLocation')) {
+        /**
+         * Makes sure that you can reselect a deprecated setting for the iframe location
+         * when using RCO if it has been selected once in a time
+         * @return bool|mixed|void
+         * @since 2.2.13
+         */
+        function getHadMisplacedIframeLocation()
+        {
+            $currentIframeLocation = omniOption('iFrameLocation');
+            $hadIframeInMethods = get_option('rb_iframe_location_was_in_methods');
+            if ($currentIframeLocation === 'inMethods') {
+                $hadIframeInMethods = true;
+                update_option('rb_iframe_location_was_in_methods', $hadIframeInMethods);
+            }
+            return $hadIframeInMethods;
+        }
+    }
+
     if (!function_exists('write_resurs_class_to_file')) {
         function write_resurs_class_to_file($payment_method)
         {
