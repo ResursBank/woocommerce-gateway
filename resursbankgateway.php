@@ -5126,9 +5126,13 @@ if (!function_exists('getHadMisplacedIframeLocation')) {
      */
     function getHadMisplacedIframeLocation()
     {
-        $currentIframeLocation = omniOption('iFrameLocation');
         $hadIframeInMethods = get_option('rb_iframe_location_was_in_methods');
-        if ($currentIframeLocation === 'inMethods') {
+        // Speed up process
+        if ($hadIframeInMethods) {
+            return true;
+        }
+        $currentIframeLocation = omniOption('iFrameLocation');
+        if ($currentIframeLocation === 'inMethods' && !$hadIframeInMethods) {
             $hadIframeInMethods = true;
             update_option('rb_iframe_location_was_in_methods', $hadIframeInMethods);
         }

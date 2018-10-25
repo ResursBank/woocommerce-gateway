@@ -615,12 +615,13 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ),
             );
-        }
 
-        // If this store ever had the setting for iframe location in payment method list (or have)
-        // this will be continuosly readded to the above configuration.
-        if (getHadMisplacedIframeLocation()) {
-            $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list (Deprecated, not recommended to use)', 'WC_Payment_Gateway');
+            // If this store ever had the setting for iframe location in payment method list (or have)
+            // this will be continuosly readded to the above configuration.
+            if (!isset($returnArray['iFrameLocation']['options']['inMethods']) && getHadMisplacedIframeLocation()) {
+                $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list (Deprecated, not recommended to use)', 'WC_Payment_Gateway');
+            }
+
         }
 
         return $returnArray;
