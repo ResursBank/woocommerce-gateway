@@ -620,7 +620,7 @@ if (!function_exists('getResursWooFormFields')) {
         // If this store ever had the setting for iframe location in payment method list (or have)
         // this will be continuosly readded to the above configuration.
         if (getHadMisplacedIframeLocation()) {
-            $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list', 'WC_Payment_Gateway');
+            $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list (Deprecated, not recommended to use)', 'WC_Payment_Gateway');
         }
 
         return $returnArray;
