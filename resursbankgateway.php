@@ -3614,10 +3614,12 @@ function woocommerce_gateway_resurs_bank_init()
     function resurs_order_column_header($columns)
     {
         $new_columns = array();
+        $hasColumnOnce = false;
         foreach ($columns as $column_name => $column_info) {
             $new_columns[$column_name] = $column_info;
-            if ($column_name == "order_title") {
+            if (!$hasColumnOnce && ($column_name == 'order_number' || $column_name == 'order_title')) {
                 $new_columns['resurs_order_id'] = __('Resurs Reference', 'WC_Payment_Gateway');
+                $hasColumnOnce = true;
             }
         }
 
@@ -3630,7 +3632,7 @@ function woocommerce_gateway_resurs_bank_init()
     function resurs_order_column_info($column)
     {
         global $post;
-        if ($column == "resurs_order_id") {
+        if ($column == 'resurs_order_id') {
             $resursId = wc_get_payment_id_by_order_id($post->ID);
             echo $resursId;
         }
@@ -3801,6 +3803,7 @@ function woocommerce_gateway_resurs_bank_init()
 
 /**
  * @param null $order
+ * @throws Exception
  */
 function resurs_order_data_info_after_order($order = null)
 {

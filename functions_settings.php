@@ -560,7 +560,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
                     ),
                     'default' => 'afterCheckoutForm',
-                    'description' => __('The country for which the payment services should be used',
+                    'description' => __('Sets up where the iframe for Resurs Checkout should appear. The first versions of this plugin automatically rendered the checkout in the payment method list. Do not do this as things might break.',
                         'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
