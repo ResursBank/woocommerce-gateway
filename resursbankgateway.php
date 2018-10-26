@@ -9,7 +9,6 @@
  * Author: Resurs Bank AB
  * Author URI: https://test.resurs.com/docs/display/ecom/WooCommerce
  * Text Domain: resurs-bank-payment-gateway-for-woocommerce
- * Domain Path: /languages
  */
 
 // TODO: must refactor resursbankgateway.php
@@ -70,10 +69,9 @@ function woocommerce_gateway_resurs_bank_init()
         exit;
     }
 
-    /**
-     * Localization
-     */
-    load_plugin_textdomain('resurs-bank-payment-gateway-for-woocommerce', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    // Localization
+    load_plugin_textdomain('resurs-bank-payment-gateway-for-woocommerce', false,
+        dirname(plugin_basename(__FILE__)) . '/languages');
 
     /**
      * Class WC_Resurs_Bank
