@@ -1,11 +1,15 @@
 # Resurs Bank payment gateway for WooCommerce
 
-The plugin was once written for v2.6 and up. If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually changes to match the requirements, to upgrade without upgrade warnings, from WooCommerce. However, as WooCommerce upgrades internal function the guarantee that older versions (like WC 2.6) won't work. In that case you really should consider upgrading WooCommerce also, unless not already done.
+The plugin was once written for WooCommerce v2.6 and up but as of today, we've started to change the requirements. It is no longer guaranteed that this plugin is compatible with such old versions. Ever since WooCommerce [discoverd a file deletion vulnerable (click here)](https://blog.ripstech.com/2018/wordpress-design-flaw-leads-to-woocommerce-rce/) our goal is to patch away deprecated functions.
 
  * Compatibility: WooCommerce 2.6 up to 3.5
  * Plugin verified with PHP version 5.4 - 7.3
  * Plugin verified with WordPress 5.0 alpha
  * Addon scripts verified with PHP 5.3 - 7.3 (EComPHP 1.3.x and NetCURL 6.0.20+)
+
+### Can I upgrade WooCommerce with your plugin installed?
+
+If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually changes (after internal tests has been made) to match the base requirements, so you can upgrade without upgrade warnings.
 
 ## Getting started / Installing
 
