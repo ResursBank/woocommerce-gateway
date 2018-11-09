@@ -52,7 +52,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             add_action('woocommerce_update_options_payment_gateways', array($this, 'process_admin_options'));
         }
 
-        /* OmniCheckout */
+        // OmniCheckout
         add_filter('woocommerce_checkout_fields', array($this, 'resurs_omnicheckout_fields'));
 
         if ($this->isResursOmni()) {
@@ -381,6 +381,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     {
         $currentOmniRef = null;
         $doUpdateIframe = false;
+        $currentPaymentMethod = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] :null;
         if (isset(WC()->session)) {
             $paymentSpec = self::get_payment_spec(WC()->cart);
             $currentOmniRef = WC()->session->get('omniRef');
@@ -415,6 +416,25 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             }
         }
 
+        $lastPaymentMethod = WC()->session->get('rb_last_method');
+
+
+        $needReload = false;
+        // If the current selection is not RCO and last selection was, we need to reload the page to get the fields back
+        if ($currentPaymentMethod !== 'resurs_bank_omnicheckout' && $lastPaymentMethod === 'resurs_bank_omnicheckout') {
+            $needReload = true;
+        }
+        // If the last selection was not RCO and the current is, we need to reload the page to get the fields removed
+        if ($lastPaymentMethod !== 'resurs_bank_omnicheckout' && $currentPaymentMethod === 'resurs_bank_omnicheckout') {
+            $needReload = true;
+        }
+
+        if ($needReload) {
+
+        }
+
+        // Set this each session
+        WC()->session->set('rb_last_method', $currentPaymentMethod);
         return $array;
     }
 
@@ -661,6 +681,8 @@ if (hasResursOmni()) {
      */
     add_filter('woocommerce_update_order_review_fragments', 'WC_Gateway_ResursBank_Omni::interfere_update_order_review',
         0, 1);
+
+    // need filter or action for pre update_order_review
 }
 
 /**
