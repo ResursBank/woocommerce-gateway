@@ -3,6 +3,7 @@
  */
 
 var $RB = jQuery.noConflict();
+var resursReloadRequired = false;
 
 // Things below wants to be loaded first and not wait for readiness
 if (null !== omnivars) {
@@ -15,6 +16,10 @@ var currentCustomerType = 'NATURAL'; // Default
 // WooCommerce trigger for whats happening after payment method updates
 $RB(document).on('updated_checkout', function () {
     preSetResursMethods(currentCustomerType.toUpperCase(), resursvars["customerTypes"]);
+    if (resursvars['resursCheckoutMultipleMethods'] && resursReloadRequired) {
+        $RB('.omniActionsWrapper').show();
+        document.location.reload();
+    }
 });
 
 $RB(document).ready(function ($) {
@@ -692,4 +697,8 @@ function rbUpdatePaymentReference(refobj, paymentDataObject) {
         }
     }
     return false;
+}
+
+function resursRerun() {
+    console.log("HEY");
 }
