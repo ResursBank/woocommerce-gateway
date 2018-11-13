@@ -54,6 +54,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
         // OmniCheckout
         add_filter('woocommerce_checkout_fields', array($this, 'resurs_omnicheckout_fields'));
+        add_action('woocommerce_after_checkout_form', array($this, 'resurs_omnicheckout_form_variable'));
 
         if ($this->isResursOmni()) {
             if ($this->iFrameLocation == "afterCheckoutForm") {
@@ -66,6 +67,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 ));
             }
         }
+    }
+
+    public function resurs_omnicheckout_form_variable() {
+        echo '<div class="omniActionsWrapper" id="omniActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">'.
+            '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">' .
+            __('Please wait while the checkout is reloading', 'resurs-bank-payment-gateway-for-woocommerce').
+            '</div></div>';
+        echo '<div id="omniActions" class="omniActions" style="display: none;"></div>';
     }
 
     public function resurs_omnicheckout_form_location()
@@ -81,7 +90,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         }
 
         // Actions and info for Resurs Checkout that invokes on last-resorts (legacy)
-        echo '<div id="omniActions" style="display: none;"></div>';
+        //echo '<div id="omniActions" style="display: none;"></div>';
         echo '<div id="omniInfo"></div>';
 
         // Prepare the frame
@@ -89,7 +98,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $frameDisplay .= '<div class="col2-set" id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
         } catch (Exception $e) {
             $frameContent = __('We are unable to load Resurs Checkout for the moment. Please try again later.',
-                'WC_Payment_Gateway');
+                'resurs-bank-payment-gateway-for-woocommerce');
             $frameDisplay .= '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $frameContent . "<!-- \n" . $e->getMessage() . " --></div>";
         }
         $resursIframeCount++;
@@ -206,14 +215,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $flowBook = $this->flow->createPayment($omniRef, $bookDataOmni);
             $flowFrame = is_string($flowBook) ? $flowBook : "";
             $flowFrame .= '<noscript><b>' . __('OmniCheckout will not work properly without Javascript functions enabled',
-                    'WC_Payment_Gateway') . '</b></noscript>';
+                    'resurs-bank-payment-gateway-for-woocommerce') . '</b></noscript>';
             if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
                 $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL',
-                        'WC_Payment_Gateway') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
+                        'resurs-bank-payment-gateway-for-woocommerce') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
             }
         } catch (Exception $e) {
             $errorUnable = __('We are unable to load Resurs Checkout for the moment. Please try again later.',
-                'WC_Payment_Gateway');
+                'resurs-bank-payment-gateway-for-woocommerce');
             $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $errorUnable . "<!-- \n" . $e->getMessage() . " --></div>";
         }
 
@@ -379,9 +388,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     public static function interfere_update_order_review($array)
     {
+
         $currentOmniRef = null;
         $doUpdateIframe = false;
-        $currentPaymentMethod = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] :null;
+        $currentPaymentMethod = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] : null;
         if (isset(WC()->session)) {
             $paymentSpec = self::get_payment_spec(WC()->cart);
             $currentOmniRef = WC()->session->get('omniRef');
@@ -418,7 +428,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
         $lastPaymentMethod = WC()->session->get('rb_last_method');
 
-
         $needReload = false;
         // If the current selection is not RCO and last selection was, we need to reload the page to get the fields back
         if ($currentPaymentMethod !== 'resurs_bank_omnicheckout' && $lastPaymentMethod === 'resurs_bank_omnicheckout') {
@@ -430,7 +439,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         }
 
         if ($needReload) {
-
+            define('RESURS_CHECKOUT_FORM_INTERFERENCE', true);
+            $array['#omniActions'] = '<script>var resursReloadRequired = true;</script>';
         }
 
         // Set this each session
@@ -473,7 +483,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 'id' => $bookArtId,
                 'artNo' => $bookArtId,
                 'description' => (empty($postTitle) ? __('Article description missing',
-                    'WC_Payment_Gateway') : $postTitle),
+                    'resurs-bank-payment-gateway-for-woocommerce') : $postTitle),
                 'quantity' => $item['quantity'],
                 'unitMeasure' => '',
                 'unitAmountWithoutVat' => $priceExTax,
@@ -514,7 +524,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $spec_lines[] = array(
             'id' => 'frakt',
             'artNo' => '00_frakt',
-            'description' => __('Shipping', 'WC_Payment_Gateway'),
+            'description' => __('Shipping', 'resurs-bank-payment-gateway-for-woocommerce'),
             'quantity' => '1',
             'unitMeasure' => '',
             'unitAmountWithoutVat' => $shipping,
@@ -583,9 +593,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                  * @var  WC_Coupon $coupon
                  */
                 foreach ($coupons as $code => $coupon) {
-                    $post = get_post((!isWooCommerce3() ? $coupon->id : $coupon->get_id()));
-                    $couponId = (!isWooCommerce3() ? $coupon->id : $coupon->get_id());
-                    $couponCode = (!isWooCommerce3() ? $coupon->id : $coupon->get_code());
+                    $post = get_post($coupon->get_id());
+                    $couponId = ($coupon->get_id());
+                    $couponCode = ($coupon->get_code());
                     $spec_lines[] = array(
                         'id' => $couponId,
                         'artNo' => $couponCode . '_' . 'kupong',
@@ -679,8 +689,11 @@ if (hasResursOmni()) {
      * Keeping this until next version, since it does not matter in which function the cart updater is sent to,
      * as long as we can fetch the cart from WooCommerce.
      */
-    add_filter('woocommerce_update_order_review_fragments', 'WC_Gateway_ResursBank_Omni::interfere_update_order_review',
-        0, 1);
+    add_filter(
+        'woocommerce_update_order_review_fragments',
+        'WC_Gateway_ResursBank_Omni::interfere_update_order_review',
+        0, 1
+    );
 
     // need filter or action for pre update_order_review
 }
