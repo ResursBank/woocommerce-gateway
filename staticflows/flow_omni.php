@@ -439,7 +439,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         }
 
         if ($needReload) {
-            define('RESURS_CHECKOUT_FORM_INTERFERENCE', true);
             $array['#omniActions'] = '<script>var resursReloadRequired = true;</script>';
         }
 
