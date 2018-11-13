@@ -2361,6 +2361,8 @@ function woocommerce_gateway_resurs_bank_init()
                             __('The payment failed during purchase', 'resurs-bank-payment-gateway-for-woocommerce'));
                         wc_add_notice(__("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.",
                             'resurs-bank-payment-gateway-for-woocommerce'), 'error');
+                        update_post_meta($order->getId(), 'orderFailed', true);
+
                         WC()->session->set("order_awaiting_payment", true);
                         $getRedirectUrl = wc_get_cart_url();
                     } else {
