@@ -310,7 +310,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     update_post_meta($purchaseFailOrderId, 'soft_purchase_fail', true);
                                     WC()->session->set("resursCreatePass", 0);
                                     $returnResult['success'] = true;
-                                    $returnResult['errorString'] = "Denied by Resurs";
+                                    $returnResult['errorString'] = 'Denied by Resurs';
                                     $returnResult['errorCode'] = "200";
                                     $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
                                     die();
@@ -1851,6 +1851,7 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'DENIED':
                     $order->update_status('failed');
+                    update_post_meta($order->getId(), 'orderDenied', true);
                     wc_add_notice(__('The payment can not complete. Contact customer services for more information.',
                         'resurs-bank-payment-gateway-for-woocommerce'), 'error');
 
@@ -2448,7 +2449,7 @@ function woocommerce_gateway_resurs_bank_init()
                     update_post_meta($order_id, 'paymentId', $bookedPaymentId);
                 } else {
                     /* When things fail, and there is no id available (we should hopefully never get here, since we're making other controls above) */
-                    $bookedStatus = "DENIED";
+                    $bookedStatus = 'DENIED';
                 }
                 /* Continue. */
                 if ($bookedStatus == 'FROZEN') {
@@ -2472,6 +2473,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->update_status('completed', __('The payment are signed and debited', 'resurs-bank-payment-gateway-for-woocommerce'));
                 } elseif ($bookedStatus == 'DENIED') {
                     $order->update_status('failed');
+                    update_post_meta($order->getId(), 'orderDenied', true);
                     wc_add_notice(__('The payment can not complete. Contact customer services for more information.',
                         'resurs-bank-payment-gateway-for-woocommerce'), 'error');
                     $getRedirectUrl = wc_get_cart_url();
