@@ -1094,6 +1094,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Advanced', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('omniFrameNotReloading', $namespace);
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
+                    echo $this->setCheckBox('resursCheckoutMultipleMethods', $namespace);
                     //echo $this->setCheckBox( 'secureFieldsNotNull', $namespace );
                 } elseif ($section == "advanced") {
                     echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
