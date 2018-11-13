@@ -362,3 +362,25 @@ a.labelBoot:focus, a.labelBoot:hover {
     font-size: 12px !important;
     color: #990000 !important;
 }
+
+.omniActionsWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+    font-weight: bold;
+    background: url('/wp-content/plugins/resurs-bank-payment-gateway-for-woocommerce/spinnerLocal.gif') no-repeat center;
+}
+
+.omniActions {
+    background-size: 16px 16px;
+    display: none;
+    float: right;
+    opacity: .7;
+    filter: alpha(opacity=70);
+    width: 16px;
+    height: 16px;
+    margin: 5px 5px 0;
+}
