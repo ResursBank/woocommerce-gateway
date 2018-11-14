@@ -1619,9 +1619,11 @@ function woocommerce_gateway_resurs_bank_init()
          */
         function process_payment_get_backurl($order)
         {
-            $backurl = null;
+            $backurl = html_entity_decode($order->get_cancel_order_url());
             if (isResursHosted()) {
-                $backurl = html_entity_decode($order->get_cancel_order_url()) . "&isBack=1";
+                 $backurl .= "&isBack=1";
+            } else {
+                $backurl .= "&isSimplified=1";
             }
 
             return $backurl;
@@ -1904,6 +1906,9 @@ function woocommerce_gateway_resurs_bank_init()
             $success_url = $this->getSuccessUrl($order_id, $preferredId);
             $backurl = $this->process_payment_get_backurl($order);
             $urlFail = html_entity_decode($order->get_cancel_order_url());
+            if (!isResursHosted()) {
+                $urlFail .= '&isSimplifiedFail=1';
+            }
             $this->flow->setSigning($success_url, $urlFail, false, $backurl);
             $this->flow->setWaitForFraudControl(resursOption('waitForFraudControl'));
             $this->flow->setAnnulIfFrozen(resursOption('annulIfFrozen'));
@@ -2361,7 +2366,7 @@ function woocommerce_gateway_resurs_bank_init()
                             __('The payment failed during purchase', 'resurs-bank-payment-gateway-for-woocommerce'));
                         wc_add_notice(__("The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.",
                             'resurs-bank-payment-gateway-for-woocommerce'), 'error');
-                        update_post_meta($order->getId(), 'orderFailed', true);
+                        update_post_meta($order_id, 'rcoOrderFailed', true);
 
                         WC()->session->set("order_awaiting_payment", true);
                         $getRedirectUrl = wc_get_cart_url();
@@ -2402,6 +2407,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $signedResult = $this->flow->bookSignedPayment($paymentId);
                     $bookSigned = true;
                 } catch (Exception $bookSignedException) {
+                    // Do nothing
                 }
                 if ($bookSigned) {
                     $bookedStatus = isset($signedResult->bookPaymentStatus) ? $signedResult->bookPaymentStatus : null;
@@ -2945,6 +2951,15 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if (isset($_REQUEST['wc-api']) || isset($_REQUEST['cancel_order'])) {
+                if (isset($_REQUEST['isBack'])) {
+                    update_post_meta($order->get_id(), 'resursCancelUrl', 'backUrl/hosted');
+                }
+                if (isset($_REQUEST['isSimplified'])) {
+                    update_post_meta($order->get_id(), 'resursCancelUrl', 'backUrl/simplified');
+                }
+                if (isset($_REQUEST['isSimplifiedFail'])) {
+                    update_post_meta($order->get_id(), 'resursCancelUrl', 'failUrl/simplified');
+                }
                 return;
             }
 
@@ -3880,10 +3895,22 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 }
 
                 $checkoutPurchaseFailTest = get_post_meta($orderId, 'soft_purchase_fail', true);
-                if ($checkoutPurchaseFailTest == "1") {
+                $checkoutRcoPurchaseFailTest = get_post_meta($orderId, 'rcoOrderFailed', true);
+                $resursCancelUrlUsage = get_post_meta($orderId, 'resursCancelUrl', true);
+                if ($checkoutPurchaseFailTest == '1') {
                     $errorMessage = __('The order was denied at Resurs Bank and therefore has not been created',
                         'resurs-bank-payment-gateway-for-woocommerce');
                 }
+                if ($checkoutRcoPurchaseFailTest === '1') {
+                    $errorMessage = __('This order failed or was cancelled by customer during external actions',
+                        'resurs-bank-payment-gateway-for-woocommerce');
+                }
+                if (!empty($resursCancelUrlUsage)) {
+                    $errorMessage = __(
+                            'This order has been cancelled during customer interactions. Returning URL was set to',
+                            'resurs-bank-payment-gateway-for-woocommerce') . ' ' . $resursCancelUrlUsage;
+                }
+
 
                 echo '
                 <div class="clear">&nbsp;</div>
