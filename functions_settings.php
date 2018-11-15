@@ -614,6 +614,15 @@ if (!function_exists('getResursWooFormFields')) {
                         'WC_Payment_Gateway'),
                     'desc_tip' => true,
                 ),
+                'resursCheckoutMultipleMethods' => array(
+                    'title' => __('Bypass problems with multiple payment methods (experimental)',
+                        'WC_Payment_Gateway'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __('Resurs Checkout is normally not compatible with other payments as the checkout fields are handled differently when an iframe is active. This setting enables an experimental way to bypass such problems by make a reload each time a switch to or from the Resurs Checkout is being made.',
+                        'WC_Payment_Gateway'),
+                    'desc_tip' => true,
+                ),
             );
 
             // If this store ever had the setting for iframe location in payment method list (or have)

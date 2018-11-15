@@ -3383,6 +3383,8 @@ function woocommerce_gateway_resurs_bank_init()
         $resursVars = array(
             'ResursBankAB' => true,
             'customerTypes' => $customerTypes,
+            'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
+            'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
         );
 
         $oneRandomValue = null;
