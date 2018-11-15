@@ -1,0 +1,16 @@
+#!/bin/bash
+composer clearcache
+rm -rf vendor composer.lock
+composer install --prefer-dist
+find vendor/ -type d -name .git -exec rm -rf {} \; >/dev/null 2>&1
+find vendor/ -name .gitignore -exec rm {} \; >/dev/null 2>&1
+find vendor/ -type d -name tests -exec rm -rf {} \; >/dev/null 2>&1
+rm -f ./vendor/resursbank/ecomphp/bitbucket-pipelines.yml
+rm -f ./vendor/resursbank/ecomphp/phpunit.xml
+rm -f ./vendor/tornevall/tornelib-php-netcurl/phpunit.xml
+rm -f ./vendor/tornevall/tornelib-php-crypto/phpunit.xml
+rm -f ./vendor/tornevall/tornelib-php-netcurl/bitbucket-pipelines.yml
+rm -f ./vendor/resursbank/ecomphp/composer.json
+rm -f ./vendor/tornevall/tornelib-php-netcurl/composer.json
+rm -f ./vendor/tornevall/tornelib-php-crypto/composer.json
+

@@ -60,7 +60,7 @@ class Resursbank_Core
 
     /**
      * Fetch stored payment method and return it to developer
-     * 
+     *
      * @return stdClass
      */
     public static function getPaymentMethod() {
