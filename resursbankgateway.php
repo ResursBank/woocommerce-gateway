@@ -1263,10 +1263,14 @@ function woocommerce_gateway_resurs_bank_init()
                         $post = get_post($coupon->get_id());
                         $couponId = $coupon->get_id();
                         $couponCode = $coupon->get_code();
+                        $couponDescription = $post->post_excerpt;
+                        if (empty($couponDescription)) {
+                            $couponDescription = $couponCode . '_' . __('coupon', 'resurs-bank-payment-gateway-for-woocommerce');
+                        }
                         $spec_lines[] = array(
                             'id' => $couponId,
                             'artNo' => $couponCode . '_' . 'kupong',
-                            'description' => $post->post_excerpt,
+                            'description' => $couponDescription,
                             'quantity' => 1,
                             'unitMeasure' => '',
                             'unitAmountWithoutVat' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
