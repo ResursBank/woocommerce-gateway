@@ -566,10 +566,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $post = get_post((!isWooCommerce3() ? $coupon->id : $coupon->get_id()));
                     $couponId = (!isWooCommerce3() ? $coupon->id : $coupon->get_id());
                     $couponCode = (!isWooCommerce3() ? $coupon->id : $coupon->get_code());
+                    $couponDescription = $post->post_excerpt;
+                    if (empty($couponDescription)) {
+                        $couponDescription = $couponCode . '_' . __('coupon', 'resurs-bank-payment-gateway-for-woocommerce');
+                    }
                     $spec_lines[] = array(
                         'id' => $couponId,
                         'artNo' => $couponCode . '_' . 'kupong',
-                        'description' => $post->post_excerpt,
+                        'description' => $couponDescription,
                         'quantity' => 1,
                         'unitMeasure' => '',
                         'unitAmountWithoutVat' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
