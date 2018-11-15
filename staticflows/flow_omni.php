@@ -69,6 +69,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         }
     }
 
+    /**
+     * Create fields for an omniwrapper, which can be used to reload the checkout
+     * on "critical" changes when swithcing between payment methods
+     */
     public function resurs_omnicheckout_form_variable() {
         echo '<div class="omniActionsWrapper" id="omniActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">'.
             '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">' .
@@ -388,7 +392,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     public static function interfere_update_order_review($array)
     {
-
         $currentOmniRef = null;
         $doUpdateIframe = false;
         $currentPaymentMethod = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] : null;
@@ -595,10 +598,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $post = get_post($coupon->get_id());
                     $couponId = ($coupon->get_id());
                     $couponCode = ($coupon->get_code());
+                    $couponDescription = $post->post_excerpt;
+                    if (empty($couponDescription)) {
+                        $couponDescription = $couponCode . '_' . __('coupon', 'resurs-bank-payment-gateway-for-woocommerce');
+                    }
                     $spec_lines[] = array(
                         'id' => $couponId,
                         'artNo' => $couponCode . '_' . 'kupong',
-                        'description' => $post->post_excerpt,
+                        'description' => $couponDescription,
                         'quantity' => 1,
                         'unitMeasure' => '',
                         'unitAmountWithoutVat' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
