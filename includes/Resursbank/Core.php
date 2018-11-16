@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Core functions class for Resurs Bank containing static data handlers and some dynamically called methods.
  *
@@ -34,7 +38,7 @@ class Resursbank_Core
     }
 
     /**
-     * Generate gateway list for woocommerce
+     * Return list of payment methods from Resurs Bank (legacy)
      *
      * @param $woocommerceGateways
      * @return array
@@ -48,6 +52,12 @@ class Resursbank_Core
         return $woocommerceGateways;
     }
 
+    /**
+     * Return generated classes for each available Resurs Bank payment method
+     *
+     * @param $availableGateways
+     * @return mixed
+     */
     public static function getAvailableGateways($availableGateways)
     {
         unset($availableGateways[self::getGatewayClass()]);
@@ -63,7 +73,8 @@ class Resursbank_Core
      *
      * @return stdClass
      */
-    public static function getPaymentMethod() {
+    public static function getPaymentMethod()
+    {
         $paymentMethod = new stdClass();
 
         return $paymentMethod;
@@ -133,5 +144,22 @@ class Resursbank_Core
         }
 
     }
+
+    /**
+     * Legacy way to fetch current version of WooCommerce
+     *
+     * @param string $versionRequest
+     * @param string $operator
+     * @return bool
+     */
+    public static function getVersionCompare($versionRequest = "2.0.0", $operator = ">=")
+    {
+        $return = false;
+        if (version_compare(WOOCOMMERCE_VERSION, $versionRequest, $operator)) {
+            $return = true;
+        }
+        return $return;
+    }
+
 
 }

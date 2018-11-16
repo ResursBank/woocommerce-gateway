@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 add_action('wp_ajax_resurs_bank_backend', 'resurs_bank_ajax_backend');
 add_action('wp_ajax_nopriv_resurs_bank_backend', 'resurs_bank_ajax_backend');
 

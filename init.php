@@ -10,6 +10,10 @@
  * Text Domain: tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
  */
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /*
  * Plans:
  *

@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank')) {
 
     /**
@@ -11,13 +15,16 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         const SIMPLIFIED_FLOW = 1;
         const HOSTED_FLOW = 2;
         const RESURS_CHECKOUT = 3;
-        
+
         protected $METHOD_TYPE;
 
-        function __construct($id = '')
+        /**
+         * WC_Resursbank_Method constructor.
+         * @param $id
+         */
+        function __construct($paymentMethod)
         {
             // id, description, title
-
         }
 
         /**
@@ -25,8 +32,9 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          *
          * @param int $methodType
          */
-        public function setMethodType($methodType = self::SIMPLIFIED_FLOW) {
-
+        public function setMethodType($methodType = self::SIMPLIFIED_FLOW)
+        {
+            // Redeclare the flow here.
         }
     }
 

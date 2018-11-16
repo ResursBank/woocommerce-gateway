@@ -2,6 +2,10 @@
 
 // Gateway related files, should be written to not conflict with neighbourhood.
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 function resursbank_payment_gateway_initialize()
 {
     // Make sure this gateway is not already there
