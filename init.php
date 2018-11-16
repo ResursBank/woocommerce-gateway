@@ -30,6 +30,7 @@ if (!defined('ABSPATH')) {
 define('_RESURSBANK_GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('_RESURSBANK_GATEWAY_URL', plugin_dir_url(__FILE__));
 define('_RESURSBANK_GATEWAY_BACKEND', admin_url('admin-ajax.php'));
+define('_RESURSBANK_GATEWAY_VERSION', '0.0.0');
 
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Core.php');
 if (!Resursbank_Core::getInternalEcomEngine()) {

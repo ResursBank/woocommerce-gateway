@@ -161,5 +161,12 @@ class Resursbank_Core
         return $return;
     }
 
+    public static function getPluginVersion() {
+        if (defined('_RESURSBANK_GATEWAY_VERSION')) {
+            return _RESURSBANK_GATEWAY_VERSION;
+        }
+        return 'i.have.no.idea-beta';
+    }
+
 
 }
