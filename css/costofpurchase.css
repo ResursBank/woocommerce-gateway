@@ -1,0 +1,110 @@
+/* costOfPurchaseHTML CSS */
+
+body {
+    font-family: Arial,Helvetica,sans-serif !important;
+    font-size: 13px;
+    overflow-y: scroll;
+}
+.headText{
+    padding: 7px 0;
+    display: block;
+}
+
+.cost-of-purchase-box {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    display: inline;
+    left: 0;
+    overflow: auto;
+    padding: 20px;
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    width: 50%;
+    margin: 0 0 0 -25%;
+    z-index: 100;
+}
+
+/*
+ * MarGul Change
+ * Changed the styling to not be percentage.
+ */
+/*
+.cost-of-purchase-box {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    display: inline;
+    overflow: auto;
+    padding: 20px;
+    position: absolute;
+    top: 10px;
+    left: 35px;
+    margin: 20px 0;
+    width: 84%;
+    z-index: 100;
+}
+*/
+
+
+.cost-of-purchase-box p {
+    margin: 0 0 1em;
+}
+.cost-of-purchase-box h2 {
+    font-size: 1.5em;
+    line-height: 1.25;
+    margin-bottom: 0.45em;
+}
+.cost-of-purchase-box h3 {
+    font-size: 1.35em;
+    line-height: 1.25;
+    margin-bottom: 0.45em;
+}
+.cost-of-purchase-box .page {
+    text-align: left;
+}
+.cost-of-purchase-box table {
+    border: 0 none;
+    border-spacing: 0;
+    empty-cells: show;
+    font-size: 98%;
+    padding-bottom: 7px;
+}
+.cost-of-purchase-box table td{
+    border-bottom: 1px solid #bebcb7;
+    padding: 7px 14px;
+    text-align: center;
+    color: #006080;
+    font-weight: bold !important;
+}
+.cost-of-purchase-box .header:after, .readme-popup-box p:after {
+    clear: both;
+    content: ".";
+    display: block;
+    font-size: 0;
+    height: 0;
+    line-height: 0;
+    overflow: hidden;
+}
+.cost-of-purchase-box .header {
+    margin: 0 0 12px;
+    padding: 7px 0px;
+    position: relative;
+    text-align: left;
+    width: 100%;
+    z-index: 10;
+    color: #000;
+}
+.cost-of-purchase-box caption, th, td {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: top;
+}
+.cost-of-purchase-box ul, ol {
+    list-style: none outside none;
+}
+.cost-of-purchase-box .main {
+    text-align: left;
+}
+.cost-of-purchase-box span.tailText {
+    font-size: 11.7px;
+}
