@@ -25,9 +25,9 @@ function resurs_bank_ajax_backend()
     }
 
 
-    if (is_admin()) {
+    /*if (is_admin()) {
         // Admin actions goes here and won't be available in any other way
-    }
+    }*/
 
     header('Content-type: application/json; charset=utf-8');
     echo json_encode($ajaxResponse);

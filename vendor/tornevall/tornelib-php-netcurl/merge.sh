@@ -9,16 +9,16 @@ mergeTo="source/build/netcurl.php"
 
 namespace="TorneLIB"
 
-for mergeFile in $src
+for mergeFile in ${src}
 do
-    if [ ! $firstFile ] ; then
+    if [ ! ${firstFile} ] ; then
         firstFile=1
         echo "Initializing merge with ${mergeFile}"
-        cat $mergeFile >${mergeTo}
+        cat ${mergeFile} >${mergeTo}
     else
-        if [ ! -d $mergeFile ] ; then
+        if [ ! -d ${mergeFile} ] ; then
             echo "Merging ${mergeFile} into ${mergeTo}"
-            sed -e '1,/namespace/d' $mergeFile >>${mergeTo}
+            sed -e '1,/namespace/d' ${mergeFile} >>${mergeTo}
         fi
     fi
 done
@@ -26,13 +26,13 @@ done
 crypto=`find |grep tornevall_crypto.php`
 if [ "" != "$crypto" ] ; then
     echo "Merging ${crypto} into ${mergeTo}"
-    sed -e '1,/namespace/d' $crypto >>${mergeTo}
+    sed -e '1,/namespace/d' ${crypto} >>${mergeTo}
 fi
 
 io=`find |grep tornevall_io.php`
 if [ "" != "$io" ] ; then
     echo "Merging ${io} into ${mergeTo}"
-    sed -e '1,/namespace/d' $io >>${mergeTo}
+    sed -e '1,/namespace/d' ${io} >>${mergeTo}
 fi
 
 if [ "" != "$1" ] ; then

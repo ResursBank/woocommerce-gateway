@@ -38,6 +38,19 @@ class Resursbank_Core
     }
 
     /**
+     * Check if developer mode is running
+     *
+     * @return bool
+     */
+    public static function getDeveloperMode()
+    {
+        if (defined('_RESURSBANK_DEVELOPER_MODE') && _RESURSBANK_DEVELOPER_MODE) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Return list of payment methods from Resurs Bank (legacy)
      *
      * @param $woocommerceGateways
@@ -45,9 +58,9 @@ class Resursbank_Core
      */
     public static function getResursGateways($woocommerceGateways)
     {
-        if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
-            //$woocommerceGateways[] = self::getGatewayClass();
-        }
+        /*if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
+            $woocommerceGateways[] = self::getGatewayClass();
+        }*/
 
         return $woocommerceGateways;
     }
@@ -127,14 +140,14 @@ class Resursbank_Core
             'resurs_bank_payment_gateway_css',
             _RESURSBANK_GATEWAY_URL . 'css/resursbank.css',
             array(),
-            true
+            _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
         wp_enqueue_script(
             'resurs_bank_payment_gateway_js',
             _RESURSBANK_GATEWAY_URL . 'js/resursbank.js',
             array('jquery'),
-            true
+            _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
         if (is_array($varsToLocalize)) {
@@ -161,7 +174,11 @@ class Resursbank_Core
         return $return;
     }
 
-    public static function getPluginVersion() {
+    /**
+     * @return string
+     */
+    public static function getPluginVersion()
+    {
         if (defined('_RESURSBANK_GATEWAY_VERSION')) {
             return _RESURSBANK_GATEWAY_VERSION;
         }

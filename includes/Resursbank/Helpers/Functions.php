@@ -7,7 +7,6 @@ if (!defined('ABSPATH')) {
 /**
  * Helper functions without class definitions
  */
-
 function setResursbankGatewayFilters()
 {
     // Legacy method.
@@ -24,15 +23,23 @@ function setResursbankGatewayFilters()
 
 }
 
-function setResursbankGatewayHeader() {
+/**
+ * Prepare header scripts and styles
+ */
+function setResursbankGatewayHeader()
+{
     add_action('wp_enqueue_scripts', 'Resursbank_Core::setResursBankScripts');
     add_action('admin_enqueue_scripts', 'Resursbank_Core::setResursBankScripts');
 }
 
+/**
+ * @param $settings
+ * @return array
+ */
 function resursbank_gateway_settings($settings)
 {
     if (is_admin()) {
-        $settings[] = include(_RESURSBANK_GATEWAY_PATH . "includes/Resursbank/Admin.php");
+        $settings[] = include(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Admin.php');
     }
 
     return $settings;

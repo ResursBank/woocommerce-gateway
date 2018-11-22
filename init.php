@@ -31,6 +31,7 @@ define('_RESURSBANK_GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('_RESURSBANK_GATEWAY_URL', plugin_dir_url(__FILE__));
 define('_RESURSBANK_GATEWAY_BACKEND', admin_url('admin-ajax.php'));
 define('_RESURSBANK_GATEWAY_VERSION', '0.0.0');
+define('_RESURSBANK_DEVELOPER_MODE', true);
 
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Core.php');
 if (!Resursbank_Core::getInternalEcomEngine()) {
@@ -39,6 +40,7 @@ if (!Resursbank_Core::getInternalEcomEngine()) {
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Ajax.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Gateway.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Functions.php');
+require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Adminforms.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Method.php');
 
 if (function_exists('add_action')) {

@@ -29,10 +29,14 @@ class WC_ResursBank_Config extends WC_Settings_Page
     protected $id = 'resurs_bank_payment_gateway';
     protected $label = 'Resurs Bank Payment Gateway';
 
+    /** @noinspection PhpMissingParentConstructorInspection */
+    /**
+     * WC_ResursBank_Config constructor.
+     */
     function __construct()
     {
         // Rewrite the label before injecting as tab
-        $this->label = '<img src="' . _RESURSBANK_GATEWAY_URL . 'images/resurs-logo.png" border="0">';
+        $this->label = '<img src="' . _RESURSBANK_GATEWAY_URL . 'images/logo2018.png" border="0">';
 
         //add_filter('woocommerce_settings_tabs_array', array($this, "resurs_bank_settings_tabs"), 50);
         add_action('woocommerce_settings_tabs', array($this, 'resurs_bank_settings_tabs'), 10);
@@ -40,6 +44,9 @@ class WC_ResursBank_Config extends WC_Settings_Page
         add_action('woocommerce_update_options_' . $this->id, array($this, 'resurs_bank_settings_save_legacy'));
     }
 
+    /**
+     * @return array
+     */
     public function get_sections()
     {
         $sections['generic'] = __('Basic settings', 'WC_Payment_Gateway');
@@ -47,6 +54,9 @@ class WC_ResursBank_Config extends WC_Settings_Page
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
 
+    /**
+     * @param $settings_section
+     */
     public function resurs_bank_settings_save_legacy($settings_section)
     {
         echo $settings_section;
@@ -58,11 +68,8 @@ class WC_ResursBank_Config extends WC_Settings_Page
     public function resurs_bank_settings_tabs()
     {
         global $current_tab;
-        echo '<a href="' .
-            esc_html(
-                admin_url('admin.php?page=wc-settings&tab=' . $this->id)
-            ) . '" class="nav-tab ' .
-            ($current_tab === $this->id ? 'nav-tab-active' : '') . '">' .
+        echo '<a href="' . esc_html(admin_url('admin.php?page=wc-settings&tab=' . $this->id)) .
+            '" class="nav-tab ' . ($current_tab === $this->id ? 'nav-tab-active' : '') . '">' .
             $this->label . '</a>';
     }
 
@@ -75,10 +82,10 @@ class WC_ResursBank_Config extends WC_Settings_Page
                 '</div><hr>';
         }
 
+        $settings = new Adminforms();
+        $settings->setRenderedHtml();
+        echo $settings->getHtml();
 
-        echo '
-        TEST: <input type="text" id="resurs_bank_ugg" name="resurs_bank[' . $this->id . '][\'decaf\']">
-        ';
     }
 
 }
