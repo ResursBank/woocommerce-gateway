@@ -36,14 +36,17 @@ abstract class Resursbank_Config {
                     'woocommerce'
                 )
             ),
-            'korv' => array(
-                'title' => 'WTF',
-                'label' => "The horrific story about me",
-                'type' => 'text'
+            'API' => array(
+                'title' => __('API', 'woocommerce'),
+                'type' => 'title',
             ),
-            'callbackSalts' => array(
-                'type' => 'dynamic',
-                'default' => array(),
+            'environment' => array(
+                'type' => 'select',
+                'options' => array(
+                    'test' => __('Test/Staging', 'woocommerce'),
+                    'live' => __('Production', 'woocommerce'),
+                ),
+                'default' => 'test',
                 'display' => false,
                 'description' => __('', 'woocommerce'),
             )

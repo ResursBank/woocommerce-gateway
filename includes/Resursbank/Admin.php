@@ -76,10 +76,19 @@ class WC_ResursBank_Config extends WC_Settings_Page
     public function resurs_bank_settings_show()
     {
         if (defined('RB_WOO_VERSION')) {
-            echo '<div style="color:#990000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
-                __('Awareness Note: This plugin has discovered a prior version of Resurs Bank Payment Gateway!') . ' ' .
-                __('This should not be a problem as they are coexistent. However, running them simultaneously is probably not what you want.') .
-                '</div><hr>';
+
+            if (version_compare(RB_WOO_VERSION, '3', '<')) {
+                echo '<div style="color:#990000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
+                    __('Coexisting note: This plugin has discovered a prior version of Resurs Bank Payment Gateway!') . ' ' .
+                    __('This should not be a problem as they are coexistent. However, running them simultaneously is probably not what you want.') .
+                    '</div><hr>';
+            } else {
+                echo '<div style="color:#DD0000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
+                    __('Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!') . ' ' .
+                    __('This probably means you are running on duplicate software. You should consider disabling one of them!') .
+                    '</div><hr>';
+            }
+
         }
 
         $settings = new Resursbank_Adminforms();

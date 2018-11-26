@@ -57,6 +57,11 @@ class Resursbank_Adminforms
     {
         $html = '';
 
+        // If visibily is false, this configuration row will not be active
+        if (isset($configItem['display']) && !(bool)$configItem['display']) {
+            return $html;
+        }
+
         if (isset($configItem['type'])) {
             if (method_exists($this, 'getConfig' . $configItem['type'])) {
                 $html .= $this->{'getConfig' . $configItem['type']}($settingKey, $configItem);
@@ -123,10 +128,8 @@ class Resursbank_Adminforms
     {
         if (is_array($item) && isset($item[$key])) {
             return $item[$key];
-        } else {
-            if (is_object($item) && isset($item->$key)) {
-                return $item->$key;
-            }
+        } elseif (is_object($item) && isset($item->$key)) {
+            return $item->$key;
         }
         return null;
     }
@@ -153,14 +156,17 @@ class Resursbank_Adminforms
      */
     private function getFieldInputText($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
     {
-        return '<input type="' . $configType .
+        $label = $this->getItemKeyValue(
+            'label',
+            $configItem
+        );
+
+        // Labels will be pushed out above text fields - if there are tips, they are pushed below
+
+        return (!empty($label) ? '<div class="resursGatewayConfigLabelTextField">' . $label . '</div>' : '') . '<input type="' . $configType .
             '" name="resursbank_' . $settingKey .
             '" id=resursbank_' . $settingKey .
-            '" value="' . $storedValue . '" ' . $scriptLoader . '>' .
-            $this->getItemKeyValue(
-                'label',
-                $configItem
-            );
+            '" value="' . $storedValue . '" ' . $scriptLoader . '>';
     }
 
     /**
@@ -204,7 +210,13 @@ class Resursbank_Adminforms
         $inputRow = '';
 
         if (method_exists($this, 'getFieldInput' . ucfirst($configType))) {
-            $inputRow = $this->{'getFieldInput' . ucfirst($configType)}($configItem, $configType, $settingKey, $storedValue, $scriptLoader);
+            $inputRow = $this->{'getFieldInput' . ucfirst($configType)}(
+                    $configItem,
+                    $configType,
+                    $settingKey,
+                    $storedValue,
+                    $scriptLoader
+                ) . "\n";
         }
 
         if ($tip = $this->getItemKeyValue('tip', $configItem)) {
@@ -257,6 +269,5 @@ class Resursbank_Adminforms
     {
         return $this->html;
     }
-
 
 }
