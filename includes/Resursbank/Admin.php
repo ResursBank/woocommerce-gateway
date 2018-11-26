@@ -82,7 +82,7 @@ class WC_ResursBank_Config extends WC_Settings_Page
                 '</div><hr>';
         }
 
-        $settings = new Adminforms();
+        $settings = new Resursbank_Adminforms();
         $settings->setRenderedHtml();
         echo $settings->getHtml();
 

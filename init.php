@@ -39,6 +39,8 @@ if (!Resursbank_Core::getInternalEcomEngine()) {
 }
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Ajax.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Gateway.php');
+require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Config.php');
+require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Confighooks.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Functions.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Adminforms.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Method.php');
@@ -48,3 +50,5 @@ if (function_exists('add_action')) {
     setResursbankGatewayFilters();
     setResursbankGatewayHeader();
 }
+
+

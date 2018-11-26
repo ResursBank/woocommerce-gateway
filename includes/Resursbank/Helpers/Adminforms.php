@@ -1,51 +1,39 @@
 <?php
 
-class Adminforms
+class Resursbank_Adminforms
 {
 
-    private $html = '';
-    private $configurationArray = array();
+    /** @var array */
+    private $configurationArray;
 
+    /** @var string */
+    private $html = '';
+
+    /**
+     * Resursbank_Adminforms constructor.
+     */
     public function __construct()
     {
-        $this->getConfigurationArray();
+        $this->configurationArray = $this->getConfigurationArray();
     }
 
     /**
-     * Return prepare configuration content array.
-     *
-     * The array is based on WooCommerce configuration array, however as we wish to [try] using dynamic
-     * forms differently the base configuration will be rendered by Adminforms itself. Primary goal is to
-     * make it easier to create configuration and just having one place to edit.
+     * Get configuration table as an array
      *
      * @return array
      */
     public function getConfigurationArray()
     {
-        $this->configurationArray = array(
-            'configuration' => array(
-                'title' => __('Merchant Configuration'),
-                'type' => 'title',
-            ),
-            'enabled' => array(
-                'title' => __('Enable/Disable', 'woocommerce'),
-                'type' => 'checkbox',
-                'label' => __('Enabled', 'woocommerce'),
-                'description' => __('This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.',
-                    'resurs-bank-payment-gateway-for-woocommerce')
-            ),
-        );
-
-        return $this->configurationArray;
+        return Resursbank_Config::getConfigurationArray();
     }
 
     /**
+     * Prepare forms
+     *
      * @return string
      */
     public function setRenderedHtml()
     {
-        $this->configurationArray = $this->getConfigurationArray();
-
         $this->html = '
             <div class="resursGatewayConfigArea" style="border-bottom:1px solid gray;border-left: 1px solid gray;border-right: 1px solid gray;">
             <table class="form-table" style="table-layout: auto !important;">
@@ -58,12 +46,26 @@ class Adminforms
         $this->html .= '</table></div>';
     }
 
+    /**
+     * Get rendered html
+     *
+     * @param $settingKey
+     * @param array $configItem
+     * @return string
+     */
     public function getRenderedHtml($settingKey, $configItem = array())
     {
         $html = '';
 
-        if (isset($configItem['type']) && method_exists($this, 'getConfig' . $configItem['type'])) {
-            $html .= $this->{'getConfig' . $configItem['type']}($settingKey, $configItem);
+        if (isset($configItem['type'])) {
+            if (method_exists($this, 'getConfig' . $configItem['type'])) {
+                $html .= $this->{'getConfig' . $configItem['type']}($settingKey, $configItem);
+            } else {
+                if (method_exists($this, 'getConfig')) {
+                    // Failover on unknown element types
+                    $html .= $this->{'getConfig'}($settingKey, $configItem);
+                }
+            }
         }
 
         return $html;
@@ -110,16 +112,111 @@ class Adminforms
         return trim($return);
     }
 
-    private function getKeyValue($key, $item) {
+    /**
+     * Get key value (content) from configuration item
+     *
+     * @param $key
+     * @param $item
+     * @return mixed|null
+     */
+    private function getItemKeyValue($key, $item)
+    {
         if (is_array($item) && isset($item[$key])) {
             return $item[$key];
-        } else if (is_object($item) && isset($item->$key)) {
-            return $item->$key;
+        } else {
+            if (is_object($item) && isset($item->$key)) {
+                return $item->$key;
+            }
         }
         return null;
     }
 
     /**
+     * @param $settingKey
+     * @param string $namespace
+     * @return bool|mixed|null
+     */
+    private function getConfigValue($settingKey, $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        return Resursbank_Core::getResursOption($settingKey, $namespace);
+    }
+
+    /**
+     * Create text based form field (not textarea)
+     *
+     * @param $configItem
+     * @param $configType
+     * @param $settingKey
+     * @param $storedValue
+     * @param $scriptLoader
+     * @return string
+     */
+    private function getFieldInputText($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
+    {
+        return '<input type="' . $configType .
+            '" name="resursbank_' . $settingKey .
+            '" id=resursbank_' . $settingKey .
+            '" value="' . $storedValue . '" ' . $scriptLoader . '>' .
+            $this->getItemKeyValue(
+                'label',
+                $configItem
+            );
+    }
+
+    /**
+     * Create a checkbox form field
+     *
+     * @param $configItem
+     * @param $configType
+     * @param $settingKey
+     * @param $storedValue
+     * @param $scriptLoader
+     * @return string
+     */
+    private function getFieldInputCheckbox($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
+    {
+        $isChecked = Resursbank_Core::getTrue($settingKey);
+
+        return '<input type="' . $configType .
+            '" name="resursbank_' . $settingKey .
+            '" id=resursbank_' . $settingKey . '" ' .
+            ($isChecked ? 'checked="checked"' : "") .
+            ' value="yes" ' . $scriptLoader . '>' .
+            $this->getItemKeyValue(
+                'label',
+                $configItem
+            );
+    }
+
+
+    /**
+     * @param $configItem
+     * @param $settingKey
+     * @return string
+     */
+    private function getTableConfigRow($configItem, $settingKey)
+    {
+        // Add dynamic javascript actions to a specific form field
+        $scriptLoader = apply_filters('resursbank_configrow_scriptloader', '', $settingKey);
+
+        $configType = $this->getItemKeyValue('type', $configItem);
+        $storedValue = $this->getConfigValue($settingKey);
+        $inputRow = '';
+
+        if (method_exists($this, 'getFieldInput' . ucfirst($configType))) {
+            $inputRow = $this->{'getFieldInput' . ucfirst($configType)}($configItem, $configType, $settingKey, $storedValue, $scriptLoader);
+        }
+
+        if ($tip = $this->getItemKeyValue('tip', $configItem)) {
+            $inputRow .= '<div class="resursGatewayConfigTipText">' . $tip . '</div>';
+        }
+
+        return $inputRow;
+    }
+
+    /**
+     * Render table row for key 'title'
+     *
      * @param $settingKey
      * @param $configItem
      * @return string
@@ -128,20 +225,29 @@ class Adminforms
     {
         $return = $this->renderFormRow(
             $settingKey,
-            $this->getKeyValue('title', $configItem),
+            $this->getItemKeyValue('title', $configItem),
             '',
-            null,
+            '',
             'resursGatewayConfigTitleHeadRow',
-            null,
+            '',
             true
         );
 
         return $return;
     }
 
-    private function getConfigCheckbox($settingKey, $configItem)
+    /**
+     * @param $settingKey
+     * @param $configItem
+     * @return string
+     */
+    private function getConfig($settingKey, $configItem)
     {
-        $return = $this->renderFormRow($settingKey, $this->getKeyValue('title', $configItem));
+        return $this->renderFormRow(
+            $settingKey,
+            $this->getItemKeyValue('title', $configItem),
+            $this->getTableConfigRow($configItem, $settingKey)
+        );
     }
 
     /**

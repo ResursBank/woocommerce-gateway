@@ -100,16 +100,74 @@ class Resursbank_Core
      */
     public static function setResursOption($key, $value, $namespace = 'Resurs_Bank_Payment_Gateway')
     {
-        //get_option();
+        //update_option();
     }
 
     /**
+     * Fetch default value from a configuration item
+     *
+     * @param $item
+     * @return null
+     */
+    private static function getDefaultValue($item)
+    {
+        $return = null;
+        if (isset($item['default'])) {
+            $return = $item['default'];
+        }
+        return $return;
+    }
+
+    /**
+     * Fetch correct option values from WP config.
+     *
+     * If namespace is set (default), this function will try to fetch one serialized configuration row
+     * instead of using a specific configuration key.
+     *
      * @param $key
      * @param string $namespace
+     * @return bool|mixed|null
      */
     public static function getResursOption($key, $namespace = 'Resurs_Bank_Payment_Gateway')
     {
-        //update_option();
+        $value = null;
+        $confValues = Resursbank_Config::getConfigurationArray();
+
+        if (!empty($namespace)) {
+            $configuration = @unserialize(get_option($namespace));
+        } else {
+            $configuration = get_option('Resurs_Bank_' . $key);
+        }
+
+        if (is_array($configuration) && isset($configuration[$key])) {
+            $value = $configuration[$key];
+        } elseif (is_object($configuration) && isset($configuration->{$key})) {
+            $value = $configuration->{$key};
+        }
+
+        if (is_null($value) && isset($confValues[$key])) {
+            $value = self::getDefaultValue($confValues[$key]);
+        }
+
+        if (isset($confValues[$key]) && $confValues[$key]['type'] === 'checkbox') {
+            if (strtolower($value) === 'yes' || (bool)$value) {
+                $value = true;
+            } else {
+                $value = false;
+            }
+        }
+
+        return $value;
+    }
+
+    public static function getTrue($key, $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        $return = false;
+        $value = self::getResursOption($key, $namespace);
+        if (strtolower($value) === 'yes' || (bool)$value) {
+            $return = true;
+        }
+        return $return;
     }
 
     /**
