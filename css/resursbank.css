@@ -2,6 +2,9 @@
 
 .resursGatewayConfigArea {
     background: #ffffff !important;
+    padding: 6px;
+    border: 1px solid black;
+    border-radius: 5px;
 }
 
 .resursGatewayConfigTitleHeadRow {
@@ -11,14 +14,23 @@
     padding: 5px !important;
     border-top: 1px solid grey;
     border-bottom: 1px solid grey;
+    vertical-align: top;
 }
 
 .resursGatewayConfigTr {
-
+    vertical-align: top;
 }
 .resursGatewayConfigTdLeft {
-
+    vertical-align: top;
 }
 .resursGatewayConfigTdRight {
+    vertical-align: top;
+}
 
+.resursGatewayConfigTipText {
+    vertical-align: bottom;
+    font-size: 12px;
+    color: #000099;
+    font-weight: normal;
+    font-style: italic;
 }
