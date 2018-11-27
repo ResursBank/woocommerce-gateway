@@ -1233,7 +1233,7 @@ function woocommerce_gateway_resurs_bank_init()
                     } else {
                         $rate = 0;
                     }
-                    if (!empty($fee->id) && $fee->amount > 0) {
+                    if (!empty($fee->id) && ($fee->amount > 0 || $fee->amount < 0)) {
                         $spec_lines[] = array(
                             'id' => $fee->id,
                             'artNo' => $fee->id,
@@ -2314,6 +2314,7 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentInfo = null;
 
             $flowType = isset($request['flow-type']) ? $request['flow-type'] : "";
+
             if (isset($_REQUEST['flow-type']) && empty($flowType)) {
                 $flowType = $_REQUEST['flow-type'];
             }

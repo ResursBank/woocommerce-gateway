@@ -568,7 +568,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 } else {
                     $rate = 0;
                 }
-                if (!empty($fee->id) && $fee->amount > 0) {
+                if (!empty($fee->id) && ($fee->amount > 0 || $fee->amount < 0)) {
                     $spec_lines[] = array(
                         'id' => $fee->id,
                         'artNo' => $fee->id,
