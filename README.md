@@ -54,9 +54,10 @@ What always must be done of merging this fork into the Resurs Bank branch
 
 ### What should be done
 
+* Administration interface must be pushed out as a primary goal as we are dependent on dynamic configuration
 * Warn when prior version of the plugin is running the same as this module
 * Filters and hooks should be covered in as many sections as possible
-* Multiple countries
+* Multiple countries (Select flow per country)
 * Are you running multiple credentials, make sure salt keys for callbacks are separated for each section
 * Payment methods should be dynamically loaded and configured
 

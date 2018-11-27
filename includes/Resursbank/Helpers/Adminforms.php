@@ -194,8 +194,28 @@ class Resursbank_Adminforms
             );
     }
 
+    private function getFieldInputOptions($configItem) {
+        print_R($configItem);
+        die;
+    }
+
+    private function getFieldInputSelect($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
+    {
+        $selectBox = '
+            <select>
+        ';
+
+        $selectBox .= $this->getFieldInputOptions($configItem);
+
+        $selectBox .= '</select>
+        ';
+        return $selectBox;
+    }
+
 
     /**
+     * Render configuration row
+     *
      * @param $configItem
      * @param $settingKey
      * @return string
