@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.0
 Requires PHP: 5.4
-Stable tag: 2.2.12
+Stable tag: 2.2.14
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,23 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
+= 2.2.14 =
+
+    * [WOO-300] - Making RCO compatible with other payment methods
+    * [WOO-301] - Deprecate iframe location "in payment methods list"
+    * [WOO-304] - bookPaymentResponse gives us "DENIED" status. Add this to a metadata-tag
+    * [WOO-273] - Text domain-problem
+    * [WOO-296] - Resurs order ids in list view no longer visible on activation
+    * [WOO-297] - Payment method list says unauthorized even if no credentials are added
+    * [WOO-299] - Felaktigt orderid hos Resurs
+    * [WOO-305] - Deprecated functions and variables that break code inspections
+    * [WOO-309] - Synchronize orderlines in async interceptor-mode for RCO
+    * [WOO-310] - Zero fees prevents negative fees be sent into ECom Payload (discount-fee-ish-fix)
+
+= 2.2.13 =
+
+Bad luck numbering abandoned.
+
 = 2.2.12 =
 
     * [WOO-270] - Optional controller to change order status behaviour on callbacks
@@ -99,13 +116,6 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
     * [WOO-292] - nb_NO locale may be broken in next release
     * [WOO-295] - Slow shopflow configuration
 
-= 2.2.11 =
-
-    * [WOO-247] - Make session handling controller reachable with filter hook
-    * [WOO-266] - Handling payment method based fees
-    * [WOO-287] - Complete norwegian language file is needed for norway
-    * [WOO-265] - Metadata CustomerId is not pushed into the payment data (for invoices)
-    * [WOO-268] - RCO mode sometimes randomly shoes "true" above the iframe
 
 == Upgrade Notice ==
 
