@@ -13,7 +13,7 @@
 
 // TODO: must refactor resursbankgateway.php
 
-define('RB_WOO_VERSION', '2.2.13');
+define('RB_WOO_VERSION', '2.2.14');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce');
 
@@ -2066,11 +2066,26 @@ function woocommerce_gateway_resurs_bank_init()
             $returnResult['resursData']['reqLocId'] = $requestedUpdateOrder;
             $returnResult['success'] = false;
 
+            $flow = initializeResursFlow();
+            $paymentSpec = self::get_payment_spec(WC()->cart);
+            if (is_array($paymentSpec['specLines'])) {
+                try {
+                    // Synchronize items with Resurs session before creating order locally. On failures,
+                    // this should not go further in the process.
+                    $flow->updateCheckoutOrderLines($requestedPaymentId, $paymentSpec['specLines']);
+                } catch (\Exception $e) {
+                    $returnResult['success'] = false;
+                    $returnResult['errorString'] = $e->getMessage();
+                    $returnResult['errorCode'] = 500;
+                    $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
+                    die;
+                }
+            }
+
             if (isset($_REQUEST['updateReference'])) {
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
-                            $flow = initializeResursFlow();
                             try {
                                 $flow->updatePaymentReference($_REQUEST['orderRef'], $_REQUEST['orderId']);
                                 update_post_meta($_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId']);
