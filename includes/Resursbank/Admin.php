@@ -73,10 +73,9 @@ class WC_ResursBank_Config extends WC_Settings_Page
             $this->label . '</a>';
     }
 
-    public function resurs_bank_settings_show()
+    private function resurs_bank_version_control()
     {
-        if (defined('RB_WOO_VERSION')) {
-
+        if (defined('RB_WOO_VERSION') && !Resursbank_Core::resurs_obsolete_coexistence_disable()) {
             if (version_compare(RB_WOO_VERSION, '3', '<')) {
                 echo '<div style="color:#990000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
                     __('Coexisting note: This plugin has discovered a prior version of Resurs Bank Payment Gateway!') . ' ' .
@@ -88,8 +87,27 @@ class WC_ResursBank_Config extends WC_Settings_Page
                     __('This probably means you are running on duplicate software. You should consider disabling one of them!') .
                     '</div><hr>';
             }
-
         }
+    }
+
+    private function woocommerce_version_control()
+    {
+
+        if (defined('WOOCOMMERCE_VERSION') &&
+            version_compare(WOOCOMMERCE_VERSION, _RESURSBANK_LOWEST_WOOCOMMERCE, '<')
+        ) {
+            echo '<div style="color:#DD0000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
+                __('It seems that you run on a WooCommerce version that is lower than') . ' ' . _RESURSBANK_LOWEST_WOOCOMMERCE . '. ' .
+                __('It is recommended that you upgrade to the latest version of WooCommerce, to maintain compatibility.') .
+                '</div><hr>';
+        }
+
+    }
+
+    public function resurs_bank_settings_show()
+    {
+        $this->resurs_bank_version_control();
+        $this->woocommerce_version_control();
 
         $settings = new Resursbank_Adminforms();
         $settings->setRenderedHtml();

@@ -94,16 +94,6 @@ class Resursbank_Core
     }
 
     /**
-     * @param $key
-     * @param $value
-     * @param string $namespace
-     */
-    public static function setResursOption($key, $value, $namespace = 'Resurs_Bank_Payment_Gateway')
-    {
-        //update_option();
-    }
-
-    /**
      * Fetch default value from a configuration item
      *
      * @param $item
@@ -128,14 +118,23 @@ class Resursbank_Core
      * @param string $namespace
      * @return bool|mixed|null
      */
-    public static function getResursOption($key, $namespace = 'Resurs_Bank_Payment_Gateway')
+    public static function getResursOption($key = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         $value = null;
         $confValues = Resursbank_Config::getConfigurationArray();
 
         if (!empty($namespace)) {
             $configuration = @unserialize(get_option($namespace));
+            // If no key is defined, but still a namespace, just return the full array and ignore the
+            // rest of this method.
+            if (empty($key)) {
+                return $configuration;
+            }
         } else {
+            // If no key and no namespace, a developer has done it totally wrong.
+            if (empty($key)) {
+                return null;
+            }
             $configuration = get_option('Resurs_Bank_' . $key);
         }
 
@@ -160,6 +159,40 @@ class Resursbank_Core
         return $value;
     }
 
+    /**
+     * Update a configuration option.
+     *
+     * If the default namespace is used, configuration data are fetched from a single key row
+     * as an array.
+     *
+     * @param $key
+     * @param $value
+     * @param string $namespace
+     * @return bool
+     */
+    public static function setResursOption($key, $value, $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        $updateSuccess = false;
+        if (!empty($key)) {
+            if (!empty($namespace)) {
+                $allOptions = get_option($namespace);
+                $allOptions[$key] = $value;
+                $updateSuccess = update_option($namespace, $allOptions);
+            } else {
+                $updateSuccess = update_option('Resurs_Bank_' . $key, $value);
+            }
+        }
+
+        return $updateSuccess;
+    }
+
+    /**
+     * Extract a true or false value from a setting by key [and namespace].
+     *
+     * @param $key
+     * @param string $namespace
+     * @return bool
+     */
     public static function getTrue($key, $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         $return = false;
@@ -216,6 +249,12 @@ class Resursbank_Core
 
     }
 
+    public static function resurs_obsolete_coexistence_disable() {
+        $return = self::getTrue('resurs_obsolete_coexistence_disable');
+        $return = true;
+        return $return;
+    }
+
     /**
      * Legacy way to fetch current version of WooCommerce
      *
@@ -223,10 +262,10 @@ class Resursbank_Core
      * @param string $operator
      * @return bool
      */
-    public static function getVersionCompare($versionRequest = "2.0.0", $operator = ">=")
+    public static function getVersionWoocommerceCompare($versionRequest = "3.0.0", $operator = ">=")
     {
         $return = false;
-        if (version_compare(WOOCOMMERCE_VERSION, $versionRequest, $operator)) {
+        if (defined('WOOCOMMERCE_VERSION') && version_compare(WOOCOMMERCE_VERSION, $versionRequest, $operator)) {
             $return = true;
         }
         return $return;
