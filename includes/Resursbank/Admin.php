@@ -45,6 +45,8 @@ class WC_ResursBank_Config extends WC_Settings_Page
     }
 
     /**
+     * Generate plugin sections
+     *
      * @return array
      */
     public function get_sections()
@@ -65,6 +67,9 @@ class WC_ResursBank_Config extends WC_Settings_Page
         die;
     }
 
+    /**
+     * Prepare tabs
+     */
     public function resurs_bank_settings_tabs()
     {
         global $current_tab;
@@ -73,6 +78,11 @@ class WC_ResursBank_Config extends WC_Settings_Page
             $this->label . '</a>';
     }
 
+    /**
+     * Version varnings indicating obsolete plugin under 3.x (prior release)
+     *
+     * @return string
+     */
     private function resurs_bank_version_low_text()
     {
         return __(
@@ -85,6 +95,12 @@ class WC_ResursBank_Config extends WC_Settings_Page
             );
     }
 
+    /**
+     * Version warnings,indicating that this plugin has been merged into the prior branch and the merchant runs
+     * the exact same versions side by side.
+     *
+     * @return string
+     */
     private function resurs_bank_version_equal_text()
     {
         return __(
@@ -97,6 +113,11 @@ class WC_ResursBank_Config extends WC_Settings_Page
             );
     }
 
+    /**
+     * Version warnings when plugins coexist with prio version of Resurs Bank plugin
+     *
+     * @return string
+     */
     private function resurs_bank_version_obsolete_coexistence()
     {
         return __(
@@ -113,6 +134,9 @@ class WC_ResursBank_Config extends WC_Settings_Page
             );
     }
 
+    /**
+     * Display any version conflicts discovered by this plugin
+     */
     private function resurs_bank_version_control()
     {
         if (defined('RB_WOO_VERSION')) {
@@ -127,11 +151,16 @@ class WC_ResursBank_Config extends WC_Settings_Page
                         '</div><hr>';
                 }
             } else {
-
+                echo '<div style="color:#DD0000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
+                    $this->resurs_bank_version_obsolete_coexistence() .
+                    '</div><hr>';
             }
         }
     }
 
+    /**
+     * Display any conflict with deprecated WooCommerce versions
+     */
     private function woocommerce_version_control()
     {
 
@@ -152,6 +181,9 @@ class WC_ResursBank_Config extends WC_Settings_Page
 
     }
 
+    /**
+     * Show configuration
+     */
     public function resurs_bank_settings_show()
     {
         $this->resurs_bank_version_control();

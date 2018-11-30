@@ -249,9 +249,13 @@ class Resursbank_Core
 
     }
 
+    /**
+     * Allow or disable coexisting plugins via dynamic configuration
+     *
+     * @return bool
+     */
     public static function resurs_obsolete_coexistence_disable() {
         $return = self::getTrue('resurs_obsolete_coexistence_disable');
-        $return = true;
         return $return;
     }
 
@@ -272,6 +276,8 @@ class Resursbank_Core
     }
 
     /**
+     * Get this plugin version
+     *
      * @return string
      */
     public static function getPluginVersion()

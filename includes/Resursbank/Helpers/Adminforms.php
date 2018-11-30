@@ -196,6 +196,7 @@ class Resursbank_Adminforms
 
     /**
      * Create options list for configuration (dropdown/select)
+     *
      * @param $configItem
      * @return string
      */
