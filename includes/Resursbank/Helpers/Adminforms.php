@@ -194,16 +194,93 @@ class Resursbank_Adminforms
             );
     }
 
-    private function getFieldInputOptions($configItem) {
-        print_R($configItem);
-        die;
+    /**
+     * Create options list for configuration (dropdown/select)
+     * @param $configItem
+     * @return string
+     */
+    private function getFieldInputOptions($configItem)
+    {
+        $optionString = '';
+        if (isset($configItem['options']) && is_array($configItem['options'])) {
+            foreach ($configItem['options'] as $optionKey => $optionValue) {
+                $optionString .= '<option value="' . $optionKey . '">' . htmlentities($optionValue) . '</option>' . "\n";
+            }
+        }
+        return $optionString;
     }
 
+    /**
+     * @param $configItem
+     * @param $settingKey
+     * @return mixed|string|void|null
+     */
+    private function getFieldInputSelectMulti($configItem, $settingKey)
+    {
+        $return = null;
+        if (isset($configItem['multi']) || isset($configItem['multiple'])) {
+            $return = 'multiple';
+        }
+
+        $returnCustom = apply_filters('resursbank_configrow_dropdown_multiple', $return, $settingKey);
+
+        if (!empty($returnCustom)) {
+            $return = $returnCustom;
+        }
+
+        return $return;
+    }
+
+    private function getFieldInputSelectSize($configItem, $settingKey)
+    {
+        $return = null;
+        if (isset($configItem['size'])) {
+            $return = 'size="' . intval($configItem['size']) . '"';
+        }
+
+        $returnCustom = apply_filters('resursbank_configrow_dropdown_size', $return, $settingKey);
+
+        if (!empty($returnCustom)) {
+            $return = $returnCustom;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Create a select/dropdown option
+     *
+     * @param $configItem
+     * @param $configType
+     * @param $settingKey
+     * @param $storedValue
+     * @param $scriptLoader
+     * @return string
+     */
     private function getFieldInputSelect($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
     {
         $selectBox = '
-            <select>
+            <select class="resursGatewayConfigSelect" ' . $this->getFieldInputSelectMulti(
+                $configItem,
+                $settingKey
+            ) . ' ' . $this->getFieldInputSelectSize(
+                $configItem,
+                $settingKey
+            ) . '>
         ';
+
+        if (isset($configItem['options']) &&
+            (
+                $configItem['options'] == 'dynamic' || is_array($configItem['options']
+                ) &&
+                in_array('dynamic',
+                    $configItem['options']))) {
+            $configItem['options'] = array();
+            $configItem['options'] = apply_filters('resursbank_configrow_dropdown_options',
+                (array)$configItem['options'],
+                $settingKey
+            );
+        }
 
         $selectBox .= $this->getFieldInputOptions($configItem);
 

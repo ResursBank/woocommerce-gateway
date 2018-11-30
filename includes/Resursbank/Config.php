@@ -51,8 +51,16 @@ abstract class Resursbank_Config {
                     'live' => __('Production', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                 ),
                 'default' => 'test',
-                'display' => false,
+                'display' => true,
+                'size' => 3,
                 'description' => __('Choose if you want to run with test/staging or production. The setting is global for all webservice accounts/countries you configure.', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            ),
+            'dynamic_test' => array(
+                'title' => 'One dynamic box',
+                'type' => 'select',
+                'options' => array('dynamic'),
+                'description' => 'This is only a test',
+                'display' => false,
             )
         );
 
