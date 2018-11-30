@@ -124,7 +124,7 @@ class WC_ResursBank_Config extends WC_Settings_Page
                 'Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
             ) . ' ' . __(
-                'This plugin has - on demand - decided to disable the coexisting relese of Resurs Bank.',
+                'This plugin has decided (on demand) to disable the coexisting prior version of Resurs Bank.',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
             ) . ' ' .
             __(

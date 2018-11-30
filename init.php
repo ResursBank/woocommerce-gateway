@@ -53,5 +53,8 @@ if (function_exists('add_action')) {
     add_action('plugins_loaded', 'resursbank_payment_gateway_initialize');
 }
 
-// Legacy translation loader.
-// load_plugin_textdomain('tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+load_plugin_textdomain(
+    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce',
+    false,
+    dirname(plugin_basename(__FILE__)) . '/languages'
+);

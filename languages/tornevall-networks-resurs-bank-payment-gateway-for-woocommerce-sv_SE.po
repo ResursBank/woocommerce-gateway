@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks Resurs Bank payment gateway for "
 "WooCommerce\n"
-"POT-Creation-Date: 2018-11-30 11:12+0100\n"
-"PO-Revision-Date: 2018-11-30 11:17+0100\n"
+"POT-Creation-Date: 2018-11-30 13:42+0100\n"
+"PO-Revision-Date: 2018-11-30 13:44+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language: sv_SE\n"
@@ -22,11 +22,11 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/Resursbank/Admin.php:52
+#: includes/Resursbank/Admin.php:54
 msgid "Basic settings"
 msgstr "Standardinställningar"
 
-#: includes/Resursbank/Admin.php:82
+#: includes/Resursbank/Admin.php:89
 msgid ""
 "Coexisting note: This plugin has discovered a prior version of Resurs Bank "
 "Payment Gateway!"
@@ -34,7 +34,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en tidigare version av "
 "Resurs Banks Betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:86
+#: includes/Resursbank/Admin.php:93
 msgid ""
 "This should not be a problem as they are coexistent. However, running them "
 "simultaneously is probably not what you want."
@@ -42,7 +42,7 @@ msgstr ""
 "Detta bör inte vara ett problem eftersom de är samexisterande. Men att köra "
 "dem samtidigt är förmodligen inte vad du vill."
 
-#: includes/Resursbank/Admin.php:93
+#: includes/Resursbank/Admin.php:107 includes/Resursbank/Admin.php:124
 msgid ""
 "Coexisting note: This plugin has discovered a similar version of Resurs Bank "
 "Payment Gateway!"
@@ -50,7 +50,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en liknande version av "
 "Resurs Banks betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:97
+#: includes/Resursbank/Admin.php:111
 msgid ""
 "This probably means you are running on duplicate software. You should "
 "consider disabling one of them!"
@@ -58,11 +58,27 @@ msgstr ""
 "Detta innebär förmodligen att du kör på duplicerad programvara. Du bör "
 "överväga att inaktivera en av dem!"
 
-#: includes/Resursbank/Admin.php:113
+#: includes/Resursbank/Admin.php:127
+msgid ""
+"This plugin has decided (on demand) to disable the coexisting prior version "
+"of Resurs Bank."
+msgstr ""
+"Detta plugin har beslutat (på begärna) att avaktivera den befintliga "
+"tidigare versionen av Resurs Bank."
+
+#: includes/Resursbank/Admin.php:131
+msgid ""
+"If you do not know what this is about, you might want to take a look in the "
+"configuration, where this feature can be shut off."
+msgstr ""
+"Om du inte vet vad det här handlar om, kan du ta dig en titt i "
+"inställningarna, där denna egenskap kan stängas av."
+
+#: includes/Resursbank/Admin.php:172
 msgid "It seems that you run on a WooCommerce version that is lower than"
 msgstr "Det verkar som att du kör på en WooCommerce version som är lägre än"
 
-#: includes/Resursbank/Admin.php:117
+#: includes/Resursbank/Admin.php:176
 msgid ""
 "It is recommended that you upgrade to the latest version of WooCommerce, to "
 "maintain compatibility."
@@ -70,19 +86,19 @@ msgstr ""
 "Vi rekommenderar att du uppgraderar till den senaste versionen av "
 "WooCommerce för att bibehålla kompatibiliteten."
 
-#: includes/Resursbank/Config.php:25
+#: includes/Resursbank/Config.php:27
 msgid "Merchant Configuration"
 msgstr "Ombudets inställningar"
 
-#: includes/Resursbank/Config.php:29
+#: includes/Resursbank/Config.php:33
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktivera"
 
-#: includes/Resursbank/Config.php:31
+#: includes/Resursbank/Config.php:35
 msgid "Enable"
 msgstr "Aktivera"
 
-#: includes/Resursbank/Config.php:34
+#: includes/Resursbank/Config.php:38
 msgid ""
 "If not enabled, all vital functions in the plugin are shut off. Functions "
 "affecting prior orders will still function."
@@ -90,28 +106,48 @@ msgstr ""
 "Om denna inte är aktiverad, så kommer alla vitala funktioner i tillägget "
 "vara avstängda. Funktioner som påverkar tidigare orders fungerar fortfarande."
 
-#: includes/Resursbank/Config.php:38
+#: includes/Resursbank/Config.php:42
 msgid ""
 "This is the major plugin switch. If not checked, it will be competely "
 "disabled, except for that you can still edit this administration control."
 msgstr ""
-"Detta är huvudkontrollen för pluginet. Om den inte är valt, kommer pluginet "
-"vara helt avstängd, förutom att du fortfarande kan redigera i den här "
-"kontrollpanelen."
+"Detta är huvudkontrollen för pluginet. Om den inte är ikryssad, kommer "
+"pluginet vara helt avstängd, förutom att du fortfarande kan redigera i den "
+"här kontrollpanelen."
 
-#: includes/Resursbank/Config.php:43
+#: includes/Resursbank/Config.php:48
+msgid "Disable coexisting plugin"
+msgstr "Inaktivera samexisterande plugin"
+
+#: includes/Resursbank/Config.php:52
+msgid ""
+"This feature turns off prior versions of Resurs Bank Payment Gateway if it "
+"exists and is enabled."
+msgstr ""
+"Den här funktionen stänger av tidigare versioner av Resurs Banks "
+"betalningsgateway om den finns och är aktiverad."
+
+#: includes/Resursbank/Config.php:56
+msgid "Disable"
+msgstr "Avaktivera"
+
+#: includes/Resursbank/Config.php:59
 msgid "API"
 msgstr "API"
 
-#: includes/Resursbank/Config.php:50
+#: includes/Resursbank/Config.php:63
+msgid "Environment"
+msgstr "Miljö"
+
+#: includes/Resursbank/Config.php:66
 msgid "Test/Staging"
 msgstr "Test/Staging"
 
-#: includes/Resursbank/Config.php:51
+#: includes/Resursbank/Config.php:67
 msgid "Production"
 msgstr "Produktion"
 
-#: includes/Resursbank/Config.php:55
+#: includes/Resursbank/Config.php:72
 msgid ""
 "Choose if you want to run with test/staging or production. The setting is "
 "global for all webservice accounts/countries you configure."

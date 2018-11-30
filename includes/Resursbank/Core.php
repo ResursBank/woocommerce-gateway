@@ -148,7 +148,7 @@ class Resursbank_Core
             $value = self::getDefaultValue($confValues[$key]);
         }
 
-        if (isset($confValues[$key]) && $confValues[$key]['type'] === 'checkbox') {
+        if (isset($confValues[$key]) && isset($confValues[$key]['type']) && $confValues[$key]['type'] === 'checkbox') {
             if (strtolower($value) === 'yes' || (bool)$value) {
                 $value = true;
             } else {
