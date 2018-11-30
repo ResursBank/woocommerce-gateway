@@ -49,7 +49,7 @@ class WC_ResursBank_Config extends WC_Settings_Page
      */
     public function get_sections()
     {
-        $sections['generic'] = __('Basic settings', 'WC_Payment_Gateway');
+        $sections['generic'] = __('Basic settings', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
 
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
@@ -78,13 +78,25 @@ class WC_ResursBank_Config extends WC_Settings_Page
         if (defined('RB_WOO_VERSION') && !Resursbank_Core::resurs_obsolete_coexistence_disable()) {
             if (version_compare(RB_WOO_VERSION, '3', '<')) {
                 echo '<div style="color:#990000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
-                    __('Coexisting note: This plugin has discovered a prior version of Resurs Bank Payment Gateway!') . ' ' .
-                    __('This should not be a problem as they are coexistent. However, running them simultaneously is probably not what you want.') .
+                    __(
+                        'Coexisting note: This plugin has discovered a prior version of Resurs Bank Payment Gateway!',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ) . ' ' .
+                    __(
+                        'This should not be a problem as they are coexistent. However, running them simultaneously is probably not what you want.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ) .
                     '</div><hr>';
             } else {
                 echo '<div style="color:#DD0000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
-                    __('Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!') . ' ' .
-                    __('This probably means you are running on duplicate software. You should consider disabling one of them!') .
+                    __(
+                        'Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ) . ' ' .
+                    __(
+                        'This probably means you are running on duplicate software. You should consider disabling one of them!',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ) .
                     '</div><hr>';
             }
         }
@@ -97,8 +109,14 @@ class WC_ResursBank_Config extends WC_Settings_Page
             version_compare(WOOCOMMERCE_VERSION, _RESURSBANK_LOWEST_WOOCOMMERCE, '<')
         ) {
             echo '<div style="color:#DD0000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
-                __('It seems that you run on a WooCommerce version that is lower than') . ' ' . _RESURSBANK_LOWEST_WOOCOMMERCE . '. ' .
-                __('It is recommended that you upgrade to the latest version of WooCommerce, to maintain compatibility.') .
+                __(
+                    'It seems that you run on a WooCommerce version that is lower than',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) . ' ' . _RESURSBANK_LOWEST_WOOCOMMERCE . '. ' .
+                __(
+                    'It is recommended that you upgrade to the latest version of WooCommerce, to maintain compatibility.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) .
                 '</div><hr>';
         }
 

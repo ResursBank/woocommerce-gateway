@@ -8,6 +8,7 @@
  * Author: Tomas Tornevall
  * Author URI:
  * Text Domain: tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
+ * Domain Path: /languages
  */
 
 if (!defined('ABSPATH')) {
@@ -52,4 +53,4 @@ if (function_exists('add_action')) {
     add_action('plugins_loaded', 'resursbank_payment_gateway_initialize');
 }
 
-
+// load_plugin_textdomain('tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');

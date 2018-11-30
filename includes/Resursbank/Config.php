@@ -22,33 +22,37 @@ abstract class Resursbank_Config {
 
         $configurationArray = array(
             'configuration' => array(
-                'title' => __('Merchant Configuration', 'woocommerce'),
+                'title' => __('Merchant Configuration', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                 'type' => 'title',
             ),
             'enabled' => array(
-                'title' => __('Enable/Disable', 'woocommerce'),
+                'title' => __('Enable/Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Enable', 'woocommerce'),
+                'label' => __('Enable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                 'default' => false,
-                'tip' => __('If not enabled, all vital functions in the plugin are shut off. Functions affecting prior orders will still function.'),
+                'tip' => __(
+                    'If not enabled, all vital functions in the plugin are shut off. Functions affecting prior orders will still function.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ),
                 'description' => __(
                     'This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.',
-                    'woocommerce'
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                 )
             ),
             'API' => array(
-                'title' => __('API', 'woocommerce'),
+                'title' => __('API', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                 'type' => 'title',
             ),
             'environment' => array(
+                'title' => 'Environment',
                 'type' => 'select',
                 'options' => array(
-                    'test' => __('Test/Staging', 'woocommerce'),
-                    'live' => __('Production', 'woocommerce'),
+                    'test' => __('Test/Staging', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                    'live' => __('Production', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                 ),
                 'default' => 'test',
                 'display' => false,
-                'description' => __('', 'woocommerce'),
+                'description' => __('Choose if you want to run with test/staging or production. The setting is global for all webservice accounts/countries you configure.', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
             )
         );
 
