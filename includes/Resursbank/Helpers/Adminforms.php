@@ -28,6 +28,26 @@ class Resursbank_Adminforms
     }
 
     /**
+     * @param bool $asArray
+     * @return int|mixed|string
+     */
+    private function getFirstSection($asArray = false)
+    {
+        $return = !$asArray ? '' : array();
+        if (is_array($this->configurationArray)) {
+            foreach ($this->configurationArray as $settingKey => $item) {
+                if (!$asArray) {
+                    $return = $settingKey;
+                } else {
+                    $return = $item;
+                }
+                break;
+            }
+        }
+        return $return;
+    }
+
+    /**
      * Prepare forms
      *
      * @return string
@@ -39,8 +59,13 @@ class Resursbank_Adminforms
             <table class="form-table" style="table-layout: auto !important;">
             ';
 
-        foreach ($this->configurationArray as $settingKey => $item) {
-            $this->html .= $this->getRenderedHtml($settingKey, $item);
+        $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : $this->getFirstSection();
+        // Make sure everything follows a standard layout before rendering.
+        // If the array key 'settings' is missing, do not run this.
+        if (isset($this->configurationArray[$section]) && $this->configurationArray[$section]['settings']) {
+            foreach ($this->configurationArray[$section]['settings'] as $settingKey => $item) {
+                $this->html .= $this->getRenderedHtml($settingKey, $item);
+            }
         }
 
         $this->html .= '</table></div>';
