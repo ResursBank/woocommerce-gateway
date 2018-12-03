@@ -1,4 +1,4 @@
-=== Resurs Bank payment gateway for WooCommerce ===
+=== T Resurs Bank payment gateway for WooCommerce ===
 Contributors: Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
@@ -8,14 +8,14 @@ Stable tag: 0.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This is a rewritten fork of Resurs Bank payment gateway for WooCommerce.
+This is a rewritten fork of Resurs Bank payment gateway for WooCommerce
 
 
 == Description ==
 
 The long description of this plugin resides in README.md
 
-A payment gateway fork of the Resurs Bank plugin. The original edition of this version is rebranded so it can coexist with Resurs Bank in WordPress official plugin-repo.
+A payment gateway fork of the Resurs Bank plugin.
 
 
 = Compatibility =
@@ -23,7 +23,7 @@ A payment gateway fork of the Resurs Bank plugin. The original edition of this v
 
 = Contribute =
 
-This part should be be rewritten when it reaches Resurs Bank gitrepo.
+If you believe that you'd like to join this project you could either take a look at the official [Bitbucket repo at Resurs Bank](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce) or the [forkish repo here](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-wp-resurs-bank-fork/browse).
 
 
 

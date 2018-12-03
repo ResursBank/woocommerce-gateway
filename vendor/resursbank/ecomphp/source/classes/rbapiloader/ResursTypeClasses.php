@@ -219,6 +219,7 @@ abstract class RESURS_ENVIRONMENTS
 {
     const PRODUCTION = 0;
     const TEST = 1;
+    const NOT_SET = 2;
 
     /** @deprecated Redundant name */
     const ENVIRONMENT_PRODUCTION = 0;

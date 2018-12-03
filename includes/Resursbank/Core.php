@@ -38,6 +38,19 @@ class Resursbank_Core
     }
 
     /**
+     * Check if developer mode is running
+     *
+     * @return bool
+     */
+    public static function getDeveloperMode()
+    {
+        if (defined('_RESURSBANK_DEVELOPER_MODE') && _RESURSBANK_DEVELOPER_MODE) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Return list of payment methods from Resurs Bank (legacy)
      *
      * @param $woocommerceGateways
@@ -45,9 +58,9 @@ class Resursbank_Core
      */
     public static function getResursGateways($woocommerceGateways)
     {
-        if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
-            //$woocommerceGateways[] = self::getGatewayClass();
-        }
+        /*if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
+            $woocommerceGateways[] = self::getGatewayClass();
+        }*/
 
         return $woocommerceGateways;
     }
@@ -81,22 +94,113 @@ class Resursbank_Core
     }
 
     /**
-     * @param $key
-     * @param $value
-     * @param string $namespace
+     * Fetch default value from a configuration item
+     *
+     * @param $item
+     * @return null
      */
-    public static function setResursOption($key, $value, $namespace = 'Resurs_Bank_Payment_Gateway')
+    private static function getDefaultValue($item)
     {
-        //get_option();
+        $return = null;
+        if (isset($item['default'])) {
+            $return = $item['default'];
+        }
+        return $return;
     }
 
     /**
+     * Fetch correct option values from WP config.
+     *
+     * If namespace is set (default), this function will try to fetch one serialized configuration row
+     * instead of using a specific configuration key.
+     *
      * @param $key
      * @param string $namespace
+     * @return bool|mixed|null
      */
-    public static function getResursOption($key, $namespace = 'Resurs_Bank_Payment_Gateway')
+    public static function getResursOption($key = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
-        //update_option();
+        $value = null;
+        $confValues = Resursbank_Config::getConfigurationArray();
+
+        if (!empty($namespace)) {
+            $configuration = @unserialize(get_option($namespace));
+            // If no key is defined, but still a namespace, just return the full array and ignore the
+            // rest of this method.
+            if (empty($key)) {
+                return $configuration;
+            }
+        } else {
+            // If no key and no namespace, a developer has done it totally wrong.
+            if (empty($key)) {
+                return null;
+            }
+            $configuration = get_option('Resurs_Bank_' . $key);
+        }
+
+        if (is_array($configuration) && isset($configuration[$key])) {
+            $value = $configuration[$key];
+        } elseif (is_object($configuration) && isset($configuration->{$key})) {
+            $value = $configuration->{$key};
+        }
+
+        if (is_null($value) && isset($confValues[$key])) {
+            $value = self::getDefaultValue($confValues[$key]);
+        }
+
+        if (isset($confValues[$key]) && isset($confValues[$key]['type']) && $confValues[$key]['type'] === 'checkbox') {
+            if (strtolower($value) === 'yes' || (bool)$value) {
+                $value = true;
+            } else {
+                $value = false;
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * Update a configuration option.
+     *
+     * If the default namespace is used, configuration data are fetched from a single key row
+     * as an array.
+     *
+     * @param $key
+     * @param $value
+     * @param string $namespace
+     * @return bool
+     */
+    public static function setResursOption($key, $value, $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        $updateSuccess = false;
+        if (!empty($key)) {
+            if (!empty($namespace)) {
+                $allOptions = get_option($namespace);
+                $allOptions[$key] = $value;
+                $updateSuccess = update_option($namespace, $allOptions);
+            } else {
+                $updateSuccess = update_option('Resurs_Bank_' . $key, $value);
+            }
+        }
+
+        return $updateSuccess;
+    }
+
+    /**
+     * Extract a true or false value from a setting by key [and namespace].
+     *
+     * @param $key
+     * @param string $namespace
+     * @return bool
+     */
+    public static function getTrue($key, $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        $return = false;
+        $value = self::getResursOption($key, $namespace);
+        if (strtolower($value) === 'yes' || (bool)$value) {
+            $return = true;
+        }
+        return $return;
     }
 
     /**
@@ -127,14 +231,14 @@ class Resursbank_Core
             'resurs_bank_payment_gateway_css',
             _RESURSBANK_GATEWAY_URL . 'css/resursbank.css',
             array(),
-            true
+            _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
         wp_enqueue_script(
             'resurs_bank_payment_gateway_js',
             _RESURSBANK_GATEWAY_URL . 'js/resursbank.js',
             array('jquery'),
-            true
+            _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
         if (is_array($varsToLocalize)) {
@@ -146,22 +250,38 @@ class Resursbank_Core
     }
 
     /**
+     * Allow or disable coexisting plugins via dynamic configuration
+     *
+     * @return bool
+     */
+    public static function resurs_obsolete_coexistence_disable() {
+        $return = self::getTrue('resurs_obsolete_coexistence_disable');
+        return $return;
+    }
+
+    /**
      * Legacy way to fetch current version of WooCommerce
      *
      * @param string $versionRequest
      * @param string $operator
      * @return bool
      */
-    public static function getVersionCompare($versionRequest = "2.0.0", $operator = ">=")
+    public static function getVersionWoocommerceCompare($versionRequest = "3.0.0", $operator = ">=")
     {
         $return = false;
-        if (version_compare(WOOCOMMERCE_VERSION, $versionRequest, $operator)) {
+        if (defined('WOOCOMMERCE_VERSION') && version_compare(WOOCOMMERCE_VERSION, $versionRequest, $operator)) {
             $return = true;
         }
         return $return;
     }
 
-    public static function getPluginVersion() {
+    /**
+     * Get this plugin version
+     *
+     * @return string
+     */
+    public static function getPluginVersion()
+    {
         if (defined('_RESURSBANK_GATEWAY_VERSION')) {
             return _RESURSBANK_GATEWAY_VERSION;
         }

@@ -51,13 +51,15 @@ What always must be done of merging this fork into the Resurs Bank branch
 
 * All sections for the plugin are split up in smaller pieces to prevent conflicts between the sections when developing features
 * Configuration section is no longer following WC config rules as many things are configured dynamically and the WC config policy is too strict
+* Cosmetic updates: Logotype for tab configuration follows WC3x-hooks and is also resized to match the tab size
 
 ### What should be done
 
 * Administration interface must be pushed out as a primary goal as we are dependent on dynamic configuration
 * Warn when prior version of the plugin is running the same as this module
 * Filters and hooks should be covered in as many sections as possible
-* Multiple countries
+* Multiple countries (Select flow per country)
 * Are you running multiple credentials, make sure salt keys for callbacks are separated for each section
 * Payment methods should be dynamically loaded and configured
+* Handle special metadata differently (using special table for metadata will make them unwritable for users)
 
