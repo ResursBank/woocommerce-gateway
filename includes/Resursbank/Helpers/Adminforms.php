@@ -18,7 +18,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Get configuration table as an array
+     * Get configuration table as an array.
      *
      * @return array
      */
@@ -28,6 +28,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Get the first section of the confiuration array.
+     *
      * @param bool $asArray
      * @return int|mixed|string
      */
@@ -48,7 +50,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Prepare forms
+     * Prepare forms.
      *
      * @return string
      */
@@ -72,7 +74,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Get rendered html
+     * Get rendered html.
      *
      * @param $settingKey
      * @param array $configItem
@@ -101,6 +103,18 @@ class Resursbank_Adminforms
         return $html;
     }
 
+    /**
+     * Render the form field row.
+     *
+     * @param $settingKey
+     * @param $leftColumnString
+     * @param $rightColumnValue
+     * @param string $tdThClassName
+     * @param string $tdLeftClass
+     * @param string $tdRightClass
+     * @param bool $isHead
+     * @return string
+     */
     private function renderFormRow(
         $settingKey,
         $leftColumnString,
@@ -143,7 +157,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Get key value (content) from configuration item
+     * Get key value (content) from configuration item.
      *
      * @param $key
      * @param $item
@@ -160,6 +174,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Get configured value for specific option.
+     *
      * @param $settingKey
      * @param string $namespace
      * @return bool|mixed|null
@@ -170,7 +186,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Create text based form field (not textarea)
+     * Create text based form field (not textarea).
      *
      * @param $configItem
      * @param $configType
@@ -195,7 +211,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Create a checkbox form field
+     * Create a checkbox form field.
      *
      * @param $configItem
      * @param $configType
@@ -220,23 +236,48 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Create options list for configuration (dropdown/select)
+     * Returns true if config option allows multiple choices
+     *
+     * @param $configItem
+     * @return bool
+     */
+    private function getIsMultiSelection($configItem)
+    {
+        $return = false;
+
+        if (isset($configItem['multi']) && $configItem['multi']) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Create options list for configuration (dropdown/select).
      *
      * @param $configItem
      * @return string
      */
-    private function getFieldInputOptions($configItem)
+    private function getFieldInputOptions($configItem, $settingKey, $storedValue)
     {
         $optionString = '';
+
         if (isset($configItem['options']) && is_array($configItem['options'])) {
             foreach ($configItem['options'] as $optionKey => $optionValue) {
-                $optionString .= '<option value="' . $optionKey . '">' . htmlentities($optionValue) . '</option>' . "\n";
+                if (!$this->getIsMultiSelection($configItem)) {
+                    $selected = ($storedValue !== $optionKey) ? '' : 'selected';
+                } else {
+                    // TODO: Multiple selections might be available
+                }
+                $optionString .= '<option value="' . $optionKey . '" ' . $selected . '>' . htmlentities($optionValue) . '</option>' . "\n";
             }
         }
         return $optionString;
     }
 
     /**
+     * Get the value for a "mutiselect" dropdown box.
+     *
      * @param $configItem
      * @param $settingKey
      * @return mixed|string|void|null
@@ -257,6 +298,13 @@ class Resursbank_Adminforms
         return $return;
     }
 
+    /**
+     * Get the size of configurable dropdown.
+     *
+     * @param $configItem
+     * @param $settingKey
+     * @return mixed|string|void|null
+     */
     private function getFieldInputSelectSize($configItem, $settingKey)
     {
         $return = null;
@@ -274,7 +322,39 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Create a select/dropdown option
+     * Generate an array with all options available.
+     *
+     * @param $configItemOptionList
+     * @param $settingKey
+     * @return mixed|void
+     */
+    private function getDynamicOptions($configItemOptionList, $settingKey)
+    {
+        if (
+            is_array($configItemOptionList) && in_array('dynamic', $configItemOptionList) ||
+            is_string($configItemOptionList) && $configItemOptionList === 'dynamic'
+        ) {
+            $configItemOptionList = apply_filters('resursbank_configrow_dropdown_options',
+                (array)$configItemOptionList['options'],
+                $settingKey
+            );
+        }
+
+        if (is_string($configItemOptionList) && preg_match('/^dynamic_/', $configItemOptionList)) {
+            $exDyn = explode('_', $configItemOptionList, 2);
+            $filterName = isset($exDyn[1]) ? $exDyn[1] : '';
+            if ($filterName) {
+                $configItemOptionList = apply_filters('resursbank_dropdown_option_method_' . $filterName,
+                    array()
+                );
+            }
+        }
+
+        return $configItemOptionList;
+    }
+
+    /**
+     * Create a select/dropdown option.
      *
      * @param $configItem
      * @param $configType
@@ -295,29 +375,19 @@ class Resursbank_Adminforms
             ) . '>
         ';
 
-        if (isset($configItem['options']) &&
-            (
-                $configItem['options'] == 'dynamic' || is_array($configItem['options']
-                ) &&
-                in_array('dynamic',
-                    $configItem['options']))) {
-            $configItem['options'] = array();
-            $configItem['options'] = apply_filters('resursbank_configrow_dropdown_options',
-                (array)$configItem['options'],
-                $settingKey
-            );
+        if (isset($configItem['options'])) {
+            $configItem['options'] = $this->getDynamicOptions($configItem['options'], $settingKey);
         }
 
-        $selectBox .= $this->getFieldInputOptions($configItem);
+        $selectBox .= $this->getFieldInputOptions($configItem, $settingKey, $storedValue);
+        $selectBox .= '</select>';
 
-        $selectBox .= '</select>
-        ';
         return $selectBox;
     }
 
 
     /**
-     * Render configuration row
+     * Render configuration row.
      *
      * @param $configItem
      * @param $settingKey
@@ -350,7 +420,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Render table row for key 'title'
+     * Render table row for key 'title'.
      *
      * @param $settingKey
      * @param $configItem
@@ -372,6 +442,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Render the form field row with the current stored value (or default).
+     *
      * @param $settingKey
      * @param $configItem
      * @return string
@@ -386,6 +458,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Get the html.
+     *
      * @return string
      */
     public function getHtml()

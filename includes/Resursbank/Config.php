@@ -46,17 +46,16 @@ abstract class Resursbank_Config
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         )
                     ),
-                    'resurs_obsolete_coexistence_disable' => array(
+                    'defaultTax' => array(
                         'title' => __(
-                            'Disable coexisting plugin',
+                            'Default tax class',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
-                        'tip' => __(
-                            'This feature turns off prior versions of Resurs Bank Payment Gateway if it exists and is enabled.',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                        ),
-                        'type' => 'checkbox',
-                        'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'type' => 'select',
+                        'options' => 'dynamic_get_tax_classes',
+                        'size' => '3',
+                        'tip' => __('Used by the plugin when no other options are availabel (for example in payment fees)',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     ),
                     'API' => array(
                         'title' => __('API', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
@@ -74,25 +73,42 @@ abstract class Resursbank_Config
                         'default' => 'test',
                         'display' => true,
                         'size' => 3,
-                        'description' => __('Choose if you want to run with test/staging or production. The setting is global for all webservice accounts/countries you configure.',
+                        'multi' => false,
+                        'tip' => __('Chosen environment used by the plugin. This setting is global for all configured credentials. If you for example choose test as the environment, it will also be used for the entire plugin.',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     ),
-                    'dynamic_test' => array(
-                        'title' => 'One dynamic box',
-                        'type' => 'select',
-                        'options' => array('dynamic'),
-                        'description' => 'This is only a test',
-                        'display' => false,
-                    )
                 ),
             ),
             'advanced' => array(
                 'title' => __('Advanced settings', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                 'settings' => array(
+                    'configuration' => array(
+                        'title' => __(
+                            'Miscellaneous settings',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'type' => 'title',
+                    ),
+                    'resurs_obsolete_coexistence_disable' => array(
+                        'title' => __(
+                            'Disable coexisting plugin',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'tip' => __(
+                            'This feature turns off prior versions of Resurs Bank Payment Gateway if it exists and is enabled.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'type' => 'checkbox',
+                        'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                    ),
 
                 )
             ),
         );
+
+        //echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
+
+        $configurationArray = apply_filters('resursbank_config_array', $configurationArray);
 
         return $configurationArray;
     }

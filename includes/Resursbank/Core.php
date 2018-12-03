@@ -94,17 +94,89 @@ class Resursbank_Core
     }
 
     /**
-     * Fetch default value from a configuration item
+     * Generate a configurable array out of WooCommerce taxrate classes.
      *
-     * @param $item
-     * @return null
+     * Configurable = Resurs Bank wp-admin friendly ratelist
+     *
+     * @param array $taxClasses
+     * @param string $tax_class
+     * @param null $customer
+     * @return array
      */
-    private static function getDefaultValue($item)
+    public static function getTaxRateList($taxClasses = array(), $tax_class = '', $customer = null)
+    {
+        $allTaxClasses = self::getTaxRateClasses($taxClasses, $tax_class, $customer);
+        $rateArray = array();
+
+        if (is_array($allTaxClasses) && count($allTaxClasses)) {
+            foreach ($allTaxClasses as $arrayData) {
+                // Only match once
+                if (!isset($rateArray[$arrayData['rate']])) {
+                    $rateArray[$arrayData['rate']] = $arrayData['label'];
+                }
+            }
+        }
+
+        return $rateArray;
+    }
+
+    /**
+     * Get taxclasses from WooCommerce that contains taxrates.
+     *
+     * @param array $taxClasses
+     * @param string $tax_class
+     * @param null $customer
+     * @return array
+     */
+    public static function getTaxRateClasses($taxClasses = array(), $tax_class = '', $customer = null)
+    {
+        $currentRateList = WC_Tax::get_rates();
+        $taxClassList = WC_Tax::get_tax_classes();
+        if (is_array($taxClassList)) {
+            foreach ($taxClassList as $taxClass) {
+                $currentRateList += WC_Tax::get_rates($taxClass);
+            }
+        }
+
+        return $currentRateList;
+    }
+
+    public static function getConfiguration()
+    {
+        return Resursbank_Config::getConfigurationArray();
+    }
+
+    /**
+     * @return bool
+     */
+    public static function getSectionsByConstructor()
+    {
+        return (defined('_RESURSBANK_SECTIONS_BY_CONSTRUCTOR')) ? _RESURSBANK_SECTIONS_BY_CONSTRUCTOR : false;
+    }
+
+    /**
+     * Fetch default value from a configuration item.
+     *
+     * @param $key
+     * @return string|null If null, nothing was found.
+     */
+
+    private static function getDefaultValue($key)
     {
         $return = null;
-        if (isset($item['default'])) {
-            $return = $item['default'];
+        $configurationArray = Resursbank_Config::getConfigurationArray();
+
+        foreach ($configurationArray as $itemKey => $itemArray) {
+            if (isset($itemArray['settings'])) {
+                foreach ($itemArray as $settingKey => $settingArray) {
+                    if (isset($settingArray[$key]) && isset($settingArray[$key]['default'])) {
+                        $return = $settingArray[$key]['default'];
+                        break;
+                    }
+                }
+            }
         }
+
         return $return;
     }
 
@@ -121,7 +193,7 @@ class Resursbank_Core
     public static function getResursOption($key = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         $value = null;
-        $confValues = Resursbank_Config::getConfigurationArray();
+        $defaultValue = self::getDefaultValue($key);
 
         if (!empty($namespace)) {
             $configuration = @unserialize(get_option($namespace));
@@ -144,8 +216,8 @@ class Resursbank_Core
             $value = $configuration->{$key};
         }
 
-        if (is_null($value) && isset($confValues[$key])) {
-            $value = self::getDefaultValue($confValues[$key]);
+        if (is_null($value) && !is_null($defaultValue)) {
+            $value = $defaultValue;
         }
 
         if (isset($confValues[$key]) && isset($confValues[$key]['type']) && $confValues[$key]['type'] === 'checkbox') {
@@ -254,7 +326,8 @@ class Resursbank_Core
      *
      * @return bool
      */
-    public static function resurs_obsolete_coexistence_disable() {
+    public static function resurs_obsolete_coexistence_disable()
+    {
         $return = self::getTrue('resurs_obsolete_coexistence_disable');
         return $return;
     }
