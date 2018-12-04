@@ -156,20 +156,6 @@ class Resursbank_Adminforms
         return trim($return);
     }
 
-    public function getCredentialFields($data = '', $settingKey = '')
-    {
-        $credentials = Resursbank_Core::getResursOption('credentials');
-
-        if (is_admin() && is_array($credentials)) {
-            foreach ($credentials as $credentialData) {
-
-            }
-        }
-
-        return '';
-    }
-
-
     /**
      * Get key value (content) from configuration item.
      *
@@ -197,6 +183,35 @@ class Resursbank_Adminforms
     private function getConfigValue($settingKey, $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         return Resursbank_Core::getResursOption($settingKey, $namespace);
+    }
+
+    public function getCredentialFields($data = '', $settingKey = '')
+    {
+        $instance = new Resursbank_Adminforms();
+
+        $credentials = Resursbank_Core::getResursOption('credentials');
+        $return = '<div id="resurs_bank_credential_set">';
+        if (is_admin() && is_array($credentials)) {
+            foreach ($credentials as $credentialData) {
+                $return .= $instance->getFieldInputText(
+                    array('type' => 'text'),
+                    'text',
+                    'credentials_' . $credentialData['name'],
+                    'torv',
+                    ''
+                );
+            }
+        }
+        $return .= '</div>';
+
+        $return .= '<div>
+            <img src="' .
+            Resursbank_Core::getGraphics('add') .
+            '" onclick="resursBankCredentialField()" style="cursor: pointer">
+            </div>';
+
+
+        return $return;
     }
 
     /**

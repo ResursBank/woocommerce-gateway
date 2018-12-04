@@ -1,0 +1,1 @@
+$resurs_bank = jQuery.noConflict();

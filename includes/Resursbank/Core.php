@@ -332,6 +332,39 @@ class Resursbank_Core
     }
 
     /**
+     * @param $filename
+     * @return string|null Null is unexistent
+     */
+    private static function getGraphicsUrl($filename)
+    {
+        $return = null;
+        $gUrl = _RESURSBANK_GATEWAY_URL . 'images';
+        if (file_exists(_RESURSBANK_GATEWAY_PATH . 'images/' . $filename)) {
+            $return = $gUrl . '/' . $filename;
+        }
+        return $return;
+    }
+
+    /**
+     * Get URLs to used graphics
+     *
+     * @param string $name
+     * @return array
+     */
+    public static function getGraphics($name = '')
+    {
+        $return = array(
+            'add' => self::getGraphicsUrl('add-16.png'),
+            'delete' => self::getGraphicsUrl('delete-16.png'),
+            'spinner' => self::getGraphicsUrl('spinner.png'),
+        );
+        if (!empty($name)) {
+            return isset($return[$name]) ? $return[$name] : null;
+        }
+        return $return;
+    }
+
+    /**
      * Get the name of the primary class
      *
      * @return string
@@ -349,6 +382,7 @@ class Resursbank_Core
         $varsToLocalize = array(
             'resurs_bank_payment_gateway' => array(
                 'available' => true,
+                'graphics' => Resursbank_Core::getGraphics(),
                 'backend_url' => _RESURSBANK_GATEWAY_BACKEND,
                 'backend_nonce' => wp_nonce_url(_RESURSBANK_GATEWAY_BACKEND, 'resursBankBackendRequest',
                     'resursBankGatewayNonce')
@@ -368,6 +402,15 @@ class Resursbank_Core
             array('jquery'),
             _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
+
+        if (is_admin()) {
+            wp_enqueue_script(
+                'resurs_bank_payment_gateway_admin_js',
+                _RESURSBANK_GATEWAY_URL . 'js/resursadmin.js',
+                array('jquery'),
+                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+            );
+        }
 
         if (is_array($varsToLocalize)) {
             foreach ($varsToLocalize as $varKey => $varArray) {
