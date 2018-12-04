@@ -71,11 +71,13 @@ abstract class Resursbank_Config
                                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                         ),
                         'default' => 'test',
-                        'display' => true,
-                        'size' => 3,
-                        'multi' => false,
                         'tip' => __('Chosen environment used by the plugin. This setting is global for all configured credentials. If you for example choose test as the environment, it will also be used for the entire plugin.',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                    ),
+                    'crentials' => array(
+                        'title' => __('Credentials', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'type' => 'filter',
+                        'filter' => 'get_credentials_html'
                     ),
                 ),
             ),

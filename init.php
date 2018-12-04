@@ -25,7 +25,6 @@ if (!defined('ABSPATH')) {
  *
  */
 
-
 // This is where it all begins.
 
 define('_RESURSBANK_GATEWAY_PATH', plugin_dir_path(__FILE__));

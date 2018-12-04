@@ -141,12 +141,19 @@ class Resursbank_Core
         return $currentRateList;
     }
 
+    /**
+     * Get full configuration array.
+     *
+     * @return array
+     */
     public static function getConfiguration()
     {
         return Resursbank_Config::getConfigurationArray();
     }
 
     /**
+     * Return true if constructor should be used in admin panel.
+     *
      * @return bool
      */
     public static function getSectionsByConstructor()
@@ -160,8 +167,7 @@ class Resursbank_Core
      * @param $key
      * @return string|null If null, nothing was found.
      */
-
-    private static function getDefaultValue($key)
+    public static function getDefaultValue($key)
     {
         $return = null;
         $configurationArray = Resursbank_Config::getConfigurationArray();
@@ -181,6 +187,26 @@ class Resursbank_Core
     }
 
     /**
+     * Get all default values bulked.
+     * @return array
+     */
+    public static function getDefaultConfiguration()
+    {
+        $allConfig = array();
+        $defaultConfig = Resursbank_Core::getConfiguration();
+        foreach ($defaultConfig as $section => $sectionArray) {
+            if (isset($sectionArray['settings'])) {
+                foreach ($sectionArray['settings'] as $settingKey => $settingArray) {
+                    if (isset($settingArray['default'])) {
+                        $allConfig[$settingKey] = self::getDefaultValue($settingKey);
+                    }
+                }
+            }
+        }
+        return $allConfig;
+    }
+
+    /**
      * Fetch correct option values from WP config.
      *
      * If namespace is set (default), this function will try to fetch one serialized configuration row
@@ -196,7 +222,13 @@ class Resursbank_Core
         $defaultValue = self::getDefaultValue($key);
 
         if (!empty($namespace)) {
-            $configuration = @unserialize(get_option($namespace));
+            // This is usually serialized when returned.
+            $nsOpt = get_option($namespace);
+            if (!empty($nsOpt)) {
+                $configuration = $nsOpt;
+            } else {
+                $configuration = array();
+            }
             // If no key is defined, but still a namespace, just return the full array and ignore the
             // rest of this method.
             if (empty($key)) {
@@ -220,15 +252,31 @@ class Resursbank_Core
             $value = $defaultValue;
         }
 
-        if (isset($confValues[$key]) && isset($confValues[$key]['type']) && $confValues[$key]['type'] === 'checkbox') {
-            if (strtolower($value) === 'yes' || (bool)$value) {
-                $value = true;
-            } else {
-                $value = false;
+        if (isset($confValues[$key]) && isset($confValues[$key]['type'])) {
+            if ($confValues[$key]['type'] === 'checkbox') {
+                if (strtolower($value) === 'yes' || (bool)$value) {
+                    $value = true;
+                } else {
+                    $value = false;
+                }
             }
         }
 
         return $value;
+    }
+
+    /**
+     * Administrator permissions or in admin control.
+     *
+     * @return bool
+     */
+    function getUserIsAdmin()
+    {
+        if (current_user_can('administrator') || is_admin()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -242,14 +290,22 @@ class Resursbank_Core
      * @param string $namespace
      * @return bool
      */
-    public static function setResursOption($key, $value, $namespace = 'Resurs_Bank_Payment_Gateway')
+    public static function setResursOption($key = '', $value = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         $updateSuccess = false;
         if (!empty($key)) {
             if (!empty($namespace)) {
-                $allOptions = get_option($namespace);
-                $allOptions[$key] = $value;
-                $updateSuccess = update_option($namespace, $allOptions);
+                // If key is an array and namespace is not empty, try to store inbound array to configuration.
+                if (is_array($key)) {
+
+                    // Use the built in configuration to fill up with missing keys.
+                    $allOptions = self::getResursOption();
+                    foreach ($key as $optionKey => $optionValue) {
+                        $allOptions[$optionKey] = $optionValue;
+                    }
+                    $updateSuccess = update_option($namespace, $allOptions);
+
+                }
             } else {
                 $updateSuccess = update_option('Resurs_Bank_' . $key, $value);
             }

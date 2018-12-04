@@ -87,10 +87,27 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     public function resurs_bank_settings_save_legacy($settings_section)
     {
-        echo $settings_section;
-        echo "<pre>";
-        print_R($_REQUEST);
-        die;
+        $fullConfiguration = Resursbank_Core::getDefaultConfiguration();
+        $storedConfiguration = Resursbank_Core::getResursOption();
+
+        // Overwrite full configuration with stored values.
+        if (is_array($storedConfiguration)) {
+            foreach ($storedConfiguration as $itemKey => $itemValue) {
+                $fullConfiguration[$itemKey] = $itemValue;
+            }
+        }
+
+        // Loop through request and overwrite with new values.
+        if (isset($_REQUEST) && is_array($_REQUEST)) {
+            foreach ($_REQUEST as $saveKey => $saveValue) {
+                if (preg_match('/^resursbank_/', $saveKey)) {
+                    $shortKey = preg_replace('/^resursbank_/', '', $saveKey);
+                    $fullConfiguration[$shortKey] = ($saveValue === 'yes') ? true : $saveValue;
+                }
+            }
+        }
+
+        Resursbank_Core::setResursOption($fullConfiguration);
     }
 
     /**

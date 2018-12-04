@@ -156,6 +156,20 @@ class Resursbank_Adminforms
         return trim($return);
     }
 
+    public function getCredentialFields($data = '', $settingKey = '')
+    {
+        $credentials = Resursbank_Core::getResursOption('credentials');
+
+        if (is_admin() && is_array($credentials)) {
+            foreach ($credentials as $credentialData) {
+
+            }
+        }
+
+        return '';
+    }
+
+
     /**
      * Get key value (content) from configuration item.
      *
@@ -236,7 +250,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Returns true if config option allows multiple choices
+     * Returns true if config option allows multiple choices.
      *
      * @param $configItem
      * @return bool
@@ -265,9 +279,10 @@ class Resursbank_Adminforms
         if (isset($configItem['options']) && is_array($configItem['options'])) {
             foreach ($configItem['options'] as $optionKey => $optionValue) {
                 if (!$this->getIsMultiSelection($configItem)) {
-                    $selected = ($storedValue !== $optionKey) ? '' : 'selected';
+                    $selected = ($storedValue == $optionKey ? 'selected' : '');
                 } else {
-                    // TODO: Multiple selections might be available
+                    // TODO: Multiple selections might be available.
+                    // TODO: This is blocked by the "update_option"-parts.
                 }
                 $optionString .= '<option value="' . $optionKey . '" ' . $selected . '>' . htmlentities($optionValue) . '</option>' . "\n";
             }
@@ -340,7 +355,7 @@ class Resursbank_Adminforms
             );
         }
 
-        if (is_string($configItemOptionList) && preg_match('/^dynamic_/', $configItemOptionList)) {
+        if (is_string($configItemOptionList) && preg_match('/^dynamic_/i', $configItemOptionList)) {
             $exDyn = explode('_', $configItemOptionList, 2);
             $filterName = isset($exDyn[1]) ? $exDyn[1] : '';
             if ($filterName) {
@@ -365,8 +380,10 @@ class Resursbank_Adminforms
      */
     private function getFieldInputSelect($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
     {
-        $selectBox = '
-            <select class="resursGatewayConfigSelect" ' . $this->getFieldInputSelectMulti(
+        $selectBox = '<select " name="resursbank_' . $settingKey .
+            '" id="resursbank_' . $settingKey .
+            '" class="resursGatewayConfigSelect" ' .
+            $this->getFieldInputSelectMulti(
                 $configItem,
                 $settingKey
             ) . ' ' . $this->getFieldInputSelectSize(
@@ -385,6 +402,21 @@ class Resursbank_Adminforms
         return $selectBox;
     }
 
+    /**
+     * @param $configItem
+     * @param $configType
+     * @param $settingKey
+     * @param $storedValue
+     * @param $scriptLoader
+     * @return string|null
+     */
+    private function getFieldInputFilter($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
+    {
+        if (isset($configItem['filter']) && !empty($configItem['filter'])) {
+            return apply_filters('resursbank_config_element_' . $configItem['filter'], $configItem, $settingKey);
+        }
+        return null;
+    }
 
     /**
      * Render configuration row.
