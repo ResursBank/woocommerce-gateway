@@ -190,19 +190,31 @@ class Resursbank_Adminforms
         $instance = new Resursbank_Adminforms();
 
         $credentials = Resursbank_Core::getResursOption('credentials');
-        $return = '<div id="resurs_bank_credential_set">';
+        $return = '<div id="resurs_bank_credential_set">
+            <table width="100%" style="border:1px solid gray; min-height: 5px;" id="resurs_bank_credential_table">
+        ';
         if (is_admin() && is_array($credentials)) {
-            foreach ($credentials as $credentialData) {
-                $return .= $instance->getFieldInputText(
-                    array('type' => 'text'),
-                    'text',
-                    'credentials_' . $credentialData['name'],
-                    'torv',
-                    ''
-                );
+            foreach ($credentials as $credentialId => $credentialData) {
+
+                $paymentMethods = Resursbank_Core::getPaymentMethods($credentialData['country']);
+                $return .= '<tr>
+                    <td><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' . $credentialData['username'] . '"></td>
+                    <td><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' . $credentialData['username'] . '"></td>
+                    <td><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]">
+                    <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
+                    <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
+                    <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
+                    <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
+                    </select></td>
+                    </tr>
+                    <tr><td colspan="3" id="method_list_' . $credentialData['country'] . '"></td></tr>
+                    <tr><td colspan="3" id="callback_list_' . $credentialData['country'] . '"></td></tr>
+                ';
+
             }
         }
-        $return .= '</div>';
+        $return .= '</table>
+        </div>';
 
         $return .= '<div>
             <img src="' .

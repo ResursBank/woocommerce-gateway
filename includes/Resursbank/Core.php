@@ -4,6 +4,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
+use Resursbank\RBEcomPHP\ResursBank;
 /**
  * Core functions class for Resurs Bank containing static data handlers and some dynamically called methods.
  *
@@ -19,7 +21,50 @@ class Resursbank_Core
 
     function __construct()
     {
-        $this->RB = new Resursbank\RBEcomPHP\ResursBank();
+        $this->RB = Resursbank_Core::getConnection();
+    }
+
+    /**
+     * Get chosen environment for Resurs Bank.
+     *
+     * @return string
+     */
+    public static function getEnvironment() {
+        $environment = self::getResursOption('environment');
+        return $environment;
+    }
+
+    /**
+     * Get chosen environment and translate it to EComPHP-style.
+     *
+     * @return int
+     */
+    public static function getEcomEnvironment() {
+        $env = self::getEnvironment();
+        if ($env === 'live') {
+            return RESURS_ENVIRONMENTS::PRODUCTION;
+        }
+        return RESURS_ENVIRONMENTS::TEST;
+    }
+
+    /**
+     * Initialize EComPHP.
+     *
+     * @param string $username
+     * @param string $password
+     * @param string $country
+     * @return ResursBank
+     * @throws Exception
+     */
+    private static function getConnection($username = '', $password = '', $country = '')
+    {
+        $connection = new ResursBank();
+        if (!empty($username) && !empty($password)) {
+            $connection->setAuthentication($username, $password);
+        }
+        $connection->setEnvironment(self::getEcomEnvironment());
+
+        return $connection;
     }
 
     /**
@@ -35,6 +80,31 @@ class Resursbank_Core
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param string $country
+     * @return array|bool|mixed|null
+     */
+    public static function getCredentialsByCountry($country = '')
+    {
+        $credentialsList = self::getResursOption('credentials');
+        if (!empty($country) && isset($credentialsList[$country])) {
+            return $credentialsList[$country];
+        }
+        if (!is_array($credentialsList)) {
+            $credentialsList = array();
+        }
+        return $credentialsList;
+    }
+
+    public static function getPaymentMethods($country = '')
+    {
+        $credentials = self::getCredentialsByCountry($country);
+
+        if (isset($credentials['username'])) {
+            $RB = self::getConnection($credentials['username'], $credentials['password']);
+        }
     }
 
     /**

@@ -83,6 +83,27 @@ class WC_Settings_ResursBank extends WC_Settings_Page
     }
 
     /**
+     * Convert credentials set to proper array defined by country code.
+     *
+     * @param $shortKey
+     * @param $saveValue
+     * @return array
+     */
+    private function getCredentialsSet($shortKey, $saveValue) {
+        $newValue = $saveValue;
+        if ($shortKey === 'credentials') {
+            // Reset saved array if credentials block.
+            $newValue = array();
+            foreach ($saveValue as $saveArray) {
+                if (isset($saveArray['country']) && !empty($saveArray['country'])) {
+                    $newValue[$saveArray['country']] = $saveArray;
+                }
+            }
+        }
+        return $newValue;
+    }
+
+    /**
      * @param $settings_section
      */
     public function resurs_bank_settings_save_legacy($settings_section)
@@ -102,6 +123,9 @@ class WC_Settings_ResursBank extends WC_Settings_Page
             foreach ($_REQUEST as $saveKey => $saveValue) {
                 if (preg_match('/^resursbank_/', $saveKey)) {
                     $shortKey = preg_replace('/^resursbank_/', '', $saveKey);
+                    // Pass the saved value through credentials detecting and convert the
+                    // data if anything found.
+                    $saveValue = $this->getCredentialsSet($shortKey, $saveValue);
                     $fullConfiguration[$shortKey] = ($saveValue === 'yes') ? true : $saveValue;
                 }
             }
