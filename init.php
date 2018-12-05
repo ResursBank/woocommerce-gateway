@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
  * - Make the plugin look good
  * - Make the plugin as modular as possible, to simplify development without code collisions
  * - Only run plugin in sections where WooCommerce is involved
- *
+ * - TODO TEST CREDENTIALS FROM ADMIN!
  */
 
 // This is where it all begins.

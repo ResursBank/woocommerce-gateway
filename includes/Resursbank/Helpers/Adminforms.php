@@ -9,12 +9,16 @@ class Resursbank_Adminforms
     /** @var string */
     private $html = '';
 
+    /** @var Resursbank_Core */
+    protected $CORE;
+
     /**
      * Resursbank_Adminforms constructor.
      */
     public function __construct()
     {
         $this->configurationArray = $this->getConfigurationArray();
+        $this->CORE = new Resursbank_Core();
     }
 
     /**
@@ -187,17 +191,24 @@ class Resursbank_Adminforms
 
     public function getCredentialFields($data = '', $settingKey = '')
     {
-        $instance = new Resursbank_Adminforms();
+        $return = null;
 
-        $credentials = Resursbank_Core::getResursOption('credentials');
-        $return = '<div id="resurs_bank_credential_set">
+        // Credentials are secret stuff.
+        if (is_admin()) {
+            $credentials = Resursbank_Core::getResursOption('credentials');
+            $return = '<div id="resurs_bank_credential_set">
             <table width="100%" style="border:1px solid gray; min-height: 5px;" id="resurs_bank_credential_table">
         ';
-        if (is_admin() && is_array($credentials)) {
-            foreach ($credentials as $credentialId => $credentialData) {
+            if (is_array($credentials)) {
+                foreach ($credentials as $credentialId => $credentialData) {
 
-                $paymentMethods = Resursbank_Core::getPaymentMethods($credentialData['country']);
-                $return .= '<tr>
+                    $paymentMethods = array();
+                    try {
+                        $paymentMethods = $this->CORE->getPaymentMethods($credentialData['country']);
+                    } catch (\Exception $e) {
+
+                    }
+                    $return .= '<tr id="resursbank_credential_row_' . $credentialData['country'] . '">
                     <td><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' . $credentialData['username'] . '"></td>
                     <td><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' . $credentialData['username'] . '"></td>
                     <td><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]">
@@ -206,22 +217,26 @@ class Resursbank_Adminforms
                     <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
                     <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
                     </select></td>
+                    <td>
+                    <img style="cursor: pointer;" src="' .
+                        Resursbank_Core::getGraphics('delete') .
+                        '" onclick="$resurs_bank(\'#resursbank_credential_row_' . $credentialData['country'] . '\').remove()"></td>
                     </tr>
                     <tr><td colspan="3" id="method_list_' . $credentialData['country'] . '"></td></tr>
                     <tr><td colspan="3" id="callback_list_' . $credentialData['country'] . '"></td></tr>
                 ';
 
+                }
             }
-        }
-        $return .= '</table>
+            $return .= '</table>
         </div>';
 
-        $return .= '<div>
+            $return .= '<div>
             <img src="' .
-            Resursbank_Core::getGraphics('add') .
-            '" onclick="resursBankCredentialField()" style="cursor: pointer">
+                Resursbank_Core::getGraphics('add') .
+                '" onclick="resursBankCredentialField()" style="cursor: pointer">
             </div>';
-
+        }
 
         return $return;
     }

@@ -6,6 +6,7 @@ if (!defined('ABSPATH')) {
 
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\ResursBank;
+
 /**
  * Core functions class for Resurs Bank containing static data handlers and some dynamically called methods.
  *
@@ -21,7 +22,47 @@ class Resursbank_Core
 
     function __construct()
     {
-        $this->RB = Resursbank_Core::getConnection();
+        $this->RB = $this->getConnection();
+    }
+
+    /**
+     * Fetch payment methods for country based selection.
+     *
+     * @param string $country
+     * @return array|mixed
+     * @throws Exception
+     */
+    public function getPaymentMethods($country = '')
+    {
+        $credentials = $this->getCredentialsByCountry($country);
+        $return = array();
+
+        if (isset($credentials['username'])) {
+            $connection = $this->getConnection($credentials['username'], $credentials['password']);
+            $return = $connection->getPaymentMethods(array(), true);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param string $country
+     * @return array|bool|mixed|null
+     */
+    private function getCredentialsByCountry($country = '')
+    {
+        $credentialsList = $this->getResursOptionStatically('credentials');
+        if (!empty($country) && isset($credentialsList[$country])) {
+            return $credentialsList[$country];
+        }
+        if (!is_array($credentialsList)) {
+            $credentialsList = array();
+        }
+        return $credentialsList;
+    }
+
+    private function getFlowByCountry() {
+        // TODO: FIX IT!!
     }
 
     /**
@@ -29,9 +70,15 @@ class Resursbank_Core
      *
      * @return string
      */
-    public static function getEnvironment() {
-        $environment = self::getResursOption('environment');
+    private function getEnvironment()
+    {
+        $environment = $this->getResursOptionStatically('environment');
         return $environment;
+    }
+
+    public function getResursOptionStatically($key = '', $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        return Resursbank_Core::getResursOption($key, $namespace);
     }
 
     /**
@@ -39,7 +86,8 @@ class Resursbank_Core
      *
      * @return int
      */
-    public static function getEcomEnvironment() {
+    private function getEcomEnvironment()
+    {
         $env = self::getEnvironment();
         if ($env === 'live') {
             return RESURS_ENVIRONMENTS::PRODUCTION;
@@ -56,16 +104,19 @@ class Resursbank_Core
      * @return ResursBank
      * @throws Exception
      */
-    private static function getConnection($username = '', $password = '', $country = '')
+    private function getConnection($username = '', $password = '', $country = '')
     {
-        $connection = new ResursBank();
+        $this->RB = new ResursBank();
         if (!empty($username) && !empty($password)) {
-            $connection->setAuthentication($username, $password);
+            $this->RB->setAuthentication($username, $password);
         }
-        $connection->setEnvironment(self::getEcomEnvironment());
+        $this->RB->setEnvironment(self::getEcomEnvironment());
 
-        return $connection;
+        return $this->RB;
     }
+
+
+    /** ** METHOD BELOW IS STATIC, THE ABOVE REQUIRES INSTATIATION ** */
 
     /**
      * Decide whether we're going to use internal ecomphp or the one delivered with the prior plugin.
@@ -82,29 +133,12 @@ class Resursbank_Core
         return true;
     }
 
-    /**
-     * @param string $country
-     * @return array|bool|mixed|null
-     */
-    public static function getCredentialsByCountry($country = '')
-    {
-        $credentialsList = self::getResursOption('credentials');
-        if (!empty($country) && isset($credentialsList[$country])) {
-            return $credentialsList[$country];
-        }
-        if (!is_array($credentialsList)) {
-            $credentialsList = array();
-        }
-        return $credentialsList;
+    public static function getStoredPaymentMethods() {
+        $methodList = self::getResursOption('paymentMethods');
     }
 
-    public static function getPaymentMethods($country = '')
-    {
-        $credentials = self::getCredentialsByCountry($country);
-
-        if (isset($credentials['username'])) {
-            $RB = self::getConnection($credentials['username'], $credentials['password']);
-        }
+    public static function setStoredPaymentMethods() {
+        
     }
 
     /**
