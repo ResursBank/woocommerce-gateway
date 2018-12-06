@@ -477,6 +477,11 @@ function getResursPhrase(phraseName, countryId) {
 }
 
 function getMethodType(customerType) {
+    if (typeof customerType == 'undefined') {
+        // If customerType is not defined, something is wrong and we will probably not be
+        // able to process any data here.
+        return;
+    }
     var checkedPaymentMethod = null;
     var hasResursMethods = false;
 
