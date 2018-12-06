@@ -9,16 +9,20 @@ class Resursbank_Adminforms
     /** @var string */
     private $html = '';
 
+    /** @var Resursbank_Core */
+    protected $CORE;
+
     /**
      * Resursbank_Adminforms constructor.
      */
     public function __construct()
     {
         $this->configurationArray = $this->getConfigurationArray();
+        $this->CORE = new Resursbank_Core();
     }
 
     /**
-     * Get configuration table as an array
+     * Get configuration table as an array.
      *
      * @return array
      */
@@ -28,6 +32,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Get the first section of the confiuration array.
+     *
      * @param bool $asArray
      * @return int|mixed|string
      */
@@ -48,7 +54,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Prepare forms
+     * Prepare forms.
      *
      * @return string
      */
@@ -72,7 +78,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Get rendered html
+     * Get rendered html.
      *
      * @param $settingKey
      * @param array $configItem
@@ -101,6 +107,18 @@ class Resursbank_Adminforms
         return $html;
     }
 
+    /**
+     * Render the form field row.
+     *
+     * @param $settingKey
+     * @param $leftColumnString
+     * @param $rightColumnValue
+     * @param string $tdThClassName
+     * @param string $tdLeftClass
+     * @param string $tdRightClass
+     * @param bool $isHead
+     * @return string
+     */
     private function renderFormRow(
         $settingKey,
         $leftColumnString,
@@ -143,7 +161,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Get key value (content) from configuration item
+     * Get key value (content) from configuration item.
      *
      * @param $key
      * @param $item
@@ -160,6 +178,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Get configured value for specific option.
+     *
      * @param $settingKey
      * @param string $namespace
      * @return bool|mixed|null
@@ -169,8 +189,60 @@ class Resursbank_Adminforms
         return Resursbank_Core::getResursOption($settingKey, $namespace);
     }
 
+    public function getCredentialFields($data = '', $settingKey = '')
+    {
+        $return = null;
+
+        // Credentials are secret stuff.
+        if (is_admin()) {
+            $credentials = Resursbank_Core::getResursOption('credentials');
+            $return = '<div id="resurs_bank_credential_set">
+            <table width="100%" style="border:1px solid gray; min-height: 5px;" id="resurs_bank_credential_table">
+        ';
+            if (is_array($credentials)) {
+                foreach ($credentials as $credentialId => $credentialData) {
+
+                    $paymentMethods = array();
+                    try {
+                        $paymentMethods = $this->CORE->getPaymentMethods($credentialData['country']);
+                    } catch (\Exception $e) {
+
+                    }
+                    $return .= '<tr id="resursbank_credential_row_' . $credentialData['country'] . '">
+                    <td><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' . $credentialData['username'] . '"></td>
+                    <td><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' . $credentialData['username'] . '"></td>
+                    <td><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]">
+                    <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
+                    <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
+                    <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
+                    <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
+                    </select></td>
+                    <td>
+                    <img style="cursor: pointer;" src="' .
+                        Resursbank_Core::getGraphics('delete') .
+                        '" onclick="$resurs_bank(\'#resursbank_credential_row_' . $credentialData['country'] . '\').remove()"></td>
+                    </tr>
+                    <tr><td colspan="3" id="method_list_' . $credentialData['country'] . '"></td></tr>
+                    <tr><td colspan="3" id="callback_list_' . $credentialData['country'] . '"></td></tr>
+                ';
+
+                }
+            }
+            $return .= '</table>
+        </div>';
+
+            $return .= '<div>
+            <img src="' .
+                Resursbank_Core::getGraphics('add') .
+                '" onclick="resursBankCredentialField()" style="cursor: pointer">
+            </div>';
+        }
+
+        return $return;
+    }
+
     /**
-     * Create text based form field (not textarea)
+     * Create text based form field (not textarea).
      *
      * @param $configItem
      * @param $configType
@@ -195,7 +267,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Create a checkbox form field
+     * Create a checkbox form field.
      *
      * @param $configItem
      * @param $configType
@@ -220,23 +292,49 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Create options list for configuration (dropdown/select)
+     * Returns true if config option allows multiple choices.
+     *
+     * @param $configItem
+     * @return bool
+     */
+    private function getIsMultiSelection($configItem)
+    {
+        $return = false;
+
+        if (isset($configItem['multi']) && $configItem['multi']) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Create options list for configuration (dropdown/select).
      *
      * @param $configItem
      * @return string
      */
-    private function getFieldInputOptions($configItem)
+    private function getFieldInputOptions($configItem, $settingKey, $storedValue)
     {
         $optionString = '';
+
         if (isset($configItem['options']) && is_array($configItem['options'])) {
             foreach ($configItem['options'] as $optionKey => $optionValue) {
-                $optionString .= '<option value="' . $optionKey . '">' . htmlentities($optionValue) . '</option>' . "\n";
+                if (!$this->getIsMultiSelection($configItem)) {
+                    $selected = ($storedValue == $optionKey ? 'selected' : '');
+                } else {
+                    // TODO: Multiple selections might be available.
+                    // TODO: This is blocked by the "update_option"-parts.
+                }
+                $optionString .= '<option value="' . $optionKey . '" ' . $selected . '>' . htmlentities($optionValue) . '</option>' . "\n";
             }
         }
         return $optionString;
     }
 
     /**
+     * Get the value for a "mutiselect" dropdown box.
+     *
      * @param $configItem
      * @param $settingKey
      * @return mixed|string|void|null
@@ -257,6 +355,13 @@ class Resursbank_Adminforms
         return $return;
     }
 
+    /**
+     * Get the size of configurable dropdown.
+     *
+     * @param $configItem
+     * @param $settingKey
+     * @return mixed|string|void|null
+     */
     private function getFieldInputSelectSize($configItem, $settingKey)
     {
         $return = null;
@@ -274,7 +379,39 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Create a select/dropdown option
+     * Generate an array with all options available.
+     *
+     * @param $configItemOptionList
+     * @param $settingKey
+     * @return mixed|void
+     */
+    private function getDynamicOptions($configItemOptionList, $settingKey)
+    {
+        if (
+            is_array($configItemOptionList) && in_array('dynamic', $configItemOptionList) ||
+            is_string($configItemOptionList) && $configItemOptionList === 'dynamic'
+        ) {
+            $configItemOptionList = apply_filters('resursbank_configrow_dropdown_options',
+                (array)$configItemOptionList['options'],
+                $settingKey
+            );
+        }
+
+        if (is_string($configItemOptionList) && preg_match('/^dynamic_/i', $configItemOptionList)) {
+            $exDyn = explode('_', $configItemOptionList, 2);
+            $filterName = isset($exDyn[1]) ? $exDyn[1] : '';
+            if ($filterName) {
+                $configItemOptionList = apply_filters('resursbank_dropdown_option_method_' . $filterName,
+                    array()
+                );
+            }
+        }
+
+        return $configItemOptionList;
+    }
+
+    /**
+     * Create a select/dropdown option.
      *
      * @param $configItem
      * @param $configType
@@ -285,8 +422,10 @@ class Resursbank_Adminforms
      */
     private function getFieldInputSelect($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
     {
-        $selectBox = '
-            <select class="resursGatewayConfigSelect" ' . $this->getFieldInputSelectMulti(
+        $selectBox = '<select " name="resursbank_' . $settingKey .
+            '" id="resursbank_' . $settingKey .
+            '" class="resursGatewayConfigSelect" ' .
+            $this->getFieldInputSelectMulti(
                 $configItem,
                 $settingKey
             ) . ' ' . $this->getFieldInputSelectSize(
@@ -295,29 +434,34 @@ class Resursbank_Adminforms
             ) . '>
         ';
 
-        if (isset($configItem['options']) &&
-            (
-                $configItem['options'] == 'dynamic' || is_array($configItem['options']
-                ) &&
-                in_array('dynamic',
-                    $configItem['options']))) {
-            $configItem['options'] = array();
-            $configItem['options'] = apply_filters('resursbank_configrow_dropdown_options',
-                (array)$configItem['options'],
-                $settingKey
-            );
+        if (isset($configItem['options'])) {
+            $configItem['options'] = $this->getDynamicOptions($configItem['options'], $settingKey);
         }
 
-        $selectBox .= $this->getFieldInputOptions($configItem);
+        $selectBox .= $this->getFieldInputOptions($configItem, $settingKey, $storedValue);
+        $selectBox .= '</select>';
 
-        $selectBox .= '</select>
-        ';
         return $selectBox;
     }
 
+    /**
+     * @param $configItem
+     * @param $configType
+     * @param $settingKey
+     * @param $storedValue
+     * @param $scriptLoader
+     * @return string|null
+     */
+    private function getFieldInputFilter($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
+    {
+        if (isset($configItem['filter']) && !empty($configItem['filter'])) {
+            return apply_filters('resursbank_config_element_' . $configItem['filter'], $configItem, $settingKey);
+        }
+        return null;
+    }
 
     /**
-     * Render configuration row
+     * Render configuration row.
      *
      * @param $configItem
      * @param $settingKey
@@ -350,7 +494,7 @@ class Resursbank_Adminforms
     }
 
     /**
-     * Render table row for key 'title'
+     * Render table row for key 'title'.
      *
      * @param $settingKey
      * @param $configItem
@@ -372,6 +516,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Render the form field row with the current stored value (or default).
+     *
      * @param $settingKey
      * @param $configItem
      * @return string
@@ -386,6 +532,8 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Get the html.
+     *
      * @return string
      */
     public function getHtml()

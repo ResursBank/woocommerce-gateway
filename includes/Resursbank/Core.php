@@ -4,6 +4,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
+use Resursbank\RBEcomPHP\ResursBank;
+
 /**
  * Core functions class for Resurs Bank containing static data handlers and some dynamically called methods.
  *
@@ -19,8 +22,101 @@ class Resursbank_Core
 
     function __construct()
     {
-        $this->RB = new Resursbank\RBEcomPHP\ResursBank();
+        $this->RB = $this->getConnection();
     }
+
+    /**
+     * Fetch payment methods for country based selection.
+     *
+     * @param string $country
+     * @return array|mixed
+     * @throws Exception
+     */
+    public function getPaymentMethods($country = '')
+    {
+        $credentials = $this->getCredentialsByCountry($country);
+        $return = array();
+
+        if (isset($credentials['username'])) {
+            $connection = $this->getConnection($credentials['username'], $credentials['password']);
+            $return = $connection->getPaymentMethods(array(), true);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param string $country
+     * @return array|bool|mixed|null
+     */
+    private function getCredentialsByCountry($country = '')
+    {
+        $credentialsList = $this->getResursOptionStatically('credentials');
+        if (!empty($country) && isset($credentialsList[$country])) {
+            return $credentialsList[$country];
+        }
+        if (!is_array($credentialsList)) {
+            $credentialsList = array();
+        }
+        return $credentialsList;
+    }
+
+    private function getFlowByCountry() {
+        // TODO: FIX IT!!
+    }
+
+    /**
+     * Get chosen environment for Resurs Bank.
+     *
+     * @return string
+     */
+    private function getEnvironment()
+    {
+        $environment = $this->getResursOptionStatically('environment');
+        return $environment;
+    }
+
+    public function getResursOptionStatically($key = '', $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        return Resursbank_Core::getResursOption($key, $namespace);
+    }
+
+    /**
+     * Get chosen environment and translate it to EComPHP-style.
+     *
+     * @return int
+     */
+    private function getEcomEnvironment()
+    {
+        $env = self::getEnvironment();
+        if ($env === 'live') {
+            return RESURS_ENVIRONMENTS::PRODUCTION;
+        }
+        return RESURS_ENVIRONMENTS::TEST;
+    }
+
+    /**
+     * Initialize EComPHP.
+     *
+     * @param string $username
+     * @param string $password
+     * @param string $country
+     * @return ResursBank
+     * @throws Exception
+     */
+    private function getConnection($username = '', $password = '', $country = '')
+    {
+        $this->RB = new ResursBank();
+        if (!empty($username) && !empty($password)) {
+            $this->RB->setAuthentication($username, $password);
+        }
+        $this->RB->setEnvironment(self::getEcomEnvironment());
+
+        return $this->RB;
+    }
+
+
+    /** ** METHOD BELOW IS STATIC, THE ABOVE REQUIRES INSTATIATION ** */
 
     /**
      * Decide whether we're going to use internal ecomphp or the one delivered with the prior plugin.
@@ -35,6 +131,14 @@ class Resursbank_Core
             return false;
         }
         return true;
+    }
+
+    public static function getStoredPaymentMethods() {
+        $methodList = self::getResursOption('paymentMethods');
+    }
+
+    public static function setStoredPaymentMethods() {
+        
     }
 
     /**
@@ -94,18 +198,116 @@ class Resursbank_Core
     }
 
     /**
-     * Fetch default value from a configuration item
+     * Generate a configurable array out of WooCommerce taxrate classes.
      *
-     * @param $item
-     * @return null
+     * Configurable = Resurs Bank wp-admin friendly ratelist
+     *
+     * @param array $taxClasses
+     * @param string $tax_class
+     * @param null $customer
+     * @return array
      */
-    private static function getDefaultValue($item)
+    public static function getTaxRateList($taxClasses = array(), $tax_class = '', $customer = null)
+    {
+        $allTaxClasses = self::getTaxRateClasses($taxClasses, $tax_class, $customer);
+        $rateArray = array();
+
+        if (is_array($allTaxClasses) && count($allTaxClasses)) {
+            foreach ($allTaxClasses as $arrayData) {
+                // Only match once
+                if (!isset($rateArray[$arrayData['rate']])) {
+                    $rateArray[$arrayData['rate']] = $arrayData['label'];
+                }
+            }
+        }
+
+        return $rateArray;
+    }
+
+    /**
+     * Get taxclasses from WooCommerce that contains taxrates.
+     *
+     * @param array $taxClasses
+     * @param string $tax_class
+     * @param null $customer
+     * @return array
+     */
+    public static function getTaxRateClasses($taxClasses = array(), $tax_class = '', $customer = null)
+    {
+        $currentRateList = WC_Tax::get_rates();
+        $taxClassList = WC_Tax::get_tax_classes();
+        if (is_array($taxClassList)) {
+            foreach ($taxClassList as $taxClass) {
+                $currentRateList += WC_Tax::get_rates($taxClass);
+            }
+        }
+
+        return $currentRateList;
+    }
+
+    /**
+     * Get full configuration array.
+     *
+     * @return array
+     */
+    public static function getConfiguration()
+    {
+        return Resursbank_Config::getConfigurationArray();
+    }
+
+    /**
+     * Return true if constructor should be used in admin panel.
+     *
+     * @return bool
+     */
+    public static function getSectionsByConstructor()
+    {
+        return (defined('_RESURSBANK_SECTIONS_BY_CONSTRUCTOR')) ? _RESURSBANK_SECTIONS_BY_CONSTRUCTOR : false;
+    }
+
+    /**
+     * Fetch default value from a configuration item.
+     *
+     * @param $key
+     * @return string|null If null, nothing was found.
+     */
+    public static function getDefaultValue($key)
     {
         $return = null;
-        if (isset($item['default'])) {
-            $return = $item['default'];
+        $configurationArray = Resursbank_Config::getConfigurationArray();
+
+        foreach ($configurationArray as $itemKey => $itemArray) {
+            if (isset($itemArray['settings'])) {
+                foreach ($itemArray as $settingKey => $settingArray) {
+                    if (isset($settingArray[$key]) && isset($settingArray[$key]['default'])) {
+                        $return = $settingArray[$key]['default'];
+                        break;
+                    }
+                }
+            }
         }
+
         return $return;
+    }
+
+    /**
+     * Get all default values bulked.
+     * @return array
+     */
+    public static function getDefaultConfiguration()
+    {
+        $allConfig = array();
+        $defaultConfig = Resursbank_Core::getConfiguration();
+        foreach ($defaultConfig as $section => $sectionArray) {
+            if (isset($sectionArray['settings'])) {
+                foreach ($sectionArray['settings'] as $settingKey => $settingArray) {
+                    if (isset($settingArray['default'])) {
+                        $allConfig[$settingKey] = self::getDefaultValue($settingKey);
+                    }
+                }
+            }
+        }
+        return $allConfig;
     }
 
     /**
@@ -121,10 +323,16 @@ class Resursbank_Core
     public static function getResursOption($key = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         $value = null;
-        $confValues = Resursbank_Config::getConfigurationArray();
+        $defaultValue = self::getDefaultValue($key);
 
         if (!empty($namespace)) {
-            $configuration = @unserialize(get_option($namespace));
+            // This is usually serialized when returned.
+            $nsOpt = get_option($namespace);
+            if (!empty($nsOpt)) {
+                $configuration = $nsOpt;
+            } else {
+                $configuration = array();
+            }
             // If no key is defined, but still a namespace, just return the full array and ignore the
             // rest of this method.
             if (empty($key)) {
@@ -144,19 +352,35 @@ class Resursbank_Core
             $value = $configuration->{$key};
         }
 
-        if (is_null($value) && isset($confValues[$key])) {
-            $value = self::getDefaultValue($confValues[$key]);
+        if (is_null($value) && !is_null($defaultValue)) {
+            $value = $defaultValue;
         }
 
-        if (isset($confValues[$key]) && isset($confValues[$key]['type']) && $confValues[$key]['type'] === 'checkbox') {
-            if (strtolower($value) === 'yes' || (bool)$value) {
-                $value = true;
-            } else {
-                $value = false;
+        if (isset($confValues[$key]) && isset($confValues[$key]['type'])) {
+            if ($confValues[$key]['type'] === 'checkbox') {
+                if (strtolower($value) === 'yes' || (bool)$value) {
+                    $value = true;
+                } else {
+                    $value = false;
+                }
             }
         }
 
         return $value;
+    }
+
+    /**
+     * Administrator permissions or in admin control.
+     *
+     * @return bool
+     */
+    function getUserIsAdmin()
+    {
+        if (current_user_can('administrator') || is_admin()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -170,14 +394,22 @@ class Resursbank_Core
      * @param string $namespace
      * @return bool
      */
-    public static function setResursOption($key, $value, $namespace = 'Resurs_Bank_Payment_Gateway')
+    public static function setResursOption($key = '', $value = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         $updateSuccess = false;
         if (!empty($key)) {
             if (!empty($namespace)) {
-                $allOptions = get_option($namespace);
-                $allOptions[$key] = $value;
-                $updateSuccess = update_option($namespace, $allOptions);
+                // If key is an array and namespace is not empty, try to store inbound array to configuration.
+                if (is_array($key)) {
+
+                    // Use the built in configuration to fill up with missing keys.
+                    $allOptions = self::getResursOption();
+                    foreach ($key as $optionKey => $optionValue) {
+                        $allOptions[$optionKey] = $optionValue;
+                    }
+                    $updateSuccess = update_option($namespace, $allOptions);
+
+                }
             } else {
                 $updateSuccess = update_option('Resurs_Bank_' . $key, $value);
             }
@@ -204,6 +436,39 @@ class Resursbank_Core
     }
 
     /**
+     * @param $filename
+     * @return string|null Null is unexistent
+     */
+    private static function getGraphicsUrl($filename)
+    {
+        $return = null;
+        $gUrl = _RESURSBANK_GATEWAY_URL . 'images';
+        if (file_exists(_RESURSBANK_GATEWAY_PATH . 'images/' . $filename)) {
+            $return = $gUrl . '/' . $filename;
+        }
+        return $return;
+    }
+
+    /**
+     * Get URLs to used graphics
+     *
+     * @param string $name
+     * @return array
+     */
+    public static function getGraphics($name = '')
+    {
+        $return = array(
+            'add' => self::getGraphicsUrl('add-16.png'),
+            'delete' => self::getGraphicsUrl('delete-16.png'),
+            'spinner' => self::getGraphicsUrl('spinner.png'),
+        );
+        if (!empty($name)) {
+            return isset($return[$name]) ? $return[$name] : null;
+        }
+        return $return;
+    }
+
+    /**
      * Get the name of the primary class
      *
      * @return string
@@ -221,6 +486,7 @@ class Resursbank_Core
         $varsToLocalize = array(
             'resurs_bank_payment_gateway' => array(
                 'available' => true,
+                'graphics' => Resursbank_Core::getGraphics(),
                 'backend_url' => _RESURSBANK_GATEWAY_BACKEND,
                 'backend_nonce' => wp_nonce_url(_RESURSBANK_GATEWAY_BACKEND, 'resursBankBackendRequest',
                     'resursBankGatewayNonce')
@@ -241,6 +507,15 @@ class Resursbank_Core
             _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
+        if (is_admin()) {
+            wp_enqueue_script(
+                'resurs_bank_payment_gateway_admin_js',
+                _RESURSBANK_GATEWAY_URL . 'js/resursadmin.js',
+                array('jquery'),
+                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+            );
+        }
+
         if (is_array($varsToLocalize)) {
             foreach ($varsToLocalize as $varKey => $varArray) {
                 wp_localize_script('resurs_bank_payment_gateway_js', $varKey, $varArray);
@@ -254,7 +529,8 @@ class Resursbank_Core
      *
      * @return bool
      */
-    public static function resurs_obsolete_coexistence_disable() {
+    public static function resurs_obsolete_coexistence_disable()
+    {
         $return = self::getTrue('resurs_obsolete_coexistence_disable');
         return $return;
     }

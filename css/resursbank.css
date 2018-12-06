@@ -20,9 +20,11 @@
 .resursGatewayConfigTr {
     vertical-align: top;
 }
+
 .resursGatewayConfigTdLeft {
     vertical-align: top;
 }
+
 .resursGatewayConfigTdRight {
     vertical-align: top;
 }
@@ -45,4 +47,15 @@
 
 .resursGatewayConfigSelect {
     height: auto !important;
+}
+
+.resursGatewayConfigCoexistWarning {
+    background: #FECEAC;
+    border: 1px solid gray;
+    padding: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+    vertical-align: center;
+    font-weight: bold;
 }

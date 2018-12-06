@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: T Resurs Bank payment gateway for WooCommerce
+ * Plugin Name: Tornevall Networks Resurs Bank payment gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
  * Description: Connect Resurs Bank as WooCommerce payment gateway
- * WC Tested up to: 3.5.1
+ * WC Tested up to: 3.5.2
  * Version: 0.0.0
  * Author: Tomas Tornevall
  * Author URI:
@@ -22,9 +22,8 @@ if (!defined('ABSPATH')) {
  * - Make the plugin look good
  * - Make the plugin as modular as possible, to simplify development without code collisions
  * - Only run plugin in sections where WooCommerce is involved
- *
+ * - TODO TEST CREDENTIALS FROM ADMIN!
  */
-
 
 // This is where it all begins.
 
@@ -34,6 +33,7 @@ define('_RESURSBANK_GATEWAY_BACKEND', admin_url('admin-ajax.php'));
 define('_RESURSBANK_GATEWAY_VERSION', '0.0.0');
 define('_RESURSBANK_DEVELOPER_MODE', true);
 define('_RESURSBANK_LOWEST_WOOCOMMERCE', '3.0');
+define('_RESURSBANK_SECTIONS_BY_CONSTRUCTOR', false);  // Generates standard view without logo if true
 
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Core.php');
 if (!Resursbank_Core::getInternalEcomEngine()) {
