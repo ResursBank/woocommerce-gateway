@@ -88,7 +88,7 @@ class Resursbank_Core
      */
     private function getEcomEnvironment()
     {
-        $env = self::getEnvironment();
+        $env = $this->getEnvironment();
         if ($env === 'live') {
             return RESURS_ENVIRONMENTS::PRODUCTION;
         }

@@ -189,6 +189,25 @@ class Resursbank_Adminforms
         return Resursbank_Core::getResursOption($settingKey, $namespace);
     }
 
+    /**
+     * @param string $storedValue
+     * @return array
+     */
+    private function getShopFlowOptions($storedValue = '')
+    {
+        $shopFlows = array(
+            'checkout' => __('Resurs Checkout'),
+            'simplified' => __('Simplified ShopFlow'),
+            'hosted' => __('Hosted ShopFlow'),
+        );
+        $shopFlowList = array();
+        foreach ($shopFlows as $flowId => $flowName) {
+            $selected = ($storedValue === $flowId ? 'selected' : '');
+            $shopFlowList[] = '<option value="' . $flowId . '" ' . $selected . '>' . $flowName . '</option>';
+        }
+        return $shopFlowList;
+    }
+
     public function getCredentialFields($data = '', $settingKey = '')
     {
         $return = null;
@@ -201,29 +220,29 @@ class Resursbank_Adminforms
         ';
             if (is_array($credentials)) {
                 foreach ($credentials as $credentialId => $credentialData) {
+                    $currentShopFlow = $credentialData['shopflow'];
 
-                    $paymentMethods = array();
-                    try {
-                        $paymentMethods = $this->CORE->getPaymentMethods($credentialData['country']);
-                    } catch (\Exception $e) {
-
-                    }
                     $return .= '<tr id="resursbank_credential_row_' . $credentialData['country'] . '">
-                    <td><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' . $credentialData['username'] . '"></td>
-                    <td><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' . $credentialData['username'] . '"></td>
+                    <td><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' .
+                        $credentialData['username'] . '"></td>
+                    <td><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' .
+                        $credentialData['username'] . '"></td>
                     <td><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]">
                     <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
                     <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
                     <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
                     <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
                     </select></td>
-                    <td>
-                    <img style="cursor: pointer;" src="' .
+                    <td><img style="cursor: pointer;" src="' .
                         Resursbank_Core::getGraphics('delete') .
                         '" onclick="$resurs_bank(\'#resursbank_credential_row_' . $credentialData['country'] . '\').remove()"></td>
                     </tr>
-                    <tr><td colspan="3" id="method_list_' . $credentialData['country'] . '"></td></tr>
-                    <tr><td colspan="3" id="callback_list_' . $credentialData['country'] . '"></td></tr>
+                    <tr><td><b>Chosen shopflow</b></td><td colspan="3"><select name="resursbank_credentials[' . $credentialId . '][shopflow]">' .
+                        implode("\n", $this->getShopFlowOptions($currentShopFlow)) .
+                        '</select></td></tr>
+                    <tr><td colspan="4" id="method_list_' . $credentialData['country'] . '"></td></tr>
+                    <tr><td colspan="4" style="border-bottom: 1px solid black;" id="callback_list_' .
+                        $credentialData['country'] . '"></td></tr>
                 ';
 
                 }

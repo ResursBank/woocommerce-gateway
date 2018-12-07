@@ -36,7 +36,7 @@ define('_RESURSBANK_LOWEST_WOOCOMMERCE', '3.0');
 define('_RESURSBANK_SECTIONS_BY_CONSTRUCTOR', false);  // Generates standard view without logo if true
 
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Core.php');
-if (!Resursbank_Core::getInternalEcomEngine()) {
+if (Resursbank_Core::getInternalEcomEngine()) {
     require_once(_RESURSBANK_GATEWAY_PATH . 'vendor/autoload.php');
 }
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Ajax.php');
