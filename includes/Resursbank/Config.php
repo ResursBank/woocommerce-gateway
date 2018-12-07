@@ -106,7 +106,6 @@ abstract class Resursbank_Config
                         'type' => 'checkbox',
                         'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     ),
-
                 )
             ),
         );

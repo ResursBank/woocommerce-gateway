@@ -154,6 +154,10 @@ class Resursbank_Core
         return false;
     }
 
+    public static function resursbank_get_coexist_dismissed() {
+        return self::getResursOption('dismiss_resursbank_coexist_message');
+    }
+
     /**
      * Return list of payment methods from Resurs Bank (legacy)
      *

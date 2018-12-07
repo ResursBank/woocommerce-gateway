@@ -24,3 +24,4 @@ function resursbank_get_credential_fields() {
 add_filter('resursbank_configrow_scriptloader', 'resursbank_configrow_internal_scriptloader', 10, 2);
 add_filter('resursbank_dropdown_option_method_get_tax_classes', 'Resursbank_Core::getTaxRateList');
 add_filter('resursbank_config_element_get_credentials_html', 'resursbank_get_credential_fields');
+add_filter('resursbank_config_disable_coexist_warnings', 'Resursbank_Core::resursbank_get_coexist_dismissed');

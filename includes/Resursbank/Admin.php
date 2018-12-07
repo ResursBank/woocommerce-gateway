@@ -89,7 +89,8 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      * @param $saveValue
      * @return array
      */
-    private function getCredentialsSet($shortKey, $saveValue) {
+    private function getCredentialsSet($shortKey, $saveValue)
+    {
         $newValue = $saveValue;
         if ($shortKey === 'credentials') {
             // Reset saved array if credentials block.
@@ -194,7 +195,7 @@ class WC_Settings_ResursBank extends WC_Settings_Page
         return __(
                 'Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            ) . ' ' . __(
+            ) . '<br>' . __(
                 'This plugin has decided (on demand) to disable the coexisting prior version of Resurs Bank.',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
             ) . ' ' .
@@ -210,23 +211,32 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     private function resurs_bank_version_control()
     {
+        $coExDismiss = apply_filters('resursbank_config_disable_coexist_warnings', false);
         if (defined('RB_WOO_VERSION')) {
-            echo '<hr>';
-            if (!Resursbank_Core::resurs_obsolete_coexistence_disable()) {
-                if (version_compare(RB_WOO_VERSION, '3', '<')) {
-                    echo '<div style="color:#990000 !important;" class="resursGatewayConfigCoexistWarning">' .
-                        $this->resurs_bank_version_low_text() .
-                        '</div>';
+            $dismissIt = '<div style="cursor:pointer; color:#000099 !important; text-align: right;" onclick="resurs_bank_dismiss(\'#resursbank_coexist_message\')">Dismiss</div>';
+            echo '<div id="resursbank_coexist_message">';
+            if (!(bool)$coExDismiss) {
+                echo '<hr>';
+                if (!Resursbank_Core::resurs_obsolete_coexistence_disable()) {
+                    if (version_compare(RB_WOO_VERSION, '3', '<')) {
+                        echo '<div style="color:#990000 !important;" class="resursGatewayConfigCoexistWarning">' .
+                            $this->resurs_bank_version_low_text() .
+                            $dismissIt .
+                            '</div>';
+                    } else {
+                        echo '<div style="color:#DD0000 !important;" class="resursGatewayConfigCoexistWarning">' .
+                            $this->resurs_bank_version_equal_text() .
+                            $dismissIt .
+                            '</div>';
+                    }
                 } else {
                     echo '<div style="color:#DD0000 !important;" class="resursGatewayConfigCoexistWarning">' .
-                        $this->resurs_bank_version_equal_text() .
+                        $this->resurs_bank_version_obsolete_coexistence() .
+                        $dismissIt .
                         '</div>';
                 }
-            } else {
-                echo '<div style="color:#DD0000 !important;" class="resursGatewayConfigCoexistWarning">' .
-                    $this->resurs_bank_version_obsolete_coexistence() .
-                    '</div>';
             }
+            echo '</div>';
         }
     }
 
