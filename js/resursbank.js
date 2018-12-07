@@ -192,6 +192,10 @@ $RB(document).ready(function ($) {
                             if (typeof successData["orderId"] !== "undefined") {
                                 orderId = successData["orderId"];
                             }
+                            // Failover does not work as it somehow breaks the checkout.
+                            //if (typeof successData["usingOrder" !== "undefined"]) {
+                            //    orderId = successData["usingOrder"];
+                            //}
                             if (typeof successData.success !== "undefined") {
                                 if (successData.success === true) {
                                     isSuccess = true;
@@ -215,6 +219,7 @@ $RB(document).ready(function ($) {
                         }
                     ).fail(
                         function (x, y) {
+
                             resursCheckout.confirmOrder(false);
                             var errorString = getResursPhrase("theAjaxWentWrong");
                             if (typeof x.statusText !== "undefined") {
@@ -222,6 +227,11 @@ $RB(document).ready(function ($) {
                             }
                             var partialError = getResursPhrase("theAjaxWentWrongWithThisMessage");
                             var contactUs = getResursPhrase("contactSupport");
+
+                            //if (typeof x['responseJSON'] !== 'undefined' && typeof x['responseJSON']["errorString"]) {
+                            //    errorString = x['responseJSON']["errorString"];
+                            //}
+
                             handleResursCheckoutError(partialError + errorString + " - " + contactUs);
                             return false;
                         }
@@ -699,6 +709,5 @@ function rbUpdatePaymentReference(refobj, paymentDataObject) {
     return false;
 }
 
-function resursRerun() {
-    console.log("HEY");
-}
+// Missing comment.
+function resursRerun() {}
