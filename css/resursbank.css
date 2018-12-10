@@ -59,3 +59,13 @@
     vertical-align: center;
     font-weight: bold;
 }
+
+.resursGatewayConfigCredentials {
+    border: 1px solid gray;
+    min-height: 5px;
+}
+.resursGatewayConfigCredentialsTd {
+    border-bottom: 1px dashed gray;
+    padding: 4px !important;
+    margin: 2px !important;
+}

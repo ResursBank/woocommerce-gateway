@@ -297,7 +297,7 @@ class Resursbank_Core
      */
     public static function getResursGateways($woocommerceGateways)
     {
-        /*if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
+/*        if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
             $woocommerceGateways[] = self::getGatewayClass();
         }*/
 
@@ -315,8 +315,8 @@ class Resursbank_Core
         unset($availableGateways[self::getGatewayClass()]);
 
         // TODO: Add them dynamically
-        $availableGateways['test1'] = new WC_Resursbank_Method('Test method 1');
-        $availableGateways['test2'] = new WC_Resursbank_Method('Test method 2');
+        //$availableGateways['test1'] = new WC_Resursbank_Method('Test method 1');
+        //$availableGateways['test2'] = new WC_Resursbank_Method('Test method 2');
         return $availableGateways;
     }
 

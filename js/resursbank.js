@@ -1,5 +1,13 @@
 $resurs_bank = jQuery.noConflict();
 
+$resurs_bank(document).ready(function ($) {
+    resursBankLoaded();
+});
+
+$resurs_bank(document).on('updated_checkout', function () {
+    resursBankCheckUpdates();
+});
+
 /**
  * Ajaxify element dismissals
  *
@@ -24,4 +32,12 @@ function resurs_bank_ajaxify(action, postdata, runFunction) {
             runFunction(response, postdata);
         }
     });
+}
+
+function resursBankCheckUpdates() {
+
+}
+
+function resursBankLoaded() {
+
 }

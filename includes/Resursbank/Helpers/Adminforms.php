@@ -219,33 +219,42 @@ class Resursbank_Adminforms
         if (is_admin()) {
             $credentials = Resursbank_Core::getResursOption('credentials');
             $return = '<div id="resurs_bank_credential_set">
-            <table width="100%" style="border:1px solid gray; min-height: 5px;" id="resurs_bank_credential_table">
+            <table width="100%" class="resursGatewayConfigCredentials" id="resurs_bank_credential_table">
         ';
             if (is_array($credentials)) {
                 foreach ($credentials as $credentialId => $credentialData) {
                     $currentShopFlow = $credentialData['shopflow'];
 
                     $return .= '<tr id="resursbank_credential_row_' . $credentialData['country'] . '">
-                    <td><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' .
+                    <td class="resursGatewayConfigCredentialsTd"><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' .
                         $credentialData['username'] . '"></td>
-                    <td><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' .
+                    <td class="resursGatewayConfigCredentialsTd"><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' .
                         $credentialData['username'] . '"></td>
-                    <td><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]">
+                    <td class="resursGatewayConfigCredentialsTd"><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]" id="resursbank_credentials[' . $credentialId . '][country]">
                     <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
                     <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
                     <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
                     <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
-                    </select></td>
-                    <td><img style="cursor: pointer;" src="' .
+                    </select>
+                    </td>
+                    <td class="resursGatewayConfigCredentialsTd"><img style="cursor: pointer;" src="' .
                         Resursbank_Core::getGraphics('delete') .
                         '" onclick="$resurs_bank(\'#resursbank_credential_row_' . $credentialData['country'] . '\').remove()"></td>
                     </tr>
-                    <tr><td><b>Chosen shopflow</b></td><td colspan="3"><select name="resursbank_credentials[' . $credentialId . '][shopflow]">' .
-                        implode("\n", $this->getShopFlowOptions($currentShopFlow)) .
+                    <tr>
+                        <td class="resursGatewayConfigCredentialsTd"><b>Chosen shopflow</b></td>
+                        <td class="resursGatewayConfigCredentialsTd" colspan="3">
+                        <select name="resursbank_credentials[' . $credentialId . '][shopflow]">' . implode("\n",
+                            $this->getShopFlowOptions($currentShopFlow)) .
                         '</select></td></tr>
-                    <tr><td colspan="4" id="method_list_' . $credentialData['country'] . '"></td></tr>
-                    <tr><td colspan="4" style="border-bottom: 1px solid black;" id="callback_list_' .
-                        $credentialData['country'] . '"></td></tr>
+                    <tr>
+                        <td class="resursGatewayConfigCredentialsTd" colspan="4" id="method_list_' . $credentialData['country'] .
+                        '"></td>
+                    </tr>
+                    <tr>
+                        <td class="resursGatewayConfigCredentialsTd" colspan="4" style="border-bottom: 1px solid black;" id="callback_list_' .
+                        $credentialData['country'] . '"></td>
+                    </tr>
                 ';
 
                 }
