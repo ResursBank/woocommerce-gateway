@@ -105,10 +105,40 @@ class WC_Settings_ResursBank extends WC_Settings_Page
     }
 
     /**
-     * @param $settings_section
+     * @return string
      */
-    public function resurs_bank_settings_save_legacy($settings_section)
-    {
+    private function getSection() {
+        return isset($_REQUEST['section']) ? $_REQUEST['section'] : '';
+    }
+
+    /**
+     * Restoring dynamic dismissed objects
+     *
+     * @param $configurationObject
+     * @return array
+     */
+    private function setDismissedObjects($configurationObject) {
+        $section = $this->getSection();
+
+        if ($section === 'dismissed' && is_array($configurationObject)) {
+            foreach ($configurationObject as $item => $value) {
+                if (preg_match('/^dismiss_/', $item)) {
+                    if (!isset($_REQUEST[$item])) {
+                        $configurationObject[$item] = false;
+                    }
+                }
+            }
+        }
+
+        return $configurationObject;
+    }
+
+    /**
+     * Compiles default configuration values with stored data
+     *
+     * @return array
+     */
+    public function getStoredConfiguration() {
         $fullConfiguration = Resursbank_Core::getDefaultConfiguration();
         $storedConfiguration = Resursbank_Core::getResursOption();
 
@@ -118,6 +148,17 @@ class WC_Settings_ResursBank extends WC_Settings_Page
                 $fullConfiguration[$itemKey] = $itemValue;
             }
         }
+
+        return $fullConfiguration;
+    }
+
+    /**
+     * @param $settings_section
+     */
+    public function resurs_bank_settings_save_legacy($settings_section)
+    {
+        global $wp;
+        $fullConfiguration = $this->getStoredConfiguration();
 
         // Loop through request and overwrite with new values.
         if (isset($_REQUEST) && is_array($_REQUEST)) {
@@ -132,7 +173,38 @@ class WC_Settings_ResursBank extends WC_Settings_Page
             }
         }
 
+        // Sanitize dynamic dismissals
+        $fullConfiguration = $this->setDismissedObjects($fullConfiguration);
+
         Resursbank_Core::setResursOption($fullConfiguration);
+        $this->redirectDismissed($fullConfiguration);
+    }
+
+    /**
+     * Redirect administrative url to a section that do exist
+     * if all dismissed objects are restored.
+     */
+    private function redirectDismissed($fullConfiguration) {
+        if ($this->getSection() === 'dismissed' && !$this->hasDismissedOptions($fullConfiguration)) {
+            wp_redirect(admin_url('admin.php?page=wc-settings&tab=resurs_bank_payment_gateway'));
+        }
+    }
+
+    /**
+     * @param $fullConfiguration
+     * @return bool
+     */
+    private function hasDismissedOptions($fullConfiguration) {
+        $return = false;
+        if (is_array($fullConfiguration)) {
+            foreach ($fullConfiguration as $itemKey => $itemValue) {
+                if (preg_match('/^dismiss_/', $itemKey) && (bool)$itemValue) {
+                    $return = true;
+                    break;
+                }
+            }
+        }
+        return $return;
     }
 
     /**

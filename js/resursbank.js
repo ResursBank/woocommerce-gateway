@@ -6,13 +6,22 @@ $resurs_bank = jQuery.noConflict();
  * @param element
  */
 function resurs_bank_dismiss(element) {
-    console.log("Find and kill " + element);
-    $resurs_bank(element).hide('medium');
+    resurs_bank_ajaxify('dismiss_element', {'element': element}, function (response, postdata) {
+        if (typeof response['dismissed'] !== 'undefined') {
+            $resurs_bank('#' + response['dismissed']).remove();
+        }
+    });
 }
 
-function resurs_bank_ajaxify() {
+function resurs_bank_ajaxify(action, postdata, runFunction) {
     $resurs_bank.ajax({
-            url: resurs_bank_payment_gateway['backend_nonce']
+            url: resurs_bank_payment_gateway['backend_nonce'] + "&run=" + action,
+            method: 'POST',
+            data: postdata
         }
-    );
+    ).success(function (response, textStatus) {
+        if (typeof runFunction === 'function') {
+            runFunction(response, postdata);
+        }
+    });
 }

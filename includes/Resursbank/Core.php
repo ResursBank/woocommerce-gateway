@@ -15,11 +15,20 @@ use Resursbank\RBEcomPHP\ResursBank;
 class Resursbank_Core
 {
     /**
-     * @var \Resursbank\RBEcomPHP\ResursBank Resurs Bank Ecommerce Library
+     * @var ResursBank Ecommerce Library
      */
     private $RB;
+
+    /**
+     * @var string
+     */
     private static $gatewayClass = 'WC_Gateway_ResursBank';
 
+    /**
+     * Resursbank_Core constructor.
+     *
+     * @throws Exception
+     */
     function __construct()
     {
         $this->RB = $this->getConnection();
@@ -61,8 +70,11 @@ class Resursbank_Core
         return $credentialsList;
     }
 
-    private function getFlowByCountry() {
-        // TODO: FIX IT!!
+    /**
+     * TODO
+     */
+    private function getFlowByCountry()
+    {
     }
 
     /**
@@ -76,6 +88,13 @@ class Resursbank_Core
         return $environment;
     }
 
+    /**
+     * Get options via internal calls but via a static method
+     *
+     * @param string $key
+     * @param string $namespace
+     * @return bool|mixed|null
+     */
     public function getResursOptionStatically($key = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         return Resursbank_Core::getResursOption($key, $namespace);
@@ -133,12 +152,20 @@ class Resursbank_Core
         return true;
     }
 
-    public static function getStoredPaymentMethods() {
+    /**
+     * TODO
+     */
+    public static function getStoredPaymentMethods()
+    {
         $methodList = self::getResursOption('paymentMethods');
     }
 
-    public static function setStoredPaymentMethods() {
-        
+    /**
+     * TODO
+     */
+    public static function setStoredPaymentMethods()
+    {
+
     }
 
     /**
@@ -154,8 +181,112 @@ class Resursbank_Core
         return false;
     }
 
-    public static function resursbank_get_coexist_dismissed() {
+    /**
+     * @return bool|mixed|null
+     */
+    public static function resursbank_get_coexist_dismissed()
+    {
         return self::getResursOption('dismiss_resursbank_coexist_message');
+    }
+
+    /**
+     * Prepare dynamic options for dismissed notices and elements.
+     *
+     * @param $configArray
+     * @return array
+     */
+    public static function resursbank_get_dismissed_elements($configArray)
+    {
+        $elements = array('dismiss_resursbank_coexist_message');
+
+        $elementArray = array(
+            'dismissed' => array(
+                'title' => __('Dismissed notices', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                'settings' => array(
+                    'dismissed_title' => array(
+                        'title' => __('Restore notices and elements hidden by plugin',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'type' => 'title',
+                    )
+                ),
+            ),
+        );
+
+        $hasElements = false;
+        foreach ($elements as $optionName) {
+            if (self::getResursOption($optionName)) {
+                $hasElements = true;
+                $elementArray['dismissed']['settings'][$optionName] = array(
+                    'title' => $optionName,
+                    'type' => 'checkbox',
+                    'default' => false,
+                );
+            }
+        }
+
+        if ($hasElements) {
+            $configArray += $elementArray;
+        }
+
+        return $configArray;
+    }
+
+    /**
+     * @param $array
+     * @param $request
+     * @return mixed
+     */
+    public static function resursbank_set_dismissed_element($array, $request)
+    {
+        $element = isset($request['element']) ? preg_replace('/^#/', '', $request['element']) : false;
+        $array['success'] = true;
+        $array['dismissed'] = $element;
+
+        if (self::setResursOption('dismiss_' . $element, true)) {
+            $array['success'] = true;
+            $array['dismissed'] = $element;
+        }
+
+        return $array;
+    }
+
+    /**
+     * Coming controller for where nonces are require to pass safely or if they
+     * are not required at all.
+     *
+     * @return bool
+     */
+    private static function getRequiredNonce()
+    {
+        $return = false;
+
+        return $return;
+    }
+
+    /**
+     * Verify that the nonce is correct.
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public static function resursbank_verify_nonce()
+    {
+        $return = false;
+
+        if (wp_verify_nonce(isset($_REQUEST['token']) ? $_REQUEST['token'] : null, 'resursBankBackendRequest')) {
+            $return = true;
+        }
+
+        if (!$return && self::getRequiredNonce()) {
+            throw new \Exception(
+                __(
+                    'Security verification failed!',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ), 400
+            );
+        }
+
+        return $return;
     }
 
     /**
@@ -256,7 +387,10 @@ class Resursbank_Core
      */
     public static function getConfiguration()
     {
-        return Resursbank_Config::getConfigurationArray();
+        $configurationArray = Resursbank_Config::getConfigurationArray();
+        $configurationArray = apply_filters('resursbank_config_array', $configurationArray);
+
+        return $configurationArray;
     }
 
     /**
@@ -278,6 +412,7 @@ class Resursbank_Core
     public static function getDefaultValue($key)
     {
         $return = null;
+
         $configurationArray = Resursbank_Config::getConfigurationArray();
 
         foreach ($configurationArray as $itemKey => $itemArray) {
@@ -302,6 +437,8 @@ class Resursbank_Core
     {
         $allConfig = array();
         $defaultConfig = Resursbank_Core::getConfiguration();
+        $defaultConfig = apply_filters('resursbank_config_array', $defaultConfig);
+
         foreach ($defaultConfig as $section => $sectionArray) {
             if (isset($sectionArray['settings'])) {
                 foreach ($sectionArray['settings'] as $settingKey => $settingArray) {
@@ -401,25 +538,43 @@ class Resursbank_Core
     public static function setResursOption($key = '', $value = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
         $updateSuccess = false;
-        if (!empty($key)) {
-            if (!empty($namespace)) {
+
+        if (!empty($namespace)) {
+            if (!empty($key) && is_array($key)) {
                 // If key is an array and namespace is not empty, try to store inbound array to configuration.
-                if (is_array($key)) {
-
-                    // Use the built in configuration to fill up with missing keys.
-                    $allOptions = self::getResursOption();
-                    foreach ($key as $optionKey => $optionValue) {
-                        $allOptions[$optionKey] = $optionValue;
-                    }
-                    $updateSuccess = update_option($namespace, $allOptions);
-
-                }
+                $updateSuccess = self::setOptionArray($key, $namespace);
             } else {
-                $updateSuccess = update_option('Resurs_Bank_' . $key, $value);
+                $updateSuccess = self::setOptionArray(array($key => $value), $namespace);
             }
+        } else {
+            $updateSuccess = update_option('Resurs_Bank_' . $key, $value);
         }
 
         return $updateSuccess;
+    }
+
+    /**
+     * @param $keyArray
+     * @param string $namespace
+     * @return bool
+     */
+    private static function setOptionArray($keyArray, $namespace = 'Resurs_Bank_Payment_Gateway')
+    {
+        $return = false;
+        $allOptions = self::getResursOption();
+
+        // If the incoming key is an array, we should presume that the correct values are already
+        // stored correctly.
+        if (is_array($keyArray)) {
+            // Use the built in configuration to fill up with missing keys.
+            foreach ($keyArray as $optionKey => $optionValue) {
+                $allOptions[$optionKey] = $optionValue;
+            }
+
+            $return = update_option($namespace, $allOptions);
+        }
+
+        return $return;
     }
 
     /**

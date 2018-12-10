@@ -18,7 +18,6 @@ abstract class Resursbank_Config
     public static function getConfigurationArray()
     {
 
-        // Auto sectionized content
         $configurationArray = array
         (
             'basic' => array(
@@ -109,10 +108,6 @@ abstract class Resursbank_Config
                 )
             ),
         );
-
-        //echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
-
-        $configurationArray = apply_filters('resursbank_config_array', $configurationArray);
 
         return $configurationArray;
     }

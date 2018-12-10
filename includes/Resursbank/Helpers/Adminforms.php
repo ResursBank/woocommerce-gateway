@@ -17,7 +17,7 @@ class Resursbank_Adminforms
      */
     public function __construct()
     {
-        $this->configurationArray = $this->getConfigurationArray();
+        $this->getConfigurationArray();
         $this->CORE = new Resursbank_Core();
     }
 
@@ -28,7 +28,9 @@ class Resursbank_Adminforms
      */
     public function getConfigurationArray()
     {
-        return Resursbank_Config::getConfigurationArray();
+        $this->configurationArray = Resursbank_Config::getConfigurationArray();
+        $this->configurationArray = apply_filters('resursbank_config_array', $this->configurationArray);
+        return $this->configurationArray;
     }
 
     /**
@@ -153,7 +155,8 @@ class Resursbank_Adminforms
                 <tr class="' . $tdThClassName . '">
                 <th class="' . $tdLeftClass . '" colspan="2" scope="row" id="columnLeft' . $settingKey . '">' .
                 $leftColumnString .
-                '</th></tr>
+                '</th>
+                </tr>
         ';
         }
 

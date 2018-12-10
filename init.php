@@ -29,7 +29,7 @@ if (!defined('ABSPATH')) {
 
 define('_RESURSBANK_GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('_RESURSBANK_GATEWAY_URL', plugin_dir_url(__FILE__));
-define('_RESURSBANK_GATEWAY_BACKEND', admin_url('admin-ajax.php'));
+define('_RESURSBANK_GATEWAY_BACKEND', admin_url('admin-ajax.php') . '?action=resurs_bank_backend');
 define('_RESURSBANK_GATEWAY_VERSION', '0.0.0');
 define('_RESURSBANK_DEVELOPER_MODE', true);
 define('_RESURSBANK_LOWEST_WOOCOMMERCE', '3.0');
