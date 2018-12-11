@@ -193,16 +193,22 @@ class Resursbank_Adminforms
     }
 
     /**
+     * Get list of shopflows.
+     *
      * @param string $storedValue
+     * @param bool $asArray
      * @return array
      */
-    private function getShopFlowOptions($storedValue = '')
+    public function getShopFlowOptions($storedValue = '', $asArray = false)
     {
         $shopFlows = array(
-            'checkout' => __('Resurs Checkout'),
-            'simplified' => __('Simplified ShopFlow'),
-            'hosted' => __('Hosted ShopFlow'),
+            'checkout' => __('Resurs Checkout', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            'simplified' => __('Simplified ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            'hosted' => __('Hosted ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
         );
+        if ($asArray) {
+            return $shopFlows;
+        }
         $shopFlowList = array();
         foreach ($shopFlows as $flowId => $flowName) {
             $selected = ($storedValue === $flowId ? 'selected' : '');
@@ -211,6 +217,23 @@ class Resursbank_Adminforms
         return $shopFlowList;
     }
 
+    /**
+     * Get shop flows by static method (filter that supports frontend requests)
+     *
+     * @return array
+     */
+    public static function get_shopflow_options()
+    {
+        return self::getShopFlowOptions('', true);
+    }
+
+    /**
+     * Generate credential fields for admin.
+     *
+     * @param string $data
+     * @param string $settingKey
+     * @return string|null
+     */
     public function getCredentialFields($data = '', $settingKey = '')
     {
         $return = null;
@@ -225,42 +248,75 @@ class Resursbank_Adminforms
                 foreach ($credentials as $credentialId => $credentialData) {
                     $currentShopFlow = $credentialData['shopflow'];
 
-                    $return .= '<tr id="resursbank_credential_row_' . $credentialData['country'] . '">
-                    <td class="resursGatewayConfigCredentialsTd"><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' .
+                    $fullColSpan = 6; // When we add more columns to the admin part, this need to be filled in.
+
+                    $return .= '
+                    <tr>
+                    <td colspan="' . $fullColSpan . '" class="resursGatewayConfigCredentialsTd" style="font-style: italic;font-weight:bold;color:#FF0099;">' .
+                        __(
+                            'If you make changes on the settings below, make sure you save them before leaving.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '<br>' .
+                        __(
+                            'Also make sure that you update your credentials when switching between staging and production.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ) .
+                        '</td>
+                    </tr>
+                    <tr id="resursbank_credential_row_' . $credentialData['country'] . '">
+
+                        <td><b>
+                        ' . __(
+                            'Active',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</b><br>
+                            <input type="checkbox" ' . ($credentialData['active'] ? 'checked="checked"' : '') . ' name="resursbank_credentials[' . $credentialId . '][active]" value="1">
+                        </td>
+
+                        <td class="resursGatewayConfigCredentialsTd"><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' .
                         $credentialData['username'] . '"></td>
-                    <td class="resursGatewayConfigCredentialsTd"><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' .
-                        $credentialData['username'] . '"></td>
-                    <td class="resursGatewayConfigCredentialsTd"><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]" id="resursbank_credentials[' . $credentialId . '][country]">
-                    <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
-                    <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
-                    <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
-                    <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
-                    </select>
-                    </td>
-                    <td class="resursGatewayConfigCredentialsTd"><img style="cursor: pointer;" src="' .
+                        <td class="resursGatewayConfigCredentialsTd"><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' .
+                        $credentialData['password'] . '"></td>
+                        <td class="resursGatewayConfigCredentialsTd"><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]" id="resursbank_credentials[' . $credentialId . '][country]">
+                            <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
+                            <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
+                            <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
+                            <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
+                            </select>
+                        </td>
+
+                        <td class="resursGatewayConfigCredentialsTd">
+                            <b>' . __(
+                            'Chosen shopflow',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</b><br>
+                            <select name="resursbank_credentials[' . $credentialId . '][shopflow]">' . implode("\n",
+                            $this->getShopFlowOptions($currentShopFlow)) .
+                        '</select>
+                        </td>
+
+                        <td class="resursGatewayConfigCredentialsTd">
+                            <img style="cursor: pointer;" src="' .
                         Resursbank_Core::getGraphics('delete') .
-                        '" onclick="$resurs_bank(\'#resursbank_credential_row_' . $credentialData['country'] . '\').remove()"></td>
+                        '" onclick="$resurs_bank(\'#resursbank_credential_row_' .
+                        $credentialData['country'] . '\').remove()">
+                        </td>
+
                     </tr>
                     <tr>
-                        <td class="resursGatewayConfigCredentialsTd"><b>Chosen shopflow</b></td>
-                        <td class="resursGatewayConfigCredentialsTd" colspan="3">
-                        <select name="resursbank_credentials[' . $credentialId . '][shopflow]">' . implode("\n",
-                            $this->getShopFlowOptions($currentShopFlow)) .
-                        '</select></td></tr>
-                    <tr>
-                        <td class="resursGatewayConfigCredentialsTd" colspan="4" id="method_list_' . $credentialData['country'] .
+                        <td class="resursGatewayConfigCredentialsTd" colspan="' . $fullColSpan . '" id="method_list_' . $credentialData['country'] .
                         '"></td>
                     </tr>
                     <tr>
-                        <td class="resursGatewayConfigCredentialsTd" colspan="4" style="border-bottom: 1px solid black;" id="callback_list_' .
+                        <td class="resursGatewayConfigCredentialsTd" colspan="' . $fullColSpan . '" style="border-bottom: 1px solid black;" id="callback_list_' .
                         $credentialData['country'] . '"></td>
                     </tr>
                 ';
-
                 }
             }
             $return .= '</table>
-        </div>';
+                </div>
+            ';
 
             $return .= '<div>
             <img src="' .

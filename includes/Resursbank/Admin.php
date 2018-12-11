@@ -97,6 +97,9 @@ class WC_Settings_ResursBank extends WC_Settings_Page
             $newValue = array();
             foreach ($saveValue as $saveArray) {
                 if (isset($saveArray['country']) && !empty($saveArray['country'])) {
+                    if (!isset($saveArray['active'])) {
+                        $saveArray['active'] = 0;
+                    }
                     $newValue[$saveArray['country']] = $saveArray;
                 }
             }
@@ -107,7 +110,8 @@ class WC_Settings_ResursBank extends WC_Settings_Page
     /**
      * @return string
      */
-    private function getSection() {
+    private function getSection()
+    {
         return isset($_REQUEST['section']) ? $_REQUEST['section'] : '';
     }
 
@@ -117,7 +121,8 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      * @param $configurationObject
      * @return array
      */
-    private function setDismissedObjects($configurationObject) {
+    private function setDismissedObjects($configurationObject)
+    {
         $section = $this->getSection();
 
         if ($section === 'dismissed' && is_array($configurationObject)) {
@@ -138,7 +143,8 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      *
      * @return array
      */
-    public function getStoredConfiguration() {
+    public function getStoredConfiguration()
+    {
         $fullConfiguration = Resursbank_Core::getDefaultConfiguration();
         $storedConfiguration = Resursbank_Core::getResursOption();
 
@@ -168,7 +174,7 @@ class WC_Settings_ResursBank extends WC_Settings_Page
                     // Pass the saved value through credentials detecting and convert the
                     // data if anything found.
                     $saveValue = $this->getCredentialsSet($shortKey, $saveValue);
-                    $fullConfiguration[$shortKey] = ($saveValue === 'yes') ? true : $saveValue;
+                    $fullConfiguration[$shortKey] = ($saveValue === 'yes' || $saveValue === 'on') ? true : $saveValue;
                 }
             }
         }
@@ -184,7 +190,8 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      * Redirect administrative url to a section that do exist
      * if all dismissed objects are restored.
      */
-    private function redirectDismissed($fullConfiguration) {
+    private function redirectDismissed($fullConfiguration)
+    {
         if ($this->getSection() === 'dismissed' && !$this->hasDismissedOptions($fullConfiguration)) {
             wp_redirect(admin_url('admin.php?page=wc-settings&tab=resurs_bank_payment_gateway'));
         }
@@ -194,7 +201,8 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      * @param $fullConfiguration
      * @return bool
      */
-    private function hasDismissedOptions($fullConfiguration) {
+    private function hasDismissedOptions($fullConfiguration)
+    {
         $return = false;
         if (is_array($fullConfiguration)) {
             foreach ($fullConfiguration as $itemKey => $itemValue) {

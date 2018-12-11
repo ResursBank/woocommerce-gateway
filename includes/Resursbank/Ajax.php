@@ -47,18 +47,22 @@ function resurs_bank_ajax_filters($run, $ajaxResponse)
     $ajaxResponse = apply_filters('resursbank_admin_backend', $ajaxResponse, isset($_REQUEST) ? $_REQUEST : array());
 
     if (!is_null($run)) {
-        $ajaxResponse = apply_filters(
+        $ajaxReply = apply_filters(
             'resursbank_admin_backend_' . $run,
-            $ajaxResponse,
+            array(),
             isset($_REQUEST) ? $_REQUEST : array()
         );
+        if (!empty($ajaxReply)) {
+            $ajaxResponse['response'] = $ajaxReply;
+        }
     }
     if (is_admin()) {
-        $ajaxResponse = apply_filters(
+        $ajaxReply = apply_filters(
             'resursbank_backend_admin',
-            $ajaxResponse,
+            array(),
             isset($_REQUEST) ? $_REQUEST : array()
         );
+        $ajaxResponse['responseAdmin'] = $ajaxReply;
     }
 
     return $ajaxResponse;
@@ -81,15 +85,24 @@ function resurs_bank_ajax_backend()
         'success' => false,
         'response' => array(),
         'faultstring' => null,
+        'code' => 0,
         'tokenAccepted' => (($tokenType === 1) ? true : false),
         'tokenRejected' => resurs_bank_token_rejected($tokenType),
     );
 
-    if (resurs_bank_token_rejected($tokenType)) {
-        resurs_bank_show_ajax_response($ajaxResponse);
-    }
+    try {
+        if (resurs_bank_token_rejected($tokenType)) {
+            resurs_bank_show_ajax_response($ajaxResponse);
+        }
 
-    $ajaxResponse = resurs_bank_ajax_filters($run, $ajaxResponse);
+        $ajaxResponse = resurs_bank_ajax_filters($run, $ajaxResponse);
+        $ajaxResponse['code'] = 200;
+
+    } catch (\Exception $e) {
+        $ajaxResponse['success'] = false;
+        $ajaxResponse['faultstring'] = $e->getMessage();
+        $ajaxResponse['code'] = $e->getCode();
+    }
 
     resurs_bank_show_ajax_response($ajaxResponse);
 }

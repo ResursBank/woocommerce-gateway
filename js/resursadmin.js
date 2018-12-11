@@ -1,19 +1,31 @@
+/**
+ * What we work with after page load.
+ */
 $resurs_bank(document).ready(function ($) {
     resursBankAdminRun();
 });
 
+/**
+ * Create INPUT field.
+ * @param fieldName
+ * @returns {*}
+ */
 function getResursBankInputField(fieldName) {
     return $resurs_bank('<input>', {name: fieldName});
 }
 
-var resursBankAvailableCountries = {'SE': 'Sverige', 'DK': 'Danmark', 'NO': 'Norge', 'FI': 'Finland'};
-
-function getResursBankTakenCountry(country) {
+/**
+ * Make sure that there will be no duplicates of a country.
+ *
+ * @param countryCode
+ * @returns {boolean}
+ */
+function getResursBankTakenCountry(countryCode) {
     var hasTheTakenCountry = false;
 
     $resurs_bank('select').each(function (selIndex, selField) {
         if (selField.name.indexOf('[country]')) {
-            if (selField.value === country) {
+            if (selField.value === countryCode) {
                 hasTheTakenCountry = true;
             }
         }
@@ -22,16 +34,39 @@ function getResursBankTakenCountry(country) {
     return hasTheTakenCountry;
 }
 
-function getResursBankSelectField(fieldName) {
+/**
+ * Create a SELECT box with selectable countries for a flow.
+ *
+ * @param fieldName
+ * @returns {*}
+ */
+function getResursBankSelectField(fieldName, optionList) {
     var selectBox = $resurs_bank('<select>', {name: fieldName});
-    $resurs_bank.each(resursBankAvailableCountries, function (key, value) {
-        if (!getResursBankTakenCountry(key)) {
+    $resurs_bank.each(optionList, function (key, value) {
+        if ((fieldName.indexOf('[country]') > -1 && !getResursBankTakenCountry(key)) || fieldName.indexOf('[country]') === -1) {
             selectBox.append(new Option(value, key, false, false));
         }
     });
     return selectBox;
 }
 
+/**
+ * Create checkbox
+ *
+ * @param fieldName
+ * @returns {*}
+ */
+function getResursBankCheckboxField(fieldName) {
+    return $resurs_bank('<input>', {name: fieldName, type: 'checkbox'});
+}
+
+
+/**
+ * Create a clickable "delete" image.
+ *
+ * @param fieldRow
+ * @returns {*}
+ */
 function getResursBankDeleteImage(fieldRow) {
     return $resurs_bank('<img>', {
         style: 'cursor:pointer',
@@ -41,25 +76,53 @@ function getResursBankDeleteImage(fieldRow) {
     });
 }
 
+/**
+ * Create forms for credentials
+ */
 function resursBankCredentialField() {
-    var cId = parseInt(Math.random() * 1000);
-    var row = $resurs_bank('<tr>', {id: 'resursbank_credential_row_' + cId});
-    row.append($resurs_bank('<td>').html(
-        getResursBankInputField('resursbank_credentials[' + cId + '][username]', 'Username')).prepend('<b>Username</b><br>')
-    );
-    row.append($resurs_bank('<td>').html(
-        getResursBankInputField('resursbank_credentials[' + cId + '][password]', 'Passsword')).prepend('<b>Password</b><br>')
-    );
-    row.append($resurs_bank('<td>').html(
-        getResursBankSelectField('resursbank_credentials[' + cId + '][country]', 'Country')).prepend('<b>Country</b><br>')
-    );
-    row.append($resurs_bank('<td>').html(
-        getResursBankDeleteImage(cId)
-    ));
-    $resurs_bank('#resurs_bank_credential_table').append(row);
+    var countriesAvailable = 0;
+
+    $resurs_bank.each(['SE', 'DK', 'NO', 'FI'], function (i, countryCode) {
+        if (!getResursBankTakenCountry(countryCode)) {
+            countriesAvailable++;
+        }
+    });
+
+    if (countriesAvailable > 0) {
+        var cId = parseInt(Math.random() * 1000);
+        var row = $resurs_bank('<tr>', {id: 'resursbank_credential_row_' + cId});
+        row.append($resurs_bank('<td>').html(getResursBankCheckboxField('resursbank_credentials[' + cId + '][active]')).prepend('<b>Active</b><br>'));
+        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][username]')).prepend('<b>Username</b><br>'));
+        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][password]')).prepend('<b>Password</b><br>'));
+        row.append($resurs_bank('<td>').html(
+            getResursBankSelectField(
+                'resursbank_credentials[' + cId + '][country]', {
+                    'SE': 'Sverige',
+                    'DK': 'Danmark',
+                    'NO': 'Norge',
+                    'FI': 'Finland'
+                })
+            ).prepend('<b>Country</b><br>')
+        );
+        row.append($resurs_bank('<td>').html(
+            getResursBankSelectField(
+                'resursbank_credentials[' + cId + '][shopflow]', {
+                    'checkout': 'Resurs Checkout',
+                    'simplified': 'Simplified ShopFlow',
+                    'hosted': 'Hosted ShopFlow'
+                })
+            ).prepend('<b>Chosen shopflow</b><br>')
+        );
+        row.append($resurs_bank('<td>').html(
+            getResursBankDeleteImage(cId)
+        ));
+        $resurs_bank('#resurs_bank_credential_table').append(row);
+    } else {
+        alert('No more countries avaialble');
+    }
 }
 
-function getResursBankMethods(country) {
+function getResursBankMethods(countryCode) {
 
 }
 

@@ -24,7 +24,8 @@ function resursbank_payment_gateway_initialize()
     class WC_Gateway_ResursBank extends WC_Payment_Gateway
     {
 
-        public function resurs_bank_checkout_fields() {
+        public function resurs_bank_checkout_fields()
+        {
             echo "Y";
         }
 

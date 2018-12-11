@@ -51,7 +51,7 @@
 
 .resursGatewayConfigCoexistWarning {
     background: #FECEAC;
-    border: 1px solid gray;
+    border: 1px solid #FEFEFE;
     padding: 5px;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -65,7 +65,7 @@
     min-height: 5px;
 }
 .resursGatewayConfigCredentialsTd {
-    border-bottom: 1px dashed gray;
+    border-bottom: 1px dashed #fefefe;
     padding: 4px !important;
     margin: 2px !important;
 }

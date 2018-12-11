@@ -56,13 +56,17 @@ class Resursbank_Core
 
     /**
      * @param string $country
-     * @return array|bool|mixed|null
+     * @return array
      */
     private function getCredentialsByCountry($country = '')
     {
         $credentialsList = $this->getResursOptionStatically('credentials');
-        if (!empty($country) && isset($credentialsList[$country])) {
-            return $credentialsList[$country];
+        if (!empty($country)) {
+            if (isset($credentialsList[$country])) {
+                $credentialsList = $credentialsList[$country];
+            } else {
+                $credentialsList = array();
+            }
         }
         if (!is_array($credentialsList)) {
             $credentialsList = array();
@@ -153,19 +157,157 @@ class Resursbank_Core
     }
 
     /**
-     * TODO
+     * Using API method to request payment methods list
+     *
+     * @param $credentials
+     * @return mixed
+     * @throws Exception
      */
-    public static function getStoredPaymentMethods()
+    private static function getPaymentMethodsByApi($credentials)
     {
-        $methodList = self::getResursOption('paymentMethods');
+        $CORE = new Resursbank_Core();
+        $methodList = array();
+
+        foreach ($credentials as $credentialCountry => $credentialArray) {
+            /** @var ResursBank $request */
+            $request = $CORE->getConnection($credentialArray['username'], $credentialArray['password'],
+                $CORE->getEcomEnvironment());
+            $methodList[$credentialCountry] = $request->getPaymentMethods(array(), true);
+        }
+        self::setStoredPaymentMethods($methodList);
+        return $methodList;
     }
 
     /**
-     * TODO
+     * If payment methods are stored, decide from where it should be taken. If the data is too old,
+     * it will recreate the method list live.
+     *
+     * @param $methodList
+     * @param $credentials
+     * @param bool $cron
+     * @return mixed
+     * @throws Exception
      */
-    public static function setStoredPaymentMethods()
+    private static function getStoredPaymentMethodData($methodList, $credentials, $cron = false)
     {
+        // Running cronjobs should always update methods.
+        $nextUpdateTimer = $cron ? 1 : 21600;
+        if (!isset($methodList['lastRequest']) || (isset($methodList['lastRequest']) && intval($methodList['lastRequest']) < (time() - $nextUpdateTimer))) {
+            $methodList = self::getPaymentMethodsByApi($credentials);
+        } else {
+            return $methodList['methods'];
+        }
 
+        return $methodList;
+    }
+
+    /**
+     * @param $country
+     * @param $credentials
+     * @return mixed
+     * @throws Exception
+     */
+    private static function getStoredPaymentMethodsByCountry($country)
+    {
+        $CORE = new Resursbank_Core();
+        $credentials = $CORE->getCredentialsByCountry($country);
+
+        if (!count($credentials)) {
+            throw new \Exception(
+                __(
+                    'Payment methods are not available for country',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) . ' ' . $country, 400
+            );
+        }
+
+        $request = $CORE->getConnection(
+            $credentials['username'],
+            $credentials['password'],
+            $CORE->getEcomEnvironment()
+        );
+        $methodList[$country] = $request->getPaymentMethods(array(), true);
+
+        return $methodList;
+    }
+
+    /**
+     * Get stored payment methods if present. Otherwise get them live.
+     *
+     * @param string $country
+     * @param bool $cron
+     * @return bool|mixed|null
+     * @throws Exception
+     */
+    public static function getStoredPaymentMethods($country = '', $cron = false)
+    {
+        $methodList = self::getResursOption('paymentMethods');
+        $credentials = self::getResursOption('credentials');
+
+        if (isset($methodList['methods']) || $cron) {
+            $methodList = self::getStoredPaymentMethodData($methodList, $credentials, $cron);
+        }
+
+        // If no methods are visible in the config
+        if (!is_array($methodList)) {
+            if (!empty($country)) {
+                $methodList = self::getStoredPaymentMethodsByCountry($country, $credentials);
+            } else {
+                if (is_array($credentials)) {
+                    $methodList = self::getPaymentMethodsByApi($credentials);
+                } else {
+                    throw new \Exception(
+                        __(
+                            'Request failed due to missing credentials.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ) . ' ' . $country, 400
+                    );
+                }
+            }
+        }
+
+        return $methodList;
+    }
+
+    /**
+     * Update payment methods in configuration
+     *
+     * @param $methodObject
+     * @return bool
+     */
+    public static function setStoredPaymentMethods($methodObject)
+    {
+        $storedArray = array(
+            'lastRequest' => time(),
+            'methods' => $methodObject
+        );
+
+        return self::setResursOption('paymentMethods', $storedArray);
+    }
+
+    /**
+     * Returns payment methods in specified formatting
+     *
+     * @param string $country
+     * @return array
+     * @throws Exception
+     */
+    public static function get_payment_methods($country = '')
+    {
+        if (empty($country)) {
+            $requestCountry = (isset($_REQUEST['country']) ? $_REQUEST['country'] : '');
+        } else {
+            $requestCountry = $country;
+        }
+
+        $cron = isset($_REQUEST['cron']) ? true : false;
+        $return = self::getStoredPaymentMethods($requestCountry, $cron);
+
+        if ($cron) {
+            return array('updated' => true);
+        }
+
+        return $return;
     }
 
     /**
@@ -297,9 +439,9 @@ class Resursbank_Core
      */
     public static function getResursGateways($woocommerceGateways)
     {
-/*        if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
-            $woocommerceGateways[] = self::getGatewayClass();
-        }*/
+        /*        if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
+                    $woocommerceGateways[] = self::getGatewayClass();
+                }*/
 
         return $woocommerceGateways;
     }
@@ -499,7 +641,7 @@ class Resursbank_Core
 
         if (isset($confValues[$key]) && isset($confValues[$key]['type'])) {
             if ($confValues[$key]['type'] === 'checkbox') {
-                if (strtolower($value) === 'yes' || (bool)$value) {
+                if (strtolower($value) === 'yes' || (bool)$value || strtolower($value) === 'on') {
                     $value = true;
                 } else {
                     $value = false;
@@ -588,7 +730,7 @@ class Resursbank_Core
     {
         $return = false;
         $value = self::getResursOption($key, $namespace);
-        if (strtolower($value) === 'yes' || (bool)$value) {
+        if (strtolower($value) === 'yes' || (bool)$value || strtolower($value) === 'on') {
             $return = true;
         }
         return $return;
