@@ -152,14 +152,14 @@ function resursBankCheckCredentials() {
             $resurs_bank('#callback_list_' + countryCode).append(getResursBankSpinner('callback_list_' + countryCode));
         });
         getResursBankCountryArray('get_payment_methods', '#method_list_', function (data) {
-            if (typeof data['response'] === 'object') {
-                for (var countryCode in data['response']) {
+            if (typeof data['responseAdmin'] === 'object') {
+                for (var countryCode in data['responseAdmin']) {
                     console.log(countryCode);
                 }
             }
         });
         getResursBankCountryArray('get_registered_callbacks', '#callback_list_', function (data) {
-            console.log(data['response']);
+            console.log(data['responseAdmin']);
         });
     }
 }
