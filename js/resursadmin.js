@@ -51,6 +51,16 @@ function getResursBankSelectField(fieldName, optionList) {
 }
 
 /**
+ * Show spinner in a element
+ *
+ * @param fieldName
+ * @returns {*}
+ */
+function getResursBankSpinner(fieldName) {
+    return $resurs_bank('<img>', {id: fieldName + '_spin', src: resurs_bank_payment_gateway['graphics']['spinner']});
+}
+
+/**
  * Create checkbox
  *
  * @param fieldName
@@ -122,15 +132,34 @@ function resursBankCredentialField() {
     }
 }
 
-function getResursBankMethods(countryCode) {
-
+function getResursBankCountryArray(getType, partElement, resursRunFunc) {
+    resurs_bank_ajaxify(getType, [], function (res) {
+        if (res['code'] >= 205 && res['faultstring'] !== '') {
+            $resurs_bank.each(['SE', 'DK', 'NO', 'FI'], function (i, countryCode) {
+                $resurs_bank(partElement + countryCode).html(res['faultstring']);
+            });
+        } else {
+            resursRunFunc(res);
+        }
+    });
 }
 
 function resursBankCheckCredentials() {
     var credentialElement = $resurs_bank('#resurs_bank_credential_table');
     if (credentialElement.length > 0) {
-        credentialElement.find('td').each(function (idx, field) {
-            console.dir(field.id);
+        $resurs_bank.each(['SE', 'DK', 'NO', 'FI'], function (i, countryCode) {
+            $resurs_bank('#method_list_' + countryCode).append(getResursBankSpinner('method_list_' + countryCode));
+            $resurs_bank('#callback_list_' + countryCode).append(getResursBankSpinner('callback_list_' + countryCode));
+        });
+        getResursBankCountryArray('get_payment_methods', '#method_list_', function (data) {
+            if (typeof data['response'] === 'object') {
+                for (var countryCode in data['response']) {
+                    console.log(countryCode);
+                }
+            }
+        });
+        getResursBankCountryArray('get_registered_callbacks', '#callback_list_', function (data) {
+            console.log(data['response']);
         });
     }
 }

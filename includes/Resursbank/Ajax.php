@@ -7,11 +7,13 @@ if (!defined('ABSPATH')) {
 add_action('wp_ajax_resurs_bank_backend', 'resurs_bank_ajax_backend');
 add_action('wp_ajax_nopriv_resurs_bank_backend', 'resurs_bank_ajax_backend');
 
-function reset_bank_ajax_token_accept()
+/**
+ * @return bool
+ */
+function reset_bank_ajax_token_accept($runRequest = '')
 {
-    $return = false;
     try {
-        $return = Resursbank_Core::resursbank_verify_nonce();
+        $return = Resursbank_Core::resursbank_verify_nonce($runRequest);
     } catch (\Exception $e) {
         $return = 2;
     }
@@ -44,11 +46,13 @@ function resurs_bank_show_ajax_response($ajaxResponse)
  */
 function resurs_bank_ajax_filters($run, $ajaxResponse)
 {
+    // Global call
     $ajaxResponse = apply_filters('resursbank_admin_backend', $ajaxResponse, isset($_REQUEST) ? $_REQUEST : array());
 
     if (!is_null($run)) {
+        // Call based on command - non-admin call
         $ajaxReply = apply_filters(
-            'resursbank_admin_backend_' . $run,
+            'resursbank_backend_' . $run,
             array(),
             isset($_REQUEST) ? $_REQUEST : array()
         );
@@ -56,13 +60,25 @@ function resurs_bank_ajax_filters($run, $ajaxResponse)
             $ajaxResponse['response'] = $ajaxReply;
         }
     }
+
     if (is_admin()) {
+        // Global call for admin
         $ajaxReply = apply_filters(
-            'resursbank_backend_admin',
+            'resursbank_admin_backend',
             array(),
             isset($_REQUEST) ? $_REQUEST : array()
         );
         $ajaxResponse['responseAdmin'] = $ajaxReply;
+
+        // Apply for separate calls
+        $ajaxReply = apply_filters(
+            'resursbank_admin_backend_' . $run,
+            array(),
+            isset($_REQUEST) ? $_REQUEST : array()
+        );
+        if (!empty($ajaxReply)) {
+            $ajaxResponse['responseAdmin'] = $ajaxReply;
+        }
     }
 
     return $ajaxResponse;
@@ -79,7 +95,7 @@ function resurs_bank_ajax_backend()
         $run = $_REQUEST['run'];
     }
 
-    $tokenType = reset_bank_ajax_token_accept();
+    $tokenType = reset_bank_ajax_token_accept($run);
 
     $ajaxResponse = array(
         'success' => false,

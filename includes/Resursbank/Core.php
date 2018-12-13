@@ -396,11 +396,55 @@ class Resursbank_Core
      * Coming controller for where nonces are require to pass safely or if they
      * are not required at all.
      *
+     * @param string $runRequest
      * @return bool
      */
-    private static function getRequiredNonce()
+    private static function getRequiredNonce($runRequest = '')
     {
-        $return = false;
+        $requiredOnRequest = array(
+            'get_payment_methods',
+            'get_registered_callbacks',
+        );
+
+        $return = in_array($runRequest, $requiredOnRequest);
+
+        return $return;
+    }
+
+    /**
+     * Defines which functions that can run in cron mode without admin requirements
+     *
+     * @param string $runRequest
+     * @return bool
+     */
+    private static function getCanRunInCron($runRequest = '')
+    {
+        $requiredOnRequest = array(
+            'get_payment_methods',
+        );
+
+        return in_array($runRequest, $requiredOnRequest);
+    }
+
+    /**
+     * Require admin on specific requests
+     *
+     * @param string $runRequest
+     * @return bool
+     */
+    private static function getRequiredAdmin($runRequest = '')
+    {
+        $requiredOnRequest = array(
+            'get_payment_methods',
+            'get_registered_callbacks',
+        );
+
+        // If request is listed above and admin is missing, return true as this means that the user is not admin.
+        $return = (in_array($runRequest, $requiredOnRequest) && !is_admin()) ? true : false;
+
+        if (!$return) {
+            $return = isset($_REQUEST['cron']) && self::getCanRunInCron($runRequest) ? false : true;
+        }
 
         return $return;
     }
@@ -408,21 +452,49 @@ class Resursbank_Core
     /**
      * Verify that the nonce is correct.
      *
+     * @param string $runRequest
      * @return bool
      * @throws Exception
      */
-    public static function resursbank_verify_nonce()
+    public static function resursbank_verify_nonce($runRequest = '')
     {
         $return = false;
 
-        if (wp_verify_nonce(isset($_REQUEST['token']) ? $_REQUEST['token'] : null, 'resursBankBackendRequest')) {
+        // Check for both token (deprecated) and resursBankGatewayNonce
+        if (wp_verify_nonce(
+                (isset($_REQUEST['token']) ? $_REQUEST['token'] : null),
+                'resursBankBackendRequest'
+            ) ||
+            wp_verify_nonce(
+                (isset($_REQUEST['resursBankGatewayNonce']) ? $_REQUEST['resursBankGatewayNonce'] : null),
+                'resursBankBackendRequest'
+            )
+        ) {
+            // If nonce is verified.
             $return = true;
+
+            if (self::getRequiredAdmin($runRequest)) {
+                throw new \Exception(
+                    __(
+                        'Security verification failure',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ) . ' - ' .
+                    __(
+                        'Must be administator',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ), 400
+                );
+            }
         }
 
-        if (!$return && self::getRequiredNonce()) {
+        if (!$return && self::getRequiredNonce($runRequest)) {
             throw new \Exception(
                 __(
-                    'Security verification failed!',
+                    'Security verification failure',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) . ' - ' .
+                __(
+                    'Security key mismatch',
                     'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                 ), 400
             );
@@ -761,7 +833,7 @@ class Resursbank_Core
         $return = array(
             'add' => self::getGraphicsUrl('add-16.png'),
             'delete' => self::getGraphicsUrl('delete-16.png'),
-            'spinner' => self::getGraphicsUrl('spinner.png'),
+            'spinner' => self::getGraphicsUrl('spin.gif'),
         );
         if (!empty($name)) {
             return isset($return[$name]) ? $return[$name] : null;
