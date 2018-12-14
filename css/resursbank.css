@@ -68,4 +68,9 @@
     border-bottom: 1px dashed #fefefe;
     padding: 4px !important;
     margin: 2px !important;
+    vertical-align: top;
+}
+.resursCredentialsDataField {
+    font-size: 12px !important;
+    vertical-align: top;
 }

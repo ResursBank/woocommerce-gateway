@@ -46,8 +46,11 @@ class Resursbank_Core
         $credentials = $this->getCredentialsByCountry($country);
         $return = array();
 
-        if (isset($credentials['username'])) {
-            $connection = $this->getConnection($credentials['username'], $credentials['password']);
+        $currentEnvironment = self::getResursOption('environment');
+
+        if (isset($credentials[$currentEnvironment]['username'])) {
+            $connection = $this->getConnection($credentials[$currentEnvironment]['username'],
+                $credentials[$currentEnvironment]['password']);
             $return = $connection->getPaymentMethods(array(), true);
         }
 
@@ -107,15 +110,20 @@ class Resursbank_Core
     /**
      * Get chosen environment and translate it to EComPHP-style.
      *
+     * @param null $dynamic Dynamially fetch correct environment (used by get_payment_methods)
      * @return int
      */
-    private function getEcomEnvironment()
+    private function getEcomEnvironment($dynamic = null)
     {
+        $return = RESURS_ENVIRONMENTS::TEST;
         $env = $this->getEnvironment();
-        if ($env === 'live') {
-            return RESURS_ENVIRONMENTS::PRODUCTION;
+        if (!is_null($dynamic) && $dynamic === 'test' || $dynamic === 'live') {
+            $env = $dynamic;
         }
-        return RESURS_ENVIRONMENTS::TEST;
+        if ($env === 'live') {
+            $return = RESURS_ENVIRONMENTS::PRODUCTION;
+        }
+        return $return;
     }
 
     /**
@@ -123,17 +131,21 @@ class Resursbank_Core
      *
      * @param string $username
      * @param string $password
-     * @param string $country
+     * @param null $environment
      * @return ResursBank
      * @throws Exception
      */
-    private function getConnection($username = '', $password = '', $country = '')
+    private function getConnection($username = '', $password = '', $environment = null)
     {
         $this->RB = new ResursBank();
         if (!empty($username) && !empty($password)) {
             $this->RB->setAuthentication($username, $password);
         }
-        $this->RB->setEnvironment(self::getEcomEnvironment());
+        if (is_null($environment)) {
+            $this->RB->setEnvironment(self::getEcomEnvironment());
+        } else {
+            $this->RB->setEnvironment($environment);
+        }
 
         return $this->RB;
     }
@@ -160,21 +172,40 @@ class Resursbank_Core
      * Using API method to request payment methods list
      *
      * @param $credentials
+     * @param bool $cron
      * @return mixed
      * @throws Exception
      */
-    private static function getPaymentMethodsByApi($credentials)
+    private static function getPaymentMethodsByApi($credentials, $cron = false)
     {
         $CORE = new Resursbank_Core();
         $methodList = array();
+        $hasException = false;
+        $exceptions = array();
 
-        foreach ($credentials as $credentialCountry => $credentialArray) {
-            /** @var ResursBank $request */
-            $request = $CORE->getConnection($credentialArray['username'], $credentialArray['password'],
-                $CORE->getEcomEnvironment());
-            $methodList[$credentialCountry] = $request->getPaymentMethods(array(), true);
+        foreach ($credentials as $credentialCountry => $credentialArrayContent) {
+            foreach ($credentialArrayContent as $environment => $credentialArray) {
+                if ($environment === 'test' || $environment === 'live' && (!empty($credentialArray['username']))) {
+                    $request = $CORE->getConnection(
+                        $credentialArray['username'],
+                        $credentialArray['password'],
+                        $CORE->getEcomEnvironment($environment));
+                    try {
+                        $methodList[$credentialCountry][$environment] = $request->getPaymentMethods(array(), true);
+                    } catch (\Exception $e) {
+                        $hasException = true;
+                        $exceptions[] = $credentialCountry . '/' . $environment . ': [' . $e->getCode() . ']' . $e->getMessage();
+                    }
+                }
+            }
         }
+
+        if ($hasException) {
+            throw new \Exception('getPaymentMethods exception -- ' . implode(', ', $exceptions), 400);
+        }
+
         self::setStoredPaymentMethods($methodList);
+
         return $methodList;
     }
 
@@ -185,15 +216,16 @@ class Resursbank_Core
      * @param $methodList
      * @param $credentials
      * @param bool $cron
+     * @param $requestEnvironment
      * @return mixed
      * @throws Exception
      */
-    private static function getStoredPaymentMethodData($methodList, $credentials, $cron = false)
+    private static function getStoredPaymentMethodData($methodList, $credentials, $cron = false, $requestEnvironment)
     {
         // Running cronjobs should always update methods.
         $nextUpdateTimer = $cron ? 1 : 21600;
         if (!isset($methodList['lastRequest']) || (isset($methodList['lastRequest']) && intval($methodList['lastRequest']) < (time() - $nextUpdateTimer))) {
-            $methodList = self::getPaymentMethodsByApi($credentials);
+            $methodList = self::getPaymentMethodsByApi($credentials, $cron);
         } else {
             return $methodList['methods'];
         }
@@ -203,11 +235,11 @@ class Resursbank_Core
 
     /**
      * @param $country
-     * @param $credentials
+     * @param $requestEnvironment
      * @return mixed
      * @throws Exception
      */
-    private static function getStoredPaymentMethodsByCountry($country)
+    private static function getStoredPaymentMethodsByCountry($country, $requestEnvironment)
     {
         $CORE = new Resursbank_Core();
         $credentials = $CORE->getCredentialsByCountry($country);
@@ -221,9 +253,11 @@ class Resursbank_Core
             );
         }
 
+        $currentEnvironment = self::getResursOption('environment');
+
         $request = $CORE->getConnection(
-            $credentials['username'],
-            $credentials['password'],
+            $credentials[$currentEnvironment]['username'],
+            $credentials[$currentEnvironment]['password'],
             $CORE->getEcomEnvironment()
         );
         $methodList[$country] = $request->getPaymentMethods(array(), true);
@@ -236,25 +270,27 @@ class Resursbank_Core
      *
      * @param string $country
      * @param bool $cron
+     * @param $requestEnvironment
      * @return bool|mixed|null
      * @throws Exception
      */
-    public static function getStoredPaymentMethods($country = '', $cron = false)
+    public static function getStoredPaymentMethods($country = '', $cron = false, $requestEnvironment)
     {
         $methodList = self::getResursOption('paymentMethods');
         $credentials = self::getResursOption('credentials');
 
         if (isset($methodList['methods']) || $cron) {
-            $methodList = self::getStoredPaymentMethodData($methodList, $credentials, $cron);
+            $methodList = self::getStoredPaymentMethodData($methodList, $credentials, $cron, $requestEnvironment);
         }
 
         // If no methods are visible in the config
         if (!is_array($methodList)) {
             if (!empty($country)) {
-                $methodList = self::getStoredPaymentMethodsByCountry($country, $credentials);
+                $methodList = self::getStoredPaymentMethodsByCountry($country, $credentials, false,
+                    $requestEnvironment);
             } else {
                 if (is_array($credentials)) {
-                    $methodList = self::getPaymentMethodsByApi($credentials);
+                    $methodList = self::getPaymentMethodsByApi($credentials, $cron);
                 } else {
                     throw new \Exception(
                         __(
@@ -301,7 +337,11 @@ class Resursbank_Core
         }
 
         $cron = isset($_REQUEST['cron']) ? true : false;
-        $return = self::getStoredPaymentMethods($requestCountry, $cron);
+        $requestEnvironment = null;
+        if (isset($_REQUEST['environment'])) {
+            $requestEnvironment = empty($_REQUEST['environment']) ? $_REQUEST['environment'] : self::getResursOption('environment');
+        }
+        $return = self::getStoredPaymentMethods($requestCountry, $cron, $requestEnvironment);
 
         if ($cron) {
             return array('updated' => true);
@@ -440,7 +480,7 @@ class Resursbank_Core
         );
 
         // If request is listed above and admin is missing, return true as this means that the user is not admin.
-        $return = (in_array($runRequest, $requiredOnRequest) && !is_admin()) ? true : false;
+        $return = (in_array($runRequest, $requiredOnRequest) && !is_admin()) ? false : true;
 
         if (!$return) {
             $return = isset($_REQUEST['cron']) && self::getCanRunInCron($runRequest) ? false : true;
@@ -473,7 +513,7 @@ class Resursbank_Core
             // If nonce is verified.
             $return = true;
 
-            if (self::getRequiredAdmin($runRequest)) {
+            if (!self::getRequiredAdmin($runRequest)) {
                 throw new \Exception(
                     __(
                         'Security verification failure',

@@ -12,6 +12,9 @@ function resursbank_configrow_internal_scriptloader($scriptLoader, $configKey = 
     if ($configKey === 'test_function_field') {
         $scriptLoader = 'onclick="testFunctionFieldJs()"';
     }
+    if ($configKey === 'environment') {
+        $scriptLoader = 'onchange="resursBankCredentialsUpdate()"';
+    }
 
     return $scriptLoader;
 }

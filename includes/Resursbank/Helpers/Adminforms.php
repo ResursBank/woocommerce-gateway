@@ -64,7 +64,7 @@ class Resursbank_Adminforms
     {
         $this->html = '
             <div class="resursGatewayConfigArea" style="border-bottom:1px solid gray;border-left: 1px solid gray;border-right: 1px solid gray;">
-            <table class="form-table" style="table-layout: auto !important;">
+            <table class="form-table" style="table-layout: auto !important;" width="100%">
             ';
 
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : $this->getFirstSection();
@@ -242,7 +242,18 @@ class Resursbank_Adminforms
         if (is_admin()) {
             $credentials = Resursbank_Core::getResursOption('credentials');
             $return = '<div id="resurs_bank_credential_set">
-            <table width="100%" class="resursGatewayConfigCredentials" id="resurs_bank_credential_table">
+                        <div class="resursGatewayConfigCredentialsTd" style="font-style: italic;font-weight:bold;color:#00AAFF;">' .
+                __(
+                    'If you make changes on the settings below, make sure you save them by clicking on the save button before leaving.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) . '<br>' .
+                __(
+                    'Also make sure that you update your credentials when switching between staging and production.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) .
+                '</div>
+
+            <table width="100%" class="resursGatewayConfigCredentials" style="table-layout: auto !important;" id="resurs_bank_credential_table">
         ';
             if (is_array($credentials)) {
                 foreach ($credentials as $credentialId => $credentialData) {
@@ -251,18 +262,6 @@ class Resursbank_Adminforms
                     $fullColSpan = 6; // When we add more columns to the admin part, this need to be filled in.
 
                     $return .= '
-                    <tr>
-                    <td colspan="' . $fullColSpan . '" class="resursGatewayConfigCredentialsTd" style="font-style: italic;font-weight:bold;color:#FF0099;">' .
-                        __(
-                            'If you make changes on the settings below, make sure you save them before leaving.',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '<br>' .
-                        __(
-                            'Also make sure that you update your credentials when switching between staging and production.',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                        ) .
-                        '</td>
-                    </tr>
                     <tr id="resursbank_credential_row_' . $credentialData['country'] . '">
 
                         <td><b>
@@ -273,10 +272,19 @@ class Resursbank_Adminforms
                             <input type="checkbox" ' . ($credentialData['active'] ? 'checked="checked"' : '') . ' name="resursbank_credentials[' . $credentialId . '][active]" value="1">
                         </td>
 
-                        <td class="resursGatewayConfigCredentialsTd"><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' .
-                        $credentialData['username'] . '"></td>
-                        <td class="resursGatewayConfigCredentialsTd"><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' .
-                        $credentialData['password'] . '"></td>
+                        <td class="resursGatewayConfigCredentialsTd" style="display:none;" id="credentials_test_username_' . $credentialId . '"><b>Username (test)</b><br>
+                        <input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][test][username]" value="' .
+                        $credentialData['test']['username'] . '">
+                        </td>
+                        <td class="resursGatewayConfigCredentialsTd"style="display:none;"  id="credentials_test_password_' . $credentialId . '"><b>Password (test)</b><br>
+                        <input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][test][password]" value="' .
+                        $credentialData['test']['password'] . '"></td>
+                        
+                        <td class="resursGatewayConfigCredentialsTd" style="display:none;" id="credentials_live_username_' . $credentialId . '"><b>Username (live)</b><br><input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][live][username]" value="' .
+                        $credentialData['live']['username'] . '"></td>
+                        <td class="resursGatewayConfigCredentialsTd" style="display:none;" id="credentials_live_password_' . $credentialId . '"><b>Password (live)</b><br><input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][live][password]" value="' .
+                        $credentialData['live']['password'] . '"></td>
+                        
                         <td class="resursGatewayConfigCredentialsTd"><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]" id="resursbank_credentials[' . $credentialId . '][country]">
                             <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
                             <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
@@ -321,7 +329,7 @@ class Resursbank_Adminforms
             $return .= '<div>
             <img src="' .
                 Resursbank_Core::getGraphics('add') .
-                '" onclick="resursBankCredentialField()" style="cursor: pointer">
+                '" onclick="resursBankCredentialField()" style="cursor: pointer;">
             </div>';
         }
 
@@ -509,7 +517,7 @@ class Resursbank_Adminforms
      */
     private function getFieldInputSelect($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
     {
-        $selectBox = '<select " name="resursbank_' . $settingKey .
+        $selectBox = '<select name="resursbank_' . $settingKey .
             '" id="resursbank_' . $settingKey .
             '" class="resursGatewayConfigSelect" ' .
             $this->getFieldInputSelectMulti(
@@ -518,7 +526,7 @@ class Resursbank_Adminforms
             ) . ' ' . $this->getFieldInputSelectSize(
                 $configItem,
                 $settingKey
-            ) . '>
+            ) . ' ' . $scriptLoader . '>
         ';
 
         if (isset($configItem['options'])) {

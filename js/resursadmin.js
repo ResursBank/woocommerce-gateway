@@ -5,13 +5,15 @@ $resurs_bank(document).ready(function ($) {
     resursBankAdminRun();
 });
 
+var resursBankCurrentEnvironment = '';
+
 /**
  * Create INPUT field.
  * @param fieldName
  * @returns {*}
  */
 function getResursBankInputField(fieldName) {
-    return $resurs_bank('<input>', {name: fieldName});
+    return $resurs_bank('<input>', {name: fieldName, size: '24', class: 'resursCredentialsDataField'});
 }
 
 /**
@@ -101,9 +103,11 @@ function resursBankCredentialField() {
     if (countriesAvailable > 0) {
         var cId = parseInt(Math.random() * 1000);
         var row = $resurs_bank('<tr>', {id: 'resursbank_credential_row_' + cId});
-        row.append($resurs_bank('<td>').html(getResursBankCheckboxField('resursbank_credentials[' + cId + '][active]')).prepend('<b>Active</b><br>'));
-        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][username]')).prepend('<b>Username</b><br>'));
-        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][password]')).prepend('<b>Password</b><br>'));
+        row.append($resurs_bank('<td>').html(getResursBankCheckboxField('resursbank_credentials[' + cId + '][test][active]')).prepend('<b>Active</b><br>'));
+        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][test][username]')).prepend('<b>Username (Test)</b><br>'));
+        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][test][password]')).prepend('<b>Password (test)</b><br>'));
+        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][live][username]')).prepend('<b>Username (Live)</b><br>'));
+        row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][live][password]')).prepend('<b>Password (Live)</b><br>'));
         row.append($resurs_bank('<td>').html(
             getResursBankSelectField(
                 'resursbank_credentials[' + cId + '][country]', {
@@ -132,8 +136,13 @@ function resursBankCredentialField() {
     }
 }
 
+function getResursBankCurrentEnvironment() {
+    resursBankCurrentEnvironment = $resurs_bank('#resursbank_environment').val();
+    return resursBankCurrentEnvironment
+}
+
 function getResursBankCountryArray(getType, partElement, resursRunFunc) {
-    resurs_bank_ajaxify(getType, [], function (res) {
+    resurs_bank_ajaxify(getType, {'environment': getResursBankCurrentEnvironment}, function (res) {
         if (res['code'] >= 205 && res['faultstring'] !== '') {
             $resurs_bank.each(['SE', 'DK', 'NO', 'FI'], function (i, countryCode) {
                 $resurs_bank(partElement + countryCode).html(res['faultstring']);
@@ -144,22 +153,77 @@ function getResursBankCountryArray(getType, partElement, resursRunFunc) {
     });
 }
 
+function resursBankHideAndShowElements(toShow, toHide) {
+    $resurs_bank(toShow).show();
+    $resurs_bank(toHide).hide();
+}
+
+function resursBankDisplayCredentials() {
+    var currentEnvironment = getResursBankCurrentEnvironment();
+
+    var notCurrentEnvironment = 'test';
+    if (currentEnvironment === 'test') {
+        notCurrentEnvironment = 'live';
+    }
+    $resurs_bank.each(['SE', 'DK', 'NO', 'FI'], function (i, countryCode) {
+        resursBankHideAndShowElements('#credentials_' + currentEnvironment + '_username_' + countryCode, '#credentials_' + notCurrentEnvironment + '_username_' + countryCode);
+        resursBankHideAndShowElements('#credentials_' + currentEnvironment + '_password_' + countryCode, '#credentials_' + notCurrentEnvironment + '_password_' + countryCode);
+    });
+}
+
+function resursBankCredentialsUpdate() {
+    resursBankDisplayCredentials();
+    resursBankCheckCredentials();
+}
+
+function resursBankGetMethodContent(methodObject, tag) {
+    return $resurs_bank('<td>', {style: 'padding: 0px;'}).html(methodObject[tag]);
+}
+
+function resursBankGetMethodData(methodObject) {
+    var paymentMethodRow = $resurs_bank('<tr>');
+    $resurs_bank.each(['id', 'description'], function (idx, tag) {
+        paymentMethodRow.append(resursBankGetMethodContent(methodObject, tag));
+    });
+    return paymentMethodRow;
+}
+
 function resursBankCheckCredentials() {
     var credentialElement = $resurs_bank('#resurs_bank_credential_table');
+    var currentEnvironment = getResursBankCurrentEnvironment();
+
     if (credentialElement.length > 0) {
+        resursBankDisplayCredentials();
         $resurs_bank.each(['SE', 'DK', 'NO', 'FI'], function (i, countryCode) {
-            $resurs_bank('#method_list_' + countryCode).append(getResursBankSpinner('method_list_' + countryCode));
-            $resurs_bank('#callback_list_' + countryCode).append(getResursBankSpinner('callback_list_' + countryCode));
+            $resurs_bank('#method_list_' + countryCode).html(getResursBankSpinner('method_list_' + countryCode));
+            //$resurs_bank('#callback_list_' + countryCode).html(getResursBankSpinner('callback_list_' + countryCode));
         });
         getResursBankCountryArray('get_payment_methods', '#method_list_', function (data) {
             if (typeof data['responseAdmin'] === 'object') {
                 for (var countryCode in data['responseAdmin']) {
-                    console.log(countryCode);
+                    if (typeof data['responseAdmin'][countryCode][currentEnvironment] === 'object') {
+                        var methodTable = $resurs_bank('<table>', {
+                            style: 'padding: 0px; border: 1px dashed gray',
+                            width: '100%'
+                        });
+                        var resursMethodObject = data['responseAdmin'][countryCode][currentEnvironment];
+                        for (var methodIndex = 0; methodIndex < resursMethodObject.length; methodIndex++) {
+                            methodTable.append(resursBankGetMethodData(resursMethodObject[methodIndex]));
+                        }
+                        $resurs_bank('#method_list_' + countryCode).html(methodTable);
+                    }
                 }
             }
+            $resurs_bank.each(['SE', 'DK', 'NO', 'FI'], function (i, countryCode) {
+                if ($resurs_bank('#method_list_' + countryCode + '_spin').length === 1) {
+                    $resurs_bank('#method_list_' + countryCode).html('');
+                }
+            });
         });
         getResursBankCountryArray('get_registered_callbacks', '#callback_list_', function (data) {
-            console.log(data['responseAdmin']);
+            if (typeof data['responseAdmin'] === 'object') {
+
+            }
         });
     }
 }
