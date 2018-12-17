@@ -182,7 +182,7 @@ function resursBankGetMethodContent(methodObject, tag) {
 
 function resursBankGetMethodData(methodObject) {
     var paymentMethodRow = $resurs_bank('<tr>');
-    $resurs_bank.each(['id', 'description'], function (idx, tag) {
+    $resurs_bank.each(['id', 'title', 'description'], function (idx, tag) {
         paymentMethodRow.append(resursBankGetMethodContent(methodObject, tag));
     });
     return paymentMethodRow;

@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Class Resursbank_Config
  */
@@ -17,7 +21,6 @@ abstract class Resursbank_Config
      */
     public static function getConfigurationArray()
     {
-
         $configurationArray = array
         (
             'basic' => array(
@@ -98,7 +101,7 @@ abstract class Resursbank_Config
                             'Payment method update interval',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
-                        'type' =>'text',
+                        'type' => 'text',
                         'tip' => __(
                             'Defines how often the plugin should check for and update payment methods by itself. This option supports crontab.',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
@@ -122,5 +125,4 @@ abstract class Resursbank_Config
 
         return $configurationArray;
     }
-
 }

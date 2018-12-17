@@ -325,10 +325,11 @@ class Resursbank_Core
      * Returns payment methods in specified formatting
      *
      * @param string $country
+     * @param null $isCron
      * @return array
      * @throws Exception
      */
-    public static function get_payment_methods($country = '')
+    public static function get_payment_methods($country = '', $isCron = null)
     {
         if (empty($country)) {
             $requestCountry = (isset($_REQUEST['country']) ? $_REQUEST['country'] : '');
@@ -337,6 +338,9 @@ class Resursbank_Core
         }
 
         $cron = isset($_REQUEST['cron']) ? true : false;
+        if (!is_null($isCron)) {
+            $cron = $isCron;
+        }
         $requestEnvironment = null;
         if (isset($_REQUEST['environment'])) {
             $requestEnvironment = empty($_REQUEST['environment']) ? $_REQUEST['environment'] : self::getResursOption('environment');
@@ -448,6 +452,12 @@ class Resursbank_Core
 
         $return = in_array($runRequest, $requiredOnRequest);
 
+        // If return is true (= nonce is required to run) but it is on the other hand allowed to run in cron mode
+        // tell the running process to allow it by saing "no, nonce is not required".
+        if ($return && self::getCanRunInCron($runRequest)) {
+            $return = false;
+        }
+
         return $return;
     }
 
@@ -463,7 +473,8 @@ class Resursbank_Core
             'get_payment_methods',
         );
 
-        return in_array($runRequest, $requiredOnRequest);
+        // Making sure that, if it is cronable, it is also running in cron mode.
+        return in_array($runRequest, $requiredOnRequest) && isset($_REQUEST['cron']) ? true : false;
     }
 
     /**
@@ -752,6 +763,7 @@ class Resursbank_Core
         }
 
         if (isset($confValues[$key]) && isset($confValues[$key]['type'])) {
+            /** @noinspection PhpUndefinedVariableInspection */
             if ($confValues[$key]['type'] === 'checkbox') {
                 if (strtolower($value) === 'yes' || (bool)$value || strtolower($value) === 'on') {
                     $value = true;
@@ -976,6 +988,4 @@ class Resursbank_Core
         }
         return 'i.have.no.idea-beta';
     }
-
-
 }

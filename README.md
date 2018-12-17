@@ -6,6 +6,23 @@ When time passed, the source code got a bit unhandy to develop with, but since t
 
 This version of the plugin is a rebuild-fork of the prior one, and a try to free some bottlenecks.
 
+## Automatically updating payment methods
+
+This plugin supports the ability to update payment methods automatically via scheduled jobs (like cron). The "only" thing you need is an application that can call for your site by a http call. Here are some examples:
+
+##### curl:
+
+``curl "https://mysite.test.com/wp-admin/admin-ajax.php?action=resurs_bank_backend&run=get_payment_methods&cron"``
+
+##### wget:
+
+``wget -q "http://mysite.test.com/wp-admin/admin-ajax.php?action=resurs_bank_backend&run=get_payment_methods&cron"``
+
+##### GET:
+
+``GET -d "http://mysite.test.com/wp-admin/admin-ajax.php?action=resurs_bank_backend&run=get_payment_methods&cron"``
+
+
 ## Naming and coexistence
 
 The base of this plugin is created in an external fork repo and then, when honored by Resurs Bank, merged into a separated branch called 3.0.
