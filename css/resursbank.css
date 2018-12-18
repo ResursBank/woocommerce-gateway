@@ -51,11 +51,26 @@
 
 .resursGatewayConfigCoexistWarning {
     background: #FECEAC;
-    border: 1px solid gray;
+    border: 1px solid #FEFEFE;
     padding: 5px;
     margin-bottom: 10px;
     border-radius: 5px;
     text-align: center;
     vertical-align: center;
     font-weight: bold;
+}
+
+.resursGatewayConfigCredentials {
+    border: 1px solid gray;
+    min-height: 5px;
+}
+.resursGatewayConfigCredentialsTd {
+    border-bottom: 1px dashed #fefefe;
+    padding: 4px !important;
+    margin: 2px !important;
+    vertical-align: top;
+}
+.resursCredentialsDataField {
+    font-size: 12px !important;
+    vertical-align: top;
 }

@@ -89,13 +89,17 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      * @param $saveValue
      * @return array
      */
-    private function getCredentialsSet($shortKey, $saveValue) {
+    private function getCredentialsSet($shortKey, $saveValue)
+    {
         $newValue = $saveValue;
         if ($shortKey === 'credentials') {
             // Reset saved array if credentials block.
             $newValue = array();
             foreach ($saveValue as $saveArray) {
                 if (isset($saveArray['country']) && !empty($saveArray['country'])) {
+                    if (!isset($saveArray['active'])) {
+                        $saveArray['active'] = 0;
+                    }
                     $newValue[$saveArray['country']] = $saveArray;
                 }
             }
@@ -104,9 +108,42 @@ class WC_Settings_ResursBank extends WC_Settings_Page
     }
 
     /**
-     * @param $settings_section
+     * @return string
      */
-    public function resurs_bank_settings_save_legacy($settings_section)
+    private function getSection()
+    {
+        return isset($_REQUEST['section']) ? $_REQUEST['section'] : '';
+    }
+
+    /**
+     * Restoring dynamic dismissed objects
+     *
+     * @param $configurationObject
+     * @return array
+     */
+    private function setDismissedObjects($configurationObject)
+    {
+        $section = $this->getSection();
+
+        if ($section === 'dismissed' && is_array($configurationObject)) {
+            foreach ($configurationObject as $item => $value) {
+                if (preg_match('/^dismiss_/', $item)) {
+                    if (!isset($_REQUEST[$item])) {
+                        $configurationObject[$item] = false;
+                    }
+                }
+            }
+        }
+
+        return $configurationObject;
+    }
+
+    /**
+     * Compiles default configuration values with stored data
+     *
+     * @return array
+     */
+    public function getStoredConfiguration()
     {
         $fullConfiguration = Resursbank_Core::getDefaultConfiguration();
         $storedConfiguration = Resursbank_Core::getResursOption();
@@ -118,20 +155,69 @@ class WC_Settings_ResursBank extends WC_Settings_Page
             }
         }
 
+        return $fullConfiguration;
+    }
+
+    /**
+     * @param $settings_section
+     */
+    public function resurs_bank_settings_save_legacy($settings_section)
+    {
+        global $wp;
+        $fullConfiguration = $this->getStoredConfiguration();
+
         // Loop through request and overwrite with new values.
         if (isset($_REQUEST) && is_array($_REQUEST)) {
             foreach ($_REQUEST as $saveKey => $saveValue) {
+
                 if (preg_match('/^resursbank_/', $saveKey)) {
                     $shortKey = preg_replace('/^resursbank_/', '', $saveKey);
+
+                    $saveValue = apply_filters('resursbank_config_save_data_' . $shortKey, $saveValue);
+
                     // Pass the saved value through credentials detecting and convert the
                     // data if anything found.
                     $saveValue = $this->getCredentialsSet($shortKey, $saveValue);
-                    $fullConfiguration[$shortKey] = ($saveValue === 'yes') ? true : $saveValue;
+
+                    $fullConfiguration[$shortKey] = ($saveValue === 'yes' || $saveValue === 'on') ? true : $saveValue;
                 }
             }
         }
 
+        // Sanitize dynamic dismissals
+        $fullConfiguration = $this->setDismissedObjects($fullConfiguration);
+
         Resursbank_Core::setResursOption($fullConfiguration);
+        $this->redirectDismissed($fullConfiguration);
+    }
+
+    /**
+     * Redirect administrative url to a section that do exist
+     * if all dismissed objects are restored.
+     */
+    private function redirectDismissed($fullConfiguration)
+    {
+        if ($this->getSection() === 'dismissed' && !$this->hasDismissedOptions($fullConfiguration)) {
+            wp_redirect(admin_url('admin.php?page=wc-settings&tab=resurs_bank_payment_gateway'));
+        }
+    }
+
+    /**
+     * @param $fullConfiguration
+     * @return bool
+     */
+    private function hasDismissedOptions($fullConfiguration)
+    {
+        $return = false;
+        if (is_array($fullConfiguration)) {
+            foreach ($fullConfiguration as $itemKey => $itemValue) {
+                if (preg_match('/^dismiss_/', $itemKey) && (bool)$itemValue) {
+                    $return = true;
+                    break;
+                }
+            }
+        }
+        return $return;
     }
 
     /**
@@ -194,7 +280,7 @@ class WC_Settings_ResursBank extends WC_Settings_Page
         return __(
                 'Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            ) . ' ' . __(
+            ) . '<br>' . __(
                 'This plugin has decided (on demand) to disable the coexisting prior version of Resurs Bank.',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
             ) . ' ' .
@@ -210,23 +296,32 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     private function resurs_bank_version_control()
     {
+        $coExDismiss = apply_filters('resursbank_config_disable_coexist_warnings', false);
         if (defined('RB_WOO_VERSION')) {
-            echo '<hr>';
-            if (!Resursbank_Core::resurs_obsolete_coexistence_disable()) {
-                if (version_compare(RB_WOO_VERSION, '3', '<')) {
-                    echo '<div style="color:#990000 !important;" class="resursGatewayConfigCoexistWarning">' .
-                        $this->resurs_bank_version_low_text() .
-                        '</div>';
+            $dismissIt = '<div style="cursor:pointer; color:#000099 !important; text-align: right;" onclick="resurs_bank_dismiss(\'#resursbank_coexist_message\')">Dismiss</div>';
+            echo '<div id="resursbank_coexist_message">';
+            if (!(bool)$coExDismiss) {
+                echo '<hr>';
+                if (!Resursbank_Core::resurs_obsolete_coexistence_disable()) {
+                    if (version_compare(RB_WOO_VERSION, '3', '<')) {
+                        echo '<div style="color:#990000 !important;" class="resursGatewayConfigCoexistWarning">' .
+                            $this->resurs_bank_version_low_text() .
+                            $dismissIt .
+                            '</div>';
+                    } else {
+                        echo '<div style="color:#DD0000 !important;" class="resursGatewayConfigCoexistWarning">' .
+                            $this->resurs_bank_version_equal_text() .
+                            $dismissIt .
+                            '</div>';
+                    }
                 } else {
                     echo '<div style="color:#DD0000 !important;" class="resursGatewayConfigCoexistWarning">' .
-                        $this->resurs_bank_version_equal_text() .
+                        $this->resurs_bank_version_obsolete_coexistence() .
+                        $dismissIt .
                         '</div>';
                 }
-            } else {
-                echo '<div style="color:#DD0000 !important;" class="resursGatewayConfigCoexistWarning">' .
-                    $this->resurs_bank_version_obsolete_coexistence() .
-                    '</div>';
             }
+            echo '</div>';
         }
     }
 

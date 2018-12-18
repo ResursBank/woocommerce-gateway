@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class Resursbank_Adminforms
 {
 
@@ -17,7 +21,7 @@ class Resursbank_Adminforms
      */
     public function __construct()
     {
-        $this->configurationArray = $this->getConfigurationArray();
+        $this->getConfigurationArray();
         $this->CORE = new Resursbank_Core();
     }
 
@@ -28,7 +32,9 @@ class Resursbank_Adminforms
      */
     public function getConfigurationArray()
     {
-        return Resursbank_Config::getConfigurationArray();
+        $this->configurationArray = Resursbank_Config::getConfigurationArray();
+        $this->configurationArray = apply_filters('resursbank_config_array', $this->configurationArray);
+        return $this->configurationArray;
     }
 
     /**
@@ -62,7 +68,7 @@ class Resursbank_Adminforms
     {
         $this->html = '
             <div class="resursGatewayConfigArea" style="border-bottom:1px solid gray;border-left: 1px solid gray;border-right: 1px solid gray;">
-            <table class="form-table" style="table-layout: auto !important;">
+            <table class="form-table" style="table-layout: auto !important;" width="100%">
             ';
 
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : $this->getFirstSection();
@@ -153,7 +159,8 @@ class Resursbank_Adminforms
                 <tr class="' . $tdThClassName . '">
                 <th class="' . $tdLeftClass . '" colspan="2" scope="row" id="columnLeft' . $settingKey . '">' .
                 $leftColumnString .
-                '</th></tr>
+                '</th>
+                </tr>
         ';
         }
 
@@ -189,6 +196,48 @@ class Resursbank_Adminforms
         return Resursbank_Core::getResursOption($settingKey, $namespace);
     }
 
+    /**
+     * Get list of shopflows.
+     *
+     * @param string $storedValue
+     * @param bool $asArray
+     * @return array
+     */
+    public function getShopFlowOptions($storedValue = '', $asArray = false)
+    {
+        $shopFlows = array(
+            'checkout' => __('Resurs Checkout', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            'simplified' => __('Simplified ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            'hosted' => __('Hosted ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+        );
+        if ($asArray) {
+            return $shopFlows;
+        }
+        $shopFlowList = array();
+        foreach ($shopFlows as $flowId => $flowName) {
+            $selected = ($storedValue === $flowId ? 'selected' : '');
+            $shopFlowList[] = '<option value="' . $flowId . '" ' . $selected . '>' . $flowName . '</option>';
+        }
+        return $shopFlowList;
+    }
+
+    /**
+     * Get shop flows by static method (filter that supports frontend requests)
+     *
+     * @return array
+     */
+    public static function get_shopflow_options()
+    {
+        return self::getShopFlowOptions('', true);
+    }
+
+    /**
+     * Generate credential fields for admin.
+     *
+     * @param string $data
+     * @param string $settingKey
+     * @return string|null
+     */
     public function getCredentialFields($data = '', $settingKey = '')
     {
         $return = null;
@@ -197,44 +246,94 @@ class Resursbank_Adminforms
         if (is_admin()) {
             $credentials = Resursbank_Core::getResursOption('credentials');
             $return = '<div id="resurs_bank_credential_set">
-            <table width="100%" style="border:1px solid gray; min-height: 5px;" id="resurs_bank_credential_table">
+                        <div class="resursGatewayConfigCredentialsTd" style="font-style: italic;font-weight:bold;color:#00AAFF;">' .
+                __(
+                    'If you make changes on the settings below, make sure you save them by clicking on the save button before leaving.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) . '<br>' .
+                __(
+                    'Also make sure that you update your credentials when switching between staging and production.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ) .
+                '</div>
+
+            <table width="100%" class="resursGatewayConfigCredentials" style="table-layout: auto !important;" id="resurs_bank_credential_table">
         ';
             if (is_array($credentials)) {
                 foreach ($credentials as $credentialId => $credentialData) {
+                    $currentShopFlow = $credentialData['shopflow'];
 
-                    $paymentMethods = array();
-                    try {
-                        $paymentMethods = $this->CORE->getPaymentMethods($credentialData['country']);
-                    } catch (\Exception $e) {
+                    $fullColSpan = 6; // When we add more columns to the admin part, this need to be filled in.
 
-                    }
-                    $return .= '<tr id="resursbank_credential_row_' . $credentialData['country'] . '">
-                    <td><b>Username</b><br><input name="resursbank_credentials[' . $credentialId . '][username]" value="' . $credentialData['username'] . '"></td>
-                    <td><b>Password</b><br><input name="resursbank_credentials[' . $credentialId . '][password]" value="' . $credentialData['username'] . '"></td>
-                    <td><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]">
-                    <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
-                    <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
-                    <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
-                    <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
-                    </select></td>
-                    <td>
-                    <img style="cursor: pointer;" src="' .
+                    $return .= '
+                    <tr id="resursbank_credential_row_' . $credentialData['country'] . '">
+
+                        <td><b>
+                        ' . __(
+                            'Active',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</b><br>
+                            <input type="checkbox" ' . ($credentialData['active'] ? 'checked="checked"' : '') . ' name="resursbank_credentials[' . $credentialId . '][active]" value="1">
+                        </td>
+
+                        <td class="resursGatewayConfigCredentialsTd" style="display:none;" id="credentials_test_username_' . $credentialId . '"><b>Username (test)</b><br>
+                        <input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][test][username]" value="' .
+                        $credentialData['test']['username'] . '">
+                        </td>
+                        <td class="resursGatewayConfigCredentialsTd"style="display:none;"  id="credentials_test_password_' . $credentialId . '"><b>Password (test)</b><br>
+                        <input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][test][password]" value="' .
+                        $credentialData['test']['password'] . '"></td>
+                        
+                        <td class="resursGatewayConfigCredentialsTd" style="display:none;" id="credentials_live_username_' . $credentialId . '"><b>Username (live)</b><br><input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][live][username]" value="' .
+                        $credentialData['live']['username'] . '"></td>
+                        <td class="resursGatewayConfigCredentialsTd" style="display:none;" id="credentials_live_password_' . $credentialId . '"><b>Password (live)</b><br><input class="resursCredentialsDataField" size="24" name="resursbank_credentials[' . $credentialId . '][live][password]" value="' .
+                        $credentialData['live']['password'] . '"></td>
+                        
+                        <td class="resursGatewayConfigCredentialsTd"><b>Country</b><br><select name="resursbank_credentials[' . $credentialId . '][country]" id="resursbank_credentials[' . $credentialId . '][country]">
+                            <option value="SE" ' . ($credentialData['country'] === 'SE' ? 'selected' : '') . '>Sverige</option>
+                            <option value="DK" ' . ($credentialData['country'] === 'DK' ? 'selected' : '') . '>Danmark</option>
+                            <option value="NO" ' . ($credentialData['country'] === 'NO' ? 'selected' : '') . '>Norge</option>
+                            <option value="FI" ' . ($credentialData['country'] === 'FI' ? 'selected' : '') . '>Suomi</option>
+                            </select>
+                        </td>
+
+                        <td class="resursGatewayConfigCredentialsTd">
+                            <b>' . __(
+                            'Chosen shopflow',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</b><br>
+                            <select name="resursbank_credentials[' . $credentialId . '][shopflow]">' . implode("\n",
+                            $this->getShopFlowOptions($currentShopFlow)) .
+                        '</select>
+                        </td>
+
+                        <td class="resursGatewayConfigCredentialsTd">
+                            <img style="cursor: pointer;" src="' .
                         Resursbank_Core::getGraphics('delete') .
-                        '" onclick="$resurs_bank(\'#resursbank_credential_row_' . $credentialData['country'] . '\').remove()"></td>
-                    </tr>
-                    <tr><td colspan="3" id="method_list_' . $credentialData['country'] . '"></td></tr>
-                    <tr><td colspan="3" id="callback_list_' . $credentialData['country'] . '"></td></tr>
-                ';
+                        '" onclick="$resurs_bank(\'#resursbank_credential_row_' .
+                        $credentialData['country'] . '\').remove()">
+                        </td>
 
+                    </tr>
+                    <tr>
+                        <td class="resursGatewayConfigCredentialsTd" colspan="' . $fullColSpan . '" id="method_list_' . $credentialData['country'] .
+                        '"></td>
+                    </tr>
+                    <tr>
+                        <td class="resursGatewayConfigCredentialsTd" colspan="' . $fullColSpan . '" style="border-bottom: 1px solid black;" id="callback_list_' .
+                        $credentialData['country'] . '"></td>
+                    </tr>
+                ';
                 }
             }
             $return .= '</table>
-        </div>';
+                </div>
+            ';
 
             $return .= '<div>
             <img src="' .
                 Resursbank_Core::getGraphics('add') .
-                '" onclick="resursBankCredentialField()" style="cursor: pointer">
+                '" onclick="resursBankCredentialField()" style="cursor: pointer;">
             </div>';
         }
 
@@ -422,7 +521,7 @@ class Resursbank_Adminforms
      */
     private function getFieldInputSelect($configItem, $configType, $settingKey, $storedValue, $scriptLoader)
     {
-        $selectBox = '<select " name="resursbank_' . $settingKey .
+        $selectBox = '<select name="resursbank_' . $settingKey .
             '" id="resursbank_' . $settingKey .
             '" class="resursGatewayConfigSelect" ' .
             $this->getFieldInputSelectMulti(
@@ -431,7 +530,7 @@ class Resursbank_Adminforms
             ) . ' ' . $this->getFieldInputSelectSize(
                 $configItem,
                 $settingKey
-            ) . '>
+            ) . ' ' . $scriptLoader . '>
         ';
 
         if (isset($configItem['options'])) {

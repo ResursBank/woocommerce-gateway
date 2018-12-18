@@ -12,6 +12,8 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
      */
     class WC_Resursbank_Method extends WC_Gateway_ResursBank
     {
+        public $title;
+
         const SIMPLIFIED_FLOW = 1;
         const HOSTED_FLOW = 2;
         const RESURS_CHECKOUT = 3;

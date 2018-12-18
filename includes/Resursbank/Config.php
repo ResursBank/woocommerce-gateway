@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Class Resursbank_Config
  */
@@ -17,8 +21,6 @@ abstract class Resursbank_Config
      */
     public static function getConfigurationArray()
     {
-
-        // Auto sectionized content
         $configurationArray = array
         (
             'basic' => array(
@@ -54,8 +56,11 @@ abstract class Resursbank_Config
                         'type' => 'select',
                         'options' => 'dynamic_get_tax_classes',
                         'size' => '3',
-                        'tip' => __('Used by the plugin when no other options are availabel (for example in payment fees)',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'tip' => __(
+                            'Used by the plugin when no other options are availabel (for example in payment fees)',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'display' => false,
                     ),
                     'API' => array(
                         'title' => __('API', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
@@ -91,6 +96,18 @@ abstract class Resursbank_Config
                         ),
                         'type' => 'title',
                     ),
+                    'paymentMethodListTimer' => array(
+                        'title' => __(
+                            'Payment method update interval (in seconds)',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'default' => '21600',
+                        'type' => 'text',
+                        'tip' => __(
+                            'Defines how often, in seconds, for which the plugin should check for and update payment methods by itself. Value must be larger than 300 seconds. Can be defined as 1m=1 month, 2d=2 days, 3h=3 hours and so on. This option is supported in cron mode.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                    ),
                     'resurs_obsolete_coexistence_disable' => array(
                         'title' => __(
                             'Disable coexisting plugin',
@@ -103,16 +120,10 @@ abstract class Resursbank_Config
                         'type' => 'checkbox',
                         'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     ),
-
                 )
             ),
         );
 
-        //echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
-
-        $configurationArray = apply_filters('resursbank_config_array', $configurationArray);
-
         return $configurationArray;
     }
-
 }
