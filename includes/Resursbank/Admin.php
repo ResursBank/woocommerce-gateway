@@ -169,11 +169,16 @@ class WC_Settings_ResursBank extends WC_Settings_Page
         // Loop through request and overwrite with new values.
         if (isset($_REQUEST) && is_array($_REQUEST)) {
             foreach ($_REQUEST as $saveKey => $saveValue) {
+
                 if (preg_match('/^resursbank_/', $saveKey)) {
                     $shortKey = preg_replace('/^resursbank_/', '', $saveKey);
+
+                    $saveValue = apply_filters('resursbank_config_save_data_' . $shortKey, $saveValue);
+
                     // Pass the saved value through credentials detecting and convert the
                     // data if anything found.
                     $saveValue = $this->getCredentialsSet($shortKey, $saveValue);
+
                     $fullConfiguration[$shortKey] = ($saveValue === 'yes' || $saveValue === 'on') ? true : $saveValue;
                 }
             }

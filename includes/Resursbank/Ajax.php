@@ -46,8 +46,6 @@ function resurs_bank_show_ajax_response($ajaxResponse)
  */
 function resurs_bank_ajax_filters($run, $ajaxResponse)
 {
-    // Global call
-    $ajaxResponse = apply_filters('resursbank_admin_backend', $ajaxResponse, isset($_REQUEST) ? $_REQUEST : array());
 
     if (!is_null($run)) {
         // Call based on command - non-admin call
@@ -62,14 +60,6 @@ function resurs_bank_ajax_filters($run, $ajaxResponse)
     }
 
     if (is_admin()) {
-        // Global call for admin
-        $ajaxReply = apply_filters(
-            'resursbank_admin_backend',
-            array(),
-            isset($_REQUEST) ? $_REQUEST : array()
-        );
-        $ajaxResponse['responseAdmin'] = $ajaxReply;
-
         // Apply for separate calls
         $ajaxReply = apply_filters(
             'resursbank_admin_backend_' . $run,

@@ -37,3 +37,4 @@ add_filter('resursbank_config_array', 'Resursbank_Core::resursbank_get_dismissed
 
 add_filter('resursbank_admin_backend_get_shopflow_options', 'Resursbank_Adminforms::get_shopflow_options');
 add_filter('resursbank_admin_backend_get_payment_methods', 'Resursbank_Core::get_payment_methods');
+add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Core::get_payment_list_timer');

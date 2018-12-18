@@ -98,12 +98,13 @@ abstract class Resursbank_Config
                     ),
                     'paymentMethodListTimer' => array(
                         'title' => __(
-                            'Payment method update interval',
+                            'Payment method update interval (in seconds)',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
+                        'default' => '21600',
                         'type' => 'text',
                         'tip' => __(
-                            'Defines how often the plugin should check for and update payment methods by itself. This option supports crontab.',
+                            'Defines how often, in seconds, for which the plugin should check for and update payment methods by itself. Value must be larger than 300 seconds. Can be defined as 1m=1 month, 2d=2 days, 3h=3 hours and so on. This option is supported in cron mode.',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
                     ),

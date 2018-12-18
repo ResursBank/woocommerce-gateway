@@ -210,6 +210,47 @@ class Resursbank_Core
     }
 
     /**
+     * Translate time into seconds.
+     *
+     * @param $currentValue
+     * @return int
+     */
+    public static function get_payment_list_timer($currentValue)
+    {
+        @preg_match_all('/(\d{1,2})(\w+)/i', $currentValue, $newValues);
+
+        if (isset($newValues[1][0]) && isset($newValues[2]) && isset($newValues[2][0])) {
+
+            $intValue = $newValues[1][0];
+            $valueType = $newValues[2][0];
+
+            if (is_numeric($intValue) && is_string($valueType)) {
+                switch ($valueType) {
+                    case 'd':
+                        $currentValue = $intValue * 86400;
+                        break;
+                    case 'h':
+                        $currentValue = $intValue * 60 * 60;
+                        break;
+                    case 'm':
+                        $currentValue = $intValue * 60;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // Always return as integers.
+        $return = intval($currentValue);
+        if ($return < 300) {
+            $return = 21600;
+        }
+
+        return $return;
+    }
+
+    /**
      * If payment methods are stored, decide from where it should be taken. If the data is too old,
      * it will recreate the method list live.
      *
@@ -223,7 +264,10 @@ class Resursbank_Core
     private static function getStoredPaymentMethodData($methodList, $credentials, $cron = false, $requestEnvironment)
     {
         // Running cronjobs should always update methods.
-        $nextUpdateTimer = $cron ? 1 : 21600;
+        $nextUpdateTimer = (int)self::getResursOption('paymentMethodListTimer');
+        if ($nextUpdateTimer < 300) {
+            $nextUpdateTimer = 21600;
+        }
         if (!isset($methodList['lastRequest']) || (isset($methodList['lastRequest']) && intval($methodList['lastRequest']) < (time() - $nextUpdateTimer))) {
             $methodList = self::getPaymentMethodsByApi($credentials, $cron);
         } else {
