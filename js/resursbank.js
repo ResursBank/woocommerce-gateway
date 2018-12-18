@@ -1,7 +1,6 @@
 /*!
  * Resurs Bank Payment Gateway for WooCommerce - Scripthandler
  */
-
 var $RB = jQuery.noConflict();
 var resursReloadRequired = false;
 
@@ -596,8 +595,7 @@ function preSetResursMethods(customerType, returnedObjects) {
                 }
             }
         });
-    }
-    else {
+    } else {
         if (typeof returnedObjects['natural'] !== "undefined" && typeof returnedObjects['legal'] !== "undefined" && typeof returnedObjects[hideCustomerType] !== "undefined") {
             for (var cType = 0; cType < returnedObjects[hideCustomerType].length; cType++) {
                 hideElm = document.getElementsByClassName('payment_method_' + returnedObjects[hideCustomerType][cType]);
@@ -708,6 +706,3 @@ function rbUpdatePaymentReference(refobj, paymentDataObject) {
     }
     return false;
 }
-
-// Missing comment.
-function resursRerun() {}
