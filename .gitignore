@@ -1,5 +1,3 @@
 .svn
 composer.lock
-deploy
-clean
 run
