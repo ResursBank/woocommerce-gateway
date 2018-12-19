@@ -3,3 +3,4 @@ composer.lock
 deploy
 clean
 run
+migrate.sh

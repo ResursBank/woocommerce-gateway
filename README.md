@@ -80,3 +80,126 @@ What always must be done of merging this fork into the Resurs Bank branch
 * Payment methods should be dynamically loaded and configured
 * Handle special metadata differently (using special table for metadata will make them unwritable for users)
 
+
+
+#### Migrate into an official branch
+
+If you thinking of developing within the external branch [located here](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/browse) and merge it into the [current official repo](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/), instead of branching/forking the original repo - you might want to take a look at the script below. As development passes you probably want to change some of the parameters in it. It works like this:
+
+* Clone the Resurs Bank repo into resurs-bank-payment-gateway-for-woocommerce
+* Clone the other repo into tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
+* Make sure that the oldbranch variable points at the correct branch (this is the repo you want to use at Resurs Bank, so make sure it also at least exists before starting). The newbranch value is the source of what you want to put into the official repo.  
+* Run the script - if everything goes well, you have the new updated base in your destination repo. Not merge the source, check for differences and create a pull request!
+
+##### migrate.sh
+
+    #!/bin/bash
+    
+    # Resurs Bank AB plugin for WooCommerce merge-script. Converts the new repo content to a compatible non-disabled
+    # module for the official repo.
+    
+    old=resurs-bank-payment-gateway-for-woocommerce
+    new=tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
+    
+    oldbranch=develop/3.0
+    newbranch=develop/1.0
+    verbose="-v"
+    
+    if [ ! -d $old ] && [ ! -d $new ] ; then
+        echo "The directories ${old} and ${new} missing in your file structure."
+        exit
+    fi
+    
+    whereami=$(pwd | grep $new)
+    if [ "" != "$whereami" ] ; then
+        echo "It seems that this script is running within a codebase. Not good. Please exit this directory or try again."
+        exit
+    fi
+    
+    echo "Preparing branches..."
+    
+    echo "Refresh ${old}"
+    cd ${old}
+    
+    echo "Branch control (master)"
+    curbranch=$(git branch | grep "^*")
+    
+    echo "Current branch is ${curbranch}"
+    if [ "$curbranch" != "* master" ] ; then
+        echo "And that was not right. Trying to restore state of branches."
+        git reset --hard && git clean -f -d && git checkout master
+    else
+        echo "And that seem to be correct ..."
+    fi
+    
+    curbranch=$(git branch | grep "^*")
+    
+    if [ "$curbranch" != "* master" ] ; then
+        echo "Something failed during checkout. Aborting!"
+        exit
+    fi
+    
+    echo "Current branch is now ${curbranch} ... Syncing!"
+    
+    git fetch --all -p
+    git pull
+    echo "Going for ${oldbranch} in ${old}"
+    git checkout ${oldbranch}
+    git fetch --all -p
+    git pull
+    
+    curbranch=$(git branch | grep "^*")
+    echo "Current branch is now ${curbranch}"
+    
+    if [ "$curbranch" != "* $oldbranch" ] ; then
+        echo "I am not in the correct branch. Aborting!"
+        exit
+    fi
+    
+    echo "Cleaning up ..."
+    find . |grep -v .git|awk '{system("rm -rf \"" $1 "\"")}'
+    
+    echo "Refresh ${new}"
+    
+    cd ../${new}
+    git checkout master
+    git fetch --all -p
+    git pull
+    echo "Going back to ${newbranch} for ${new}"
+    git checkout ${newbranch}
+    git fetch --all -p
+    git pull
+    
+    echo "Ok. Now going for the correct source code..."
+    
+    find . -maxdepth 1 | \
+        grep -v .git | \
+        grep -v "^.$" | \
+        awk '{system("cp -rf \"" $1 "\" ../resurs-bank-payment-gateway-for-woocommerce/")}'
+    
+    echo "Going back to old branch..."
+    
+    cd ../${old}
+    echo "Old branch goes back to master..."
+    
+    mv ${verbose} init.php resursbankgateway.php
+    sed -i 's/Tornevall Networks Resurs Bank payment gateway for WooCommerce/Plugin Name: Resurs Bank Payment Gateway for WooCommerce/' \
+        resursbankgateway.php readme.txt
+    sed -i 's/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/resurs-bank-payment-gateway-for-woocommerce/' \
+        *.php includes/Resursbank/*.php includes/Resursbank/Helpers/*.php
+    
+    languages="da_DK en_GB nb_NO sv_SE"
+    for lang in $languages
+    do
+        oldfile="languages/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce-${lang}."
+        newfile="languages/resurs-bank-payment-gateway-for-woocommerce-${lang}."
+    
+        if [ -f ${oldfile}mo ] ; then
+            mv ${verbose} ${oldfile}mo ${newfile}mo
+            mv ${verbose} ${oldfile}po ${newfile}po
+        fi
+    done
+    
+    git checkout master
+    
+    echo "All done!"
