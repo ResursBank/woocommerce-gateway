@@ -292,7 +292,7 @@ class Resursbank_Core
             throw new \Exception(
                 __(
                     'Payment methods are not available for country',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    'resurs-bank-payment-gateway-for-woocommerce'
                 ) . ' ' . $country, 400
             );
         }
@@ -339,7 +339,7 @@ class Resursbank_Core
                     throw new \Exception(
                         __(
                             'Request failed due to missing credentials.',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                            'resurs-bank-payment-gateway-for-woocommerce'
                         ) . ' ' . $country, 400
                     );
                 }
@@ -431,11 +431,11 @@ class Resursbank_Core
 
         $elementArray = array(
             'dismissed' => array(
-                'title' => __('Dismissed notices', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                'title' => __('Dismissed notices', 'resurs-bank-payment-gateway-for-woocommerce'),
                 'settings' => array(
                     'dismissed_title' => array(
                         'title' => __('Restore notices and elements hidden by plugin',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                            'resurs-bank-payment-gateway-for-woocommerce'),
                         'type' => 'title',
                     )
                 ),
@@ -572,11 +572,11 @@ class Resursbank_Core
                 throw new \Exception(
                     __(
                         'Security verification failure',
-                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ) . ' - ' .
                     __(
                         'Must be administator',
-                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ), 400
                 );
             }
@@ -586,11 +586,11 @@ class Resursbank_Core
             throw new \Exception(
                 __(
                     'Security verification failure',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    'resurs-bank-payment-gateway-for-woocommerce'
                 ) . ' - ' .
                 __(
                     'Security key mismatch',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    'resurs-bank-payment-gateway-for-woocommerce'
                 ), 400
             );
         }

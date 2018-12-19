@@ -206,9 +206,9 @@ class Resursbank_Adminforms
     public function getShopFlowOptions($storedValue = '', $asArray = false)
     {
         $shopFlows = array(
-            'checkout' => __('Resurs Checkout', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
-            'simplified' => __('Simplified ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
-            'hosted' => __('Hosted ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            'checkout' => __('Resurs Checkout', 'resurs-bank-payment-gateway-for-woocommerce'),
+            'simplified' => __('Simplified ShopFlow', 'resurs-bank-payment-gateway-for-woocommerce'),
+            'hosted' => __('Hosted ShopFlow', 'resurs-bank-payment-gateway-for-woocommerce'),
         );
         if ($asArray) {
             return $shopFlows;
@@ -249,11 +249,11 @@ class Resursbank_Adminforms
                         <div class="resursGatewayConfigCredentialsTd" style="font-style: italic;font-weight:bold;color:#00AAFF;">' .
                 __(
                     'If you make changes on the settings below, make sure you save them by clicking on the save button before leaving.',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    'resurs-bank-payment-gateway-for-woocommerce'
                 ) . '<br>' .
                 __(
                     'Also make sure that you update your credentials when switching between staging and production.',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    'resurs-bank-payment-gateway-for-woocommerce'
                 ) .
                 '</div>
 
@@ -271,7 +271,7 @@ class Resursbank_Adminforms
                         <td><b>
                         ' . __(
                             'Active',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                            'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</b><br>
                             <input type="checkbox" ' . ($credentialData['active'] ? 'checked="checked"' : '') . ' name="resursbank_credentials[' . $credentialId . '][active]" value="1">
                         </td>
@@ -300,7 +300,7 @@ class Resursbank_Adminforms
                         <td class="resursGatewayConfigCredentialsTd">
                             <b>' . __(
                             'Chosen shopflow',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                            'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</b><br>
                             <select name="resursbank_credentials[' . $credentialId . '][shopflow]">' . implode("\n",
                             $this->getShopFlowOptions($currentShopFlow)) .

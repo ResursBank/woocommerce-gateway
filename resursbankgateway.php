@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name: Tornevall Networks Resurs Bank payment gateway for WooCommerce
- * Plugin URI: https://wordpress.org/plugins/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
+ * Plugin Name: Plugin Name: Resurs Bank Payment Gateway for WooCommerce
+ * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce
  * Description: Connect Resurs Bank as WooCommerce payment gateway
  * WC Tested up to: 3.5.2
  * Version: 0.0.0
  * Author: Tomas Tornevall
  * Author URI:
- * Text Domain: tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
+ * Text Domain: resurs-bank-payment-gateway-for-woocommerce
  * Domain Path: /languages
  */
 
@@ -51,7 +51,7 @@ if (function_exists('add_action')) {
     add_action('plugins_loaded', 'resursbank_payment_gateway_initialize');
 
     load_plugin_textdomain(
-        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce',
+        'resurs-bank-payment-gateway-for-woocommerce',
         false,
         dirname(plugin_basename(__FILE__)) . '/languages'
     );
