@@ -1,4 +1,4 @@
-=== Tornevall Networks Resurs Bank payment gateway for WooCommerce ===
+=== Resurs Bank Payment Gateway for WooCommerce ===
 Contributors: Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
