@@ -103,7 +103,14 @@ If you thinking of developing within the external branch [located here](https://
     
     oldbranch=develop/3.0
     newbranch=develop/1.0
-    verbose="-v"
+    
+    # Set this to 1 if you want to see something in the copy/move process
+    verbose=""
+    commitAndPush=0
+    
+    if [ "push" = "$1" ] ; then
+        commitAndPush=1
+    fi
     
     if [ ! -d $old ] && [ ! -d $new ] ; then
         echo "The directories ${old} and ${new} missing in your file structure."
@@ -157,7 +164,11 @@ If you thinking of developing within the external branch [located here](https://
     fi
     
     echo "Cleaning up ..."
-    find . |grep -v .git|awk '{system("rm -rf \"" $1 "\"")}'
+    find . | \
+        grep -v .git| \
+        grep -v ^.$ | \
+        grep -v ^..$ | \
+        awk '{system("rm -rf \"" $1 "\"")}'
     
     echo "Refresh ${new}"
     
@@ -183,7 +194,9 @@ If you thinking of developing within the external branch [located here](https://
     echo "Old branch goes back to master..."
     
     mv ${verbose} init.php resursbankgateway.php
-    sed -i 's/Tornevall Networks Resurs Bank payment gateway for WooCommerce/Plugin Name: Resurs Bank Payment Gateway for WooCommerce/' \
+    sed -i 's/Plugin Name: Tornevall Networks Resurs Bank payment gateway/Plugin Name: Resurs Bank Payment Gateway/' \
+        resursbankgateway.php readme.txt
+    sed -i 's/= Tornevall Networks Resurs Bank payment gateway/= Resurs Bank Payment Gateway/' \
         resursbankgateway.php readme.txt
     sed -i 's/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/resurs-bank-payment-gateway-for-woocommerce/' \
         *.php includes/Resursbank/*.php includes/Resursbank/Helpers/*.php
@@ -200,6 +213,12 @@ If you thinking of developing within the external branch [located here](https://
         fi
     done
     
-    git checkout master
-    
-    echo "All done!"
+    if [ "$commitAndPush" = "1" ] ; then
+        git commit -a -m "Automatic repo- and fork synchronization made with migrate.sh"
+        git push -u origin $oldbranch
+        git checkout master
+    else
+        echo ""
+        echo "All done! You're left within the branch ${oldbranch} in the Resurs Bank repo as no push has been requested."
+        echo "To really push something, you should run this script with 'push' as an extra argument."
+    fi
