@@ -7,6 +7,7 @@ Makefile
 /staticflows/index.php
 /composer.lock
 /deploy
+migrate.sh
 /vendor/resursbank/ecomphp/phpunit.xml
 /vendor/resursbank/ecomphp/bitbucket-pipelines.yml
 /vendor/resursbank/ecomphp/tests
