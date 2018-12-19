@@ -103,6 +103,7 @@ If you thinking of developing within the external branch [located here](https://
     
     oldbranch=develop/3.0
     newbranch=develop/1.0
+    verbose="-v"
     
     if [ ! -d $old ] && [ ! -d $new ] ; then
         echo "The directories ${old} and ${new} missing in your file structure."
@@ -171,14 +172,17 @@ If you thinking of developing within the external branch [located here](https://
     
     echo "Ok. Now going for the correct source code..."
     
-    find . -maxdepth 1 |grep -v .git | grep -v "^.$" | awk '{system("cp -rfv \"" $1 "\" ../resurs-bank-payment-gateway-for-woocommerce/")}'
+    find . -maxdepth 1 | \
+        grep -v .git | \
+        grep -v "^.$" | \
+        awk '{system("cp -rf \"" $1 "\" ../resurs-bank-payment-gateway-for-woocommerce/")}'
     
     echo "Going back to old branch..."
     
     cd ../${old}
     echo "Old branch goes back to master..."
     
-    mv -v init.php resursbankgateway.php
+    mv ${verbose} init.php resursbankgateway.php
     sed -i 's/Tornevall Networks Resurs Bank payment gateway for WooCommerce/Plugin Name: Resurs Bank Payment Gateway for WooCommerce/' \
         resursbankgateway.php readme.txt
     sed -i 's/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/resurs-bank-payment-gateway-for-woocommerce/' \
@@ -191,8 +195,8 @@ If you thinking of developing within the external branch [located here](https://
         newfile="languages/resurs-bank-payment-gateway-for-woocommerce-${lang}."
     
         if [ -f ${oldfile}mo ] ; then
-            mv -v ${oldfile}mo ${newfile}mo
-            mv -v ${oldfile}po ${newfile}po
+            mv ${verbose} ${oldfile}mo ${newfile}mo
+            mv ${verbose} ${oldfile}po ${newfile}po
         fi
     done
     
