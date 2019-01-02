@@ -1,6 +1,6 @@
 .svn
 composer.lock
-deploy
-clean
 run
 migrate.sh
+clean
+deploy

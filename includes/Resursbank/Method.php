@@ -14,30 +14,61 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
     {
         public $title;
 
-        const SIMPLIFIED_FLOW = 1;
-        const HOSTED_FLOW = 2;
-        const RESURS_CHECKOUT = 3;
-
+        protected $METHOD;
         protected $METHOD_TYPE;
+        protected $CORE;
+        protected $FLOW;
+        protected $RESURSBANK;
 
         /**
          * WC_Resursbank_Method constructor.
-         * @param $id
+         *
+         * @param $paymentMethod Object or string
+         * @param $country
+         * @param $connection \Resursbank\RBEcomPHP\ResursBank
+         * @throws Exception
          */
-        function __construct($paymentMethod)
+        function __construct($paymentMethod, $country, $connection)
         {
+            $this->CORE = new Resursbank_Core();
+            $this->FLOW = $this->CORE->getFlowByEcom($this->CORE->getFlowByCountry($country));
+            $this->RESURSBANK = $connection;
+
             // id, description, title
+            if (is_object($paymentMethod)) {
+                $this->METHOD = $paymentMethod;
+                $this->id = $paymentMethod->id;
+                $this->title = $paymentMethod->description;
+            } else {
+                // Validate flow.
+                if ($paymentMethod !== $this->FLOW) {
+                    throw new Exception(
+                        __('Payment method name and flow mismatch',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        400
+                    );
+                }
+            }
+
+            $this->createFlow($this->FLOW);
         }
 
         /**
          * Defines what payment method type we're running, so that we can configure Resurs Checkout differently.
          *
          * @param int $methodType
+         * @throws Exception
          */
-        public function setMethodType($methodType = self::SIMPLIFIED_FLOW)
+        public function createFlow($methodType)
         {
-            // Redeclare the flow here.
+            if ($methodType === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                $this->title = __('Resurs Checkout', 'resurs-bank-payment-gateway-for-woocommerce');
+            }
+
+            $this->RESURSBANK->setPreferredPaymentFlowService($this->FLOW);
         }
+
     }
 
 }

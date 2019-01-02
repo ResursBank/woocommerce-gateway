@@ -24,6 +24,10 @@ class Resursbank_Core
      */
     private static $gatewayClass = 'WC_Gateway_ResursBank';
 
+    const RESURS_SHOPFLOW_SIMPLIFIED = 'simplified';
+    const RESURS_SHOPFLOW_HOSTED = 'hosted';
+    const RESURS_SHOPFLOW_CHECKOUT = 'checkout';
+
     /**
      * Resursbank_Core constructor.
      *
@@ -37,6 +41,9 @@ class Resursbank_Core
     /**
      * Fetch payment methods for country based selection.
      *
+     * This request is being sent directly to Resurs Bank API, so to use a cached version of payment methods,
+     * use the static function getStoredPaymentMethods() instead.
+     *
      * @param string $country
      * @return array|mixed
      * @throws Exception
@@ -45,12 +52,13 @@ class Resursbank_Core
     {
         $credentials = $this->getCredentialsByCountry($country);
         $return = array();
-
         $currentEnvironment = self::getResursOption('environment');
 
         if (isset($credentials[$currentEnvironment]['username'])) {
-            $connection = $this->getConnection($credentials[$currentEnvironment]['username'],
-                $credentials[$currentEnvironment]['password']);
+            $connection = $this->getConnection(
+                $credentials[$currentEnvironment]['username'],
+                $credentials[$currentEnvironment]['password']
+            );
             $return = $connection->getPaymentMethods(array(), true);
         }
 
@@ -75,13 +83,6 @@ class Resursbank_Core
             $credentialsList = array();
         }
         return $credentialsList;
-    }
-
-    /**
-     * TODO
-     */
-    private function getFlowByCountry()
-    {
     }
 
     /**
@@ -127,6 +128,34 @@ class Resursbank_Core
     }
 
     /**
+     * Get flow type based on EcomPHP responses.
+     *
+     * @param string $flow
+     * @return \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES
+     */
+    public function getFlowByEcom($flow = '')
+    {
+        $return = '';
+
+        switch ($flow) {
+            case Resursbank_Core::RESURS_SHOPFLOW_CHECKOUT:
+                $return = \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT;
+                break;
+            case Resursbank_Core::RESURS_SHOPFLOW_SIMPLIFIED:
+                $return = \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::SIMPLIFIED_FLOW;
+                break;
+            case Resursbank_Core::RESURS_SHOPFLOW_HOSTED:
+                $return = \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::HOSTED_FLOW;
+                break;
+            default:
+                break;
+        }
+
+        //Resursbank_Core::RESURS_SHOPFLOW_CHECKOUT
+        return $return;
+    }
+
+    /**
      * Initialize EComPHP.
      *
      * @param string $username
@@ -135,12 +164,14 @@ class Resursbank_Core
      * @return ResursBank
      * @throws Exception
      */
-    private function getConnection($username = '', $password = '', $environment = null)
+    protected function getConnection($username = '', $password = '', $environment = null)
     {
         $this->RB = new ResursBank();
+
         if (!empty($username) && !empty($password)) {
             $this->RB->setAuthentication($username, $password);
         }
+
         if (is_null($environment)) {
             $this->RB->setEnvironment(self::getEcomEnvironment());
         } else {
@@ -150,8 +181,64 @@ class Resursbank_Core
         return $this->RB;
     }
 
+    /**
+     * Self initialize EComPHP based on country data.
+     *
+     * @param $country
+     * @return ResursBank
+     * @throws Exception
+     */
+    public function getConnectionByCountry($country)
+    {
+        $currentEnvironment = self::getResursOption('environment');
+        $credentials = $this->getCredentialsByCountry($country);
+
+        if (!count($credentials)) {
+            throw new \Exception(
+                __(
+                    'Payment methods are not available for country',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ) . ' ' . $country, 400
+            );
+        }
+
+        return $this->getConnection(
+            $credentials[$currentEnvironment]['username'],
+            $credentials[$currentEnvironment]['password'],
+            $this->getEcomEnvironment($currentEnvironment)
+        );
+    }
+
+    /**
+     * Find out which flow we're using for a specific country.
+     *
+     * @param string $country
+     * @return mixed|string
+     * @throws Exception
+     */
+    public function getFlowByCountry($country = '')
+    {
+        $return = '';
+        $resursCredentials = self::getResursCore()->getCredentialsByCountry($country);
+
+        if (isset($resursCredentials['shopflow'])) {
+            return $resursCredentials['shopflow'];
+        }
+
+        return $return;
+    }
+
 
     /** ** METHOD BELOW IS STATIC, THE ABOVE REQUIRES INSTATIATION ** */
+
+    /**
+     * @return Resursbank_Core
+     * @throws Exception
+     */
+    public static function getResursCore()
+    {
+        return new Resursbank_Core();
+    }
 
     /**
      * Decide whether we're going to use internal ecomphp or the one delivered with the prior plugin.
@@ -178,7 +265,7 @@ class Resursbank_Core
      */
     private static function getPaymentMethodsByApi($credentials, $cron = false)
     {
-        $CORE = new Resursbank_Core();
+        $CORE = self::getResursCore();
         $methodList = array();
         $hasException = false;
         $exceptions = array();
@@ -283,27 +370,10 @@ class Resursbank_Core
      * @return mixed
      * @throws Exception
      */
-    private static function getStoredPaymentMethodsByCountry($country, $requestEnvironment)
+    private static function getStoredPaymentMethodsByCountry($country)
     {
-        $CORE = new Resursbank_Core();
-        $credentials = $CORE->getCredentialsByCountry($country);
-
-        if (!count($credentials)) {
-            throw new \Exception(
-                __(
-                    'Payment methods are not available for country',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . ' ' . $country, 400
-            );
-        }
-
-        $currentEnvironment = self::getResursOption('environment');
-
-        $request = $CORE->getConnection(
-            $credentials[$currentEnvironment]['username'],
-            $credentials[$currentEnvironment]['password'],
-            $CORE->getEcomEnvironment()
-        );
+        $CORE = self::getResursCore();
+        $request = $CORE->getConnectionByCountry($country);
         $methodList[$country] = $request->getPaymentMethods(array(), true);
 
         return $methodList;
@@ -330,8 +400,12 @@ class Resursbank_Core
         // If no methods are visible in the config
         if (!is_array($methodList)) {
             if (!empty($country)) {
-                $methodList = self::getStoredPaymentMethodsByCountry($country, $credentials, false,
-                    $requestEnvironment);
+                $methodList = self::getStoredPaymentMethodsByCountry(
+                    $country,
+                    $credentials,
+                    false,
+                    $requestEnvironment
+                );
             } else {
                 if (is_array($credentials)) {
                     $methodList = self::getPaymentMethodsByApi($credentials, $cron);
@@ -343,6 +417,11 @@ class Resursbank_Core
                         ) . ' ' . $country, 400
                     );
                 }
+            }
+        } else if (!empty($country) && isset($methodList[$country])) {
+            $methodList = $methodList[$country];
+            if (isset($methodList[$requestEnvironment])) {
+                $methodList = $methodList[$requestEnvironment];
             }
         }
 
@@ -614,18 +693,59 @@ class Resursbank_Core
     }
 
     /**
+     * Find out where we are.
+     *
+     * @return string
+     */
+    public static function getCustomerCountry()
+    {
+        global $woocommerce;
+
+        $currentCustomerCountry = $woocommerce->customer->get_billing_country();
+        if (empty($currentCustomerCountry)) {
+            $currentCustomerCountry = WC_Countries::get_base_country();
+        }
+
+        return $currentCustomerCountry;
+    }
+
+    /**
      * Return generated classes for each available Resurs Bank payment method
      *
      * @param $availableGateways
      * @return mixed
+     * @throws Exception
      */
     public static function getAvailableGateways($availableGateways)
     {
         unset($availableGateways[self::getGatewayClass()]);
+        try {
+            $currentCountry = self::getCustomerCountry();
+            $resursCore = self::getResursCore();
+            $currentFlow = $resursCore->getFlowByEcom($resursCore->getFlowByCountry($currentCountry));
+            $currentEnvironment = self::getResursOption('environment');
 
-        // TODO: Add them dynamically
-        //$availableGateways['test1'] = new WC_Resursbank_Method('Test method 1');
-        //$availableGateways['test2'] = new WC_Resursbank_Method('Test method 2');
+            if ($currentFlow === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                $availableGateways['resurs_checkout'] = new WC_Resursbank_Method(
+                    $currentFlow,
+                    $currentCountry,
+                    $resursCore->getConnectionByCountry($currentCountry)
+                );
+            } else {
+                $methods = self::getStoredPaymentMethods($currentCountry, false, $currentEnvironment);
+                foreach ($methods as $methodIndex => $methodInformation) {
+                    $availableGateways[$methodInformation->id] = new WC_Resursbank_Method(
+                        $methodInformation,
+                        $currentCountry,
+                        $resursCore->getConnectionByCountry($currentCountry)
+                    );
+                }
+            }
+
+        } catch (\Exception $e) {
+            wc_add_notice($e->getMessage(), 'error');
+        }
+
         return $availableGateways;
     }
 
@@ -740,6 +860,7 @@ class Resursbank_Core
 
     /**
      * Get all default values bulked.
+     *
      * @return array
      */
     public static function getDefaultConfiguration()
@@ -975,6 +1096,15 @@ class Resursbank_Core
             array('jquery'),
             _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
+
+        if (is_checkout()) {
+            wp_enqueue_script(
+                'resurs_bank_payment_checkout_js',
+                _RESURSBANK_GATEWAY_URL . 'js/checkout.js',
+                array('jquery'),
+                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+            );
+        }
 
         if (is_admin()) {
             wp_enqueue_script(
