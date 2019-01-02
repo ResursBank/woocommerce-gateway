@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks Resurs Bank payment gateway for "
 "WooCommerce\n"
-"POT-Creation-Date: 2018-11-30 13:42+0100\n"
-"PO-Revision-Date: 2018-11-30 13:44+0100\n"
+"POT-Creation-Date: 2018-12-22 09:55+0100\n"
+"PO-Revision-Date: 2018-12-22 11:10+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language: sv_SE\n"
@@ -22,11 +22,15 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/Resursbank/Admin.php:54
-msgid "Basic settings"
-msgstr "Standardinställningar"
+#: includes/Resursbank/Admin.php:49
+msgid "Resurs Bank Payments"
+msgstr "Resurs Bank betalningar"
 
-#: includes/Resursbank/Admin.php:89
+#: includes/Resursbank/Admin.php:79
+msgid "Unnamed config section"
+msgstr "Namnlöst konfigurationsavsnitt"
+
+#: includes/Resursbank/Admin.php:246
 msgid ""
 "Coexisting note: This plugin has discovered a prior version of Resurs Bank "
 "Payment Gateway!"
@@ -34,7 +38,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en tidigare version av "
 "Resurs Banks Betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:93
+#: includes/Resursbank/Admin.php:250
 msgid ""
 "This should not be a problem as they are coexistent. However, running them "
 "simultaneously is probably not what you want."
@@ -42,7 +46,7 @@ msgstr ""
 "Detta bör inte vara ett problem eftersom de är samexisterande. Men att köra "
 "dem samtidigt är förmodligen inte vad du vill."
 
-#: includes/Resursbank/Admin.php:107 includes/Resursbank/Admin.php:124
+#: includes/Resursbank/Admin.php:264 includes/Resursbank/Admin.php:281
 msgid ""
 "Coexisting note: This plugin has discovered a similar version of Resurs Bank "
 "Payment Gateway!"
@@ -50,7 +54,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en liknande version av "
 "Resurs Banks betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:111
+#: includes/Resursbank/Admin.php:268
 msgid ""
 "This probably means you are running on duplicate software. You should "
 "consider disabling one of them!"
@@ -58,7 +62,7 @@ msgstr ""
 "Detta innebär förmodligen att du kör på duplicerad programvara. Du bör "
 "överväga att inaktivera en av dem!"
 
-#: includes/Resursbank/Admin.php:127
+#: includes/Resursbank/Admin.php:284
 msgid ""
 "This plugin has decided (on demand) to disable the coexisting prior version "
 "of Resurs Bank."
@@ -66,7 +70,7 @@ msgstr ""
 "Detta plugin har beslutat (på begärna) att avaktivera den befintliga "
 "tidigare versionen av Resurs Bank."
 
-#: includes/Resursbank/Admin.php:131
+#: includes/Resursbank/Admin.php:288
 msgid ""
 "If you do not know what this is about, you might want to take a look in the "
 "configuration, where this feature can be shut off."
@@ -74,11 +78,11 @@ msgstr ""
 "Om du inte vet vad det här handlar om, kan du ta dig en titt i "
 "inställningarna, där denna egenskap kan stängas av."
 
-#: includes/Resursbank/Admin.php:172
+#: includes/Resursbank/Admin.php:339
 msgid "It seems that you run on a WooCommerce version that is lower than"
 msgstr "Det verkar som att du kör på en WooCommerce version som är lägre än"
 
-#: includes/Resursbank/Admin.php:176
+#: includes/Resursbank/Admin.php:343
 msgid ""
 "It is recommended that you upgrade to the latest version of WooCommerce, to "
 "maintain compatibility."
@@ -87,18 +91,22 @@ msgstr ""
 "WooCommerce för att bibehålla kompatibiliteten."
 
 #: includes/Resursbank/Config.php:27
+msgid "Basic settings"
+msgstr "Standardinställningar"
+
+#: includes/Resursbank/Config.php:31
 msgid "Merchant Configuration"
 msgstr "Ombudets inställningar"
 
-#: includes/Resursbank/Config.php:33
+#: includes/Resursbank/Config.php:37
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktivera"
 
-#: includes/Resursbank/Config.php:35
+#: includes/Resursbank/Config.php:40
 msgid "Enable"
 msgstr "Aktivera"
 
-#: includes/Resursbank/Config.php:38
+#: includes/Resursbank/Config.php:43
 msgid ""
 "If not enabled, all vital functions in the plugin are shut off. Functions "
 "affecting prior orders will still function."
@@ -106,7 +114,7 @@ msgstr ""
 "Om denna inte är aktiverad, så kommer alla vitala funktioner i tillägget "
 "vara avstängda. Funktioner som påverkar tidigare orders fungerar fortfarande."
 
-#: includes/Resursbank/Config.php:42
+#: includes/Resursbank/Config.php:47
 msgid ""
 "This is the major plugin switch. If not checked, it will be competely "
 "disabled, except for that you can still edit this administration control."
@@ -115,11 +123,77 @@ msgstr ""
 "pluginet vara helt avstängd, förutom att du fortfarande kan redigera i den "
 "här kontrollpanelen."
 
-#: includes/Resursbank/Config.php:48
+#: includes/Resursbank/Config.php:53
+msgid "Default tax class"
+msgstr "Standard momsklass"
+
+#: includes/Resursbank/Config.php:60
+msgid ""
+"Used by the plugin when no other options are available (for example in "
+"payment fees)"
+msgstr ""
+"Används av tillägget när inga andra alternativ är tillgängliga (till exempel "
+"i betalningsavgifter)"
+
+#: includes/Resursbank/Config.php:66
+msgid "API"
+msgstr "API"
+
+#: includes/Resursbank/Config.php:70
+msgid "Environment"
+msgstr "Miljö"
+
+#: includes/Resursbank/Config.php:73
+msgid "Test/Staging"
+msgstr "Test/Staging"
+
+#: includes/Resursbank/Config.php:75
+msgid "Production"
+msgstr "Produktion"
+
+#: includes/Resursbank/Config.php:79
+msgid ""
+"Chosen environment used by the plugin. This setting is global for all "
+"configured credentials. If you for example choose test as the environment, "
+"it will also be used for the entire plugin."
+msgstr ""
+"Vald miljö som används av tillägget. Den här inställningen är global för "
+"alla konfigurerade autentiseringsuppgifter. Om du till exempel väljer test "
+"som miljö, kommer det också att användas för hela tillägget."
+
+#: includes/Resursbank/Config.php:83
+msgid "Credentials"
+msgstr "Autentiseringsuppgifter"
+
+#: includes/Resursbank/Config.php:90
+msgid "Advanced settings"
+msgstr "Avancerade inställningar"
+
+#: includes/Resursbank/Config.php:94
+msgid "Miscellaneous settings"
+msgstr "Diverse inställningar"
+
+#: includes/Resursbank/Config.php:101
+msgid "Payment method update interval (in seconds)"
+msgstr "Uppdateringsintervall för betalningsmetod (i sekunder)"
+
+#: includes/Resursbank/Config.php:107
+msgid ""
+"Defines how often, in seconds, for which the plugin should check for and "
+"update payment methods by itself. Value must be larger than 300 seconds. Can "
+"be defined as 1m=1 month, 2d=2 days, 3h=3 hours and so on. This option is "
+"supported in cron mode."
+msgstr ""
+"Definierar hur ofta, i sekunder, som tillägget ska söka efter och uppdatera "
+"betalningsmetoder av sig själv. Värdet måste vara större än 300 sekunder. "
+"Kan definieras som 1m = 1 månad, 2d = 2 dagar, 3h = 3 timmar och så vidare. "
+"Detta alternativ stöds i cron-läge."
+
+#: includes/Resursbank/Config.php:113
 msgid "Disable coexisting plugin"
 msgstr "Inaktivera samexisterande plugin"
 
-#: includes/Resursbank/Config.php:52
+#: includes/Resursbank/Config.php:117
 msgid ""
 "This feature turns off prior versions of Resurs Bank Payment Gateway if it "
 "exists and is enabled."
@@ -127,33 +201,73 @@ msgstr ""
 "Den här funktionen stänger av tidigare versioner av Resurs Banks "
 "betalningsgateway om den finns och är aktiverad."
 
-#: includes/Resursbank/Config.php:56
+#: includes/Resursbank/Config.php:121
 msgid "Disable"
 msgstr "Avaktivera"
 
-#: includes/Resursbank/Config.php:59
-msgid "API"
-msgstr "API"
+#: includes/Resursbank/Core.php:294
+msgid "Payment methods are not available for country"
+msgstr "Betalningsmetoder är inte tillgängliga för land"
 
-#: includes/Resursbank/Config.php:63
-msgid "Environment"
-msgstr "Miljö"
+#: includes/Resursbank/Core.php:341
+msgid "Request failed due to missing credentials."
+msgstr "Begäran misslyckades på grund av saknade autentiseringsuppgifter."
 
-#: includes/Resursbank/Config.php:66
-msgid "Test/Staging"
-msgstr "Test/Staging"
+#: includes/Resursbank/Core.php:434
+msgid "Dismissed notices"
+msgstr "Avfärdade meddelanden"
 
-#: includes/Resursbank/Config.php:67
-msgid "Production"
-msgstr "Produktion"
+#: includes/Resursbank/Core.php:437
+msgid "Restore notices and elements hidden by plugin"
+msgstr "Återställ meddelanden och element som är dolda av tillägget"
 
-#: includes/Resursbank/Config.php:72
+#: includes/Resursbank/Core.php:574 includes/Resursbank/Core.php:588
+msgid "Security verification failure"
+msgstr "Säkerhetsverifiering misslyckad"
+
+#: includes/Resursbank/Core.php:578
+msgid "Must be administator"
+msgstr "Måste vara administratör"
+
+#: includes/Resursbank/Core.php:592
+msgid "Security key mismatch"
+msgstr "Säkerhetsnyckel matchar inte"
+
+#: includes/Resursbank/Helpers/Adminforms.php:209
+msgid "Resurs Checkout"
+msgstr "Resurs Checkout"
+
+#: includes/Resursbank/Helpers/Adminforms.php:210
+msgid "Simplified ShopFlow"
+msgstr "Simplified Shopflow"
+
+#: includes/Resursbank/Helpers/Adminforms.php:211
+msgid "Hosted ShopFlow"
+msgstr "Hosted Shopflow"
+
+#: includes/Resursbank/Helpers/Adminforms.php:251
 msgid ""
-"Choose if you want to run with test/staging or production. The setting is "
-"global for all webservice accounts/countries you configure."
+"If you make changes on the settings below, make sure you save them by "
+"clicking on the save button before leaving."
 msgstr ""
-"Välj om du vill köra med test/staging eller produktion. Inställningen är "
-"global för alla WebService-konton/länder som du konfigurerar."
+"Om du gör ändringar på inställningarna nedan, se till att du sparar dem "
+"genom att klicka på knappen Spara innan du lämnar."
+
+#: includes/Resursbank/Helpers/Adminforms.php:255
+msgid ""
+"Also make sure that you update your credentials when switching between "
+"staging and production."
+msgstr ""
+"Kontrollera också att du uppdaterar dina autentiseringsuppgifter när du "
+"växlar mellan test/staging och produktion."
+
+#: includes/Resursbank/Helpers/Adminforms.php:273
+msgid "Active"
+msgstr "Aktiv"
+
+#: includes/Resursbank/Helpers/Adminforms.php:302
+msgid "Chosen shopflow"
+msgstr "Valt shopflöde"
 
 #. Plugin Name of the plugin/theme
 msgid "Tornevall Networks Resurs Bank payment gateway for WooCommerce"
@@ -174,3 +288,10 @@ msgstr "Anslut Resurs Bank som betalningsgateway i WooCommerce"
 #. Author of the plugin/theme
 msgid "Tomas Tornevall"
 msgstr "Tomas Tornevall"
+
+#~ msgid ""
+#~ "Choose if you want to run with test/staging or production. The setting is "
+#~ "global for all webservice accounts/countries you configure."
+#~ msgstr ""
+#~ "Välj om du vill köra med test/staging eller produktion. Inställningen är "
+#~ "global för alla WebService-konton/länder som du konfigurerar."
