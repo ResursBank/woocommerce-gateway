@@ -39,5 +39,5 @@ function resursBankCheckUpdates() {
 }
 
 function resursBankLoaded() {
-
 }
+
