@@ -57,7 +57,7 @@ abstract class Resursbank_Config
                         'options' => 'dynamic_get_tax_classes',
                         'size' => '3',
                         'tip' => __(
-                            'Used by the plugin when no other options are availabel (for example in payment fees)',
+                            'Used by the plugin when no other options are available (for example in payment fees)',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'display' => false,
