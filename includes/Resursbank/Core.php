@@ -376,8 +376,6 @@ class Resursbank_Core
         return $this->isSession() ? WC()->session->get($key) : null;
     }
 
-
-
     /** ** METHOD BELOW IS STATIC, THE ABOVE REQUIRES INSTATIATION ** */
 
     /**
@@ -484,6 +482,16 @@ class Resursbank_Core
         }
 
         return $return;
+    }
+
+    /**
+     * @param $checkout WC_Checkout
+     * @return string
+     * @todo Add the getaddress field depending on country and checkout type
+     */
+    public static function resursBankGetAddress($checkout)
+    {
+        echo "Put getAddressField here, for Sweden.";
     }
 
     /**
@@ -893,7 +901,7 @@ class Resursbank_Core
             $currentEnvironment = self::getResursOption('environment');
 
             if ($currentFlow === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
-                $availableGateways['resurs_checkout'] = new WC_Resursbank_Method(
+                $availableGateways['resursbank_checkout'] = new WC_Resursbank_Method(
                     $currentFlow,
                     $currentCountry,
                     $resursCore->getConnectionByCountry($currentCountry)
@@ -901,7 +909,7 @@ class Resursbank_Core
             } else {
                 $methods = self::getStoredPaymentMethods($currentCountry, false, $currentEnvironment);
                 foreach ($methods as $methodIndex => $methodInformation) {
-                    $availableGateways[$methodInformation->id] = new WC_Resursbank_Method(
+                    $availableGateways['resursbank_' . $methodInformation->id] = new WC_Resursbank_Method(
                         $methodInformation,
                         $currentCountry,
                         $resursCore->getConnectionByCountry($currentCountry)
@@ -1305,13 +1313,15 @@ class Resursbank_Core
             }
         }
 
+        $CORE = self::getResursCore();
+
         wp_localize_script(
             'resurs_bank_payment_gateway_js',
             'RESURSCHECKOUT_IFRAME_URL',
             self::getResursCore()->getConnectionByCountry(
                 self::getCustomerCountry()
             )->getCheckoutUrl(
-                self::getEcomEnvironment()
+                $CORE->getEcomEnvironment()
             )
         );
     }

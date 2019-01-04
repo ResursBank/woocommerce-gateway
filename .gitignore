@@ -2,3 +2,4 @@
 composer.lock
 run
 migrate.sh
+includes/resurs_bank_nr*
