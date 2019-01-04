@@ -31,8 +31,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          */
         function __construct($paymentMethod, $country, $connection)
         {
-            $this->getActions();
-
             $this->CORE = new Resursbank_Core();
             $this->FLOW = $this->CORE->getFlowByEcom($this->CORE->getFlowByCountry($country));
             $this->RESURSBANK = $connection;
@@ -43,6 +41,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 // Use resursbank_ instead of resurs_bank to avoid conflicts with prior versions.
                 $this->id = 'resursbank_' . $paymentMethod->id;
                 $this->title = $paymentMethod->description;
+                $this->description = $paymentMethod->description;
             } else {
                 // Validate flow.
                 if ($paymentMethod !== $this->FLOW) {
@@ -56,6 +55,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             }
 
             $this->createFlow($this->FLOW);
+            $this->getActions();
         }
 
         /**
@@ -124,6 +124,9 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             }
         }
 
+        /**
+         * @return bool|mixed|void
+         */
         public function is_available()
         {
             $isAvailable = apply_filters('resurs_bank_payment_method_is_available', true, $this->METHOD);
@@ -144,6 +147,60 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             );
         }
 
+        /**
+         * @param $args
+         * @TODO Finish it when it's time for it
+         */
+        public function resursBankPaymentWooCommerceApi($args)
+        {
+            die;
+        }
+
+        /**
+         * @param $args
+         * @TODO Finish it when it's time for it
+         */
+        public function resursBankCheckoutProcess($args)
+        {
+        }
+
+        /**
+         * Handle the current order.
+         *
+         * This is a rewrite of the old version process_payment rather than a copy-paste as we're merging
+         * the way how to handle multiple flows in one piece. It does not directly include the static
+         * RCO flow as RCO must happen in backend.
+         *
+         * @param int $order_id
+         * @return array
+         */
+        public function process_payment($order_id)
+        {
+            global $woocommerce;
+
+            $return = array(
+                'result' => '',         // success
+                'redirect' => ''        // processSuccessUrl
+            );
+
+            $order = new WC_Order($order_id);
+            $processSuccessUrl = $this->get_return_url($order);
+
+            return $return;
+        }
+
+        /**
+         * Handle special form fields. This method resided in the former method class files and has been converted to
+         * a modern way handling Resurs Bank flows, without the deprecated flow dependency start_payment_session which
+         * infested the prior release.
+         */
+        public function payment_fields()
+        {
+            // Former version: onkeyup was used
+            // TODO: Instead of using ecom form field fetcher, use the Magento1-simplified variant to generate
+            // TODO: form fields.
+            echo '<input name="test" id="test" value="TEST">';
+        }
 
         // RCO
 
@@ -166,6 +223,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             return $fields;
         }
 
+        //
 
         /**
          *
@@ -174,11 +232,20 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         {
             add_filter('resurs_bank_payment_method_is_available', array($this, 'getIsAvailable'));
             add_filter('woocommerce_get_terms_page_id', array($this, 'setCheckoutTerms'), 1);
-            add_filter('woocommerce_update_order_review_fragments', array($this, 'resursBankOrderReviewFragments'), 0,
-                1);
             add_filter('woocommerce_checkout_fields', array($this, 'resursBankCheckoutFields'));
+            add_action('woocommerce_checkout_process', 'resursBankCheckoutProcess', 1);
+            //add_action('woocommerce_api_' . $this->id, array($this, 'resursBankPaymentWooCommerceApi'));
+            //add_action('woocommerce_api_wc_resursbank_method', array($this, 'resursBankPaymentWooCommerceApi'));
 
-            add_action('woocommerce_update_options_payment_gateways', array($this, 'process_admin_options'));
+            //woocommerce_api_wc_resurs_bank
+            add_filter(
+                'woocommerce_update_order_review_fragments', array(
+                $this,
+                'resursBankOrderReviewFragments'
+            ),
+                10,
+                1
+            );
         }
 
 

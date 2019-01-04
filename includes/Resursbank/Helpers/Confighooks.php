@@ -29,6 +29,11 @@ function resursbank_get_credential_fields()
     return $AdminForms->getCredentialFields();
 }
 
+$dataInfoFilters = Resursbank_Core::resursbank_get_plugin_data_array();
+foreach ($dataInfoFilters as $key) {
+    add_filter('resursbank_data_info_' . $key, 'Resursbank_Core::get_data_info');
+}
+
 add_filter('resursbank_configrow_scriptloader', 'resursbank_configrow_internal_scriptloader', 10, 2);
 add_filter('resursbank_dropdown_option_method_get_tax_classes', 'Resursbank_Core::getTaxRateList');
 add_filter('resursbank_config_element_get_credentials_html', 'resursbank_get_credential_fields');
@@ -39,8 +44,4 @@ add_filter('resursbank_config_array', 'Resursbank_Core::resursbank_get_dismissed
 add_filter('resursbank_admin_backend_get_shopflow_options', 'Resursbank_Adminforms::get_shopflow_options');
 add_filter('resursbank_admin_backend_get_payment_methods', 'Resursbank_Core::get_payment_methods');
 add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Core::get_payment_list_timer');
-
-$dataInfoFilters = Resursbank_Core::resursbank_get_plugin_data_array();
-foreach ($dataInfoFilters as $key) {
-    add_filter('resursbank_data_info_' . $key, 'Resursbank_Core::get_data_info');
-}
+add_filter('woocommerce_before_checkout_billing_form', 'Resursbank_Core::resursBankGetAddress');
