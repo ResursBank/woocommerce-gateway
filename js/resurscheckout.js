@@ -74,12 +74,12 @@ window._resursCheckout = (function() {
     var _setup = function() {
         _container = document.getElementById(_settings.container);
         if (!_container) {
-            console.error('We could not find the Resurs Checkout iframe container.');
+            return;
         }
 
         _frame = _container.getElementsByTagName('iframe')[0];
         if (!_frame) {
-            console.error('We could not find an iframe inside of your container.');
+            return;
         }
 
         _contentWindow = _frame.contentWindow || _frame.contentDocument;
@@ -154,7 +154,7 @@ window._resursCheckout = (function() {
     }
 
     var _handlePurchaseButtonClickEvent = function(data) {
-        
+
         _runEventCallback('booked', {
             rcoData: _frameData,
             confirm: function(confirm) {
@@ -167,7 +167,7 @@ window._resursCheckout = (function() {
     }
 
     var _handlePurchaseFailEvent = function(data) {
-        
+
         _runEventCallback('fail', {});
     }
 

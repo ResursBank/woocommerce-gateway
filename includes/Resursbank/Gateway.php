@@ -23,23 +23,25 @@ function resursbank_payment_gateway_initialize()
      */
     class WC_Gateway_ResursBank extends WC_Payment_Gateway
     {
-
         protected $RB;
-
-        public function resurs_bank_checkout_fields()
-        {
-
-            die;
-        }
 
         /**
          * Resursbank_Gateway constructor.
          */
         function __construct()
         {
-            add_filter('woocommerce_checkout_fields', array($this, 'resurs_bank_checkout_fields'));
+            $this->setup();
         }
 
+        private function setup()
+        {
+            $this->id = 'resurs_bank_payment_gateway';
+            $this->title = 'Resurs Bank Payment Gateway';
+            $this->method_description = __(
+                'Complete payment solution for Resurs Bank, with support for multiple countries.',
+                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+            );
+        }
     }
 
     // One method rules them all
