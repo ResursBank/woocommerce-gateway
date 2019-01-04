@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 function setResursbankGatewayFilters()
 {
     // Legacy method.
-    //add_filter('woocommerce_payment_gateways', 'Resursbank_Core::getResursGateways');
+    add_filter('woocommerce_payment_gateways', 'Resursbank_Core::getMethodsFromGateway');
 
     // Fetch Resurs payment methods for checkout
     add_filter(

@@ -18,10 +18,11 @@ if (!defined('ABSPATH')) {
 /*
  * Plans:
  *
- * - Make plugin hookable for as many addons as possible
- * - Make the plugin look good
- * - Make the plugin as modular as possible, to simplify development without code collisions
- * - Only run plugin in sections where WooCommerce is involved
+ * - Make plugin hookable for as many addons as possible.
+ * - Make the plugin look good.
+ * - Make the plugin as modular as possible, to simplify development without code collisions.
+ * - Only run plugin in sections where WooCommerce is involved.
+ * - Inherit prior settings for primary credentials if any.
  */
 
 // This is where it all begins.

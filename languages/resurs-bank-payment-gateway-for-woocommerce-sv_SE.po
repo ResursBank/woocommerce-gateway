@@ -2,15 +2,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks Resurs Bank payment gateway for "
 "WooCommerce\n"
-"POT-Creation-Date: 2018-12-22 09:55+0100\n"
-"PO-Revision-Date: 2018-12-22 11:10+0100\n"
-"Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
+"POT-Creation-Date: 2019-01-03 10:31+0100\n"
+"PO-Revision-Date: 2019-01-03 10:32+0100\n"
+"Last-Translator: Tomas Tornevall <tomas.tornevall@resurs.se>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language: sv_SE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 1.8.7.1\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
@@ -26,11 +26,11 @@ msgstr ""
 msgid "Resurs Bank Payments"
 msgstr "Resurs Bank betalningar"
 
-#: includes/Resursbank/Admin.php:79
+#: includes/Resursbank/Admin.php:80
 msgid "Unnamed config section"
 msgstr "Namnlöst konfigurationsavsnitt"
 
-#: includes/Resursbank/Admin.php:246
+#: includes/Resursbank/Admin.php:248
 msgid ""
 "Coexisting note: This plugin has discovered a prior version of Resurs Bank "
 "Payment Gateway!"
@@ -38,7 +38,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en tidigare version av "
 "Resurs Banks Betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:250
+#: includes/Resursbank/Admin.php:252
 msgid ""
 "This should not be a problem as they are coexistent. However, running them "
 "simultaneously is probably not what you want."
@@ -46,7 +46,7 @@ msgstr ""
 "Detta bör inte vara ett problem eftersom de är samexisterande. Men att köra "
 "dem samtidigt är förmodligen inte vad du vill."
 
-#: includes/Resursbank/Admin.php:264 includes/Resursbank/Admin.php:281
+#: includes/Resursbank/Admin.php:266 includes/Resursbank/Admin.php:283
 msgid ""
 "Coexisting note: This plugin has discovered a similar version of Resurs Bank "
 "Payment Gateway!"
@@ -54,7 +54,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en liknande version av "
 "Resurs Banks betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:268
+#: includes/Resursbank/Admin.php:270
 msgid ""
 "This probably means you are running on duplicate software. You should "
 "consider disabling one of them!"
@@ -62,7 +62,7 @@ msgstr ""
 "Detta innebär förmodligen att du kör på duplicerad programvara. Du bör "
 "överväga att inaktivera en av dem!"
 
-#: includes/Resursbank/Admin.php:284
+#: includes/Resursbank/Admin.php:286
 msgid ""
 "This plugin has decided (on demand) to disable the coexisting prior version "
 "of Resurs Bank."
@@ -70,7 +70,7 @@ msgstr ""
 "Detta plugin har beslutat (på begärna) att avaktivera den befintliga "
 "tidigare versionen av Resurs Bank."
 
-#: includes/Resursbank/Admin.php:288
+#: includes/Resursbank/Admin.php:290
 msgid ""
 "If you do not know what this is about, you might want to take a look in the "
 "configuration, where this feature can be shut off."
@@ -78,17 +78,16 @@ msgstr ""
 "Om du inte vet vad det här handlar om, kan du ta dig en titt i "
 "inställningarna, där denna egenskap kan stängas av."
 
-#: includes/Resursbank/Admin.php:339
-msgid "It seems that you run on a WooCommerce version that is lower than"
-msgstr "Det verkar som att du kör på en WooCommerce version som är lägre än"
-
-#: includes/Resursbank/Admin.php:343
+#: includes/Resursbank/Admin.php:340
+#, php-format
 msgid ""
-"It is recommended that you upgrade to the latest version of WooCommerce, to "
-"maintain compatibility."
+"It seems that you run on a WooCommerce version that is lower than %s. It is "
+"recommended that you upgrade to the latest version of WooCommerce, to "
+"maintain best possible compatibility."
 msgstr ""
-"Vi rekommenderar att du uppgraderar till den senaste versionen av "
-"WooCommerce för att bibehålla kompatibiliteten."
+"Det ser ut som att du använder en WooCommerce-version som är lägre än %s. "
+"Det är rekommenderat att du uppgraderar till den senaste versionen av "
+"WooCommerce, för att kunna upprätthålla bästa möjliga kompatibilitet."
 
 #: includes/Resursbank/Config.php:27
 msgid "Basic settings"
@@ -130,10 +129,10 @@ msgstr "Standard momsklass"
 #: includes/Resursbank/Config.php:60
 msgid ""
 "Used by the plugin when no other options are available (for example in "
-"payment fees)"
+"payment fees)."
 msgstr ""
-"Används av tillägget när inga andra alternativ är tillgängliga (till exempel "
-"i betalningsavgifter)"
+"Används av tillägget när inga andra alternativ är tillgängliga (exempelvis i "
+"betalningsavgifterna)."
 
 #: includes/Resursbank/Config.php:66
 msgid "API"
@@ -205,35 +204,37 @@ msgstr ""
 msgid "Disable"
 msgstr "Avaktivera"
 
-#: includes/Resursbank/Core.php:294
-msgid "Payment methods are not available for country"
-msgstr "Betalningsmetoder är inte tillgängliga för land"
+#: includes/Resursbank/Core.php:200
+#, php-format
+msgid "Payment methods are not available for country %s."
+msgstr "Betalningsmetoder är inte tillgängliga för land %s."
 
-#: includes/Resursbank/Core.php:341
+#: includes/Resursbank/Core.php:448
 msgid "Request failed due to missing credentials."
 msgstr "Begäran misslyckades på grund av saknade autentiseringsuppgifter."
 
-#: includes/Resursbank/Core.php:434
+#: includes/Resursbank/Core.php:548
 msgid "Dismissed notices"
 msgstr "Avfärdade meddelanden"
 
-#: includes/Resursbank/Core.php:437
+#: includes/Resursbank/Core.php:552
 msgid "Restore notices and elements hidden by plugin"
 msgstr "Återställ meddelanden och element som är dolda av tillägget"
 
-#: includes/Resursbank/Core.php:574 includes/Resursbank/Core.php:588
-msgid "Security verification failure"
-msgstr "Säkerhetsverifiering misslyckad"
+#: includes/Resursbank/Core.php:690 includes/Resursbank/Core.php:704
+msgid "Security verification failure."
+msgstr "Säkerhetsverifiering misslyckad."
 
-#: includes/Resursbank/Core.php:578
-msgid "Must be administator"
-msgstr "Måste vara administratör"
+#: includes/Resursbank/Core.php:694
+msgid "You must be administator."
+msgstr "Du måste vara administratör."
 
-#: includes/Resursbank/Core.php:592
-msgid "Security key mismatch"
-msgstr "Säkerhetsnyckel matchar inte"
+#: includes/Resursbank/Core.php:708
+msgid "Security key mismatch."
+msgstr "Säkerhetsnyckeln matchade inte."
 
 #: includes/Resursbank/Helpers/Adminforms.php:209
+#: includes/Resursbank/Method.php:74
 msgid "Resurs Checkout"
 msgstr "Resurs Checkout"
 
@@ -269,25 +270,66 @@ msgstr "Aktiv"
 msgid "Chosen shopflow"
 msgstr "Valt shopflöde"
 
-#. Plugin Name of the plugin/theme
-msgid "Tornevall Networks Resurs Bank payment gateway for WooCommerce"
-msgstr "Tornevall Networks Resurs Bank betalningsgateway för WooCommerce"
+#: includes/Resursbank/Method.php:47
+msgid "Payment method name and flow mismatch."
+msgstr "Betalningsmetodens namn och flöde matchar ej."
 
-#. Plugin URI of the plugin/theme
-msgid ""
-"https://wordpress.org/plugins/tornevall-networks-resurs-bank-payment-gateway-"
-"for-woocommerce"
-msgstr ""
-"https://wordpress.org/plugins/tornevall-networks-resurs-bank-payment-gateway-"
-"for-woocommerce"
+#~ msgid ""
+#~ "Used by the plugin when no other options are available (for example in "
+#~ "payment fees)"
+#~ msgstr ""
+#~ "Används av tillägget när inga andra alternativ är tillgängliga (till "
+#~ "exempel i betalningsavgifter)"
 
-#. Description of the plugin/theme
-msgid "Connect Resurs Bank as WooCommerce payment gateway"
-msgstr "Anslut Resurs Bank som betalningsgateway i WooCommerce"
+#~ msgid "Must be administator"
+#~ msgstr "Måste vara administratör"
 
-#. Author of the plugin/theme
-msgid "Tomas Tornevall"
-msgstr "Tomas Tornevall"
+#~ msgid "Security key mismatch"
+#~ msgstr "Säkerhetsnyckel matchar inte"
+
+#~ msgid "Payment methods are not available for country"
+#~ msgstr "Betalningsmetoder är inte tillgängliga för land"
+
+#~ msgid "Security verification failure"
+#~ msgstr "Säkerhetsverifiering misslyckad"
+
+#~ msgid "Payment method name and flow mismatch"
+#~ msgstr "Betalningsmetodens namn och flöde matchar ej."
+
+#~ msgid ""
+#~ "It seems that you run on a WooCommerce version that is lower than %s. It "
+#~ "is recommended that you upgrade to the latest version of WooCommerce, to "
+#~ "maintain compatibility."
+#~ msgstr ""
+#~ "Det ser ut som att du använder en WooCommerce-version som är lägre än %s. "
+#~ "Det är rekommenderat att du uppgraderar till den senaste versionen av "
+#~ "WooCommerce, för att kunna upprätthålla bästa möjliga kompatibilitet."
+
+#~ msgid "It seems that you run on a WooCommerce version that is lower than"
+#~ msgstr "Det verkar som att du kör på en WooCommerce version som är lägre än"
+
+#~ msgid ""
+#~ "It is recommended that you upgrade to the latest version of WooCommerce, "
+#~ "to maintain compatibility."
+#~ msgstr ""
+#~ "Vi rekommenderar att du uppgraderar till den senaste versionen av "
+#~ "WooCommerce för att bibehålla kompatibiliteten."
+
+#~ msgid "Tornevall Networks Resurs Bank payment gateway for WooCommerce"
+#~ msgstr "Tornevall Networks Resurs Bank betalningsgateway för WooCommerce"
+
+#~ msgid ""
+#~ "https://wordpress.org/plugins/tornevall-networks-resurs-bank-payment-"
+#~ "gateway-for-woocommerce"
+#~ msgstr ""
+#~ "https://wordpress.org/plugins/tornevall-networks-resurs-bank-payment-"
+#~ "gateway-for-woocommerce"
+
+#~ msgid "Connect Resurs Bank as WooCommerce payment gateway"
+#~ msgstr "Anslut Resurs Bank som betalningsgateway i WooCommerce"
+
+#~ msgid "Tomas Tornevall"
+#~ msgstr "Tomas Tornevall"
 
 #~ msgid ""
 #~ "Choose if you want to run with test/staging or production. The setting is "

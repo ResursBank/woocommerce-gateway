@@ -57,7 +57,7 @@ abstract class Resursbank_Config
                         'options' => 'dynamic_get_tax_classes',
                         'size' => '3',
                         'tip' => __(
-                            'Used by the plugin when no other options are available (for example in payment fees)',
+                            'Used by the plugin when no other options are available (for example in payment fees).',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'display' => false,
@@ -119,6 +119,23 @@ abstract class Resursbank_Config
                         ),
                         'type' => 'checkbox',
                         'label' => __('Disable', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    )
+                )
+            ),
+            'about' => array(
+                'title' => __('About', 'resurs-bank-payment-gateway-for-woocommerce'),
+                'settings' => array(
+                    'information' => array(
+                        'title' => __(
+                            'Plugin information',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'type' => 'title',
+                    ),
+                    'plugindata' => array(
+                        'title' => __('Plugin information', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        'type' => 'filter',
+                        'filter' => 'get_plugin_data'
                     ),
                 )
             ),
