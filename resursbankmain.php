@@ -88,8 +88,8 @@ function woocommerce_gateway_resurs_bank_init()
             hasResursOmni();
             isResursSimulation(); // Make sure settings are properly set each round
 
-            $this->id = "resurs-bank";
             //$this->title = "Resurs Bank";
+            $this->id = "resurs-bank";
             $this->method_title = "Resurs Bank Administration";
             $this->has_fields = false;
             $this->callback_types = array(
@@ -3839,6 +3839,7 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('wp_login', 'end_session');
     add_action('init', 'app_output_buffer', 2);
     add_action('admin_notices', 'resurs_bank_admin_notice');
+
     add_action('woocommerce_before_checkout_shipping_form', 'test_before_shipping');
     add_action('woocommerce_before_delete_order_item', 'resurs_remove_order_item');
     add_action('woocommerce_admin_order_data_after_order_details', 'resurs_order_data_info_after_order');
@@ -3847,6 +3848,7 @@ function woocommerce_gateway_resurs_bank_init()
     add_filter('woocommerce_order_button_html', 'resurs_omnicheckout_order_button_html'); // Omni
     add_filter('woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check');
     add_action('woocommerce_single_product_summary', 'resurs_annuity_factors');
+
     if (getResursOption("showPaymentIdInOrderList")) {
         add_filter('manage_edit-shop_order_columns', 'resurs_order_column_header');
         add_action('manage_shop_order_posts_custom_column', 'resurs_order_column_info');
