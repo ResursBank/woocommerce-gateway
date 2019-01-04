@@ -16,6 +16,9 @@ if ($resurs_obsolete_coexistence_disable) {
 $resursGlobalNotice = false;
 
 // Initialize Resurs Bank Plugin when plugins is finally loaded
+/**
+ *
+ */
 function woocommerce_gateway_resurs_bank_init()
 {
     if (!class_exists('WC_Payment_Gateway')) {
@@ -1681,7 +1684,6 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $supportProviderMethods
          * @param $bookDataArray
          * @param $urlFail
-         *
          * @return array|void
          * @since 2.2.7
          */
@@ -1786,8 +1788,9 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $order
          * @param $order_id
          * @param $bookPaymentResult
-         *
+         * @param $preferredId
          * @return array|void
+         * @throws Exception
          * @since 2.2.7
          */
         function process_payment_handle_payment_result($order, $order_id, $bookPaymentResult, $preferredId)
