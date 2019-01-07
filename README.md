@@ -37,26 +37,9 @@ The forking style of this plugin is written so the new release can coexist with 
 
 If you decide to run this plugin side by side with the prior Resurs-branded release, the both plugins might take advantage of each others code. At least, when it comes to the payment engine EComPHP, we use the same code bases. If this plugin finds out that the prior version is available, it will instead use the already shipped EComPHP. Disabling that plugin, makes it use the built in version instead.
 
-## Available filters and hooks
+## Available actions and filters
 
-### resursbank_configrow_scriptloader
-
-Add extending script to specific configuration field row from wp-admin without interfering the core source. Used internally to control behaviour of aftershop flow. First argument is the scriptloader itself, second is for checking which field configuration key that is running. Use with caution as this is all about javascripts. Javascripts might destroy working flows.
-
-Example: A checkbox needs extended actions in the configuration:
-
-````
-  add_filter('resursbank_configrow_scriptloader', 'resursbank_configrow_internal_scriptloader', 10, 2);
-  
-  function resursbank_configrow_internal_scriptloader($scriptLoader, $configKey='') {
-  
-    if ($configKey === 'test_function_field') {
-      $scriptLoader = 'onclick="testFunctionFieldJs()"';
-    }
-    
-    return $scriptLoader;
-  }
-````
+If you need to make any change in the plugin, but don't want to edit the plugin itself - which usually leads to lost changes as soon as the plugin gets updated - you could take advance of the built in filters and actions. The new version has been extended to handle this better. The complete list of actions and filters can now be found at [here](https://test.resurs.com/docs/x/HwL1).
 
 
 ## TODOings
