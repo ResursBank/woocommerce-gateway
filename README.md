@@ -85,7 +85,10 @@ See the migration notes below.
 
 
 
-#### Migrate into an official branch
+#### Merge from external sources into an official branch
+
+If you want to work with the official branch - do not bother reading the below instructions.
+
 
 If you thinking of developing within the external branch [located here](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/browse) and merge it into the [current official repo](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/), instead of branching/forking the original the better practice is to clone the fork somewhere and then add the fork as a remote to the original repo. Like this:
 
