@@ -6,6 +6,10 @@ When time passed, the source code got a bit unhandy to develop with, but since t
 
 This version of the plugin is a rebuild-fork of the prior one, and a try to free some bottlenecks.
 
+## Why external fork?
+
+The external fork repo is being used while we're rewriting the plugin. It is the way to keep both plugins alive in the same time and to make them coexist in the Wordpress universe. When we do not need to work with version 2.x anymore, the fork is no longer necessary unless you don't want to work on your own and then add it to the official branches. However, if you want to work with the Resurs repo instead, feel free to do this. 
+
 ## Automatically updating payment methods
 
 This plugin supports the ability to update payment methods automatically via scheduled jobs (like cron). The "only" thing you need is an application that can call for your site by a http call. Here are some examples:
