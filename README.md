@@ -79,6 +79,7 @@ See the migration notes below.
 
 ### What should be done
 
+* Clean up README.md to use Resurs Bank README-standard.
 * The single merchant credential configuration from 2.x should be inherited automatically to the new version.
 * Callbacks.
 * Aftershop flow.
