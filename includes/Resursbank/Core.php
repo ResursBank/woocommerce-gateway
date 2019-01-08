@@ -194,7 +194,7 @@ class Resursbank_Core
         $credentials = $this->getCredentialsByCountry($country);
 
         if (!count($credentials)) {
-            throw new \Exception(
+            /*throw new \Exception(
                 sprintf(
                     __(
                         'Payment methods are not available for country %s.',
@@ -203,6 +203,7 @@ class Resursbank_Core
                     $country
                 ), 400
             );
+	*/
         }
 
         return $this->getConnection(
