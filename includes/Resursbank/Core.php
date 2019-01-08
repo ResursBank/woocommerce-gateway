@@ -194,7 +194,7 @@ class Resursbank_Core
         $credentials = $this->getCredentialsByCountry($country);
 
         if (!count($credentials)) {
-            /*throw new \Exception(
+            throw new \Exception(
                 sprintf(
                     __(
                         'Payment methods are not available for country %s.',
@@ -203,7 +203,6 @@ class Resursbank_Core
                     $country
                 ), 400
             );
-	*/
         }
 
         return $this->getConnection(
@@ -1314,17 +1313,31 @@ class Resursbank_Core
             }
         }
 
-        $CORE = self::getResursCore();
+        if ($iFrameUrl = self::getIframeUrl()) {
+            wp_localize_script(
+                'resurs_bank_payment_gateway_js',
+                'RESURSCHECKOUT_IFRAME_URL',
+                $iFrameUrl
+            );
+        }
+    }
 
-        wp_localize_script(
-            'resurs_bank_payment_gateway_js',
-            'RESURSCHECKOUT_IFRAME_URL',
-            self::getResursCore()->getConnectionByCountry(
+    public static function getIframeUrl() {
+        $CORE = self::getResursCore();
+        $iFrameUrl = '';
+
+        // Fetch RCO iframe URL and push it to js. This usually fails on initial plugin startups, when
+        // no credentials are preset.
+        try {
+            $iFrameUrl = self::getResursCore()->getConnectionByCountry(
                 self::getCustomerCountry()
             )->getCheckoutUrl(
                 $CORE->getEcomEnvironment()
-            )
-        );
+            );
+        } catch (\Exception $iframeUrlException) {
+
+        }
+        return $iFrameUrl;
     }
 
     /**
