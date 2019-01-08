@@ -15,7 +15,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
     {
         public $title;
 
-        protected $METHOD;
         protected $METHOD_TYPE;
         protected $CORE;
         protected $FLOW;
@@ -31,6 +30,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          */
         function __construct($paymentMethod, $country, $connection)
         {
+            parent::__construct();
             $this->CORE = new Resursbank_Core();
             $this->FLOW = $this->CORE->getFlowByEcom($this->CORE->getFlowByCountry($country));
             $this->RESURSBANK = $connection;
@@ -38,6 +38,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             // id, description, title
             if (is_object($paymentMethod)) {
                 $this->METHOD = $paymentMethod;
+
                 // Use resursbank_ instead of resurs_bank to avoid conflicts with prior versions.
                 $this->id = 'resursbank_' . $paymentMethod->id;
                 $this->title = $paymentMethod->description;
@@ -196,10 +197,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          */
         public function payment_fields()
         {
-            // Former version: onkeyup was used
-            // TODO: Instead of using ecom form field fetcher, use the Magento1-simplified variant to generate
-            // TODO: form fields.
-            echo '<input name="test" id="test" value="TEST">';
+            echo $this->getPaymentFormFields($this->METHOD);
         }
 
         // RCO
@@ -224,6 +222,8 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         }
 
         //
+
+
 
         /**
          *

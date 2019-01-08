@@ -847,10 +847,7 @@ class Resursbank_Core
     public static function getMethodsFromGateway($woocommerceGateways)
     {
         if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
-            // Primary class should be visible in admin only.
-            if (is_admin()) {
-                $woocommerceGateways[] = self::getGatewayClass();
-            }
+            $woocommerceGateways[] = self::getGatewayClass();
         }
 
         return $woocommerceGateways;
@@ -888,32 +885,32 @@ class Resursbank_Core
      */
     public static function getAvailableGateways($availableGateways)
     {
+        $resursCore = self::getResursCore();
+
         self::getResursCore()->setSession(
             'session_gateway_method_init',
             0
         );
 
         unset($availableGateways[self::getGatewayClass()]);
+        unset($availableGateways['resurs_bank_payment_gateway']);
         try {
-            $currentCountry = self::getCustomerCountry();
-            $resursCore = self::getResursCore();
-            $currentFlow = $resursCore->getFlowByEcom($resursCore->getFlowByCountry($currentCountry));
+            $paymentMethodCountry = self::getCustomerCountry();
+            $currentFlow = $resursCore->getFlowByEcom($resursCore->getFlowByCountry($paymentMethodCountry));
             $currentEnvironment = self::getResursOption('environment');
 
             if ($currentFlow === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 $availableGateways['resursbank_checkout'] = new WC_Resursbank_Method(
                     $currentFlow,
-                    $currentCountry,
-                    $resursCore->getConnectionByCountry($currentCountry)
+                    $paymentMethodCountry,
+                    $resursCore->getConnectionByCountry($paymentMethodCountry)
                 );
             } else {
-                $methods = self::getStoredPaymentMethods($currentCountry, false, $currentEnvironment);
-                foreach ($methods as $methodIndex => $methodInformation) {
-                    $availableGateways['resursbank_' . $methodInformation->id] = new WC_Resursbank_Method(
-                        $methodInformation,
-                        $currentCountry,
-                        $resursCore->getConnectionByCountry($currentCountry)
-                    );
+                $methods = self::getStoredPaymentMethods($paymentMethodCountry, false, $currentEnvironment);
+                foreach ($methods as $methodIndex => $paymentMethodData) {
+                    if ($gateway = self::getGateway($paymentMethodData, $paymentMethodCountry)) {
+                        $availableGateways['resursbank_' . $paymentMethodData->id] = $gateway;
+                    }
                 }
             }
 
@@ -923,6 +920,52 @@ class Resursbank_Core
 
         return $availableGateways;
     }
+
+    /**
+     * @param $paymentMethodData
+     * @param $paymentMethodCountry
+     * @return WC_Resursbank_Method|null
+     * @throws Exception
+     */
+    private static function getGateway($paymentMethodData, $paymentMethodCountry)
+    {
+        $resursCore = self::getResursCore();
+        $return = null;
+
+        if (Resursbank_Core::getValidatedLimit($paymentMethodData)) {
+            $return = new WC_Resursbank_Method(
+                $paymentMethodData,
+                $paymentMethodCountry,
+                $resursCore->getConnectionByCountry($paymentMethodCountry)
+            );
+        }
+
+        return $return;
+    }
+
+    public static function getCart()
+    {
+        global $woocommerce;
+
+        return get_class($woocommerce->cart) === 'WC_Cart' ? $woocommerce->cart : '';
+    }
+
+    /**
+     * @return bool
+     */
+    public static function getValidatedLimit($resursPaymentMethod)
+    {
+        /** @var WC_Cart $cart */
+        $cart = self::getCart();
+        $return = true;
+
+        if ($cart->total > $resursPaymentMethod->maxLimit || $cart->total < $resursPaymentMethod->minLimit) {
+            $return = false;
+        }
+
+        return $return;
+    }
+
 
     /**
      * Fetch stored payment method and return it to developer
@@ -1322,7 +1365,8 @@ class Resursbank_Core
         }
     }
 
-    public static function getIframeUrl() {
+    public static function getIframeUrl()
+    {
         $CORE = self::getResursCore();
         $iFrameUrl = '';
 
