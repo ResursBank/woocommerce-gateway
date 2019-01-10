@@ -1372,6 +1372,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $paymentSpec
          * @param $method_class
          * @return null|string
+         * @throws Exception
          */
         public function get_payment_method_form($method, $paymentSpec, $method_class)
         {
