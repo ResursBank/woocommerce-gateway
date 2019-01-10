@@ -383,10 +383,7 @@ class Resursbank_Core
     private static function setCustomerPageTrack($isCheckout)
     {
         $CORE = self::getResursCore();
-
         $CORE->setSession('resursbank_location_last_checkout', $isCheckout);
-        //$CORE->setSession('resursbank_location_last_checkout', $CORE->getSession('resursbank_location_current_checkout'));
-        //$CORE->setSession('resursbank_location_current_checkout', $isCheckout);
 
         return true;
     }
