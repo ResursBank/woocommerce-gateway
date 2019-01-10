@@ -87,11 +87,13 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         }
 
         /**
+         * This method should normally never be required as the gateway handles availablility
+         * in another way than in prior version (2.x)
+         *
          * @param $isAvailable
-         * @param $paymentMethod
          * @return mixed
          */
-        private function getIsAvailable($isAvailable, $paymentMethod)
+        private function getIsAvailable($isAvailable)
         {
             return $isAvailable;
         }
@@ -99,9 +101,13 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         /**
          * @param $fragments
          * @return mixed
+         * @throws Exception
          */
         public function resursBankOrderReviewFragments($fragments)
         {
+            // When order is in review state, we can consider the last action as "in checkout".
+            Resursbank_Core::setCustomerIsInCheckout();
+
             return $fragments;
         }
 
@@ -139,9 +145,11 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          * Session counter that keeps in track of how many times this class has been passed and loaded.
          *
          * @return bool|void
+         * @throws Exception
          */
         public function updateMethodInitializer()
         {
+            // This always happens in the checkout.
             return $this->CORE->setSession(
                 'session_gateway_method_init',
                 intval($this->CORE->getSession('session_gateway_method_init')) + 1
@@ -150,7 +158,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
 
         /**
          * @param $args
-         * @TODO Finish it when it's time for it
+         * @TODO Finish it when it's time for it (Currently it doesn't seem to pass anything here.)
          */
         public function resursBankPaymentWooCommerceApi($args)
         {
@@ -159,10 +167,11 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
 
         /**
          * @param $args
-         * @TODO Finish it when it's time for it
+         * @TODO Finish it when it's time for it (Currently it doesn't seem to pass anything here.)
          */
         public function resursBankCheckoutProcess($args)
         {
+            die;
         }
 
         /**
@@ -174,6 +183,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          *
          * @param int $order_id
          * @return array
+         * @throws Exception
          */
         public function process_payment($order_id)
         {
@@ -185,6 +195,20 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             );
 
             $order = new WC_Order($order_id);
+
+            $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
+            if (!$lastLocationWasCheckout) {
+                wc_add_notice(
+                    __('Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')
+                    , 'error'
+                );
+
+                return array(
+                    'result' => 'failure',
+                    'redirect' => html_entity_decode($order->get_cancel_order_url())
+                );
+            }
+
             $processSuccessUrl = $this->get_return_url($order);
 
             return $return;
@@ -224,7 +248,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         //
 
 
-
         /**
          *
          */
@@ -234,6 +257,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             add_filter('woocommerce_get_terms_page_id', array($this, 'setCheckoutTerms'), 1);
             add_filter('woocommerce_checkout_fields', array($this, 'resursBankCheckoutFields'));
             add_action('woocommerce_checkout_process', 'resursBankCheckoutProcess', 1);
+
             //add_action('woocommerce_api_' . $this->id, array($this, 'resursBankPaymentWooCommerceApi'));
             //add_action('woocommerce_api_wc_resursbank_method', array($this, 'resursBankPaymentWooCommerceApi'));
 

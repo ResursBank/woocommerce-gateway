@@ -23,8 +23,10 @@ function resursbank_payment_gateway_initialize()
      */
     class WC_Gateway_ResursBank extends WC_Payment_Gateway
     {
+        protected $CORE;
         protected $RB;
         protected $METHOD;
+        protected $CHECKOUT;
 
         /**
          * Resursbank_Gateway constructor.

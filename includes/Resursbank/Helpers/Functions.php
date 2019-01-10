@@ -22,6 +22,10 @@ function setResursbankGatewayFilters()
     );
 
     add_filter('resurs_obsolete_coexistence_disable', 'Resursbank_Core::resurs_obsolete_coexistence_disable');
+
+    add_action('woocommerce_before_checkout_form', 'Resursbank_Core::setCustomerIsInCheckout');
+    add_action('woocommerce_add_to_cart', 'Resursbank_Core::setCustomerIsOutsideCheckout');
+
 }
 
 /**
