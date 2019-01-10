@@ -233,12 +233,29 @@ class Resursbank_Core
 
     /**
      * @return bool
+     * @throws Exception
+     */
+    public static function getWasInCheckout()
+    {
+        $getValue = (bool)self::getResursCore()->getSession('resursbank_location_last_checkout');
+        $getValue = apply_filters('resursbank_allow_place_order', $getValue);
+
+        return $getValue;
+    }
+
+    /**
+     * @return bool
      */
     private function isSession()
     {
-        if (isset(WC()->session)) {
-            return true;
+        global $woocommerce;
+
+        $return = false;
+        if (isset($woocommerce->session)) {
+            $return = true;
         }
+
+        return $return;
     }
 
     /**
@@ -358,22 +375,71 @@ class Resursbank_Core
     }
 
     /**
-     * @param $key
-     * @param $value
-     * @return bool|void
+     * @param $isCheckout
+     * @param bool $storePrior
+     * @return bool
+     * @throws Exception
      */
-    public function setSession($key, $value)
+    private static function setCustomerPageTrack($isCheckout)
     {
-        return $this->isSession() ? WC()->session->set($key, $value) : false;
+        $CORE = self::getResursCore();
+        $CORE->setSession('resursbank_location_last_checkout', $isCheckout);
+
+        return true;
+    }
+
+    /**
+     * Tell session when customer is outside checkout and store the value
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public static function setCustomerIsOutsideCheckout()
+    {
+        return self::setCustomerPageTrack(false);
+    }
+
+    /**
+     * Tell session when customer is really in the checkout.
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public static function setCustomerIsInCheckout()
+    {
+        return self::setCustomerPageTrack(true);
     }
 
     /**
      * @param $key
-     * @return array|string|null
+     * @param $value
+     */
+    public function setSession($key, $value)
+    {
+        if ($this->isSession()) {
+            WC()->session->set($key, $value);
+        } else {
+            $_SESSION[$key] = $value;
+        }
+    }
+
+    /**
+     * @param $key
+     * @return array|mixed|string
      */
     public function getSession($key)
     {
-        return $this->isSession() ? WC()->session->get($key) : null;
+        $return = null;
+
+        if ($this->isSession()) {
+            $return = WC()->session->get($key);
+        } else {
+            if (isset($_SESSION[$key])) {
+                $return = $_SESSION[$key];
+            }
+        }
+
+        return $return;
     }
 
     /** ** METHOD BELOW IS STATIC, THE ABOVE REQUIRES INSTATIATION ** */
@@ -491,7 +557,7 @@ class Resursbank_Core
      */
     public static function resursBankGetAddress($checkout)
     {
-        echo "Put getAddressField here, for Sweden.";
+        echo "Put getAddressFieldHtml here, for Sweden.";
     }
 
     /**

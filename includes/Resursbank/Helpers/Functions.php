@@ -17,11 +17,19 @@ function setResursbankGatewayFilters()
         'woocommerce_available_payment_gateways',
         'Resursbank_Core::getAvailableGateways'
     );
-    add_filter(
-        'woocommerce_get_settings_pages', 'resursbank_gateway_settings'
-    );
 
+    // Settings page handling.
+    add_filter('woocommerce_get_settings_pages', 'resursbank_gateway_settings');
+
+    // Ability to disable v2.x on fly
     add_filter('resurs_obsolete_coexistence_disable', 'Resursbank_Core::resurs_obsolete_coexistence_disable');
+
+    // Trigger precense from checkout and store historically in a session.
+    add_action('woocommerce_before_checkout_form', 'Resursbank_Core::setCustomerIsInCheckout');
+
+    // Trigger absence from checkout and store historically in a session.
+    add_action('woocommerce_add_to_cart', 'Resursbank_Core::setCustomerIsOutsideCheckout');
+
 }
 
 /**
@@ -40,7 +48,7 @@ function setResursbankGatewayHeader()
 function resursbank_gateway_settings($settings)
 {
     if (is_admin()) {
-       $settings[] = include(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Admin.php');
+        $settings[] = include(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Admin.php');
     }
 
     return $settings;
