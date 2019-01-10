@@ -119,6 +119,20 @@ abstract class Resursbank_Config
                         ),
                         'type' => 'checkbox',
                         'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                    ),
+                    'useProfileStoreId' => array(
+                        'title' => __(
+                            'Configure StoreID access on user level',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'tip' => __(
+                            'This feature enables ability to configure how store ids should be handled in the order list views, on user level.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'display' => false,
+                        'type' => 'checkbox',
+                        'default' => false,
+                        'label' => __('Enabled', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     )
                 )
             ),
@@ -133,7 +147,8 @@ abstract class Resursbank_Config
                         'type' => 'title',
                     ),
                     'plugindata' => array(
-                        'title' => __('Plugin information', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'title' => __('Plugin information',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                         'type' => 'filter',
                         'filter' => 'get_plugin_data'
                     ),

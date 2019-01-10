@@ -273,6 +273,18 @@ class Resursbank_Core
         );
     }
 
+
+
+    /**
+     * @param $active
+     * @return mixed
+     */
+    public static function activateStoreIdConfig($active)
+    {
+        $active = (bool)self::getResursOption('useProfileStoreId');
+        return (bool)$active;
+    }
+
     /**
      * @return string|void
      */
