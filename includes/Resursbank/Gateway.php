@@ -57,7 +57,7 @@ function resursbank_payment_gateway_initialize()
             return true;
         }
 
-        protected function getPaymentFormFields()
+        protected function getPaymentFormFields($PAYMENT_METHOD)
         {
             $resursPaymentFormField = '';
 
@@ -68,16 +68,29 @@ function resursbank_payment_gateway_initialize()
             // TODO: contact_government_id
 
             if ($this->FLOW === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
-                $resursPaymentFormField .= apply_filters('resursbank_paymentform_government_id', null);
+                $formFieldHtml['applicant_natural'] = apply_filters(
+                    'resursbank_get_customer_field_html_government_id',
+                    '',
+                    $PAYMENT_METHOD);
                 if ($this->METHOD->type === 'CARD') {
-                    $resursPaymentFormField .= apply_filters('resursbank_paymentform_card', null);
+                    $formFieldHtml['card'] = apply_filters(
+                        'resursbank_get_customer_field_html_card',
+                        '',
+                        $PAYMENT_METHOD
+                    );
                 }
             }
 
             // If method is befintligt kort, do not run this.
             if ($this->METHOD->specificType !== 'CARD') {
-                $resursPaymentFormField .= apply_filters('resursbank_paymentform_read_more', null);
+                $formFieldHtml['readmore'] = apply_filters(
+                    'resursbank_get_customer_field_html_read_more',
+                    '',
+                    $PAYMENT_METHOD
+                );
             }
+
+            $resursPaymentFormField = implode("\n", $formFieldHtml);
 
             return $resursPaymentFormField;
         }

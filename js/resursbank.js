@@ -37,6 +37,10 @@ function resursBankCheckUpdates() {
 
 }
 
+function resursBankFormFieldChange(o) {
+
+}
+
 function resursBankLoaded() {
     if (typeof resursBankWooInitialize === 'function') {
         resursBankWooInitialize();

@@ -274,7 +274,6 @@ class Resursbank_Core
     }
 
 
-
     /**
      * @param $active
      * @return mixed
@@ -395,6 +394,10 @@ class Resursbank_Core
     private static function setCustomerPageTrack($isCheckout)
     {
         $CORE = self::getResursCore();
+
+        // Makes sure that integrators can modify their checkout injection protection if there are more places
+        // required to block or allow.
+        $isCheckout = apply_filters('resursbank_location_last_checkout', $isCheckout);
         $CORE->setSession('resursbank_location_last_checkout', $isCheckout);
 
         return true;

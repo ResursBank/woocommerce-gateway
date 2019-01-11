@@ -45,6 +45,7 @@ require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Confighooks
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Functions.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Adminforms.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Method.php');
+require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Forms.php');
 
 if (function_exists('add_action')) {
     setResursbankGatewayFilters();

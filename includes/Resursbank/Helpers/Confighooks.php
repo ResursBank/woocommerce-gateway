@@ -45,3 +45,8 @@ add_filter('resursbank_admin_backend_get_shopflow_options', 'Resursbank_Adminfor
 add_filter('resursbank_admin_backend_get_payment_methods', 'Resursbank_Core::get_payment_methods');
 add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Core::get_payment_list_timer');
 add_filter('woocommerce_before_checkout_billing_form', 'Resursbank_Core::resursBankGetAddress');
+
+// Customer form fields generator
+add_filter('resursbank_get_customer_field_html_government_id', 'Resursbank_Forms::get_customer_field_html_government_id',10,2);
+add_filter('resursbank_get_customer_field_html_card', 'Resursbank_Forms::get_customer_field_html_card', 10,2);
+add_filter('resursbank_get_customer_field_html_read_more', 'Resursbank_Forms::get_customer_field_html_read_more',10, 2);
