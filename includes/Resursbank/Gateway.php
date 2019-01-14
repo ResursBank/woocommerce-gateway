@@ -57,6 +57,24 @@ function resursbank_payment_gateway_initialize()
             return true;
         }
 
+        private function getPaymentFormFieldHtml($filterName, $PAYMENT_METHOD)
+        {
+            $hasFilteredCustomHtml = apply_filters(
+                'resursbank_get_customer_field_html_' . $filterName,
+                '',
+                $PAYMENT_METHOD);
+            if (empty($hasFilteredCustomHtml)) {
+                $hasFilteredCustomHtml = apply_filters(
+                    'resursbank_get_customer_field_html_generic',
+                    '',
+                    $PAYMENT_METHOD,
+                    $filterName
+                );
+            }
+
+            return $hasFilteredCustomHtml;
+        }
+
         protected function getPaymentFormFields($PAYMENT_METHOD)
         {
             $resursPaymentFormField = '';
@@ -68,16 +86,26 @@ function resursbank_payment_gateway_initialize()
             // TODO: contact_government_id
 
             if ($this->FLOW === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
-                $formFieldHtml['applicant_natural'] = apply_filters(
-                    'resursbank_get_customer_field_html_government_id',
-                    '',
-                    $PAYMENT_METHOD);
+
+                $formFieldHtml['applicant_natural_government_id'] = $this->getPaymentFormFieldHtml(
+                    'government_id',
+                    $PAYMENT_METHOD
+                );
+                $formFieldHtml['applicant_natural_phone'] = $this->getPaymentFormFieldHtml(
+                    'applicant_phone',
+                    $PAYMENT_METHOD
+                );
+                $formFieldHtml['applicant_natural_mobile'] = $this->getPaymentFormFieldHtml(
+                    'applicant_mobile',
+                    $PAYMENT_METHOD
+                );
+                $formFieldHtml['applicant_natural_email'] = $this->getPaymentFormFieldHtml(
+                    'applicant_email',
+                    $PAYMENT_METHOD
+                );
+
                 if ($this->METHOD->type === 'CARD') {
-                    $formFieldHtml['card'] = apply_filters(
-                        'resursbank_get_customer_field_html_card',
-                        '',
-                        $PAYMENT_METHOD
-                    );
+                    $formFieldHtml['applicant_natural_card'] = $this->getPaymentFormFieldHtml('card', $PAYMENT_METHOD);
                 }
             }
 

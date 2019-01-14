@@ -47,6 +47,6 @@ add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Cor
 add_filter('woocommerce_before_checkout_billing_form', 'Resursbank_Core::resursBankGetAddress');
 
 // Customer form fields generator
-add_filter('resursbank_get_customer_field_html_government_id', 'Resursbank_Forms::get_customer_field_html_government_id',10,2);
-add_filter('resursbank_get_customer_field_html_card', 'Resursbank_Forms::get_customer_field_html_card', 10,2);
-add_filter('resursbank_get_customer_field_html_read_more', 'Resursbank_Forms::get_customer_field_html_read_more',10, 2);
+add_filter('resursbank_get_customer_field_html_generic', 'Resursbank_Forms::get_customer_field_html_generic', 10, 3);
+//add_filter('resursbank_get_customer_field_html_card', 'Resursbank_Forms::get_customer_field_html_card', 10,2);
+add_filter('resursbank_get_customer_field_html_read_more', 'Resursbank_Forms::get_customer_field_html_read_more', 10,2);

@@ -10,21 +10,40 @@ class Resursbank_Forms
     {
         $return = '';
         switch (self::getFieldNameByFunctionCall($fieldName)) {
-            case 'government_id':
-                $return = __('Government ID', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+            case 'contact_government_id': // Company
+                $return = __('Contact government ID', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                break;
+            case 'applicant_full_name': // Company
+                $return = __('Applicant full name', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                break;
+            case 'government_id': // Company
+                $return = __('Applicant government ID', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                break;
+            case 'applicant_phone':
+                $return = __('Applicant phone number',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                break;
+            case 'applicant_mobile':
+                $return = __('Applicant mobile number',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                break;
+            case 'applicant_email':
+                $return = __('Applicant email address',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'card':
                 $return = __('Card', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
                 break;
-            case 'card':
+            case 'card_number':
                 $return = __('Card number', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
                 break;
-            case 'card':
+            case 'read_more':
                 $return = __('Read more', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
                 break;
             default:
                 break;
         }
+
         return $return;
     }
 
@@ -55,11 +74,12 @@ class Resursbank_Forms
     private static function getInputField($fieldName)
     {
         return sprintf('
-        <label for="%s">
-            %s
-        </label>
-            <input type="text" id="%s" name="%s" onkeyup="resursBankFormFieldChange(this)">
+        <div style="display: block;" id="resurs_custom_div_%s" class="resursPaymentFieldContainer">
+            <label for="resurs_custom_%s">%s</label><br>
+            <input type="text" id="resurs_custom_%s" name="resurs_custom_%s" onkeyup="resursBankFormFieldChange(this)">
+            </div>
         ', $fieldName,
+            $fieldName,
             self::getTranslationByFieldName($fieldName),
             $fieldName,
             $fieldName);
@@ -70,13 +90,17 @@ class Resursbank_Forms
      * @param $PAYMENT_METHOD
      * @return string
      */
-    public static function get_customer_field_html_government_id($html, $PAYMENT_METHOD)
+    public static function get_customer_field_html_generic($html, $PAYMENT_METHOD, $fieldName)
     {
         if (self::disableInternalFieldHtml(__FUNCTION__)) {
             return (string)$html;
         }
 
-        $html = self::getInputField(self::getFieldNameByFunctionCall(__FUNCTION__));
+        if (!empty($fieldName)) {
+            $html = self::getInputField(self::getFieldNameByFunctionCall($fieldName));
+        } else {
+            $html = self::getInputField(self::getFieldNameByFunctionCall(__FUNCTION__));
+        }
 
         return (string)$html;
     }
@@ -92,6 +116,8 @@ class Resursbank_Forms
             return (string)$html;
         }
 
+        $html = self::getInputField(self::getFieldNameByFunctionCall(__FUNCTION__));
+
         return (string)$html;
     }
 
@@ -105,6 +131,7 @@ class Resursbank_Forms
         if (self::disableInternalFieldHtml(__FUNCTION__)) {
             return (string)$html;
         }
+
 
         return (string)$html;
     }
