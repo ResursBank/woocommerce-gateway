@@ -73,10 +73,13 @@ class Resursbank_Forms
      */
     private static function getInputField($fieldName)
     {
+        // Using resursbankcustom_<fieldName> will make it easier to pick up Resurs fields in a later moment
+        // rather than if we is using dual underscored fields (like resurs_bank_) since the postData-parser
+        // is splitting up field data as [arrayKey1][arrayKey2]=value.
         return sprintf('
-        <div style="display: block;" id="resurs_custom_div_%s" class="resursPaymentFieldContainer">
+        <div style="display: block;" id="resursbankcustom_div_%s" class="resursPaymentFieldContainer">
             <label for="resurs_custom_%s">%s</label><br>
-            <input type="text" id="resurs_custom_%s" name="resurs_custom_%s" onkeyup="resursBankFormFieldChange(this)">
+            <input type="text" id="resursbankcustom_%s" name="resursbankcustom_%s" onkeyup="resursBankFormFieldChange(this)">
             </div>
         ', $fieldName,
             $fieldName,
