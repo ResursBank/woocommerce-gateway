@@ -1,11 +1,13 @@
-/**
- * What we work with after page load.
- */
+var resursBankCurrentEnvironment = '';
+
+// What we work with after page load.
 $resurs_bank(document).ready(function ($) {
     resursBankAdminRun();
 });
 
-var resursBankCurrentEnvironment = '';
+function resursBankAdminRun() {
+    resursBankCheckCredentials();
+}
 
 /**
  * Create INPUT field.
@@ -226,8 +228,4 @@ function resursBankCheckCredentials() {
             }
         });
     }
-}
-
-function resursBankAdminRun() {
-    resursBankCheckCredentials();
 }

@@ -273,6 +273,17 @@ class Resursbank_Core
         );
     }
 
+
+    /**
+     * @param $active
+     * @return mixed
+     */
+    public static function activateStoreIdConfig($active)
+    {
+        $active = (bool)self::getResursOption('useProfileStoreId');
+        return (bool)$active;
+    }
+
     /**
      * @return string|void
      */
@@ -383,6 +394,10 @@ class Resursbank_Core
     private static function setCustomerPageTrack($isCheckout)
     {
         $CORE = self::getResursCore();
+
+        // Makes sure that integrators can modify their checkout injection protection if there are more places
+        // required to block or allow.
+        $isCheckout = apply_filters('resursbank_location_last_checkout', $isCheckout);
         $CORE->setSession('resursbank_location_last_checkout', $isCheckout);
 
         return true;
@@ -557,8 +572,26 @@ class Resursbank_Core
      */
     public static function resursBankGetAddress($checkout)
     {
-        echo "Put getAddressFieldHtml here, for Sweden.";
+        echo sprintf('
+        <input type="radio" name="resursbankcustom_getaddress_customertype[]" value="NATURAL" checked="checked"> %s
+        <input type="radio" name="resursbankcustom_getaddress_customertype[]" value="LEGAL"> %s
+        ', __('Private', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            __('Company', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')
+        );
+
+        if (self::getCustomerCountry() === 'SE') {
+            woocommerce_form_field('resursbankcustom_getaddress_governmentid', array(
+                'type' => 'text',
+                'class' => array('form-row-wide resurs_ssn_field'),
+                'label' => __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce'),
+                'placeholder' => __(
+                    'Enter your government id (social security number)',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ),
+            ), $checkout->get_value('resursbankcustom_address_governmentid'));
+        }
     }
+
 
     /**
      * If payment methods are stored, decide from where it should be taken. If the data is too old,
@@ -1163,6 +1196,86 @@ class Resursbank_Core
             }
         }
         return $allConfig;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPostData()
+    {
+        if (!isset($_REQUEST['post_data'])) {
+            return array();
+        }
+        if (is_string($_REQUEST['post_data'])) {
+            parse_str($_REQUEST['post_data'], $postData);
+        } else {
+            $postData = $_REQUEST['post_data'];
+        }
+
+        return $postData;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getDefaultPostDataParsed()
+    {
+        $postData = self::getPostData();
+        $newData = array();
+
+        foreach ($postData as $key => $val) {
+            $keySplit = explode('_', $key, 2);
+            if (isset($keySplit[1])) {
+                if (!isset($newData[$keySplit[0]])) {
+                    $newData[$keySplit[0]] = array();
+                }
+                $newData[$keySplit[0]][$keySplit[1]] = $val;
+            }
+        }
+
+        return $newData;
+    }
+
+    /**
+     * Find out if checkout customer has filled in some field that can be considered LEGAL payment.
+     *
+     * @return bool
+     */
+    public static function getIsLegal()
+    {
+        $postData = self::getDefaultPostDataParsed();
+        $resursData = self::getResursCustomPostData();
+        $return = false;
+
+        if (
+            is_array($postData['billing']) &&
+            isset($postData['billing']['company']) &&
+            !empty($postData['billing']['company'])
+        ) {
+            $return = true;
+        } elseif (
+            is_array($resursData['getaddress_customertype']) &&
+            in_array('LEGAL', $resursData['getaddress_customertype'])
+        ) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Get Resurs Bank customized payment fields.
+     *
+     * @return array
+     */
+    public static function getResursCustomPostData()
+    {
+        $postData = self::getDefaultPostDataParsed();
+        $return = array();
+        if (is_array($postData['resursbankcustom'])) {
+            $return = $postData['resursbankcustom'];
+        }
+        return $return;
     }
 
     /**

@@ -34,8 +34,13 @@ function resurs_bank_ajaxify(action, postdata, runFunction) {
 }
 
 function resursBankCheckUpdates() {
+    console.log('Resurs Bank has discovered checkout updates.');
+}
+
+function resursBankFormFieldChange(o) {
 
 }
+
 
 function resursBankLoaded() {
     if (typeof resursBankWooInitialize === 'function') {

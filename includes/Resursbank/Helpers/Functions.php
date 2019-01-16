@@ -29,7 +29,6 @@ function setResursbankGatewayFilters()
 
     // Trigger absence from checkout and store historically in a session.
     add_action('woocommerce_add_to_cart', 'Resursbank_Core::setCustomerIsOutsideCheckout');
-
 }
 
 /**

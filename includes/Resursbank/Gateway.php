@@ -57,7 +57,25 @@ function resursbank_payment_gateway_initialize()
             return true;
         }
 
-        protected function getPaymentFormFields()
+        private function getPaymentFormFieldHtml($filterName, $PAYMENT_METHOD)
+        {
+            $hasFilteredCustomHtml = apply_filters(
+                'resursbank_get_customer_field_html_' . $filterName,
+                '',
+                $PAYMENT_METHOD);
+            if (empty($hasFilteredCustomHtml)) {
+                $hasFilteredCustomHtml = apply_filters(
+                    'resursbank_get_customer_field_html_generic',
+                    '',
+                    $PAYMENT_METHOD,
+                    $filterName
+                );
+            }
+
+            return $hasFilteredCustomHtml;
+        }
+
+        protected function getPaymentFormFields($PAYMENT_METHOD)
         {
             $resursPaymentFormField = '';
 
@@ -67,17 +85,61 @@ function resursbank_payment_gateway_initialize()
             // TODO: company_government_id
             // TODO: contact_government_id
 
+            $postData = Resursbank_Core::getPostData();
+
             if ($this->FLOW === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
-                $resursPaymentFormField .= apply_filters('resursbank_paymentform_government_id', null);
+
+                $isLegal = false;
+                if (in_array('LEGAL', (array)$PAYMENT_METHOD->customerType)) {
+                    if (Resursbank_Core::getIsLegal()) {
+                        $isLegal = true;
+                    }
+                }
+
+                $formFieldHtml['applicant_natural_government_id'] = $this->getPaymentFormFieldHtml(
+                    'government_id',
+                    $PAYMENT_METHOD
+                );
+
+                if ($isLegal) {
+                    $formFieldHtml['contact_government_id'] = $this->getPaymentFormFieldHtml(
+                        'contact_government_id',
+                        $PAYMENT_METHOD
+                    );
+                }
+
+                // Card requirements - government id + card number
                 if ($this->METHOD->type === 'CARD') {
-                    $resursPaymentFormField .= apply_filters('resursbank_paymentform_card', null);
+                    $formFieldHtml['applicant_natural_card'] = $this->getPaymentFormFieldHtml('card', $PAYMENT_METHOD);
+                } else {
+
+                    // Natural cases, globally - gov, phone, mobile, email
+                    $formFieldHtml['applicant_natural_phone'] = $this->getPaymentFormFieldHtml(
+                        'applicant_phone',
+                        $PAYMENT_METHOD
+                    );
+                    $formFieldHtml['applicant_natural_mobile'] = $this->getPaymentFormFieldHtml(
+                        'applicant_mobile',
+                        $PAYMENT_METHOD
+                    );
+                    $formFieldHtml['applicant_natural_email'] = $this->getPaymentFormFieldHtml(
+                        'applicant_email',
+                        $PAYMENT_METHOD
+                    );
+
                 }
             }
 
             // If method is befintligt kort, do not run this.
             if ($this->METHOD->specificType !== 'CARD') {
-                $resursPaymentFormField .= apply_filters('resursbank_paymentform_read_more', null);
+                $formFieldHtml['readmore'] = apply_filters(
+                    'resursbank_get_customer_field_html_read_more',
+                    '',
+                    $PAYMENT_METHOD
+                );
             }
+
+            $resursPaymentFormField = implode("\n", $formFieldHtml);
 
             return $resursPaymentFormField;
         }
