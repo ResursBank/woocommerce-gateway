@@ -1,6 +1,5 @@
 .svn
 composer.lock
-deploy
-clean
 run
 migrate.sh
+includes/resurs_bank_nr*

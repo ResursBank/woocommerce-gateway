@@ -24,6 +24,10 @@ class Resursbank_Core
      */
     private static $gatewayClass = 'WC_Gateway_ResursBank';
 
+    const RESURS_SHOPFLOW_SIMPLIFIED = 'simplified';
+    const RESURS_SHOPFLOW_HOSTED = 'hosted';
+    const RESURS_SHOPFLOW_CHECKOUT = 'checkout';
+
     /**
      * Resursbank_Core constructor.
      *
@@ -37,6 +41,9 @@ class Resursbank_Core
     /**
      * Fetch payment methods for country based selection.
      *
+     * This request is being sent directly to Resurs Bank API, so to use a cached version of payment methods,
+     * use the static function getStoredPaymentMethods() instead.
+     *
      * @param string $country
      * @return array|mixed
      * @throws Exception
@@ -45,12 +52,13 @@ class Resursbank_Core
     {
         $credentials = $this->getCredentialsByCountry($country);
         $return = array();
-
         $currentEnvironment = self::getResursOption('environment');
 
         if (isset($credentials[$currentEnvironment]['username'])) {
-            $connection = $this->getConnection($credentials[$currentEnvironment]['username'],
-                $credentials[$currentEnvironment]['password']);
+            $connection = $this->getConnection(
+                $credentials[$currentEnvironment]['username'],
+                $credentials[$currentEnvironment]['password']
+            );
             $return = $connection->getPaymentMethods(array(), true);
         }
 
@@ -75,13 +83,6 @@ class Resursbank_Core
             $credentialsList = array();
         }
         return $credentialsList;
-    }
-
-    /**
-     * TODO
-     */
-    private function getFlowByCountry()
-    {
     }
 
     /**
@@ -116,13 +117,41 @@ class Resursbank_Core
     private function getEcomEnvironment($dynamic = null)
     {
         $return = RESURS_ENVIRONMENTS::TEST;
-        $env = $this->getEnvironment();
+        $env = self::getResursOption('environment');
         if (!is_null($dynamic) && $dynamic === 'test' || $dynamic === 'live') {
             $env = $dynamic;
         }
         if ($env === 'live') {
             $return = RESURS_ENVIRONMENTS::PRODUCTION;
         }
+        return $return;
+    }
+
+    /**
+     * Get flow type based on EcomPHP responses.
+     *
+     * @param string $flow
+     * @return \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES
+     */
+    public function getFlowByEcom($flow = '')
+    {
+        $return = '';
+
+        switch ($flow) {
+            case Resursbank_Core::RESURS_SHOPFLOW_CHECKOUT:
+                $return = \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT;
+                break;
+            case Resursbank_Core::RESURS_SHOPFLOW_SIMPLIFIED:
+                $return = \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::SIMPLIFIED_FLOW;
+                break;
+            case Resursbank_Core::RESURS_SHOPFLOW_HOSTED:
+                $return = \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::HOSTED_FLOW;
+                break;
+            default:
+                break;
+        }
+
+        //Resursbank_Core::RESURS_SHOPFLOW_CHECKOUT
         return $return;
     }
 
@@ -135,12 +164,14 @@ class Resursbank_Core
      * @return ResursBank
      * @throws Exception
      */
-    private function getConnection($username = '', $password = '', $environment = null)
+    protected function getConnection($username = '', $password = '', $environment = null)
     {
         $this->RB = new ResursBank();
+
         if (!empty($username) && !empty($password)) {
             $this->RB->setAuthentication($username, $password);
         }
+
         if (is_null($environment)) {
             $this->RB->setEnvironment(self::getEcomEnvironment());
         } else {
@@ -150,8 +181,292 @@ class Resursbank_Core
         return $this->RB;
     }
 
+    /**
+     * Self initialize EComPHP based on country data.
+     *
+     * @param $country
+     * @return ResursBank
+     * @throws Exception
+     */
+    public function getConnectionByCountry($country)
+    {
+        $currentEnvironment = self::getResursOption('environment');
+        $credentials = $this->getCredentialsByCountry($country);
+
+        if (!count($credentials)) {
+            throw new \Exception(
+                sprintf(
+                    __(
+                        'Payment methods are not available for country %s.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    $country
+                ), 400
+            );
+        }
+
+        return $this->getConnection(
+            $credentials[$currentEnvironment]['username'],
+            $credentials[$currentEnvironment]['password'],
+            $this->getEcomEnvironment($currentEnvironment)
+        );
+    }
+
+    /**
+     * Find out which flow we're using for a specific country.
+     *
+     * @param string $country
+     * @return mixed|string
+     * @throws Exception
+     */
+    public function getFlowByCountry($country = '')
+    {
+        $return = '';
+        $resursCredentials = self::getResursCore()->getCredentialsByCountry($country);
+
+        if (isset($resursCredentials['shopflow'])) {
+            return $resursCredentials['shopflow'];
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return bool
+     * @throws Exception
+     */
+    public static function getWasInCheckout()
+    {
+        $getValue = (bool)self::getResursCore()->getSession('resursbank_location_last_checkout');
+        $getValue = apply_filters('resursbank_allow_place_order', $getValue);
+
+        return $getValue;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isSession()
+    {
+        global $woocommerce;
+
+        $return = false;
+        if (isset($woocommerce->session)) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Renders datainfo array for about section.
+     *
+     * @param $key
+     * @param $value
+     * @return array
+     */
+    private static function get_data_info_array($key, $value)
+    {
+        return array(
+            'name' => $key,
+            'value' => $value,
+        );
+    }
+
+
+    /**
+     * @param $active
+     * @return mixed
+     */
+    public static function activateStoreIdConfig($active)
+    {
+        $active = (bool)self::getResursOption('useProfileStoreId');
+        return (bool)$active;
+    }
+
+    /**
+     * @return string|void
+     */
+    private static function getNA()
+    {
+        return __('Not available.', 'resurs-bank-payment-gateway-for-woocommerce');
+    }
+
+    /**
+     * Plugin information data that is internally supported
+     *
+     * @param $pluginInfoKey
+     * @return array
+     */
+    public static function get_data_info($pluginInfoKey)
+    {
+        if (empty($pluginInfoKey) || !is_string($pluginInfoKey)) {
+            return;
+        }
+        $curlVersion = null;
+        if (!function_exists('curl_version')) {
+            $curl = curl_version();
+        }
+        $curlVersion = isset($curl['version']) ? $curl['version'] : self::getNA();
+
+        $data = array(
+            'version_php' => array(
+                'name' => 'PHP version',
+                'value' => PHP_VERSION
+            ),
+            'version_gateway' => array(
+                'name' => 'Gateway version',
+                'value' => _RESURSBANK_GATEWAY_VERSION
+            ),
+            'version_ecomphp' => array(
+                'name' => 'EComPHP',
+                'value' => ECOMPHP_VERSION
+            ),
+            'version_curl' => array(
+                'name' => 'curl',
+                'value' => $curlVersion
+            ),
+            'version_ssl' => array(
+                'name' => 'SSL/https',
+                'value' => (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : self::getNA())
+            ),
+            'version_module_curl' => array(
+                'name' => 'MODULE_CURL',
+                'value' => (defined('NETCURL_RELEASE') ? NETCURL_RELEASE : self::getNA())
+            ),
+        );
+
+        if (isset($data[$pluginInfoKey]) && is_array($data)) {
+            return self::get_data_info_array($data[$pluginInfoKey]['name'], $data[$pluginInfoKey]['value']);
+        }
+    }
+
+    public static function resursbank_get_plugin_data_array()
+    {
+        return array(
+            'version_php',
+            'version_gateway',
+            'version_ecomphp',
+            'version_curl',
+            'version_ssl',
+            'version_module_curl',
+        );
+    }
+
+    public static function resursbank_get_plugin_data()
+    {
+        $pluginData = self::resursbank_get_plugin_data_array();
+        $pluginData = apply_filters('resursbank_data_info_array', $pluginData);
+
+        $pluginInformationHtml = '<table width="800px" class="resursGatewayConfigCredentials" style="table-layout: auto !important;" id="resurs_bank_credential_table">';
+        foreach ($pluginData as $pluginInfoKey) {
+            $pluginInformationContent = apply_filters('resursbank_data_info_' . $pluginInfoKey, $pluginInfoKey);
+            // Make sure filters is doing it right.
+            if (
+                is_array($pluginInformationContent) &&
+                isset($pluginInformationContent['name']) &&
+                isset($pluginInformationContent['value']) &&
+                !empty($pluginInformationContent['name']) &&
+                !empty($pluginInformationContent['value'])
+            ) {
+                $value = htmlentities($pluginInformationContent['value']);
+                if ($value === self::getNA()) {
+                    $value = '<span style="font-weight: bold; font-style: italic;color: #990000;">' . $value . '</span>';
+                }
+                $pluginInformationHtml .= '<tr>';
+                $pluginInformationHtml .= '<td width="300px" style="font-weight: bold;">' . htmlentities($pluginInformationContent['name']) . '</td>';
+                $pluginInformationHtml .= '<td width="500px">' . $value . '</td>';
+                $pluginInformationHtml .= '</tr>';
+            }
+
+        }
+        $pluginInformationHtml .= '</table>';
+
+        return $pluginInformationHtml;
+    }
+
+    /**
+     * @param $isCheckout
+     * @param bool $storePrior
+     * @return bool
+     * @throws Exception
+     */
+    private static function setCustomerPageTrack($isCheckout)
+    {
+        $CORE = self::getResursCore();
+
+        // Makes sure that integrators can modify their checkout injection protection if there are more places
+        // required to block or allow.
+        $isCheckout = apply_filters('resursbank_location_last_checkout', $isCheckout);
+        $CORE->setSession('resursbank_location_last_checkout', $isCheckout);
+
+        return true;
+    }
+
+    /**
+     * Tell session when customer is outside checkout and store the value
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public static function setCustomerIsOutsideCheckout()
+    {
+        return self::setCustomerPageTrack(false);
+    }
+
+    /**
+     * Tell session when customer is really in the checkout.
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public static function setCustomerIsInCheckout()
+    {
+        return self::setCustomerPageTrack(true);
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     */
+    public function setSession($key, $value)
+    {
+        if ($this->isSession()) {
+            WC()->session->set($key, $value);
+        } else {
+            $_SESSION[$key] = $value;
+        }
+    }
+
+    /**
+     * @param $key
+     * @return array|mixed|string
+     */
+    public function getSession($key)
+    {
+        $return = null;
+
+        if ($this->isSession()) {
+            $return = WC()->session->get($key);
+        } else {
+            if (isset($_SESSION[$key])) {
+                $return = $_SESSION[$key];
+            }
+        }
+
+        return $return;
+    }
 
     /** ** METHOD BELOW IS STATIC, THE ABOVE REQUIRES INSTATIATION ** */
+
+    /**
+     * @return Resursbank_Core
+     * @throws Exception
+     */
+    public static function getResursCore()
+    {
+        return new Resursbank_Core();
+    }
 
     /**
      * Decide whether we're going to use internal ecomphp or the one delivered with the prior plugin.
@@ -178,7 +493,7 @@ class Resursbank_Core
      */
     private static function getPaymentMethodsByApi($credentials, $cron = false)
     {
-        $CORE = new Resursbank_Core();
+        $CORE = self::getResursCore();
         $methodList = array();
         $hasException = false;
         $exceptions = array();
@@ -251,6 +566,34 @@ class Resursbank_Core
     }
 
     /**
+     * @param $checkout WC_Checkout
+     * @return string
+     * @todo Add the getaddress field depending on country and checkout type
+     */
+    public static function resursBankGetAddress($checkout)
+    {
+        echo sprintf('
+        <input type="radio" name="resursbankcustom_getaddress_customertype[]" value="NATURAL" checked="checked"> %s
+        <input type="radio" name="resursbankcustom_getaddress_customertype[]" value="LEGAL"> %s
+        ', __('Private', 'resurs-bank-payment-gateway-for-woocommerce'),
+            __('Company', 'resurs-bank-payment-gateway-for-woocommerce')
+        );
+
+        if (self::getCustomerCountry() === 'SE') {
+            woocommerce_form_field('resursbankcustom_getaddress_governmentid', array(
+                'type' => 'text',
+                'class' => array('form-row-wide resurs_ssn_field'),
+                'label' => __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce'),
+                'placeholder' => __(
+                    'Enter your government id (social security number)',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ),
+            ), $checkout->get_value('resursbankcustom_address_governmentid'));
+        }
+    }
+
+
+    /**
      * If payment methods are stored, decide from where it should be taken. If the data is too old,
      * it will recreate the method list live.
      *
@@ -283,27 +626,10 @@ class Resursbank_Core
      * @return mixed
      * @throws Exception
      */
-    private static function getStoredPaymentMethodsByCountry($country, $requestEnvironment)
+    private static function getStoredPaymentMethodsByCountry($country)
     {
-        $CORE = new Resursbank_Core();
-        $credentials = $CORE->getCredentialsByCountry($country);
-
-        if (!count($credentials)) {
-            throw new \Exception(
-                __(
-                    'Payment methods are not available for country',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . ' ' . $country, 400
-            );
-        }
-
-        $currentEnvironment = self::getResursOption('environment');
-
-        $request = $CORE->getConnection(
-            $credentials[$currentEnvironment]['username'],
-            $credentials[$currentEnvironment]['password'],
-            $CORE->getEcomEnvironment()
-        );
+        $CORE = self::getResursCore();
+        $request = $CORE->getConnectionByCountry($country);
         $methodList[$country] = $request->getPaymentMethods(array(), true);
 
         return $methodList;
@@ -330,8 +656,12 @@ class Resursbank_Core
         // If no methods are visible in the config
         if (!is_array($methodList)) {
             if (!empty($country)) {
-                $methodList = self::getStoredPaymentMethodsByCountry($country, $credentials, false,
-                    $requestEnvironment);
+                $methodList = self::getStoredPaymentMethodsByCountry(
+                    $country,
+                    $credentials,
+                    false,
+                    $requestEnvironment
+                );
             } else {
                 if (is_array($credentials)) {
                     $methodList = self::getPaymentMethodsByApi($credentials, $cron);
@@ -342,6 +672,13 @@ class Resursbank_Core
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ) . ' ' . $country, 400
                     );
+                }
+            }
+        } else {
+            if (!empty($country) && isset($methodList[$country])) {
+                $methodList = $methodList[$country];
+                if (isset($methodList[$requestEnvironment])) {
+                    $methodList = $methodList[$requestEnvironment];
                 }
             }
         }
@@ -434,8 +771,10 @@ class Resursbank_Core
                 'title' => __('Dismissed notices', 'resurs-bank-payment-gateway-for-woocommerce'),
                 'settings' => array(
                     'dismissed_title' => array(
-                        'title' => __('Restore notices and elements hidden by plugin',
-                            'resurs-bank-payment-gateway-for-woocommerce'),
+                        'title' => __(
+                            'Restore notices and elements hidden by plugin',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
                         'type' => 'title',
                     )
                 ),
@@ -571,11 +910,11 @@ class Resursbank_Core
             if (!self::getRequiredAdmin($runRequest)) {
                 throw new \Exception(
                     __(
-                        'Security verification failure',
+                        'Security verification failure.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ) . ' - ' .
                     __(
-                        'Must be administator',
+                        'You must be administator.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ), 400
                 );
@@ -585,11 +924,11 @@ class Resursbank_Core
         if (!$return && self::getRequiredNonce($runRequest)) {
             throw new \Exception(
                 __(
-                    'Security verification failure',
+                    'Security verification failure.',
                     'resurs-bank-payment-gateway-for-woocommerce'
                 ) . ' - ' .
                 __(
-                    'Security key mismatch',
+                    'Security key mismatch.',
                     'resurs-bank-payment-gateway-for-woocommerce'
                 ), 400
             );
@@ -604,13 +943,36 @@ class Resursbank_Core
      * @param $woocommerceGateways
      * @return array
      */
-    public static function getResursGateways($woocommerceGateways)
+    public static function getMethodsFromGateway($woocommerceGateways)
     {
-        /*        if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
-                    $woocommerceGateways[] = self::getGatewayClass();
-                }*/
+        if (is_array($woocommerceGateways) && !in_array(self::getGatewayClass(), $woocommerceGateways)) {
+            $woocommerceGateways[] = self::getGatewayClass();
+        }
 
         return $woocommerceGateways;
+    }
+
+    /**
+     * Find out where we are. Returns empty string when not in checkout.
+     *
+     * @return string
+     * @TODO Check whether this might be needed in widget-mode (cost example).
+     */
+    public static function getCustomerCountry()
+    {
+        global $woocommerce;
+        $currentCustomerCountry = '';
+
+        if (!is_admin()) {
+            if (is_checkout()) {
+                $currentCustomerCountry = $woocommerce->customer->get_billing_country();
+            }
+            if (empty($currentCustomerCountry)) {
+                $currentCustomerCountry = WC_Countries::get_base_country();
+            }
+        }
+
+        return $currentCustomerCountry;
     }
 
     /**
@@ -618,16 +980,91 @@ class Resursbank_Core
      *
      * @param $availableGateways
      * @return mixed
+     * @throws Exception
      */
     public static function getAvailableGateways($availableGateways)
     {
-        unset($availableGateways[self::getGatewayClass()]);
+        $resursCore = self::getResursCore();
 
-        // TODO: Add them dynamically
-        //$availableGateways['test1'] = new WC_Resursbank_Method('Test method 1');
-        //$availableGateways['test2'] = new WC_Resursbank_Method('Test method 2');
+        self::getResursCore()->setSession(
+            'session_gateway_method_init',
+            0
+        );
+
+        unset($availableGateways[self::getGatewayClass()]);
+        unset($availableGateways['resurs_bank_payment_gateway']);
+        try {
+            $paymentMethodCountry = self::getCustomerCountry();
+            $currentFlow = $resursCore->getFlowByEcom($resursCore->getFlowByCountry($paymentMethodCountry));
+            $currentEnvironment = self::getResursOption('environment');
+
+            if ($currentFlow === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                $availableGateways['resursbank_checkout'] = new WC_Resursbank_Method(
+                    $currentFlow,
+                    $paymentMethodCountry,
+                    $resursCore->getConnectionByCountry($paymentMethodCountry)
+                );
+            } else {
+                $methods = self::getStoredPaymentMethods($paymentMethodCountry, false, $currentEnvironment);
+                foreach ($methods as $methodIndex => $paymentMethodData) {
+                    if ($gateway = self::getGateway($paymentMethodData, $paymentMethodCountry)) {
+                        $availableGateways['resursbank_' . $paymentMethodData->id] = $gateway;
+                    }
+                }
+            }
+
+        } catch (\Exception $e) {
+            wc_add_notice($e->getMessage(), 'error');
+        }
+
         return $availableGateways;
     }
+
+    /**
+     * @param $paymentMethodData
+     * @param $paymentMethodCountry
+     * @return WC_Resursbank_Method|null
+     * @throws Exception
+     */
+    private static function getGateway($paymentMethodData, $paymentMethodCountry)
+    {
+        $resursCore = self::getResursCore();
+        $return = null;
+
+        if (Resursbank_Core::getValidatedLimit($paymentMethodData)) {
+            $return = new WC_Resursbank_Method(
+                $paymentMethodData,
+                $paymentMethodCountry,
+                $resursCore->getConnectionByCountry($paymentMethodCountry)
+            );
+        }
+
+        return $return;
+    }
+
+    public static function getCart()
+    {
+        global $woocommerce;
+
+        return get_class($woocommerce->cart) === 'WC_Cart' ? $woocommerce->cart : '';
+    }
+
+    /**
+     * @return bool
+     */
+    public static function getValidatedLimit($resursPaymentMethod)
+    {
+        /** @var WC_Cart $cart */
+        $cart = self::getCart();
+        $return = true;
+
+        if ($cart->total > $resursPaymentMethod->maxLimit || $cart->total < $resursPaymentMethod->minLimit) {
+            $return = false;
+        }
+
+        return $return;
+    }
+
 
     /**
      * Fetch stored payment method and return it to developer
@@ -740,6 +1177,7 @@ class Resursbank_Core
 
     /**
      * Get all default values bulked.
+     *
      * @return array
      */
     public static function getDefaultConfiguration()
@@ -758,6 +1196,86 @@ class Resursbank_Core
             }
         }
         return $allConfig;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPostData()
+    {
+        if (!isset($_REQUEST['post_data'])) {
+            return array();
+        }
+        if (is_string($_REQUEST['post_data'])) {
+            parse_str($_REQUEST['post_data'], $postData);
+        } else {
+            $postData = $_REQUEST['post_data'];
+        }
+
+        return $postData;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getDefaultPostDataParsed()
+    {
+        $postData = self::getPostData();
+        $newData = array();
+
+        foreach ($postData as $key => $val) {
+            $keySplit = explode('_', $key, 2);
+            if (isset($keySplit[1])) {
+                if (!isset($newData[$keySplit[0]])) {
+                    $newData[$keySplit[0]] = array();
+                }
+                $newData[$keySplit[0]][$keySplit[1]] = $val;
+            }
+        }
+
+        return $newData;
+    }
+
+    /**
+     * Find out if checkout customer has filled in some field that can be considered LEGAL payment.
+     *
+     * @return bool
+     */
+    public static function getIsLegal()
+    {
+        $postData = self::getDefaultPostDataParsed();
+        $resursData = self::getResursCustomPostData();
+        $return = false;
+
+        if (
+            is_array($postData['billing']) &&
+            isset($postData['billing']['company']) &&
+            !empty($postData['billing']['company'])
+        ) {
+            $return = true;
+        } elseif (
+            is_array($resursData['getaddress_customertype']) &&
+            in_array('LEGAL', $resursData['getaddress_customertype'])
+        ) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Get Resurs Bank customized payment fields.
+     *
+     * @return array
+     */
+    public static function getResursCustomPostData()
+    {
+        $postData = self::getDefaultPostDataParsed();
+        $return = array();
+        if (is_array($postData['resursbankcustom'])) {
+            $return = $postData['resursbankcustom'];
+        }
+        return $return;
     }
 
     /**
@@ -969,18 +1487,44 @@ class Resursbank_Core
             _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
+        if (is_checkout()) {
+            wp_enqueue_script(
+                'resurs_bank_payment_checkout_js',
+                _RESURSBANK_GATEWAY_URL . 'js/resurscheckout.js',
+                array(
+                    'jquery',
+                ),
+                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+            );
+        }
+
         wp_enqueue_script(
             'resurs_bank_payment_gateway_js',
             _RESURSBANK_GATEWAY_URL . 'js/resursbank.js',
-            array('jquery'),
+            array(
+                'jquery',
+            ),
             _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
+
+        if (is_checkout()) {
+            wp_enqueue_script(
+                'resurs_bank_payment_woocommerce_js',
+                _RESURSBANK_GATEWAY_URL . 'js/woocommerce.js',
+                array(
+                    'jquery',
+                ),
+                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+            );
+        }
 
         if (is_admin()) {
             wp_enqueue_script(
                 'resurs_bank_payment_gateway_admin_js',
                 _RESURSBANK_GATEWAY_URL . 'js/resursadmin.js',
-                array('jquery'),
+                array(
+                    'jquery',
+                ),
                 _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
             );
         }
@@ -991,6 +1535,32 @@ class Resursbank_Core
             }
         }
 
+        if ($iFrameUrl = self::getIframeUrl()) {
+            wp_localize_script(
+                'resurs_bank_payment_gateway_js',
+                'RESURSCHECKOUT_IFRAME_URL',
+                $iFrameUrl
+            );
+        }
+    }
+
+    public static function getIframeUrl()
+    {
+        $CORE = self::getResursCore();
+        $iFrameUrl = '';
+
+        // Fetch RCO iframe URL and push it to js. This usually fails on initial plugin startups, when
+        // no credentials are preset.
+        try {
+            $iFrameUrl = self::getResursCore()->getConnectionByCountry(
+                self::getCustomerCountry()
+            )->getCheckoutUrl(
+                $CORE->getEcomEnvironment()
+            );
+        } catch (\Exception $iframeUrlException) {
+
+        }
+        return $iFrameUrl;
     }
 
     /**
@@ -1032,4 +1602,5 @@ class Resursbank_Core
         }
         return 'i.have.no.idea-beta';
     }
+
 }

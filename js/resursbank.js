@@ -3,7 +3,6 @@ $resurs_bank = jQuery.noConflict();
 $resurs_bank(document).ready(function ($) {
     resursBankLoaded();
 });
-
 $resurs_bank(document).on('updated_checkout', function () {
     resursBankCheckUpdates();
 });
@@ -35,9 +34,17 @@ function resurs_bank_ajaxify(action, postdata, runFunction) {
 }
 
 function resursBankCheckUpdates() {
+    console.log('Resurs Bank has discovered checkout updates.');
+}
+
+function resursBankFormFieldChange(o) {
 
 }
+
 
 function resursBankLoaded() {
-
+    if (typeof resursBankWooInitialize === 'function') {
+        resursBankWooInitialize();
+    }
 }
+

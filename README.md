@@ -6,6 +6,10 @@ When time passed, the source code got a bit unhandy to develop with, but since t
 
 This version of the plugin is a rebuild-fork of the prior one, and a try to free some bottlenecks.
 
+## Why external fork?
+
+The external fork repo is being used while we're rewriting the plugin. It is the way to keep both plugins alive in the same time and to make them coexist in the Wordpress universe. When we do not need to work with version 2.x anymore, the fork is no longer necessary unless you don't want to work on your own and then add it to the official branches. However, if you want to work with the Resurs repo instead, feel free to do this. 
+
 ## Automatically updating payment methods
 
 This plugin supports the ability to update payment methods automatically via scheduled jobs (like cron). The "only" thing you need is an application that can call for your site by a http call. Here are some examples:
@@ -33,174 +37,65 @@ The forking style of this plugin is written so the new release can coexist with 
 
 If you decide to run this plugin side by side with the prior Resurs-branded release, the both plugins might take advantage of each others code. At least, when it comes to the payment engine EComPHP, we use the same code bases. If this plugin finds out that the prior version is available, it will instead use the already shipped EComPHP. Disabling that plugin, makes it use the built in version instead.
 
-## Available filters and hooks
+## Available actions and filters
 
-### resursbank_configrow_scriptloader
-
-Add extending script to specific configuration field row from wp-admin without interfering the core source. Used internally to control behaviour of aftershop flow. First argument is the scriptloader itself, second is for checking which field configuration key that is running. Use with caution as this is all about javascripts. Javascripts might destroy working flows.
-
-Example: A checkbox needs extended actions in the configuration:
-
-````
-  add_filter('resursbank_configrow_scriptloader', 'resursbank_configrow_internal_scriptloader', 10, 2);
-  
-  function resursbank_configrow_internal_scriptloader($scriptLoader, $configKey='') {
-  
-    if ($configKey === 'test_function_field') {
-      $scriptLoader = 'onclick="testFunctionFieldJs()"';
-    }
-    
-    return $scriptLoader;
-  }
-````
+If you need to make any change in the plugin, but don't want to edit the plugin itself - which usually leads to lost changes as soon as the plugin gets updated - you could take advance of the built in filters and actions. The new version has been extended to handle this better. The complete list of actions and filters can now be found at [here](https://test.resurs.com/docs/x/HwL1).
 
 
 ## TODOings
 
 ### Transferring this module to the Resurs Bank branch
 
-What always must be done of merging this fork into the Resurs Bank branch
+See the migration notes below.
 
-* Translation domain are different, make sure it uses the right name
-* Make sure the naming slug matches the other release
 
 ### What's been done so far
 
 * All sections for the plugin are split up in smaller pieces to prevent conflicts between the sections when developing features
 * Configuration section is no longer following WC config rules as many things are configured dynamically and the WC config policy is too strict
 * Cosmetic updates: Logotype for tab configuration follows WC3x-hooks and is also resized to match the tab size
+* Administration interface has taken form and is close to finalization.
+* Added warnings for prior versions exists in the same plugin structure.
+* Filters and hooks is implemented "on fly".
+* Multiple countries (Select flow per country).
+
 
 ### What should be done
 
-* Administration interface must be pushed out as a primary goal as we are dependent on dynamic configuration
-* Warn when prior version of the plugin is running the same as this module
-* Filters and hooks should be covered in as many sections as possible
-* Multiple countries (Select flow per country)
-* Are you running multiple credentials, make sure salt keys for callbacks are separated for each section
-* Payment methods should be dynamically loaded and configured
-* Handle special metadata differently (using special table for metadata will make them unwritable for users)
+* Clean up README.md to use Resurs Bank README-standard.
+* The single merchant credential configuration from 2.x should be inherited automatically to the new version.
+* Callbacks.
+* Aftershop flow.
+* Order admin view.
+* Are you running multiple credentials, make sure salt keys for callbacks are separated for each section.
+* Payment methods should be dynamically loaded and configured.
+* Handle special metadata differently (using special table for metadata will make them unwritable for users).
 
 
 
-#### Migrate into an official branch
+#### Merge from external sources into an official branch
 
-If you thinking of developing within the external branch [located here](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/browse) and merge it into the [current official repo](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/), instead of branching/forking the original repo - you might want to take a look at the script below. As development passes you probably want to change some of the parameters in it. It works like this:
+If you want to work with the official branch - do not bother reading the below instructions.
 
-* Clone the Resurs Bank repo into resurs-bank-payment-gateway-for-woocommerce
-* Clone the other repo into tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
-* Make sure that the oldbranch variable points at the correct branch (this is the repo you want to use at Resurs Bank, so make sure it also at least exists before starting). The newbranch value is the source of what you want to put into the official repo.  
-* Run the script - if everything goes well, you have the new updated base in your destination repo. Not merge the source, check for differences and create a pull request!
 
-##### migrate.sh
+If you thinking of developing within the external branch [located here](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/browse) and merge it into the [current official repo](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/), instead of branching/forking the original the better practice is to clone the fork somewhere and then add the fork as a remote to the original repo. Like this:
 
-    #!/bin/bash
-    
-    # Resurs Bank AB plugin for WooCommerce merge-script. Converts the new repo content to a compatible non-disabled
-    # module for the official repo.
-    
-    old=resurs-bank-payment-gateway-for-woocommerce
-    new=tornevall-networks-resurs-bank-payment-gateway-for-woocommerce
-    
-    oldbranch=develop/3.0
-    newbranch=develop/1.0
-    
-    # Set this to 1 if you want to see something in the copy/move process
-    verbose=""
-    commitAndPush=0
-    
-    if [ "push" = "$1" ] ; then
-        commitAndPush=1
-    fi
-    
-    if [ ! -d $old ] && [ ! -d $new ] ; then
-        echo "The directories ${old} and ${new} missing in your file structure."
-        exit
-    fi
-    
-    whereami=$(pwd | grep $new)
-    if [ "" != "$whereami" ] ; then
-        echo "It seems that this script is running within a codebase. Not good. Please exit this directory or try again."
-        exit
-    fi
-    
-    echo "Preparing branches..."
-    
-    echo "Refresh ${old}"
-    cd ${old}
-    
-    echo "Branch control (master)"
-    curbranch=$(git branch | grep "^*")
-    
-    echo "Current branch is ${curbranch}"
-    if [ "$curbranch" != "* master" ] ; then
-        echo "And that was not right. Trying to restore state of branches."
-        git reset --hard && git clean -f -d && git checkout master
-    else
-        echo "And that seem to be correct ..."
-    fi
-    
-    curbranch=$(git branch | grep "^*")
-    
-    if [ "$curbranch" != "* master" ] ; then
-        echo "Something failed during checkout. Aborting!"
-        exit
-    fi
-    
-    echo "Current branch is now ${curbranch} ... Syncing!"
-    
-    git fetch --all -p
-    git pull
-    echo "Going for ${oldbranch} in ${old}"
-    git checkout ${oldbranch}
-    git fetch --all -p
-    git pull
-    
-    curbranch=$(git branch | grep "^*")
-    echo "Current branch is now ${curbranch}"
-    
-    if [ "$curbranch" != "* $oldbranch" ] ; then
-        echo "I am not in the correct branch. Aborting!"
-        exit
-    fi
-    
-    echo "Cleaning up ..."
-    find . | \
-        grep -v .git| \
-        grep -v ^.$ | \
-        grep -v ^..$ | \
-        awk '{system("rm -rf \"" $1 "\"")}'
-    
-    echo "Refresh ${new}"
-    
-    cd ../${new}
-    git checkout master
-    git fetch --all -p
-    git pull
-    echo "Going back to ${newbranch} for ${new}"
-    git checkout ${newbranch}
-    git fetch --all -p
-    git pull
-    
-    echo "Ok. Now going for the correct source code..."
-    
-    find . -maxdepth 1 | \
-        grep -v .git | \
-        grep -v "^.$" | \
-        awk '{system("cp -rf \"" $1 "\" ../resurs-bank-payment-gateway-for-woocommerce/")}'
-    
-    echo "Going back to old branch..."
-    
-    cd ../${old}
-    echo "Old branch goes back to master..."
-    
-    mv ${verbose} init.php resursbankgateway.php
+    git remote add fork https://bitbucket.tornevall.net/scm/www/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce.git
+
+Each time you make changes in the fork, make sure you have a branch in the original repo where you can merge your settings and then create a pull request. In this case, you don't need to do much merging job. However, you need to rename a few things from the fork, so that it matches with the former plugin structure. If you change the structure there might be risks that you have to reactivate the plugin. In production environments that would be critical if you, as a merchant, forgetting that part.
+
+If you've gone this far, searching and replacing is the last action to make: 
+
+    mv init.php resursbankgateway.php
     sed -i 's/Plugin Name: Tornevall Networks Resurs Bank payment gateway/Plugin Name: Resurs Bank Payment Gateway/' \
         resursbankgateway.php readme.txt
     sed -i 's/= Tornevall Networks Resurs Bank payment gateway/= Resurs Bank Payment Gateway/' \
         resursbankgateway.php readme.txt
     sed -i 's/tornevall-networks-resurs-bank-payment-gateway-for-woocommerce/resurs-bank-payment-gateway-for-woocommerce/' \
         *.php includes/Resursbank/*.php includes/Resursbank/Helpers/*.php
-    
+
+And for the language, this bash sequence should do just fine, as the language domain differs between the repos: 
+
     languages="da_DK en_GB nb_NO sv_SE"
     for lang in $languages
     do
@@ -212,13 +107,3 @@ If you thinking of developing within the external branch [located here](https://
             mv ${verbose} ${oldfile}po ${newfile}po
         fi
     done
-    
-    if [ "$commitAndPush" = "1" ] ; then
-        git commit -a -m "Automatic repo- and fork synchronization made with migrate.sh"
-        git push -u origin $oldbranch
-        git checkout master
-    else
-        echo ""
-        echo "All done! You're left within the branch ${oldbranch} in the Resurs Bank repo as no push has been requested."
-        echo "To really push something, you should run this script with 'push' as an extra argument."
-    fi

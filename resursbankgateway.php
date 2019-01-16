@@ -3,7 +3,7 @@
  * Plugin Name: Resurs Bank Payment Gateway for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce
  * Description: Connect Resurs Bank as WooCommerce payment gateway
- * WC Tested up to: 3.5.2
+ * WC Tested up to: 3.5.3
  * Version: 0.0.0
  * Author: Tomas Tornevall
  * Author URI:
@@ -18,10 +18,11 @@ if (!defined('ABSPATH')) {
 /*
  * Plans:
  *
- * - Make plugin hookable for as many addons as possible
- * - Make the plugin look good
- * - Make the plugin as modular as possible, to simplify development without code collisions
- * - Only run plugin in sections where WooCommerce is involved
+ * - Make plugin hookable for as many addons as possible.
+ * - Make the plugin look good.
+ * - Make the plugin as modular as possible, to simplify development without code collisions.
+ * - Only run plugin in sections where WooCommerce is involved.
+ * - Inherit prior settings for primary credentials if any.
  */
 
 // This is where it all begins.
@@ -44,6 +45,7 @@ require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Confighooks
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Functions.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Helpers/Adminforms.php');
 require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Method.php');
+require_once(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Forms.php');
 
 if (function_exists('add_action')) {
     setResursbankGatewayFilters();

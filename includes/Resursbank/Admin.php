@@ -44,6 +44,12 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     function __construct()
     {
+        // We don't use sections.
+        if ($this->getSection() === $this->id) {
+            wp_redirect(admin_url('admin.php?page=wc-settings&tab=resurs_bank_payment_gateway'));
+            die;
+        }
+
         // Initial label in cases where use the parent constructor to generate
         // the configuration structures.
         $this->label = __('Resurs Bank Payments', 'resurs-bank-payment-gateway-for-woocommerce');
@@ -76,8 +82,10 @@ class WC_Settings_ResursBank extends WC_Settings_Page
         $sections = array();
         $tabSections = Resursbank_Core::getConfiguration();
         foreach ($tabSections as $section => $sectionArray) {
-            $sections[$section] = isset($sectionArray['title']) ? $sectionArray['title'] : __('Unnamed config section',
-                'resurs-bank-payment-gateway-for-woocommerce');
+            $sections[$section] = isset($sectionArray['title']) ? $sectionArray['title'] : __(
+                'Unnamed config section',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            );
         }
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
@@ -116,22 +124,61 @@ class WC_Settings_ResursBank extends WC_Settings_Page
     }
 
     /**
+     * @param $key
+     * @param null $section
+     * @return string
+     */
+    private function getTypeByKey($key, $section = null)
+    {
+        $return = '';
+        $configurationData = Resursbank_Core::getConfiguration();
+
+        if (isset($configurationData[$section])) {
+            // Climb recursively
+            $configurationData = $configurationData[$section];
+        } else {
+            // If someone uses this method badly, we'll have to guess.
+            foreach ($configurationData as $section => $array) {
+                foreach ($array['settings'] as $key => $item) {
+                    $itemType = $this->getTypeByKey($key, $section);
+                    if (!empty($itemType)) {
+                        return $itemType;
+                    }
+                }
+            }
+        }
+
+        if (isset($configurationData['settings'][$key]) && isset($configurationData['settings'][$key]['type'])) {
+            $return = $configurationData['settings'][$key]['type'];
+        }
+
+        return $return;
+    }
+
+    /**
      * Restoring dynamic dismissed objects
      *
      * @param $configurationObject
      * @return array
      */
-    private function setDismissedObjects($configurationObject)
+    private function updateUnreachableObjects($configurationObject)
     {
         $section = $this->getSection();
 
-        if ($section === 'dismissed' && is_array($configurationObject)) {
+        if (is_array($configurationObject)) {
             foreach ($configurationObject as $item => $value) {
-                if (preg_match('/^dismiss_/', $item)) {
+                if ($section === 'dismissed' && preg_match('/^dismiss_/', $item)) {
                     if (!isset($_REQUEST[$item])) {
                         $configurationObject[$item] = false;
                     }
                 }
+
+                // Make sure checkboxes are handled properly, when they are no longer enabled.
+                $itemType = $this->getTypeByKey($item, $section);
+                if ($itemType === 'checkbox' && !isset($_REQUEST['resursbank_' . $item])) {
+                    $configurationObject[$item] = false;
+                }
+
             }
         }
 
@@ -169,23 +216,19 @@ class WC_Settings_ResursBank extends WC_Settings_Page
         // Loop through request and overwrite with new values.
         if (isset($_REQUEST) && is_array($_REQUEST)) {
             foreach ($_REQUEST as $saveKey => $saveValue) {
-
                 if (preg_match('/^resursbank_/', $saveKey)) {
                     $shortKey = preg_replace('/^resursbank_/', '', $saveKey);
-
                     $saveValue = apply_filters('resursbank_config_save_data_' . $shortKey, $saveValue);
 
-                    // Pass the saved value through credentials detecting and convert the
-                    // data if anything found.
+                    // Pass the saved value through credentials detecting and convert the data if anything found.
                     $saveValue = $this->getCredentialsSet($shortKey, $saveValue);
-
                     $fullConfiguration[$shortKey] = ($saveValue === 'yes' || $saveValue === 'on') ? true : $saveValue;
                 }
             }
         }
 
-        // Sanitize dynamic dismissals
-        $fullConfiguration = $this->setDismissedObjects($fullConfiguration);
+        // Sanitize dynamic dismissals (and checkboxes)
+        $fullConfiguration = $this->updateUnreachableObjects($fullConfiguration);
 
         Resursbank_Core::setResursOption($fullConfiguration);
         $this->redirectDismissed($fullConfiguration);
@@ -287,7 +330,6 @@ class WC_Settings_ResursBank extends WC_Settings_Page
             __(
                 'If you do not know what this is about, you might want to take a look in the configuration, where this feature can be shut off.',
                 'resurs-bank-payment-gateway-for-woocommerce'
-
             );
     }
 
@@ -330,18 +372,15 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     private function woocommerce_version_control()
     {
-
         if (defined('WOOCOMMERCE_VERSION') &&
             version_compare(WOOCOMMERCE_VERSION, _RESURSBANK_LOWEST_WOOCOMMERCE, '<')
         ) {
             echo '<div style="color:#DD0000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
-                __(
-                    'It seems that you run on a WooCommerce version that is lower than',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . ' ' . _RESURSBANK_LOWEST_WOOCOMMERCE . '. ' .
-                __(
-                    'It is recommended that you upgrade to the latest version of WooCommerce, to maintain compatibility.',
-                    'resurs-bank-payment-gateway-for-woocommerce'
+                sprintf(
+                    __(
+                        'It seems that you run on a WooCommerce version that is lower than %s. It is recommended that you upgrade to the latest version of WooCommerce, to maintain best possible compatibility.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ), _RESURSBANK_LOWEST_WOOCOMMERCE
                 ) .
                 '</div><hr>';
         }

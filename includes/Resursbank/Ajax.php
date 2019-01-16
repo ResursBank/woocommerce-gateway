@@ -103,6 +103,7 @@ function resurs_bank_ajax_backend()
 
         $ajaxResponse = resurs_bank_ajax_filters($run, $ajaxResponse);
         $ajaxResponse['code'] = 200;
+        $ajaxResponse['success'] = true;
 
     } catch (\Exception $e) {
         $ajaxResponse['success'] = false;
