@@ -575,8 +575,8 @@ class Resursbank_Core
         echo sprintf('
         <input type="radio" name="resursbankcustom_getaddress_customertype[]" value="NATURAL" checked="checked"> %s
         <input type="radio" name="resursbankcustom_getaddress_customertype[]" value="LEGAL"> %s
-        ', __('Private', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
-            __('Company', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')
+        ', __('Private', 'resurs-bank-payment-gateway-for-woocommerce'),
+            __('Company', 'resurs-bank-payment-gateway-for-woocommerce')
         );
 
         if (self::getCustomerCountry() === 'SE') {
@@ -586,7 +586,7 @@ class Resursbank_Core
                 'label' => __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce'),
                 'placeholder' => __(
                     'Enter your government id (social security number)',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    'resurs-bank-payment-gateway-for-woocommerce'
                 ),
             ), $checkout->get_value('resursbankcustom_address_governmentid'));
         }

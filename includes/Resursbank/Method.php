@@ -199,7 +199,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
             if (!$lastLocationWasCheckout) {
                 wc_add_notice(
-                    __('Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')
+                    __('Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).', 'resurs-bank-payment-gateway-for-woocommerce')
                     , 'error'
                 );
 

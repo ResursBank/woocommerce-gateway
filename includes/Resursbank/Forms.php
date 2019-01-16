@@ -11,34 +11,34 @@ class Resursbank_Forms
         $return = '';
         switch (self::getFieldNameByFunctionCall($fieldName)) {
             case 'contact_government_id': // Company
-                $return = __('Contact government ID', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __('Contact government ID', 'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'applicant_full_name': // Company
-                $return = __('Applicant full name', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __('Applicant full name', 'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'government_id': // Company
-                $return = __('Applicant government ID', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __('Applicant government ID', 'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'applicant_phone':
                 $return = __('Applicant phone number',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                    'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'applicant_mobile':
                 $return = __('Applicant mobile number',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                    'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'applicant_email':
                 $return = __('Applicant email address',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                    'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'card':
-                $return = __('Card', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __('Card', 'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'card_number':
-                $return = __('Card number', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __('Card number', 'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'read_more':
-                $return = __('Read more', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __('Read more', 'resurs-bank-payment-gateway-for-woocommerce');
                 break;
             default:
                 break;

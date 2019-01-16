@@ -147,8 +147,6 @@ abstract class Resursbank_Config
                         'type' => 'title',
                     ),
                     'plugindata' => array(
-                        'title' => __('Plugin information',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                         'title' => __('Plugin information', 'resurs-bank-payment-gateway-for-woocommerce'),
                         'type' => 'filter',
                         'filter' => 'get_plugin_data'
