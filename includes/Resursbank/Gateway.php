@@ -6,6 +6,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+/**
+ *
+ */
 function resursbank_payment_gateway_initialize()
 {
     // Make sure this gateway is not already there
@@ -27,6 +30,9 @@ function resursbank_payment_gateway_initialize()
         protected $RB;
         protected $METHOD;
         protected $CHECKOUT;
+
+        /** @var \Resursbank\RBEcomPHP\ResursBank */
+        protected $RESURSBANK;
 
         /**
          * Resursbank_Gateway constructor.
@@ -80,12 +86,6 @@ function resursbank_payment_gateway_initialize()
             $resursPaymentFormField = '';
 
             // Former version: onkeyup was used (for inherit fields?)
-
-            // TODO: is company control (match method with company and if customer has chosen company)
-            // TODO: company_government_id
-            // TODO: contact_government_id
-
-            $postData = Resursbank_Core::getPostData();
 
             if ($this->FLOW === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
 
@@ -142,6 +142,134 @@ function resursbank_payment_gateway_initialize()
             $resursPaymentFormField = implode("\n", $formFieldHtml);
 
             return $resursPaymentFormField;
+        }
+
+        /**
+         * @param WC_Cart $cart
+         * @return bool
+         */
+        protected function setResursCartShipping($cart)
+        {
+            $shipping = (float)$cart->get_shipping_total();
+            $shipping_tax = (float)$cart->get_shipping_tax();
+            $roundedVat = @round($shipping_tax / $shipping, 2) * 100;
+            $vat = (!is_nan($roundedVat) ? $roundedVat : 0);
+
+            $this->RESURSBANK->addOrderLine(
+                'art_' . __('shipping', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                ucfirst(__('shipping', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')),
+                $shipping,
+                $vat,
+                '',
+                'SHIPPING_FEE',
+                1
+            );
+        }
+
+        /**
+         * @param WC_Cart $cart
+         */
+        protected function setResursCartFees($cart)
+        {
+            $cart->add_fee('test', 100, true);
+
+            /** @var WC_Cart_Fees $fees */
+            $fees = $cart->get_fees();
+
+            if (is_array($fees)) {
+                foreach ($fees as $fee) {
+                    if (!empty($fee->id) && ($fee->amount > 0 || $fee->amount < 0)) {
+
+                        if ($fee->tax > 0) {
+                            $vat = ($fee->tax / $fee->amount) * 100;
+                        } else {
+                            $vat = 0;
+                        }
+
+                        $this->RESURSBANK->addOrderLine(
+                            $fee->id,
+                            $fee->name,
+                            $fee->amount,
+                            $vat,
+                            '',
+                            'ORDER_LINE',
+                            1
+                        );
+                    }
+                }
+            }
+        }
+
+        /**
+         * @param $couponItem
+         * @return string
+         */
+        private function getCouponDescription($couponItem)
+        {
+            // Fetch the coupon item to get information about the coupon.
+            $couponEntry = get_post($couponItem->get_id());
+            $couponDescription = $couponEntry->post_excerpt;
+            if (empty($couponDescription)) {
+                $couponDescription = sprintf(
+                    '%s_%s',
+                    $couponItem->get_code(),
+                    __('coupon', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')
+                );
+            }
+
+            return $couponDescription;
+        }
+
+        /**
+         * @param WC_Cart $cart
+         */
+        protected function setResursCartDiscount($cart)
+        {
+            if ($cart->coupons_enabled()) {
+
+                /** @var WC_Coupon $coupons */
+                $coupons = $cart->get_coupons();
+
+                if (is_array($coupons) && count($coupons)) {
+
+                    /**
+                     * @var string $couponCode
+                     * @var WC_Coupon $couponItem
+                     */
+                    foreach ($coupons as $couponCode => $couponItem) {
+                        $couponDescription = $this->getCouponDescription($couponItem);
+
+                        // TODO: 0% vat?
+                        $this->RESURSBANK->addOrderLine(
+                            $couponItem->get_id(),
+                            $couponDescription,
+                            $cart->get_coupon_discount_amount($couponCode) - $cart->get_coupon_discount_tax_amount($couponCode),
+                            0,
+                            '',
+                            'DISCOUNT',
+                            1
+                        );
+                    }
+                }
+            }
+        }
+
+        /**
+         * @param WC_Cart $cart
+         */
+        protected function setResursCart($cart)
+        {
+            // EComPHP OrderLine Modernizer
+
+            /** @var WC_Cart $theCart */
+            $theCart = $cart->get_cart();
+
+            $this->setResursCartShipping($cart);
+            $this->setResursCartFees($cart);
+            $this->setResursCartDiscount($cart);
+            $this->setResursCartItems($theCart);
+
+            // $this->RESURSBANK->addOrderLine('art', 'description', 1000, 25, 'st', 'ORDER_LINE', 1);
         }
 
         public function is_available()
