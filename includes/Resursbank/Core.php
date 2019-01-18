@@ -968,7 +968,9 @@ class Resursbank_Core
                 $currentCustomerCountry = $woocommerce->customer->get_billing_country();
             }
             if (empty($currentCustomerCountry)) {
-                $currentCustomerCountry = WC_Countries::get_base_country();
+                // Should not be called statically.
+                $WC_Countries = new WC_Countries();
+                $currentCustomerCountry = $WC_Countries->get_base_country();
             }
         }
 
