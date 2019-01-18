@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpCSValidationInspection */
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -303,14 +305,17 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     private function resurs_bank_version_equal_text()
     {
-        return __(
+        return sprintf(
+            '%s %s',
+            __(
                 'Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            ) . ' ' .
+            ),
             __(
                 'This probably means you are running on duplicate software. You should consider disabling one of them!',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            );
+            )
+        );
     }
 
     /**
@@ -320,17 +325,21 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     private function resurs_bank_version_obsolete_coexistence()
     {
-        return __(
+        return sprintf(
+            '%s<br>%s %s',
+            __(
                 'Coexisting note: This plugin has discovered a similar version of Resurs Bank Payment Gateway!',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            ) . '<br>' . __(
-                'This plugin has decided (on demand) to disable the coexisting prior version of Resurs Bank.',
+            ),
+            __(
+                'This plugin has disabled the coexisting prior version of Resurs Bank for WooCommerce on demand.',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            ) . ' ' .
+            ),
             __(
                 'If you do not know what this is about, you might want to take a look in the configuration, where this feature can be shut off.',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            );
+            )
+        );
     }
 
     /**

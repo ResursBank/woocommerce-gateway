@@ -17,19 +17,28 @@ class Resursbank_Forms
                 $return = __('Applicant full name', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
                 break;
             case 'government_id': // Company
-                $return = __('Applicant government ID', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __(
+                    'Applicant government ID',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                );
                 break;
             case 'applicant_phone':
-                $return = __('Applicant phone number',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __(
+                    'Applicant phone number',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                );
                 break;
             case 'applicant_mobile':
-                $return = __('Applicant mobile number',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __(
+                    'Applicant mobile number',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                );
                 break;
             case 'applicant_email':
-                $return = __('Applicant email address',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
+                $return = __(
+                    'Applicant email address',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                );
                 break;
             case 'card':
                 $return = __('Card', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
@@ -71,21 +80,30 @@ class Resursbank_Forms
      * @param $fieldName
      * @return string
      */
-    private static function getInputField($fieldName)
+    private static function getInputField($fieldName, $PAYMENT_METHOD)
     {
-        // Using resursbankcustom_<fieldName> will make it easier to pick up Resurs fields in a later moment
-        // rather than if we is using dual underscored fields (like resurs_bank_) since the postData-parser
-        // is splitting up field data as [arrayKey1][arrayKey2]=value.
-        return sprintf('
-        <div style="display: block;" id="resursbankcustom_div_%s" class="resursPaymentFieldContainer">
+        /**
+         * Using resursbankcustom_<fieldName> will make it easier to pick up Resurs fields in a later moment
+         * rather than if we is using dual underscored fields (like resurs_bank_) since the postData-parser
+         * is splitting up field data as [arrayKey1][arrayKey2]=value.
+         *
+         * @link https://resursbankplugins.atlassian.net/browse/WOO-330 Bug WOO-330
+         */
+        return sprintf(
+            '<div style="display: block;" id="resursbankcustom_div_%s_%s" class="resursPaymentFieldContainer">
             <label for="resurs_custom_%s">%s</label><br>
-            <input type="text" id="resursbankcustom_%s" name="resursbankcustom_%s" onkeyup="resursBankFormFieldChange(this)">
+            <input type="text" id="resursbankcustom_%s_%s" name="resursbankcustom_%s_%s" onkeyup="resursBankFormFieldChange(this)">
             </div>
-        ', $fieldName,
+        ',
+            $PAYMENT_METHOD->id,
+            $fieldName,
             $fieldName,
             self::getTranslationByFieldName($fieldName),
             $fieldName,
-            $fieldName);
+            md5($PAYMENT_METHOD->id),
+            $fieldName,
+            md5($PAYMENT_METHOD->id)
+        );
     }
 
     /**
@@ -100,26 +118,10 @@ class Resursbank_Forms
         }
 
         if (!empty($fieldName)) {
-            $html = self::getInputField(self::getFieldNameByFunctionCall($fieldName));
+            $html = self::getInputField(self::getFieldNameByFunctionCall($fieldName), $PAYMENT_METHOD);
         } else {
-            $html = self::getInputField(self::getFieldNameByFunctionCall(__FUNCTION__));
+            $html = self::getInputField(self::getFieldNameByFunctionCall(__FUNCTION__), $PAYMENT_METHOD);
         }
-
-        return (string)$html;
-    }
-
-    /**
-     * @param $html
-     * @param $PAYMENT_METHOD
-     * @return string
-     */
-    public static function get_customer_field_html_card($html, $PAYMENT_METHOD)
-    {
-        if (self::disableInternalFieldHtml(__FUNCTION__)) {
-            return (string)$html;
-        }
-
-        $html = self::getInputField(self::getFieldNameByFunctionCall(__FUNCTION__));
 
         return (string)$html;
     }

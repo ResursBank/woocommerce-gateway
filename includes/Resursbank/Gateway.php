@@ -2,9 +2,13 @@
 
 // Gateway related files, should be written to not conflict with neighbourhood.
 
+/** @noinspection PhpCSValidationInspection */
+
 if (!defined('ABSPATH')) {
     exit;
 }
+
+use Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
 
 /**
  *
@@ -37,10 +41,13 @@ function resursbank_payment_gateway_initialize()
         /** @var array $REQUEST _REQUEST and REQUEST_URI merged */
         protected $REQUEST;
 
+        /** @var RESURS_FLOW_TYPES */
+        protected $FLOW;
+
         /**
          * Resursbank_Gateway constructor.
          */
-        function __construct()
+        public function __construct()
         {
             $this->setup();
         }
@@ -75,7 +82,8 @@ function resursbank_payment_gateway_initialize()
             $hasFilteredCustomHtml = apply_filters(
                 'resursbank_get_customer_field_html_' . $filterName,
                 '',
-                $PAYMENT_METHOD);
+                $PAYMENT_METHOD
+            );
             if (empty($hasFilteredCustomHtml)) {
                 $hasFilteredCustomHtml = apply_filters(
                     'resursbank_get_customer_field_html_generic',
@@ -94,8 +102,7 @@ function resursbank_payment_gateway_initialize()
 
             // Former version: onkeyup was used (for inherit fields?)
 
-            if ($this->FLOW === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
-
+            if ($this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
                 $isLegal = false;
                 if (in_array('LEGAL', (array)$PAYMENT_METHOD->customerType)) {
                     if (Resursbank_Core::getIsLegal()) {
@@ -119,7 +126,6 @@ function resursbank_payment_gateway_initialize()
                 if ($this->METHOD->type === 'CARD') {
                     $formFieldHtml['applicant_natural_card'] = $this->getPaymentFormFieldHtml('card', $PAYMENT_METHOD);
                 } else {
-
                     // Natural cases, globally - gov, phone, mobile, email
                     $formFieldHtml['applicant_natural_phone'] = $this->getPaymentFormFieldHtml(
                         'applicant_phone',
@@ -133,7 +139,6 @@ function resursbank_payment_gateway_initialize()
                         'applicant_email',
                         $PAYMENT_METHOD
                     );
-
                 }
             }
 
@@ -153,13 +158,16 @@ function resursbank_payment_gateway_initialize()
 
         /**
          * @param WC_Cart $cart
-         * @return bool
          */
         protected function setResursCartShipping($cart)
         {
             $shipping = (float)$cart->get_shipping_total();
             $shipping_tax = (float)$cart->get_shipping_tax();
-            $roundedVat = @round($shipping_tax / $shipping, 2) * 100;
+            $roundedVat = 0;
+            // Make sure that division by zero do not occur.
+            if ($shipping_tax > 0) {
+                $roundedVat = @round($shipping_tax / $shipping, 2) * 100;
+            }
             $vat = (!is_nan($roundedVat) ? $roundedVat : 0);
 
             $this->RESURSBANK->addOrderLine(
@@ -178,16 +186,15 @@ function resursbank_payment_gateway_initialize()
          */
         protected function setResursCartFees($cart)
         {
-            $cart->add_fee('test', 100, true);
-
             /** @var WC_Cart_Fees $fees */
             $fees = $cart->get_fees();
 
             if (is_array($fees)) {
                 foreach ($fees as $fee) {
                     if (!empty($fee->id) && ($fee->amount > 0 || $fee->amount < 0)) {
-
-                        if ($fee->tax > 0) {
+                        // Check if $fee->tax exists before using it, or undefined propery will occur.
+                        // This may indicate that something went terribly wrong.
+                        if (isset($fee->tax) && $fee->tax > 0) {
                             $vat = ($fee->tax / $fee->amount) * 100;
                         } else {
                             $vat = 0;
@@ -208,7 +215,7 @@ function resursbank_payment_gateway_initialize()
         }
 
         /**
-         * @param $couponItem
+         * @param WC_Coupon $couponItem
          * @return string
          */
         private function getCouponDescription($couponItem)
@@ -294,7 +301,7 @@ function resursbank_payment_gateway_initialize()
         /**
          * Set the article description for Resurs payload.
          *
-         * @param $cartItem
+         * @param WC_Product $cartItem
          * @return mixed
          */
         protected function getArticleDescription($cartItem)
@@ -316,7 +323,8 @@ function resursbank_payment_gateway_initialize()
         protected function getProductTax($taxClass)
         {
             $taxRate = 0;
-            $taxRates = @array_shift(WC_Tax::get_rates($taxClass));
+            $ratesOfTaxClass = WC_Tax::get_rates($taxClass);
+            $taxRates = @array_shift($ratesOfTaxClass);
 
             if (isset($taxRates['rate'])) {
                 $taxRate = (double)$taxRates['rate'];
@@ -354,6 +362,7 @@ function resursbank_payment_gateway_initialize()
         /**
          * @param $type
          * @param $key
+         * @param null $postArray
          * @return string|null
          */
         protected function getPostDataCustomer($type, $key, $postArray = null)
@@ -380,11 +389,13 @@ function resursbank_payment_gateway_initialize()
          */
         private function getCustomerFullName($paymentFields)
         {
-            return $this->getPostDataCustomer(
+            return
+                $this->getPostDataCustomer(
                     'billing',
                     'first_name',
                     $paymentFields
-                ) . ' ' . $this->getPostDataCustomer(
+                ) . ' ' .
+                $this->getPostDataCustomer(
                     'billing',
                     'last_name',
                     $paymentFields
@@ -420,7 +431,24 @@ function resursbank_payment_gateway_initialize()
                     $this->getPostDataCustomer($type, 'country', $customerPaymentFields)
                 );
             }
+        }
 
+        /**
+         * Set up main customer data for EComPHP.
+         */
+        protected function setResursCustomerBasicData()
+        {
+            $paymentMethod = md5(str_replace('resursbank_' . $this->getPostDataCustomer('payment', 'method')));
+            $customerType = !Resursbank_Core::getIsLegal() ? 'NATURAL' : 'LEGAL';
+
+            $this->RESURSBANK->setCustomer(
+                $this->getPostDataCustomer('resursbankcustom', 'government_id_' . $paymentMethod),
+                $this->getPostDataCustomer('resursbankcustom', 'applicant_phone_' . $paymentMethod),
+                $this->getPostDataCustomer('resursbankcustom', 'applicant_mobile_' . $paymentMethod),
+                $this->getPostDataCustomer('resursbankcustom', 'applicant_email' . $paymentMethod),
+                $customerType,
+                $this->getPostDataCustomer('resursbankcustom', 'contact_government_id' . $paymentMethod)
+            );
         }
 
         /**
@@ -457,14 +485,14 @@ function resursbank_payment_gateway_initialize()
         }
 
         /**
-         * @return string|void
+         * @return string
          */
         protected function getApiUrl()
         {
             $urlString = home_url('/');
             $urlString = add_query_arg('wc-api', strtolower(__CLASS__), $urlString);
 
-            return $urlString;
+            return (string)$urlString;
         }
 
         /**
@@ -475,8 +503,13 @@ function resursbank_payment_gateway_initialize()
         protected function setCustomerSigningData($woocommerceOrderId, $resursOrderId, $order)
         {
             $this->RESURSBANK->setSigning(
-                $this->getSuccessUrl($woocommerceOrderId, $resursOrderId),
-                html_entity_decode($order->get_cancel_order_url()),
+                $this->getSuccessUrl(
+                    $woocommerceOrderId,
+                    $resursOrderId
+                ),
+                html_entity_decode(
+                    $order->get_cancel_order_url()
+                ),
                 (bool)Resursbank_Core::getResursOption('forcePaymentSigning'),
                 $this->getBackUrl($order)
             );
@@ -485,7 +518,8 @@ function resursbank_payment_gateway_initialize()
         /**
          * Setup of sync/async payment behaviour.
          */
-        protected function setCustomerPaymentAsync() {
+        protected function setCustomerPaymentAsync()
+        {
             $this->RESURSBANK->setWaitForFraudControl(Resursbank_Core::getResursOption('waitForFraudControl'));
             $this->RESURSBANK->setAnnulIfFrozen(Resursbank_Core::getResursOption('annulIfFrozen'));
             $this->RESURSBANK->setFinalizeIfBooked(Resursbank_Core::getResursOption('finalizeIfBooked'));
@@ -504,16 +538,20 @@ function resursbank_payment_gateway_initialize()
             $successUrlString = add_query_arg('request', 'signing', $successUrlString);
             // Ensure that the transactions appear under the correct trafic source.
             $successUrlString = add_query_arg('utm_nooverride', '1', $successUrlString);
+            $successUrlString = add_query_arg('w_id', $woocommerceOrderId, $successUrlString);
+            $successUrlString = add_query_arg('r_id', $resursOrderId, $successUrlString);
 
-            return $successUrlString;
+            return (string)$successUrlString;
         }
 
+        /**
+         * @param $order
+         * @return string
+         */
         protected function getBackUrl($order)
         {
             $backurl = html_entity_decode($order->get_cancel_order_url());
-            $backurl .= (
-            $this->FLOW === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::HOSTED_FLOW ? "&isBack=1" : ""
-            );
+            $backurl .= ($this->FLOW === RESURS_FLOW_TYPES::HOSTED_FLOW ? "&isBack=1" : "");
             return $backurl;
         }
 

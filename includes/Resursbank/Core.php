@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpCSValidationInspection */
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -857,7 +859,7 @@ class Resursbank_Core
      * @param $request
      * @return mixed
      */
-    public static function resursbank_set_dismissed_element($array, $request)
+    public static function setDismissedElement($array, $request)
     {
         $element = isset($request['element']) ? preg_replace('/^#/', '', $request['element']) : false;
         $array['success'] = true;
@@ -1321,7 +1323,10 @@ class Resursbank_Core
                     if (!isset($newData[$keySplit[0]])) {
                         $newData[$keySplit[0]] = array();
                     }
-                    $newData[$keySplit[0]][$keySplit[1]] = $val;
+                    // Making precautions to not overwrite already set data.
+                    if (empty($newData[$keySplit[0]][$keySplit[1]])) {
+                        $newData[$keySplit[0]][$keySplit[1]] = $val;
+                    }
                 }
             }
         }
@@ -1336,18 +1341,20 @@ class Resursbank_Core
      */
     public static function getIsLegal()
     {
-        $postData = self::getDefaultPostDataParsed();
+        $postData = self::getDefaultPostDataParsed(true);
         $resursData = self::getResursCustomPostData();
         $return = false;
 
-        if (
-            is_array($postData['billing']) &&
+        if (!count($postData) || !isset($postData['billing'])) {
+            return false;
+        }
+
+        if (is_array($postData['billing']) &&
             isset($postData['billing']['company']) &&
             !empty($postData['billing']['company'])
         ) {
             $return = true;
-        } elseif (
-            is_array($resursData['getaddress_customertype']) &&
+        } elseif (isset($resursData['getaddress_customertype']) && is_array($resursData['getaddress_customertype']) &&
             in_array('LEGAL', $resursData['getaddress_customertype'])
         ) {
             $return = true;
@@ -1359,11 +1366,12 @@ class Resursbank_Core
     /**
      * Get Resurs Bank customized payment fields.
      *
+     * @param bool $request
      * @return array
      */
-    public static function getResursCustomPostData()
+    public static function getResursCustomPostData($request = false)
     {
-        $postData = self::getDefaultPostDataParsed();
+        $postData = self::getDefaultPostDataParsed($request);
         $return = array();
         if (is_array($postData['resursbankcustom'])) {
             $return = $postData['resursbankcustom'];

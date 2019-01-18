@@ -1,10 +1,12 @@
 <?php
 
+/** @noinspection PhpCSValidationInspection */
+
 if (!defined('ABSPATH')) {
     exit;
 }
 
-use \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
+use Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
 
 if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank')) {
     /**
@@ -17,6 +19,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
 
         protected $METHOD_TYPE;
         protected $CORE;
+        /** @var RESURS_FLOW_TYPES */
         protected $FLOW;
         protected $RESURSBANK;
 
@@ -28,7 +31,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          * @param $connection \Resursbank\RBEcomPHP\ResursBank
          * @throws Exception
          */
-        function __construct($paymentMethod, $country, $connection)
+        public function __construct($paymentMethod, $country, $connection)
         {
             parent::__construct();
             $this->CORE = new Resursbank_Core();
@@ -47,7 +50,8 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 // Validate flow.
                 if ($paymentMethod !== $this->FLOW) {
                     throw new Exception(
-                        __('Payment method name and flow mismatch.',
+                        __(
+                            'Payment method name and flow mismatch.',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         400
@@ -188,7 +192,9 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                     __(
                         'Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).',
                         'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                    ), 400);
+                    ),
+                    400
+                );
             }
             return true;
         }
@@ -244,7 +250,9 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
             }
 
+            /** @link https://test.resurs.com/docs/x/moBx */
             $this->setCustomerSigningData($order_id, $resursOrderId, $order);
+            $this->setResursCustomerBasicData();
             $this->setResursCustomerData('billing');
             $this->setResursCustomerData('shipping');
             $this->setResursCart($cart);
@@ -303,10 +311,11 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
 
             //woocommerce_api_wc_resurs_bank
             add_filter(
-                'woocommerce_update_order_review_fragments', array(
-                $this,
-                'resursBankOrderReviewFragments'
-            ),
+                'woocommerce_update_order_review_fragments',
+                array(
+                    $this,
+                    'resursBankOrderReviewFragments'
+                ),
                 10,
                 1
             );

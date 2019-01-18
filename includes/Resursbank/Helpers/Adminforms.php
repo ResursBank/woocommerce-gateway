@@ -307,12 +307,14 @@ class Resursbank_Adminforms
                         </td>
 
                         <td class="resursGatewayConfigCredentialsTd">
-                            <b>' . __(
+                            <b>' .
+                        __(
                             'Chosen shopflow',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</b><br>
-                            <select name="resursbank_credentials[' . $credentialId . '][shopflow]">' . implode("\n",
-                            $this->getShopFlowOptions($currentShopFlow)) .
+                        ) .
+                        '</b><br>
+                            <select name="resursbank_credentials[' . $credentialId . '][shopflow]">' .
+                        implode("\n", $this->getShopFlowOptions($currentShopFlow)) .
                         '</select>
                         </td>
 

@@ -41,7 +41,8 @@ add_filter('resursbank_config_element_get_plugin_data', 'Resursbank_Core::getPlu
 add_filter('resursbank_config_disable_coexist_warnings', 'Resursbank_Core::getCoexistDismissed');
 add_filter('resursbank_config_array', 'Resursbank_Core::resursbankGetDismissedElements', 10, 1);
 
-add_filter('resursbank_admin_backend_getShopflowOptions', 'Resursbank_Adminforms::getShopFlowOptionsStatic');
+add_filter('resursbank_admin_backend_get_shopflow_options', 'Resursbank_Adminforms::getShopFlowOptionsStatic');
+add_filter('resursbank_admin_backend_dismiss_element', 'Resursbank_Core::setDismissedElement', 10, 2);
 add_filter('resursbank_admin_backend_get_payment_methods', 'Resursbank_Core::get_payment_methods');
 add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Core::getPaymentListTimer');
 add_filter('woocommerce_before_checkout_billing_form', 'Resursbank_Core::resursBankGetAddress');
@@ -49,4 +50,3 @@ add_filter('woocommerce_before_checkout_billing_form', 'Resursbank_Core::resursB
 // Customer form fields generator
 add_filter('resursbank_get_customer_field_html_generic', 'Resursbank_Forms::getCustomerFieldHtmlGeneric', 10, 3);
 add_filter('resursbank_get_customer_field_html_read_more', 'Resursbank_Forms::getCustomerFieldHtmlReadMore', 10, 2);
-//add_filter('resursbank_get_customer_field_html_card', 'Resursbank_Forms::get_customer_field_html_card', 10,2);
