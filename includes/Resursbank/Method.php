@@ -55,6 +55,8 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 }
             }
 
+            $this->REQUEST = Resursbank_Core::getQueryRequest();
+
             $this->createFlow($this->FLOW);
             $this->getActions();
         }
@@ -227,9 +229,10 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             );
 
             $order = new WC_Order($order_id);
+            $resursOrderId = $this->getResursOrderId($order_id);
+
             /** @var WC_Cart $cart */
             $cart = $woocommerce->cart;
-
 
             if (get_class($cart) !== 'WC_Cart') {
                 return $this->setPaymentError($order, 'No cart is present', 400);
@@ -241,10 +244,12 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
             }
 
+            $this->setCustomerSigningData($order_id, $resursOrderId, $order);
+            $this->setResursCustomerData('billing');
+            $this->setResursCustomerData('shipping');
             $this->setResursCart($cart);
 
-
-            $processSuccessUrl = $this->get_return_url($order);
+            // $orderReceivedUrl = $this->get_return_url($order);
 
             return $return;
         }

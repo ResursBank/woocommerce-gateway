@@ -34,6 +34,9 @@ function resursbank_payment_gateway_initialize()
         /** @var \Resursbank\RBEcomPHP\ResursBank */
         protected $RESURSBANK;
 
+        /** @var array $REQUEST _REQUEST and REQUEST_URI merged */
+        protected $REQUEST;
+
         /**
          * Resursbank_Gateway constructor.
          */
@@ -50,6 +53,10 @@ function resursbank_payment_gateway_initialize()
                 'Complete payment solution for Resurs Bank, with support for multiple countries.',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
             );
+
+            $this->REQUEST = Resursbank_Core::getQueryRequest();
+
+            add_action('woocommerce_api_' . strtolower(__CLASS__), array($this, 'resursbankPaymentHandler'));
         }
 
         /**
@@ -231,19 +238,22 @@ function resursbank_payment_gateway_initialize()
                 $coupons = $cart->get_coupons();
 
                 if (is_array($coupons) && count($coupons)) {
-
                     /**
                      * @var string $couponCode
                      * @var WC_Coupon $couponItem
                      */
                     foreach ($coupons as $couponCode => $couponItem) {
                         $couponDescription = $this->getCouponDescription($couponItem);
+                        $unitAmountWithoutVat = (
+                                0 - (float)$cart->get_coupon_discount_amount($couponCode)
+                            ) + (
+                                0 - (float)$cart->get_coupon_discount_tax_amount($couponCode)
+                            );
 
-                        // TODO: 0% vat?
                         $this->RESURSBANK->addOrderLine(
                             $couponItem->get_id(),
                             $couponDescription,
-                            $cart->get_coupon_discount_amount($couponCode) - $cart->get_coupon_discount_tax_amount($couponCode),
+                            $unitAmountWithoutVat,
                             0,
                             '',
                             'DISCOUNT',
@@ -255,12 +265,171 @@ function resursbank_payment_gateway_initialize()
         }
 
         /**
+         * Get a proper article number for a product, to use with Resurs Bank.
+         *
+         * setFlag(SKU) activates usages of SKU instead of WooCommerce default id.
+         *
+         * @param WC_Product $cartItem
+         * @return int|string
+         */
+        protected function getArticleNumber($cartItem)
+        {
+            $skuString = $cartItem->get_sku();
+            $artIdString = $cartItem->get_id();
+
+            $return = $artIdString;
+
+            if (!empty($skuString) && (bool)Resursbank_Core::getFlag('SKU')) {
+                $return = $skuString;
+            }
+
+            $hasOwnString = apply_filters('resursbank_cart_article_number', $return, $cartItem);
+            if (!empty($hasOwnString)) {
+                $return = $hasOwnString;
+            }
+
+            return $return;
+        }
+
+        /**
+         * Set the article description for Resurs payload.
+         *
+         * @param $cartItem
+         * @return mixed
+         */
+        protected function getArticleDescription($cartItem)
+        {
+            $return = $cartItem->get_title();
+
+            $hasOwnString = apply_filters('resursbank_cart_article_description', $return, $cartItem);
+            if (!empty($hasOwnString)) {
+                $return = $hasOwnString;
+            }
+
+            return $return;
+        }
+
+        /**
+         * @param $taxClass
+         * @return float|int
+         */
+        protected function getProductTax($taxClass)
+        {
+            $taxRate = 0;
+            $taxRates = @array_shift(WC_Tax::get_rates($taxClass));
+
+            if (isset($taxRates['rate'])) {
+                $taxRate = (double)$taxRates['rate'];
+            }
+
+            return $taxRate;
+        }
+
+        /**
+         * @param WC_Cart $theCart
+         */
+        protected function setResursCartItems($theCart)
+        {
+            if (is_array($theCart) && count($theCart)) {
+                /** @var WC_Product $cartItem */
+                foreach ($theCart as $cartItem) {
+                    /** @var WC_Product $cartItemData */
+                    $cartItemData = $cartItem['data'];
+                    $vat = $this->getProductTax($cartItemData->get_tax_class());
+                    $articleNumberOrId = $this->getArticleNumber($cartItemData);
+
+                    $this->RESURSBANK->addOrderLine(
+                        $articleNumberOrId,
+                        $this->getArticleDescription($cartItemData),
+                        wc_get_price_excluding_tax($cartItemData),
+                        $vat,
+                        '',
+                        'ORDER_LINE',
+                        $cartItem['quantity']
+                    );
+                }
+            }
+        }
+
+        /**
+         * @param $type
+         * @param $key
+         * @return string|null
+         */
+        protected function getPostDataCustomer($type, $key, $postArray = null)
+        {
+            $return = null;
+            if (is_array($postArray)) {
+                $customerPaymentFields = $postArray;
+            } else {
+                $customerPaymentFields = Resursbank_Core::getDefaultPostDataParsed(true);
+            }
+
+            if (isset($customerPaymentFields[$type]) && $customerPaymentFields[$type][$key]) {
+                $return = (string)$customerPaymentFields[$type][$key];
+            }
+
+            return $return;
+        }
+
+        /**
+         * Compile customer full name from postdata.
+         *
+         * @param $paymentFields
+         * @return string
+         */
+        private function getCustomerFullName($paymentFields)
+        {
+            return $this->getPostDataCustomer(
+                    'billing',
+                    'first_name',
+                    $paymentFields
+                ) . ' ' . $this->getPostDataCustomer(
+                    'billing',
+                    'last_name',
+                    $paymentFields
+                );
+        }
+
+        /**
+         * @param string $type
+         */
+        protected function setResursCustomerData($type = 'billing')
+        {
+            $customerPaymentFields = Resursbank_Core::getDefaultPostDataParsed(true);
+            if ($type === 'billing') {
+                $this->RESURSBANK->setBillingAddress(
+                    $this->getCustomerFullName($customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'first_name', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'last_name', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'address_1', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'address_2', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'city', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'postcode', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'country', $customerPaymentFields)
+                );
+            } elseif ($type === 'shipping') {
+                $this->RESURSBANK->setDeliveryAddress(
+                    $this->getCustomerFullName($customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'first_name', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'last_name', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'address_1', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'address_2', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'city', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'postcode', $customerPaymentFields),
+                    $this->getPostDataCustomer($type, 'country', $customerPaymentFields)
+                );
+            }
+
+        }
+
+        /**
+         * EComPHP OrderLine Modernizer
+         *
          * @param WC_Cart $cart
          */
         protected function setResursCart($cart)
         {
-            // EComPHP OrderLine Modernizer
-
             /** @var WC_Cart $theCart */
             $theCart = $cart->get_cart();
 
@@ -268,13 +437,122 @@ function resursbank_payment_gateway_initialize()
             $this->setResursCartFees($cart);
             $this->setResursCartDiscount($cart);
             $this->setResursCartItems($theCart);
-
-            // $this->RESURSBANK->addOrderLine('art', 'description', 1000, 25, 'st', 'ORDER_LINE', 1);
         }
 
+        /**
+         * @param $order_id
+         * @return string
+         */
+        protected function getResursOrderId($order_id)
+        {
+            if (Resursbank_Core::getResursOption('postidreference')) {
+                $preferredId = $order_id;
+            } else {
+                $preferredId = $this->RESURSBANK->getPreferredPaymentId();
+            }
+            update_post_meta($order_id, 'paymentId', $preferredId);
+            update_post_meta($order_id, 'flow', $this->FLOW);
+
+            return $preferredId;
+        }
+
+        /**
+         * @return string|void
+         */
+        protected function getApiUrl()
+        {
+            $urlString = home_url('/');
+            $urlString = add_query_arg('wc-api', strtolower(__CLASS__), $urlString);
+
+            return $urlString;
+        }
+
+        /**
+         * @param $woocommerceOrderId
+         * @param $resursOrderId
+         * @param WC_Order $order
+         */
+        protected function setCustomerSigningData($woocommerceOrderId, $resursOrderId, $order)
+        {
+            $this->RESURSBANK->setSigning(
+                $this->getSuccessUrl($woocommerceOrderId, $resursOrderId),
+                html_entity_decode($order->get_cancel_order_url()),
+                (bool)Resursbank_Core::getResursOption('forcePaymentSigning'),
+                $this->getBackUrl($order)
+            );
+        }
+
+        /**
+         * Setup of sync/async payment behaviour.
+         */
+        protected function setCustomerPaymentAsync() {
+            $this->RESURSBANK->setWaitForFraudControl(Resursbank_Core::getResursOption('waitForFraudControl'));
+            $this->RESURSBANK->setAnnulIfFrozen(Resursbank_Core::getResursOption('annulIfFrozen'));
+            $this->RESURSBANK->setFinalizeIfBooked(Resursbank_Core::getResursOption('finalizeIfBooked'));
+        }
+
+        /**
+         * Get URL where eventually signing takes place after a successful order.
+         *
+         * @param $woocommerceOrderId
+         * @param $resursOrderId
+         * @return string
+         */
+        protected function getSuccessUrl($woocommerceOrderId, $resursOrderId)
+        {
+            $successUrlString = $this->getApiUrl();
+            $successUrlString = add_query_arg('request', 'signing', $successUrlString);
+            // Ensure that the transactions appear under the correct trafic source.
+            $successUrlString = add_query_arg('utm_nooverride', '1', $successUrlString);
+
+            return $successUrlString;
+        }
+
+        protected function getBackUrl($order)
+        {
+            $backurl = html_entity_decode($order->get_cancel_order_url());
+            $backurl .= (
+            $this->FLOW === \Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::HOSTED_FLOW ? "&isBack=1" : ""
+            );
+            return $backurl;
+        }
+
+        /**
+         * @return bool
+         */
         public function is_available()
         {
             return $this->getEnabled();
+        }
+
+        /**
+         * @param $key
+         * @return mixed|null
+         */
+        protected function getRequestKey($key)
+        {
+            $return = null;
+
+            if (isset($this->REQUEST[$key])) {
+                $return = $this->REQUEST[$key];
+            }
+
+            return $return;
+        }
+
+        /**
+         * WooCommerce Payment API calls.
+         *
+         * <url>?wc-api=wc_gateway_resursbank
+         */
+        public function resursbankPaymentHandler()
+        {
+            $redirectUrl = '';
+            $requestType = $this->getRequestKey('request');
+
+
+            wp_safe_redirect($redirectUrl);
+            die;
         }
     }
 

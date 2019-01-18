@@ -48,5 +48,5 @@ add_filter('woocommerce_before_checkout_billing_form', 'Resursbank_Core::resursB
 
 // Customer form fields generator
 add_filter('resursbank_get_customer_field_html_generic', 'Resursbank_Forms::get_customer_field_html_generic', 10, 3);
-//add_filter('resursbank_get_customer_field_html_card', 'Resursbank_Forms::get_customer_field_html_card', 10,2);
 add_filter('resursbank_get_customer_field_html_read_more', 'Resursbank_Forms::get_customer_field_html_read_more', 10,2);
+//add_filter('resursbank_get_customer_field_html_card', 'Resursbank_Forms::get_customer_field_html_card', 10,2);
