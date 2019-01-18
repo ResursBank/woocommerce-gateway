@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks Resurs Bank payment gateway for "
 "WooCommerce\n"
-"POT-Creation-Date: 2019-01-18 19:55+0100\n"
-"PO-Revision-Date: 2019-01-18 19:55+0100\n"
+"POT-Creation-Date: 2019-01-18 23:16+0100\n"
+"PO-Revision-Date: 2019-01-18 23:16+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language: sv_SE\n"
@@ -97,15 +97,15 @@ msgstr "Standardinställningar"
 msgid "Merchant Configuration"
 msgstr "Ombudets inställningar"
 
-#: includes/Resursbank/Config.php:37
+#: includes/Resursbank/Config.php:38
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktivera"
 
-#: includes/Resursbank/Config.php:40
+#: includes/Resursbank/Config.php:42
 msgid "Enable"
 msgstr "Aktivera"
 
-#: includes/Resursbank/Config.php:43
+#: includes/Resursbank/Config.php:45
 msgid ""
 "If not enabled, all vital functions in the plugin are shut off. Functions "
 "affecting prior orders will still function."
@@ -113,7 +113,7 @@ msgstr ""
 "Om denna inte är aktiverad, så kommer alla vitala funktioner i tillägget "
 "vara avstängda. Funktioner som påverkar tidigare orders fungerar fortfarande."
 
-#: includes/Resursbank/Config.php:47
+#: includes/Resursbank/Config.php:49
 msgid ""
 "This is the major plugin switch. If not checked, it will be competely "
 "disabled, except for that you can still edit this administration control."
@@ -122,11 +122,11 @@ msgstr ""
 "pluginet vara helt avstängd, förutom att du fortfarande kan redigera i den "
 "här kontrollpanelen."
 
-#: includes/Resursbank/Config.php:53
+#: includes/Resursbank/Config.php:55
 msgid "Default tax class"
 msgstr "Standard momsklass"
 
-#: includes/Resursbank/Config.php:60
+#: includes/Resursbank/Config.php:62
 msgid ""
 "Used by the plugin when no other options are available (for example in "
 "payment fees)."
@@ -134,23 +134,23 @@ msgstr ""
 "Används av tillägget när inga andra alternativ är tillgängliga (exempelvis i "
 "betalningsavgifterna)."
 
-#: includes/Resursbank/Config.php:66
+#: includes/Resursbank/Config.php:68
 msgid "API"
 msgstr "API"
 
-#: includes/Resursbank/Config.php:70
+#: includes/Resursbank/Config.php:72
 msgid "Environment"
 msgstr "Miljö"
 
-#: includes/Resursbank/Config.php:73
+#: includes/Resursbank/Config.php:76
 msgid "Test/Staging"
 msgstr "Test/Staging"
 
-#: includes/Resursbank/Config.php:75
+#: includes/Resursbank/Config.php:80
 msgid "Production"
 msgstr "Produktion"
 
-#: includes/Resursbank/Config.php:79
+#: includes/Resursbank/Config.php:86
 msgid ""
 "Chosen environment used by the plugin. This setting is global for all "
 "configured credentials. If you for example choose test as the environment, "
@@ -160,23 +160,23 @@ msgstr ""
 "alla konfigurerade autentiseringsuppgifter. Om du till exempel väljer test "
 "som miljö, kommer det också att användas för hela tillägget."
 
-#: includes/Resursbank/Config.php:83
+#: includes/Resursbank/Config.php:91
 msgid "Credentials"
 msgstr "Autentiseringsuppgifter"
 
-#: includes/Resursbank/Config.php:90
+#: includes/Resursbank/Config.php:98
 msgid "Advanced settings"
 msgstr "Avancerade inställningar"
 
-#: includes/Resursbank/Config.php:94
+#: includes/Resursbank/Config.php:102
 msgid "Miscellaneous settings"
 msgstr "Diverse inställningar"
 
-#: includes/Resursbank/Config.php:101
+#: includes/Resursbank/Config.php:109
 msgid "Payment method update interval (in seconds)"
 msgstr "Uppdateringsintervall för betalningsmetod (i sekunder)"
 
-#: includes/Resursbank/Config.php:107
+#: includes/Resursbank/Config.php:115
 msgid ""
 "Defines how often, in seconds, for which the plugin should check for and "
 "update payment methods by itself. Value must be larger than 300 seconds. Can "
@@ -188,11 +188,11 @@ msgstr ""
 "Kan definieras som 1m = 1 månad, 2d = 2 dagar, 3h = 3 timmar och så vidare. "
 "Detta alternativ stöds i cron-läge."
 
-#: includes/Resursbank/Config.php:113
+#: includes/Resursbank/Config.php:121
 msgid "Disable coexisting plugin"
 msgstr "Inaktivera samexisterande plugin"
 
-#: includes/Resursbank/Config.php:117
+#: includes/Resursbank/Config.php:125
 msgid ""
 "This feature turns off prior versions of Resurs Bank Payment Gateway if it "
 "exists and is enabled."
@@ -200,15 +200,19 @@ msgstr ""
 "Den här funktionen stänger av tidigare versioner av Resurs Banks "
 "betalningsgateway om den finns och är aktiverad."
 
-#: includes/Resursbank/Config.php:121
+#: includes/Resursbank/Config.php:129
 msgid "Disable"
 msgstr "Avaktivera"
 
-#: includes/Resursbank/Config.php:125
+#: includes/Resursbank/Config.php:132
+msgid "Shop related settings"
+msgstr "Shoprelaterade inställningar"
+
+#: includes/Resursbank/Config.php:137
 msgid "Configure StoreID access on user level"
 msgstr "Konfigurera StoreID åtkomst på användarnivå"
 
-#: includes/Resursbank/Config.php:129
+#: includes/Resursbank/Config.php:141
 msgid ""
 "This feature enables ability to configure how store ids should be handled in "
 "the order list views, on user level."
@@ -216,15 +220,15 @@ msgstr ""
 "Med den här funktionen kan du konfigurera hur butiks-ID: n ska hanteras i "
 "orderlist-vyerna på användarnivå."
 
-#: includes/Resursbank/Config.php:135 includes/Resursbank/Config.php:149
+#: includes/Resursbank/Config.php:147 includes/Resursbank/Config.php:161
 msgid "Enabled"
 msgstr "Aktiverad"
 
-#: includes/Resursbank/Config.php:139
-msgid "Force payment signing"
+#: includes/Resursbank/Config.php:151
+msgid "Force signed payments"
 msgstr "Tvinga signeringar"
 
-#: includes/Resursbank/Config.php:143
+#: includes/Resursbank/Config.php:155
 msgid ""
 "This feature enables signing of payments in simplified and hosted flows, "
 "which requires all payments to be signed."
@@ -232,23 +236,23 @@ msgstr ""
 "Den här egenskapen aktiverar signering av betalningar i simpla och hostade "
 "flödet, vilket kommer kräva att alla betalningar signeras."
 
-#: includes/Resursbank/Config.php:153
+#: includes/Resursbank/Config.php:165
 msgid "Plugin behaviour flags"
 msgstr "Flaggor för pluginbeteende"
 
-#: includes/Resursbank/Config.php:159
+#: includes/Resursbank/Config.php:171
 msgid "Flags that changes common behaviour in special functions"
 msgstr "Flaggor som förändrar ett beteende i specialfunktioner"
 
-#: includes/Resursbank/Config.php:166
+#: includes/Resursbank/Config.php:178
 msgid "About"
 msgstr "Om"
 
-#: includes/Resursbank/Config.php:170 includes/Resursbank/Config.php:176
+#: includes/Resursbank/Config.php:182 includes/Resursbank/Config.php:189
 msgid "Plugin information"
 msgstr "Plugin-information"
 
-#: includes/Resursbank/Core.php:203
+#: includes/Resursbank/Core.php:219
 #, php-format
 msgid ""
 "Payment methods are not available for country \"%s\" or site has not yet "
@@ -257,47 +261,47 @@ msgstr ""
 "Betalningsmetoder är inte tillgängliga för land \"%s\" eller så har butiken "
 "ännu inte konfigurerats."
 
-#: includes/Resursbank/Core.php:296
+#: includes/Resursbank/Core.php:312
 msgid "Not available."
 msgstr "Ej tillgängligt."
 
-#: includes/Resursbank/Core.php:587
+#: includes/Resursbank/Core.php:603
 msgid "Private"
 msgstr "Privat"
 
-#: includes/Resursbank/Core.php:588
+#: includes/Resursbank/Core.php:604
 msgid "Company"
 msgstr "Företag"
 
-#: includes/Resursbank/Core.php:595
+#: includes/Resursbank/Core.php:611
 msgid "Government ID"
 msgstr "Personnummer"
 
-#: includes/Resursbank/Core.php:597
+#: includes/Resursbank/Core.php:613
 msgid "Enter your government id (social security number)"
 msgstr "Ange ditt personnummer"
 
-#: includes/Resursbank/Core.php:722
+#: includes/Resursbank/Core.php:738
 msgid "Request failed due to missing credentials."
 msgstr "Begäran misslyckades på grund av saknade autentiseringsuppgifter."
 
-#: includes/Resursbank/Core.php:823
+#: includes/Resursbank/Core.php:839
 msgid "Dismissed notices"
 msgstr "Avfärdade meddelanden"
 
-#: includes/Resursbank/Core.php:827
+#: includes/Resursbank/Core.php:843
 msgid "Restore notices and elements hidden by plugin"
 msgstr "Återställ meddelanden och element som är dolda av tillägget"
 
-#: includes/Resursbank/Core.php:965 includes/Resursbank/Core.php:979
+#: includes/Resursbank/Core.php:981 includes/Resursbank/Core.php:995
 msgid "Security verification failure."
 msgstr "Säkerhetsverifiering misslyckad."
 
-#: includes/Resursbank/Core.php:969
+#: includes/Resursbank/Core.php:985
 msgid "You must be administator."
 msgstr "Du måste vara administratör."
 
-#: includes/Resursbank/Core.php:983
+#: includes/Resursbank/Core.php:999
 msgid "Security key mismatch."
 msgstr "Säkerhetsnyckeln matchade inte."
 
@@ -337,22 +341,38 @@ msgstr "Kortnummer"
 msgid "Read more"
 msgstr "Läs mer"
 
-#: includes/Resursbank/Gateway.php:60
+#: includes/Resursbank/Gateway.php:66
 msgid ""
 "Complete payment solution for Resurs Bank, with support for multiple "
 "countries."
 msgstr "Komplett betalningslösning för resurs bank, med stöd för flera länder."
 
-#: includes/Resursbank/Gateway.php:174 includes/Resursbank/Gateway.php:175
+#: includes/Resursbank/Gateway.php:180 includes/Resursbank/Gateway.php:181
 msgid "shipping"
 msgstr "frakt"
 
-#: includes/Resursbank/Gateway.php:230
+#: includes/Resursbank/Gateway.php:236
 msgid "coupon"
 msgstr "kupong"
 
+#: includes/Resursbank/Gateway.php:545
+msgid "BookPaymentStatus could not be determined"
+msgstr "BookPaymentStatus kunde inte hittas."
+
+#: includes/Resursbank/Gateway.php:556
+msgid "Order was instantly booked."
+msgstr "Ordern bokades direkt."
+
+#: includes/Resursbank/Gateway.php:567
+msgid "Customer went to signing process."
+msgstr "Kunden pekades om till signeringsprocess."
+
+#: includes/Resursbank/Gateway.php:723
+msgid "Customer signed payment - order is booked."
+msgstr "Kund har signerat betalningen - ordern är bokad."
+
 #: includes/Resursbank/Helpers/Adminforms.php:210
-#: includes/Resursbank/Method.php:129
+#: includes/Resursbank/Method.php:138
 msgid "Resurs Checkout"
 msgstr "Resurs Checkout"
 
@@ -384,21 +404,27 @@ msgstr ""
 msgid "Active"
 msgstr "Aktiv"
 
-#: includes/Resursbank/Helpers/Adminforms.php:311
+#: includes/Resursbank/Helpers/Adminforms.php:312
 msgid "Chosen shopflow"
 msgstr "Valt shopflöde"
 
-#: includes/Resursbank/Method.php:54
+#: includes/Resursbank/Method.php:63
 msgid "Payment method name and flow mismatch."
 msgstr "Betalningsmetodens namn och flöde matchar ej."
 
-#: includes/Resursbank/Method.php:194
+#: includes/Resursbank/Method.php:203
 msgid ""
 "Unable to process your order. Your session has expired. Please reload the "
 "checkout and try again (error #getWasInCheckout)."
 msgstr ""
 "Det går inte att behandla din beställning. Sessionen har upphört att gälla. "
 "Vänligen ladda om kassan och försök igen (fel #getWasInCheckout)."
+
+#~ msgid "Shop activities"
+#~ msgstr "Shop"
+
+#~ msgid "Force payment signing"
+#~ msgstr "Tvinga signeringar"
 
 #~ msgid ""
 #~ "This plugin has decided (on demand) to disable the coexisting prior "

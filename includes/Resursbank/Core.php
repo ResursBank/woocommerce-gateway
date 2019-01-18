@@ -19,7 +19,7 @@ class Resursbank_Core
     /**
      * @var ResursBank Ecommerce Library
      */
-    private $RB;
+    private $RESURSBANK;
 
     /**
      * @var string
@@ -37,7 +37,7 @@ class Resursbank_Core
      */
     public function __construct()
     {
-        $this->RB = $this->getConnection();
+        $this->RESURSBANK = $this->getConnection();
     }
 
     /**
@@ -168,19 +168,33 @@ class Resursbank_Core
      */
     protected function getConnection($username = '', $password = '', $environment = null)
     {
-        $this->RB = new ResursBank();
+        $this->RESURSBANK = new ResursBank();
 
         if (!empty($username) && !empty($password)) {
-            $this->RB->setAuthentication($username, $password);
+            $this->RESURSBANK->setAuthentication($username, $password);
         }
 
         if (is_null($environment)) {
-            $this->RB->setEnvironment(self::getEcomEnvironment());
+            $this->RESURSBANK->setEnvironment(self::getEcomEnvironment());
         } else {
-            $this->RB->setEnvironment($environment);
+            $this->RESURSBANK->setEnvironment($environment);
         }
 
-        return $this->RB;
+        return $this->RESURSBANK;
+    }
+
+    /**
+     * Extract strings from postmeta that has been transitioned into arrays. Return as strings when meta is proper.
+     *
+     * @param $postId
+     * @return array|mixed
+     */
+    public function getPostMeta($postId, $key) {
+        $postMeta = get_post_meta($postId, $key);
+        if (is_array($postMeta)) {
+            return @array_shift($postMeta);
+        }
+        return $postMeta;
     }
 
     /**
@@ -1373,7 +1387,7 @@ class Resursbank_Core
     {
         $postData = self::getDefaultPostDataParsed($request);
         $return = array();
-        if (is_array($postData['resursbankcustom'])) {
+        if (isset($postData['resursbankcustom']) && is_array($postData['resursbankcustom'])) {
             $return = $postData['resursbankcustom'];
         }
         return $return;

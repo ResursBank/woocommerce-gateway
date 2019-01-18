@@ -30,8 +30,8 @@ function resursbank_payment_gateway_initialize()
      */
     class WC_Gateway_ResursBank extends WC_Payment_Gateway
     {
+        /** @var Resursbank_Core */
         protected $CORE;
-        protected $RB;
         protected $METHOD;
         protected $CHECKOUT;
 
@@ -44,6 +44,8 @@ function resursbank_payment_gateway_initialize()
         /** @var RESURS_FLOW_TYPES */
         protected $FLOW;
 
+        protected $COUNTRY;
+
         /**
          * Resursbank_Gateway constructor.
          */
@@ -54,6 +56,10 @@ function resursbank_payment_gateway_initialize()
 
         private function setup()
         {
+            if (is_null($this->CORE)) {
+                // Not inherited from Method class.
+                $this->CORE = new Resursbank_Core();
+            }
             $this->id = 'resurs_bank_payment_gateway';
             $this->title = 'Resurs Bank Payment Gateway';
             $this->method_description = __(
@@ -374,7 +380,7 @@ function resursbank_payment_gateway_initialize()
                 $customerPaymentFields = Resursbank_Core::getDefaultPostDataParsed(true);
             }
 
-            if (isset($customerPaymentFields[$type]) && $customerPaymentFields[$type][$key]) {
+            if (isset($customerPaymentFields[$type]) && isset($customerPaymentFields[$type][$key])) {
                 $return = (string)$customerPaymentFields[$type][$key];
             }
 
@@ -438,14 +444,14 @@ function resursbank_payment_gateway_initialize()
          */
         protected function setResursCustomerBasicData()
         {
-            $paymentMethod = md5(str_replace('resursbank_' . $this->getPostDataCustomer('payment', 'method')));
+            $paymentMethod = md5(str_replace('resursbank_', '', $this->getPostDataCustomer('payment', 'method')));
             $customerType = !Resursbank_Core::getIsLegal() ? 'NATURAL' : 'LEGAL';
 
             $this->RESURSBANK->setCustomer(
                 $this->getPostDataCustomer('resursbankcustom', 'government_id_' . $paymentMethod),
                 $this->getPostDataCustomer('resursbankcustom', 'applicant_phone_' . $paymentMethod),
                 $this->getPostDataCustomer('resursbankcustom', 'applicant_mobile_' . $paymentMethod),
-                $this->getPostDataCustomer('resursbankcustom', 'applicant_email' . $paymentMethod),
+                $this->getPostDataCustomer('resursbankcustom', 'applicant_email_' . $paymentMethod),
                 $customerType,
                 $this->getPostDataCustomer('resursbankcustom', 'contact_government_id' . $paymentMethod)
             );
@@ -483,6 +489,128 @@ function resursbank_payment_gateway_initialize()
 
             return $preferredId;
         }
+
+        /**
+         * @param $woocommerceOrderId
+         * @param $resursOrderId
+         * @param $order
+         * @return array
+         */
+        public function createResursOrder($woocommerceOrderId, $resursOrderId, $order, $PAYMENT_METHOD)
+        {
+            try {
+                if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                    $return = $this->RESURSBANK->createPayment($PAYMENT_METHOD->id);
+                } else {
+                    $return = $this->RESURSBANK->createPayment($resursOrderId);
+                }
+                //update_post_meta($woocommerceOrderId, 'resursPaymentCountry', $this->COUNTRY);
+            } catch (\Exception $e) {
+                return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
+            }
+
+            return (array)$return;
+        }
+
+        /**
+         * @param $woocommerceOrderId
+         * @return bool
+         */
+        protected function setReducedStock($woocommerceOrderId)
+        {
+            $return = false;
+
+            $hasReduceStock = get_post_meta($woocommerceOrderId, 'hasReduceStock');
+            if ((bool)Resursbank_Core::getResursOption('reduceOrderStock') && empty($hasReduceStock)) {
+                update_post_meta($woocommerceOrderId, 'hasReduceStock', time());
+                wc_reduce_stock_levels($woocommerceOrderId);
+                $return = true;
+            }
+
+            return $return;
+        }
+
+        /**
+         * @param $woocommerceOrderId
+         * @param $resursOrderId
+         * @param WC_Order $order
+         * @return array
+         */
+        public function setOrderDetails($woocommerceOrderId, $resursOrderId, $order, $bookPaymentResult)
+        {
+            if (!isset($bookPaymentResult['bookPaymentStatus'])) {
+                $this->setPaymentError(
+                    $order,
+                    __(
+                        'BookPaymentStatus could not be determined',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ), 400
+                );
+            }
+
+            switch ($bookPaymentResult['bookPaymentStatus']) {
+                case 'BOOKED':
+                    $order->update_status(
+                        'processing',
+                        __(
+                            'Order was instantly booked.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        )
+                    );
+                    // Run stock level checking if enabled.
+                    $this->setReducedStock($woocommerceOrderId);
+                    $return = $this->setResultArray($order, 'success');
+                    break;
+                case 'SIGNING':
+                    $order->add_order_note(
+                        __(
+                            'Customer went to signing process.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        )
+                    );
+                    $return = $this->setResultArray($order, 'success', $bookPaymentResult['signingUrl']);
+                    break;
+                default:
+                    $return = $this->setResultArray($order, 'failure');
+                    break;
+            }
+
+            return $return;
+        }
+
+        /**
+         * @param $order
+         * @param string $result
+         * @param string $redirect
+         * @return array
+         */
+        private function setResultArray($order, $result = 'success', $redirect = '')
+        {
+            if ($result === 'failure' && empty($redirect)) {
+                $redirect = html_entity_decode($order->get_cancel_order_url());
+            }
+            if ($result === 'success' && empty($redirect)) {
+                $redirect = $this->get_return_url($order);
+            }
+
+            return array(
+                'result' => $result,
+                'redirect' => $redirect
+            );
+        }
+
+        /**
+         * @param $exceptionMessage
+         * @param $exceptionCode
+         * @return array
+         */
+        public function setPaymentError($order, $exceptionMessage, $exceptionCode)
+        {
+            wc_add_notice(sprintf('%s (%s)', $exceptionMessage, $exceptionCode), 'error');
+
+            return $this->setResultArray($order, 'failure');
+        }
+
 
         /**
          * @return string
@@ -579,6 +707,32 @@ function resursbank_payment_gateway_initialize()
         }
 
         /**
+         * @param $woocommerceOrderId
+         * @param $orderPaymentId
+         * @return bool
+         */
+        private function setSignedPayment($woocommerceOrderId, $orderPaymentId, $order)
+        {
+            $return = false;
+            try {
+                $signingResponse = $this->RESURSBANK->bookSignedPayment($orderPaymentId);
+                if ($signingResponse->bookPaymentStatus === 'BOOKED') {
+                    update_post_meta($woocommerceOrderId, 'resursOrderSigned', true);
+                    $order->update_status(
+                        'processing', __(
+                            'Customer signed payment - order is booked.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        )
+                    );
+                    $return = true;
+                }
+            } catch (\Exception $e) {
+            }
+
+            return $return;
+        }
+
+        /**
          * WooCommerce Payment API calls.
          *
          * <url>?wc-api=wc_gateway_resursbank
@@ -588,6 +742,23 @@ function resursbank_payment_gateway_initialize()
             $redirectUrl = '';
             $requestType = $this->getRequestKey('request');
 
+            $woocommerceOrderId = $this->getRequestKey('w_id');
+            $order = new WC_Order($woocommerceOrderId);
+            $orderPaymentId = $this->CORE->getPostMeta($woocommerceOrderId, 'paymentId');
+            $this->RESURSBANK = $this->CORE->getConnectionByCountry($order->get_billing_country());
+
+
+            switch ($requestType) {
+                case 'signing':
+                    if ($this->setSignedPayment($woocommerceOrderId, $orderPaymentId, $order)) {
+                        $redirectUrl = $this->get_return_url($order);
+                    } else {
+                        $redirectUrl = $order->get_cancel_order_url();
+                    }
+                    break;
+                default:
+                    $redirectUrl = $order->get_cancel_order_url();
+            }
 
             wp_safe_redirect($redirectUrl);
             die;

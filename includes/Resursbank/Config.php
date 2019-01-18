@@ -128,6 +128,10 @@ abstract class Resursbank_Config
                         'type' => 'checkbox',
                         'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     ),
+                    'shopSettings' => array(
+                        'title' => __('Shop related settings', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'type' => 'title'
+                    ),
                     'useProfileStoreId' => array(
                         'title' => __(
                             'Configure StoreID access on user level',
@@ -144,7 +148,7 @@ abstract class Resursbank_Config
                     ),
                     'forcePaymentSigning' => array(
                         'title' => __(
-                            'Force payment signing',
+                            'Force signed payments',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'tip' => __(

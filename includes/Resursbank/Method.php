@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
 }
 
 use Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
+use Resursbank\RBEcomPHP\ResursBank;
 
 if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank')) {
     /**
@@ -15,12 +16,16 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
      */
     class WC_Resursbank_Method extends WC_Gateway_ResursBank
     {
+        /** @var */
         public $title;
 
+        /** @var */
         protected $METHOD_TYPE;
+        /** @var Resursbank_Core */
         protected $CORE;
         /** @var RESURS_FLOW_TYPES */
         protected $FLOW;
+        /** @var ResursBank */
         protected $RESURSBANK;
 
         /**
@@ -28,7 +33,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          *
          * @param $paymentMethod Object or string
          * @param $country
-         * @param $connection \Resursbank\RBEcomPHP\ResursBank
+         * @param $connection ResursBank
          * @throws Exception
          */
         public function __construct($paymentMethod, $country, $connection)
@@ -187,6 +192,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         private function canProcessPayment($order)
         {
             $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
+
             if (!$lastLocationWasCheckout) {
                 throw new \Exception(
                     __(
@@ -196,22 +202,12 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                     400
                 );
             }
+
+            // Validate exceptions silently - this one is used for special exceptions. Throwing something at this moment,
+            // will reflect an error in the checkout.
+            do_action('resursbank_validate_process_payment');
+
             return true;
-        }
-
-        /**
-         * @param $exceptionMessage
-         * @param $exceptionCode
-         * @return array
-         */
-        private function setPaymentError($order, $exceptionMessage, $exceptionCode)
-        {
-            wc_add_notice(sprintf('%s (%s)', $exceptionMessage, $exceptionCode), 'error');
-
-            return array(
-                'result' => 'failure',
-                'redirect' => html_entity_decode($order->get_cancel_order_url())
-            );
         }
 
         /**
@@ -250,12 +246,26 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
             }
 
+            $storeId = apply_filters('resursbank_set_storeid', '');
+            if (!empty($storeId)) {
+                $this->RESURSBANK->setStoreId($storeId);
+                update_post_meta($order_id, 'resursStoreId', $storeId);
+            }
+
             /** @link https://test.resurs.com/docs/x/moBx */
             $this->setCustomerSigningData($order_id, $resursOrderId, $order);
             $this->setResursCustomerBasicData();
             $this->setResursCustomerData('billing');
             $this->setResursCustomerData('shipping');
             $this->setResursCart($cart);
+
+            // Create order and set statuses.
+            $return = $this->setOrderDetails(
+                $order_id,
+                $resursOrderId,
+                $order,
+                $this->createResursOrder($order_id, $resursOrderId, $order, $this->METHOD)
+            );
 
             // $orderReceivedUrl = $this->get_return_url($order);
 
