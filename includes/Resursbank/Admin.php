@@ -344,7 +344,7 @@ class WC_Settings_ResursBank extends WC_Settings_Page
             echo '<div id="resursbank_coexist_message">';
             if (!(bool)$coExDismiss) {
                 echo '<hr>';
-                if (!Resursbank_Core::resurs_obsolete_coexistence_disable()) {
+                if (!Resursbank_Core::resursObsoleteCoexistenceDisable()) {
                     if (version_compare(RB_WOO_VERSION, '3', '<')) {
                         echo '<div style="color:#990000 !important;" class="resursGatewayConfigCoexistWarning">' .
                             $this->resurs_bank_version_low_text() .

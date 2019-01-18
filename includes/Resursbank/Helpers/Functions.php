@@ -22,7 +22,7 @@ function setResursbankGatewayFilters()
     add_filter('woocommerce_get_settings_pages', 'resursbank_gateway_settings');
 
     // Ability to disable v2.x on fly
-    add_filter('resurs_obsolete_coexistence_disable', 'Resursbank_Core::resurs_obsolete_coexistence_disable');
+    add_filter('resurs_obsolete_coexistence_disable', 'Resursbank_Core::resursObsoleteCoexistenceDisable');
 
     // Trigger precense from checkout and store historically in a session.
     add_action('woocommerce_before_checkout_form', 'Resursbank_Core::setCustomerIsInCheckout');

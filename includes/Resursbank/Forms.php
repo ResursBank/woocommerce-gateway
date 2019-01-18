@@ -93,7 +93,7 @@ class Resursbank_Forms
      * @param $PAYMENT_METHOD
      * @return string
      */
-    public static function get_customer_field_html_generic($html, $PAYMENT_METHOD, $fieldName)
+    public static function getCustomerFieldHtmlGeneric($html, $PAYMENT_METHOD, $fieldName)
     {
         if (self::disableInternalFieldHtml(__FUNCTION__)) {
             return (string)$html;
@@ -129,7 +129,7 @@ class Resursbank_Forms
      * @param $PAYMENT_METHOD
      * @return string
      */
-    public static function get_customer_field_html_read_more($html, $PAYMENT_METHOD)
+    public static function getCustomerFieldHtmlReadMore($html, $PAYMENT_METHOD)
     {
         if (self::disableInternalFieldHtml(__FUNCTION__)) {
             return (string)$html;

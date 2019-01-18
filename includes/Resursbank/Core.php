@@ -33,7 +33,7 @@ class Resursbank_Core
      *
      * @throws Exception
      */
-    function __construct()
+    public function __construct()
     {
         $this->RB = $this->getConnection();
     }
@@ -190,6 +190,9 @@ class Resursbank_Core
      */
     public function getConnectionByCountry($country)
     {
+        if (empty($country)) {
+            $country = self::getCustomerCountry();
+        }
         $currentEnvironment = self::getResursOption('environment');
         $credentials = $this->getCredentialsByCountry($country);
 
@@ -197,11 +200,12 @@ class Resursbank_Core
             throw new \Exception(
                 sprintf(
                     __(
-                        'Payment methods are not available for country %s.',
+                        'Payment methods are not available for country "%s" or site has not yet been configured.',
                         'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     $country
-                ), 400
+                ),
+                400
             );
         }
 
@@ -341,7 +345,10 @@ class Resursbank_Core
         }
     }
 
-    public static function resursbank_get_plugin_data_array()
+    /**
+     * @return array
+     */
+    public static function getPluginDataArray()
     {
         return array(
             'version_php',
@@ -353,17 +360,19 @@ class Resursbank_Core
         );
     }
 
-    public static function resursbank_get_plugin_data()
+    /**
+     * @return string
+     */
+    public static function getPluginData()
     {
-        $pluginData = self::resursbank_get_plugin_data_array();
+        $pluginData = self::getPluginDataArray();
         $pluginData = apply_filters('resursbank_data_info_array', $pluginData);
 
         $pluginInformationHtml = '<table width="800px" class="resursGatewayConfigCredentials" style="table-layout: auto !important;" id="resurs_bank_credential_table">';
         foreach ($pluginData as $pluginInfoKey) {
             $pluginInformationContent = apply_filters('resursbank_data_info_' . $pluginInfoKey, $pluginInfoKey);
             // Make sure filters is doing it right.
-            if (
-                is_array($pluginInformationContent) &&
+            if (is_array($pluginInformationContent) &&
                 isset($pluginInformationContent['name']) &&
                 isset($pluginInformationContent['value']) &&
                 !empty($pluginInformationContent['name']) &&
@@ -530,7 +539,7 @@ class Resursbank_Core
      * @param $currentValue
      * @return int
      */
-    public static function get_payment_list_timer($currentValue)
+    public static function getPaymentListTimer($currentValue)
     {
         @preg_match_all('/(\d{1,2})(\w+)/i', $currentValue, $newValues);
 
@@ -712,7 +721,8 @@ class Resursbank_Core
                         __(
                             'Request failed due to missing credentials.',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                        ) . ' ' . $country, 400
+                        ) . ' ' . $country,
+                        400
                     );
                 }
             }
@@ -793,7 +803,7 @@ class Resursbank_Core
     /**
      * @return bool|mixed|null
      */
-    public static function resursbank_get_coexist_dismissed()
+    public static function getCoexistDismissed()
     {
         return self::getResursOption('dismiss_resursbank_coexist_message');
     }
@@ -804,7 +814,7 @@ class Resursbank_Core
      * @param $configArray
      * @return array
      */
-    public static function resursbank_get_dismissed_elements($configArray)
+    public static function resursbankGetDismissedElements($configArray)
     {
         $elements = array('dismiss_resursbank_coexist_message');
 
@@ -1049,11 +1059,14 @@ class Resursbank_Core
                     $resursCore->getConnectionByCountry($paymentMethodCountry)
                 );
             } else {
-                $methods = self::getStoredPaymentMethods($paymentMethodCountry, false, $currentEnvironment);
-                foreach ($methods as $methodIndex => $paymentMethodData) {
-                    if ($gateway = self::getGateway($paymentMethodData, $paymentMethodCountry)) {
-                        $availableGateways['resursbank_' . $paymentMethodData->id] = $gateway;
+                try {
+                    $methods = self::getStoredPaymentMethods($paymentMethodCountry, false, $currentEnvironment);
+                    foreach ($methods as $methodIndex => $paymentMethodData) {
+                        if ($gateway = self::getGateway($paymentMethodData, $paymentMethodCountry)) {
+                            $availableGateways['resursbank_' . $paymentMethodData->id] = $gateway;
+                        }
                     }
+                } catch (\Exception $paymentMethodsException) {
                 }
             }
 
@@ -1267,11 +1280,18 @@ class Resursbank_Core
     /**
      * @return array
      */
-    public static function getQueryRequest( ){
+    public static function getQueryRequest()
+    {
         $query = array();
 
         // Fetch data from request uri first.
         $request = parse_url($_SERVER['REQUEST_URI']);
+
+        if (!isset($request['query'])) {
+            // No query found.
+            $request['query'] = '';
+        }
+
         $request['query'] = str_replace('amp;', '', $request['query']);
         parse_str($request['query'], $query);
 
@@ -1608,17 +1628,25 @@ class Resursbank_Core
             }
         }
 
-        if ($iFrameUrl = self::getIframeUrl()) {
+        if ($iFrameUrl = self::getIframeUrl() && !is_admin()) {
             wp_localize_script(
                 'resurs_bank_payment_gateway_js',
                 'RESURSCHECKOUT_IFRAME_URL',
-                $iFrameUrl
+                (array)$iFrameUrl
             );
         }
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     public static function getIframeUrl()
     {
+        // Do not do this in admin.
+        if (is_admin()) {
+            return;
+        }
         $CORE = self::getResursCore();
         $iFrameUrl = '';
 
@@ -1631,8 +1659,8 @@ class Resursbank_Core
                 $CORE->getEcomEnvironment()
             );
         } catch (\Exception $iframeUrlException) {
-
         }
+
         return $iFrameUrl;
     }
 
@@ -1641,7 +1669,7 @@ class Resursbank_Core
      *
      * @return bool
      */
-    public static function resurs_obsolete_coexistence_disable()
+    public static function resursObsoleteCoexistenceDisable()
     {
         $return = self::getTrue('resurs_obsolete_coexistence_disable');
         return $return;

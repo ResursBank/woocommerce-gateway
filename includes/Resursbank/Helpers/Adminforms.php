@@ -206,9 +206,18 @@ class Resursbank_Adminforms
     public function getShopFlowOptions($storedValue = '', $asArray = false)
     {
         $shopFlows = array(
-            Resursbank_Core::RESURS_SHOPFLOW_CHECKOUT => __('Resurs Checkout', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
-            Resursbank_Core::RESURS_SHOPFLOW_SIMPLIFIED => __('Simplified ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
-            Resursbank_Core::RESURS_SHOPFLOW_HOSTED => __('Hosted ShopFlow', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+            Resursbank_Core::RESURS_SHOPFLOW_CHECKOUT => __(
+                'Resurs Checkout',
+                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            Resursbank_Core::RESURS_SHOPFLOW_SIMPLIFIED => __(
+                'Simplified ShopFlow',
+                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            Resursbank_Core::RESURS_SHOPFLOW_HOSTED => __(
+                'Hosted ShopFlow',
+                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+            ),
         );
         if ($asArray) {
             return $shopFlows;
@@ -226,7 +235,7 @@ class Resursbank_Adminforms
      *
      * @return array
      */
-    public static function get_shopflow_options()
+    public static function getShopFlowOptionsStatic()
     {
         return self::getShopFlowOptions('', true);
     }
