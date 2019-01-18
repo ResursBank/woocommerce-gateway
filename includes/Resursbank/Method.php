@@ -55,6 +55,8 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 }
             }
 
+            $this->REQUEST = Resursbank_Core::getQueryRequest();
+
             $this->createFlow($this->FLOW);
             $this->getActions();
         }
@@ -175,6 +177,38 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         }
 
         /**
+         * @return array|bool
+         * @throws Exception
+         */
+        private function canProcessPayment($order)
+        {
+            $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
+            if (!$lastLocationWasCheckout) {
+                throw new \Exception(
+                    __(
+                        'Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ), 400);
+            }
+            return true;
+        }
+
+        /**
+         * @param $exceptionMessage
+         * @param $exceptionCode
+         * @return array
+         */
+        private function setPaymentError($order, $exceptionMessage, $exceptionCode)
+        {
+            wc_add_notice(sprintf('%s (%s)', $exceptionMessage, $exceptionCode), 'error');
+
+            return array(
+                'result' => 'failure',
+                'redirect' => html_entity_decode($order->get_cancel_order_url())
+            );
+        }
+
+        /**
          * Handle the current order.
          *
          * This is a rewrite of the old version process_payment rather than a copy-paste as we're merging
@@ -195,21 +229,27 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             );
 
             $order = new WC_Order($order_id);
+            $resursOrderId = $this->getResursOrderId($order_id);
 
-            $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
-            if (!$lastLocationWasCheckout) {
-                wc_add_notice(
-                    __('Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')
-                    , 'error'
-                );
+            /** @var WC_Cart $cart */
+            $cart = $woocommerce->cart;
 
-                return array(
-                    'result' => 'failure',
-                    'redirect' => html_entity_decode($order->get_cancel_order_url())
-                );
+            if (get_class($cart) !== 'WC_Cart') {
+                return $this->setPaymentError($order, 'No cart is present', 400);
             }
 
-            $processSuccessUrl = $this->get_return_url($order);
+            try {
+                $this->canProcessPayment($order);
+            } catch (\Exception $e) {
+                return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
+            }
+
+            $this->setCustomerSigningData($order_id, $resursOrderId, $order);
+            $this->setResursCustomerData('billing');
+            $this->setResursCustomerData('shipping');
+            $this->setResursCart($cart);
+
+            // $orderReceivedUrl = $this->get_return_url($order);
 
             return $return;
         }

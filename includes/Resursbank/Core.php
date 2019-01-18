@@ -592,6 +592,48 @@ class Resursbank_Core
         }
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public static function getFlag($key)
+    {
+        $return = null;
+
+        $pluginFlags = (array)self::getResursOption('pluginFlags');
+        if (isset($pluginFlags[$key])) {
+            $return = $pluginFlags[$key];
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $key
+     * @param string $value
+     */
+    public static function setFlag($key, $value = '')
+    {
+        $pluginFlags = (array)self::getResursOption('pluginFlags');
+        $pluginFlags[$key] = $value;
+        self::setResursOption('pluginFlags', $pluginFlags);
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    public static function deleteFlag($key)
+    {
+        $return = false;
+        $pluginFlags = (array)self::getResursOption('pluginFlags');
+        if (isset($pluginFlags[$key])) {
+            unset($pluginFlags[$key]);
+            self::setResursOption('pluginFlags', $pluginFlags);
+            $return = true;
+        }
+        return $return;
+    }
 
     /**
      * If payment methods are stored, decide from where it should be taken. If the data is too old,
@@ -1201,12 +1243,17 @@ class Resursbank_Core
     }
 
     /**
+     * @param bool $request
      * @return array
      */
-    public static function getPostData()
+    public static function getPostData($request = false)
     {
         if (!isset($_REQUEST['post_data'])) {
-            return array();
+            if (!$request) {
+                return array();
+            } else {
+                return $_REQUEST;
+            }
         }
         if (is_string($_REQUEST['post_data'])) {
             parse_str($_REQUEST['post_data'], $postData);
@@ -1220,18 +1267,42 @@ class Resursbank_Core
     /**
      * @return array
      */
-    public static function getDefaultPostDataParsed()
+    public static function getQueryRequest( ){
+        $query = array();
+
+        // Fetch data from request uri first.
+        $request = parse_url($_SERVER['REQUEST_URI']);
+        $request['query'] = str_replace('amp;', '', $request['query']);
+        parse_str($request['query'], $query);
+
+        // Merge other requestdata into the query.
+        foreach ($_REQUEST as $requestKey => $requestValue) {
+            $query[$requestKey] = $requestValue;
+        }
+
+        return $query;
+    }
+
+    /**
+     * Get WooCommerce post_data-object.
+     *
+     * @param bool $request If $_POST[post_data] is missing, try use the entire $_REQUEST-object instead.
+     * @return array
+     */
+    public static function getDefaultPostDataParsed($request = false)
     {
-        $postData = self::getPostData();
+        $postData = self::getPostData($request);
         $newData = array();
 
-        foreach ($postData as $key => $val) {
-            $keySplit = explode('_', $key, 2);
-            if (isset($keySplit[1])) {
-                if (!isset($newData[$keySplit[0]])) {
-                    $newData[$keySplit[0]] = array();
+        if (is_array($postData) && count($postData)) {
+            foreach ($postData as $key => $val) {
+                $keySplit = explode('_', $key, 2);
+                if (isset($keySplit[1])) {
+                    if (!isset($newData[$keySplit[0]])) {
+                        $newData[$keySplit[0]] = array();
+                    }
+                    $newData[$keySplit[0]][$keySplit[1]] = $val;
                 }
-                $newData[$keySplit[0]][$keySplit[1]] = $val;
             }
         }
 

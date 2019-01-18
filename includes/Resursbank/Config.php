@@ -133,7 +133,33 @@ abstract class Resursbank_Config
                         'type' => 'checkbox',
                         'default' => false,
                         'label' => __('Enabled', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
-                    )
+                    ),
+                    'forcePaymentSigning' => array(
+                        'title' => __(
+                            'Force payment signing',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'tip' => __(
+                            'This feature enables signing of payments in simplified and hosted flows, which requires all payments to be signed.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'display' => true,
+                        'type' => 'checkbox',
+                        'default' => false,
+                        'label' => __('Enabled', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                    ),
+                    'pluginFlags' => array(
+                        'title' => __(
+                            'Plugin behaviour flags',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'default' => '',
+                        'type' => 'text',
+                        'tip' => __(
+                            'Flags that changes common behaviour in special functions',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                    ),
                 )
             ),
             'about' => array(
