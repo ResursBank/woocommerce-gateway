@@ -287,14 +287,17 @@ class WC_Settings_ResursBank extends WC_Settings_Page
      */
     private function resurs_bank_version_low_text()
     {
-        return __(
+        return sprintf(
+            '%s %s',
+            __(
                 'Coexisting note: This plugin has discovered a prior version of Resurs Bank Payment Gateway!',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            ) . ' ' .
+            ),
             __(
                 'This should not be a problem as they are coexistent. However, running them simultaneously is probably not what you want.',
                 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-            );
+            )
+        );
     }
 
     /**

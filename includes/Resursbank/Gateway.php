@@ -395,17 +395,19 @@ function resursbank_payment_gateway_initialize()
          */
         private function getCustomerFullName($paymentFields)
         {
-            return
+            return sprintf(
+                '%s %s',
                 $this->getPostDataCustomer(
                     'billing',
                     'first_name',
                     $paymentFields
-                ) . ' ' .
+                ),
                 $this->getPostDataCustomer(
                     'billing',
                     'last_name',
                     $paymentFields
-                );
+                )
+            );
         }
 
         /**
