@@ -285,15 +285,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             }
         }
 
-        /**
-         * @param $fields
-         * @return mixed
-         */
-        public function resursBankCheckoutFields($fields)
-        {
-            return $fields;
-        }
-
         //
 
 
@@ -304,7 +295,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         {
             add_filter('resurs_bank_payment_method_is_available', array($this, 'getIsAvailable'));
             add_filter('woocommerce_get_terms_page_id', array($this, 'setCheckoutTerms'), 1);
-            add_filter('woocommerce_checkout_fields', array($this, 'resursBankCheckoutFields'));
 
             //woocommerce_api_wc_resurs_bank
             add_filter(

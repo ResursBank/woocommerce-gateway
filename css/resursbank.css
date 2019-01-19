@@ -80,3 +80,7 @@
 .resursPaymentFieldContainer {
     font-size: 12px;
 }
+
+.resursCheckoutOrderFormField {
+    display: none;
+}

@@ -70,6 +70,45 @@ function resursbank_payment_gateway_initialize()
             $this->REQUEST = Resursbank_Core::getQueryRequest();
 
             add_action('woocommerce_api_' . strtolower(__CLASS__), array($this, 'resursbankPaymentHandler'));
+            add_filter('woocommerce_get_terms_page_id', array($this, 'getTermsOnRco'), 1);
+            add_filter('woocommerce_order_button_html', array($this, 'getOrderButtonByRco'));
+            add_filter('woocommerce_checkout_fields', array($this, 'resursBankCheckoutFields'));
+        }
+
+        /**
+         * @param $fieldArray
+         * @return mixed
+         */
+        private function addClassToFields($fieldArray)
+        {
+            foreach ($fieldArray as $fieldKey => $fieldData) {
+                if (!isset($fieldArray[$fieldKey]['class'])) {
+                    // Define before use.
+                    $fieldArray[$fieldKey]['class'] = array();
+                }
+                $fieldArray[$fieldKey]['class'][] = 'resursCheckoutOrderFormField';
+            }
+            return $fieldArray;
+        }
+
+        /**
+         * @param $fields
+         * @return mixed
+         */
+        public function resursBankCheckoutFields($fields)
+        {
+            $currentFlow = $this->CORE->getFlowByEcom($this->CORE->getFlowByCountry(Resursbank_Core::getCustomerCountry()));
+
+            if ($currentFlow === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                if (isset($fields['billing'])) {
+                    $fields['billing'] = $this->addClassToFields($fields['billing']);
+                }
+                if (isset($fields['shipping'])) {
+                    $fields['shipping'] = $this->addClassToFields($fields['shipping']);
+                }
+            }
+
+            return $fields;
         }
 
         /**
@@ -744,6 +783,25 @@ function resursbank_payment_gateway_initialize()
         }
 
         /**
+         * @param $page_id
+         * @return int
+         */
+        public function getTermsOnRco($page_id)
+        {
+            if ($this->FLOW === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                return 0;
+            }
+            return $page_id;
+        }
+
+        public function getOrderButtonByRco($classButtonHtml)
+        {
+            if ($this->FLOW === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                return '';
+            }
+        }
+
+        /**
          * WooCommerce Payment API calls.
          *
          * <url>?wc-api=wc_gateway_resursbank
@@ -800,5 +858,3 @@ function resursbank_payment_gateway_initialize()
     // One method rules them all
     include(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Method.php');
 }
-
-

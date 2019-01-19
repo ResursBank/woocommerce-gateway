@@ -1489,8 +1489,6 @@ class Resursbank_Core
      */
     public static function setResursOption($key = '', $value = '', $namespace = 'Resurs_Bank_Payment_Gateway')
     {
-        $updateSuccess = false;
-
         if (!empty($namespace)) {
             if (!empty($key) && is_array($key)) {
                 // If key is an array and namespace is not empty, try to store inbound array to configuration.
@@ -1676,6 +1674,7 @@ class Resursbank_Core
      */
     public static function setResursBankScripts()
     {
+        $CORE = self::getResursCore();
         $varsToLocalize = array(
             'resurs_bank_payment_gateway' => array(
                 'available' => true,
@@ -1686,7 +1685,8 @@ class Resursbank_Core
                     'resursBankBackendRequest',
                     'resursBankGatewayNonce'
                 ),
-                'getCostOfPurchaseBackendUrl' => _RESURSBANK_GATEWAY_BACKEND . "&run=get_cost_of_purchase_html"
+                'getCostOfPurchaseBackendUrl' => _RESURSBANK_GATEWAY_BACKEND . '&run=get_cost_of_purchase_html',
+                'suggested_flow' => $CORE->getFlowByCountry(self::getCustomerCountry())
             )
         );
 

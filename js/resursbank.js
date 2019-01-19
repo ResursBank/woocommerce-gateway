@@ -39,11 +39,21 @@ function resurs_bank_ajaxify(action, postdata, runFunction) {
 }
 
 function resursBankCheckUpdates() {
-    console.log('Resurs Bank has discovered checkout updates.');
+    // Form field inheritage.
+    if ($resurs_bank('#resursbankcustom_getaddress_governmentid').length === 1) {
+        $resurs_bank("input[id*='resursbankcustom_government_id_']").filter(':visible').val($resurs_bank('#resursbankcustom_getaddress_governmentid').val());
+    }
 }
 
 function resursBankFormFieldChange(o) {
+    if (o.id.indexOf('resursbankcustom_government_id_') > -1) {
+        $resurs_bank('#resursbankcustom_getaddress_governmentid').val(o.value);
+    }
+}
 
+function resursBankHandleCheckoutForms() {
+    $resurs_bank('.woocommerce-billing-fields').hide();
+    $resurs_bank('.woocommerce-shipping-fields').hide();
 }
 
 /**
@@ -60,8 +70,15 @@ function getResursCostOfPurchase(id, total) {
 }
 
 function resursBankLoaded() {
+    $resurs_bank('#resursbankcustom_getaddress_governmentid').on('keyup', function (a) {
+        var currentFormField = $resurs_bank("input[id*='resursbankcustom_government_id_']").filter(':visible');
+        currentFormField.val(this.value);
+    });
     if (typeof resursBankWooInitialize === 'function') {
         resursBankWooInitialize();
+    }
+    if (resurs_bank_payment_gateway['suggested_flow'] === 'checkout') {
+        resursBankHandleCheckoutForms();
     }
 }
 
