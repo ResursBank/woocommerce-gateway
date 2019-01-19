@@ -168,24 +168,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         }
 
         /**
-         * @param $args
-         * @TODO Finish it when it's time for it (Currently it doesn't seem to pass anything here.)
-         */
-        public function resursBankPaymentWooCommerceApi($args)
-        {
-            die;
-        }
-
-        /**
-         * @param $args
-         * @TODO Finish it when it's time for it (Currently it doesn't seem to pass anything here.)
-         */
-        public function resursBankCheckoutProcess($args)
-        {
-            die;
-        }
-
-        /**
          * @return array|bool
          * @throws Exception
          */
@@ -314,10 +296,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             add_filter('resurs_bank_payment_method_is_available', array($this, 'getIsAvailable'));
             add_filter('woocommerce_get_terms_page_id', array($this, 'setCheckoutTerms'), 1);
             add_filter('woocommerce_checkout_fields', array($this, 'resursBankCheckoutFields'));
-            add_action('woocommerce_checkout_process', 'resursBankCheckoutProcess', 1);
-
-            //add_action('woocommerce_api_' . $this->id, array($this, 'resursBankPaymentWooCommerceApi'));
-            //add_action('woocommerce_api_wc_resursbank_method', array($this, 'resursBankPaymentWooCommerceApi'));
 
             //woocommerce_api_wc_resurs_bank
             add_filter(

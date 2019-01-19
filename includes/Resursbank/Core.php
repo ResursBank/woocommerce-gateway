@@ -189,7 +189,8 @@ class Resursbank_Core
      * @param $postId
      * @return array|mixed
      */
-    public function getPostMeta($postId, $key) {
+    public function getPostMeta($postId, $key)
+    {
         $postMeta = get_post_meta($postId, $key);
         if (is_array($postMeta)) {
             return @array_shift($postMeta);
@@ -1023,15 +1024,16 @@ class Resursbank_Core
     /**
      * Find out where we are. Returns empty string when not in checkout.
      *
+     * @param bool $overrideAdmin
      * @return string
      * @TODO Check whether this might be needed in widget-mode (cost example).
      */
-    public static function getCustomerCountry()
+    public static function getCustomerCountry($overrideAdmin = false)
     {
         global $woocommerce;
         $currentCustomerCountry = '';
 
-        if (!is_admin()) {
+        if (!is_admin() || $overrideAdmin) {
             if (is_checkout()) {
                 $currentCustomerCountry = $woocommerce->customer->get_billing_country();
             }
@@ -1323,9 +1325,10 @@ class Resursbank_Core
      * Get WooCommerce post_data-object.
      *
      * @param bool $request If $_POST[post_data] is missing, try use the entire $_REQUEST-object instead.
+     * @param null $specificKey
      * @return array
      */
-    public static function getDefaultPostDataParsed($request = false)
+    public static function getDefaultPostDataParsed($request = false, $specificKey = null)
     {
         $postData = self::getPostData($request);
         $newData = array();
@@ -1341,8 +1344,14 @@ class Resursbank_Core
                     if (empty($newData[$keySplit[0]][$keySplit[1]])) {
                         $newData[$keySplit[0]][$keySplit[1]] = $val;
                     }
+                } else {
+                    $newData[$key] = $val;
                 }
             }
+        }
+
+        if (!is_null($specificKey) && isset($newData[$specificKey])) {
+            return $newData[$specificKey];
         }
 
         return $newData;
@@ -1581,6 +1590,88 @@ class Resursbank_Core
     }
 
     /**
+     * Activates bootstrap for getCostOfPurchaseHtml, via CDN.
+     *
+     * @param $cssArray
+     * @return array
+     */
+    public static function getCostOfPurchaseCss($cssArray)
+    {
+        $useBootStrap = (bool)self::getResursOption('getCostOfPurchaseBootstrap');
+
+        if ($useBootStrap) {
+            $cssArray[] = 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css';
+        }
+
+        return $cssArray;
+    }
+
+    /**
+     * @return string
+     */
+    private static function getCostOfPurchaseHtmlBefore() {
+        $buttonCssClasses = apply_filters(
+            'resursbank_readmore_button_css_class',
+            'btn btn-info active woocommerce button'
+        );
+
+        return sprintf(
+            '<div class="cost-of-purchase-box">
+                <button class="%s" type="button" onclick="window.close()">
+                %s
+                </button>
+                ',
+            $buttonCssClasses,
+            __(
+                'Close',
+                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+            )
+        );
+    }
+
+    private static function resursbankCostOfPurchaseCss() {
+        return (array)apply_filters(
+            'resursbank_cost_of_purchase_css',
+            array(_RESURSBANK_GATEWAY_URL . 'css/costofpurchase.css')
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function getCostOfPurchaseHtml()
+    {
+        $CORE = self::getResursCore();
+
+        $method = self::getDefaultPostDataParsed(true, 'method');
+        $amount = self::getDefaultPostDataParsed(true, 'amount');
+
+        if (empty($method)) {
+            throw new Exception(
+                __(
+                    'No payment method has been selected.',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ),
+                400
+            );
+        }
+
+        $useCssStyle = self::resursbankCostOfPurchaseCss();
+        $API = $CORE->getConnectionByCountry(self::getCustomerCountry(true));
+        $API->setCostOfPurcaseHtmlBefore(self::getCostOfPurchaseHtmlBefore());
+        $API->setCostOfPurcaseHtmlAfter('</div>');
+        try {
+            echo $API->getCostOfPurchase($method, $amount, true, $useCssStyle);
+        } catch (Exception $e) {
+            echo __(
+                'The cost of purchase module is not available right now. Please try again later.',
+                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+            );
+        }
+        die;
+    }
+
+    /**
      * Prepare enqueing
      */
     public static function setResursBankScripts()
@@ -1590,8 +1681,12 @@ class Resursbank_Core
                 'available' => true,
                 'graphics' => Resursbank_Core::getGraphics(),
                 'backend_url' => _RESURSBANK_GATEWAY_BACKEND,
-                'backend_nonce' => wp_nonce_url(_RESURSBANK_GATEWAY_BACKEND, 'resursBankBackendRequest',
-                    'resursBankGatewayNonce')
+                'backend_nonce' => wp_nonce_url(
+                    _RESURSBANK_GATEWAY_BACKEND,
+                    'resursBankBackendRequest',
+                    'resursBankGatewayNonce'
+                ),
+                'getCostOfPurchaseBackendUrl' => _RESURSBANK_GATEWAY_BACKEND . "&run=get_cost_of_purchase_html"
             )
         );
 

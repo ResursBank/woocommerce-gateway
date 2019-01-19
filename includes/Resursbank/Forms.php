@@ -133,10 +133,22 @@ class Resursbank_Forms
      */
     public static function getCustomerFieldHtmlReadMore($html, $PAYMENT_METHOD)
     {
+        global $woocommerce;
+        $cart = $woocommerce->cart;
+
         if (self::disableInternalFieldHtml(__FUNCTION__)) {
             return (string)$html;
         }
 
+        $buttonCssClasses = apply_filters('resursbank_readmore_button_css_class', 'btn btn-info active');
+
+        $html = sprintf(
+            '<button class="%s" type="button" id="resursCostOfPurchaseButton" onclick="getResursCostOfPurchase(\'%s\', \'%s\')">%s</button>',
+            $buttonCssClasses,
+            $PAYMENT_METHOD->id,
+            $cart->total,
+            __('Read more', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce')
+        );
 
         return (string)$html;
     }

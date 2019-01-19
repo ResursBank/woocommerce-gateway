@@ -278,7 +278,8 @@ class Resursbank_Adminforms
                     <tr id="resursbank_credential_row_' . $credentialData['country'] . '">
 
                         <td><b>
-                        ' . __(
+                        ' .
+                        __(
                             'Active',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</b><br>

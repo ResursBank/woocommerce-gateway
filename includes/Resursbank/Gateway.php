@@ -132,8 +132,9 @@ function resursbank_payment_gateway_initialize()
                 if ($this->METHOD->type === 'CARD') {
                     $formFieldHtml['applicant_natural_card'] = $this->getPaymentFormFieldHtml('card', $PAYMENT_METHOD);
                 } else {
+                    // TODO: Remove those fields.
                     // Natural cases, globally - gov, phone, mobile, email
-                    $formFieldHtml['applicant_natural_phone'] = $this->getPaymentFormFieldHtml(
+                    /*$formFieldHtml['applicant_natural_phone'] = $this->getPaymentFormFieldHtml(
                         'applicant_phone',
                         $PAYMENT_METHOD
                     );
@@ -144,7 +145,7 @@ function resursbank_payment_gateway_initialize()
                     $formFieldHtml['applicant_natural_email'] = $this->getPaymentFormFieldHtml(
                         'applicant_email',
                         $PAYMENT_METHOD
-                    );
+                    );*/
                 }
             }
 
@@ -449,11 +450,12 @@ function resursbank_payment_gateway_initialize()
             $paymentMethod = md5(str_replace('resursbank_', '', $this->getPostDataCustomer('payment', 'method')));
             $customerType = !Resursbank_Core::getIsLegal() ? 'NATURAL' : 'LEGAL';
 
+            // We no longer use "special forms" to catch basic data.
             $this->RESURSBANK->setCustomer(
                 $this->getPostDataCustomer('resursbankcustom', 'government_id_' . $paymentMethod),
-                $this->getPostDataCustomer('resursbankcustom', 'applicant_phone_' . $paymentMethod),
-                $this->getPostDataCustomer('resursbankcustom', 'applicant_mobile_' . $paymentMethod),
-                $this->getPostDataCustomer('resursbankcustom', 'applicant_email_' . $paymentMethod),
+                $this->getPostDataCustomer('billing', 'phone'),
+                $this->getPostDataCustomer('billing', 'phone'),
+                $this->getPostDataCustomer('billing', 'email'),
                 $customerType,
                 $this->getPostDataCustomer('resursbankcustom', 'contact_government_id' . $paymentMethod)
             );

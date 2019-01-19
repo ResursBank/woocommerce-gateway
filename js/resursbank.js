@@ -46,6 +46,18 @@ function resursBankFormFieldChange(o) {
 
 }
 
+/**
+ * getCostOfPurchaseHtml
+ * @param id
+ * @param total
+ */
+function getResursCostOfPurchase(id, total) {
+    window.open(
+        resurs_bank_payment_gateway['getCostOfPurchaseBackendUrl'] + "&method=" + id + "&amount=" + total,
+        'resursCostOfPurchasePopup',
+        'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px'
+    );
+}
 
 function resursBankLoaded() {
     if (typeof resursBankWooInitialize === 'function') {

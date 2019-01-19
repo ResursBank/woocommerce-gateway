@@ -34,6 +34,7 @@ foreach ($dataInfoFilters as $key) {
     add_filter('resursbank_data_info_' . $key, 'Resursbank_Core::get_data_info');
 }
 
+// Admin config.
 add_filter('resursbank_configrow_scriptloader', 'configrowInternalScriptloader', 10, 2);
 add_filter('resursbank_dropdown_option_method_get_tax_classes', 'Resursbank_Core::getTaxRateList');
 add_filter('resursbank_config_element_get_credentials_html', 'getCredentialFields');
@@ -41,12 +42,22 @@ add_filter('resursbank_config_element_get_plugin_data', 'Resursbank_Core::getPlu
 add_filter('resursbank_config_disable_coexist_warnings', 'Resursbank_Core::getCoexistDismissed');
 add_filter('resursbank_config_array', 'Resursbank_Core::resursbankGetDismissedElements', 10, 1);
 
+// Admin backend.
 add_filter('resursbank_admin_backend_get_shopflow_options', 'Resursbank_Adminforms::getShopFlowOptionsStatic');
 add_filter('resursbank_admin_backend_dismiss_element', 'Resursbank_Core::setDismissedElement', 10, 2);
 add_filter('resursbank_admin_backend_get_payment_methods', 'Resursbank_Core::get_payment_methods');
-add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Core::getPaymentListTimer');
+
+// getCostOfPurchase.
+add_filter('resursbank_backend_get_cost_of_purchase_html', 'Resursbank_Core::getCostOfPurchaseHtml');
+add_filter('resursbank_cost_of_purchase_css', 'Resursbank_Core::getCostOfPurchaseCss');
+
+// Payment section.
 add_filter('woocommerce_before_checkout_billing_form', 'Resursbank_Core::resursBankGetAddress');
 
-// Customer form fields generator
+// Customer form fields.
 add_filter('resursbank_get_customer_field_html_generic', 'Resursbank_Forms::getCustomerFieldHtmlGeneric', 10, 3);
 add_filter('resursbank_get_customer_field_html_read_more', 'Resursbank_Forms::getCustomerFieldHtmlReadMore', 10, 2);
+
+// Miscellaneous.
+add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Core::getPaymentListTimer');
+
