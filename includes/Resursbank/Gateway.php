@@ -106,9 +106,11 @@ function resursbank_payment_gateway_initialize()
         {
             $resursPaymentFormField = '';
 
+            $formFieldHtml = array();
+
             // Former version: onkeyup was used (for inherit fields?)
 
-            if ($this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
+            if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 $isLegal = false;
                 if (in_array('LEGAL', (array)$PAYMENT_METHOD->customerType)) {
                     if (Resursbank_Core::getIsLegal()) {
@@ -116,22 +118,26 @@ function resursbank_payment_gateway_initialize()
                     }
                 }
 
-                $formFieldHtml['applicant_natural_government_id'] = $this->getPaymentFormFieldHtml(
-                    'government_id',
-                    $PAYMENT_METHOD
-                );
+                // We consider payment providers not requiring government id's.
+                if ($PAYMENT_METHOD->type !== 'PAYMENT_PROVIDER') {
+                    $formFieldHtml['applicant_natural_government_id'] = $this->getPaymentFormFieldHtml(
+                        'government_id',
+                        $PAYMENT_METHOD
+                    );
+                }
 
-                if ($isLegal) {
+                // Not in hosted flow.
+                if ($isLegal && $this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
                     $formFieldHtml['contact_government_id'] = $this->getPaymentFormFieldHtml(
                         'contact_government_id',
                         $PAYMENT_METHOD
                     );
                 }
 
-                // Card requirements - government id + card number.
-                // On "NATURAL"-cases, please use the billing fields that WooCommcerce provides, so we don't need
-                // to duplicate them in our own.
-                if ($this->METHOD->type === 'CARD') {
+                // On "NATURAL"-cases, please use the billing fields that WooCommerce provides, so we don't need
+                // to duplicate them in our own. This field should not be present on hosted flow.
+                if ($this->METHOD->type === 'CARD' && $this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
+                    // Card requirements - government id + card number.
                     $formFieldHtml['applicant_natural_card'] = $this->getPaymentFormFieldHtml('card', $PAYMENT_METHOD);
                 }
             }
@@ -145,6 +151,7 @@ function resursbank_payment_gateway_initialize()
                 );
             }
 
+            $formFieldHtml = apply_filters('resursbank_custom_payment_field', $formFieldHtml, $PAYMENT_METHOD);
             $resursPaymentFormField = implode("\n", $formFieldHtml);
 
             return $resursPaymentFormField;
@@ -522,14 +529,12 @@ function resursbank_payment_gateway_initialize()
         }
 
         /**
-         * @param $woocommerceOrderId
-         * @param $resursOrderId
-         * @param WC_Order $order
-         * @return array
+         * @param $order
+         * @param $bookPaymentResult
          */
-        public function setOrderDetails($woocommerceOrderId, $resursOrderId, $order, $bookPaymentResult)
+        private function testBookPaymentStatus($order, $bookPaymentResult)
         {
-            if (!isset($bookPaymentResult['bookPaymentStatus'])) {
+            if (is_array($bookPaymentResult) && !isset($bookPaymentResult['bookPaymentStatus'])) {
                 $this->setPaymentError(
                     $order,
                     __(
@@ -538,6 +543,17 @@ function resursbank_payment_gateway_initialize()
                     ), 400
                 );
             }
+        }
+
+        /**
+         * @param $woocommerceOrderId
+         * @param $resursOrderId
+         * @param WC_Order $order
+         * @return array
+         */
+        public function setOrderDetails($woocommerceOrderId, $resursOrderId, $order, $bookPaymentResult)
+        {
+            $this->testBookPaymentStatus($order, $bookPaymentResult);
 
             switch ($bookPaymentResult['bookPaymentStatus']) {
                 case 'BOOKED':
@@ -575,7 +591,7 @@ function resursbank_payment_gateway_initialize()
          * @param string $redirect
          * @return array
          */
-        private function setResultArray($order, $result = 'success', $redirect = '')
+        protected function setResultArray($order, $result = 'success', $redirect = '')
         {
             if ($result === 'failure' && empty($redirect)) {
                 $redirect = html_entity_decode($order->get_cancel_order_url());
@@ -654,7 +670,11 @@ function resursbank_payment_gateway_initialize()
         protected function getSuccessUrl($woocommerceOrderId, $resursOrderId)
         {
             $successUrlString = $this->getApiUrl();
-            $successUrlString = add_query_arg('request', 'signing', $successUrlString);
+            if ($this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
+                $successUrlString = add_query_arg('request', 'signing', $successUrlString);
+            } elseif ($this->FLOW === RESURS_FLOW_TYPES::HOSTED_FLOW) {
+                $successUrlString = add_query_arg('request', 'hosted', $successUrlString);
+            }
             // Ensure that the transactions appear under the correct trafic source.
             $successUrlString = add_query_arg('utm_nooverride', '1', $successUrlString);
             $successUrlString = add_query_arg('w_id', $woocommerceOrderId, $successUrlString);
@@ -730,25 +750,46 @@ function resursbank_payment_gateway_initialize()
          */
         public function resursbankPaymentHandler()
         {
-            $redirectUrl = '';
             $requestType = $this->getRequestKey('request');
 
             $woocommerceOrderId = $this->getRequestKey('w_id');
             $order = new WC_Order($woocommerceOrderId);
-            $orderPaymentId = $this->CORE->getPostMeta($woocommerceOrderId, 'paymentId');
+            $resursOrderId = $this->CORE->getPostMeta($woocommerceOrderId, 'paymentId');
             $this->RESURSBANK = $this->CORE->getConnectionByCountry($order->get_billing_country());
-
 
             switch ($requestType) {
                 case 'signing':
-                    if ($this->setSignedPayment($woocommerceOrderId, $orderPaymentId, $order)) {
+                    if ($this->setSignedPayment($woocommerceOrderId, $resursOrderId, $order)) {
                         $redirectUrl = $this->get_return_url($order);
                     } else {
                         $redirectUrl = $order->get_cancel_order_url();
                     }
                     break;
+                case 'hosted':
+                    // Prepare for a failure.
+                    $redirectUrl = $order->get_cancel_order_url();
+                    try {
+                        $resursPaymentInformation = $this->RESURSBANK->getPayment($resursOrderId);
+                    } catch (Exception $e) {
+                        // This is where the cancel order url has been if something goes wrong in the hosted process.
+                    }
+                    $bookedTimeTest = @strtotime($resursPaymentInformation->booked);
+
+                    // Consider successful if there is a booking time in order.
+                    if ($bookedTimeTest) {
+                        $order->update_status(
+                            'processing',
+                            __(
+                                'The payment are signed and booked via hosted flow.',
+                                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
+                        $redirectUrl = $this->get_return_url($order);
+                    }
+                    break;
                 default:
                     $redirectUrl = $order->get_cancel_order_url();
+                    break;
             }
 
             wp_safe_redirect($redirectUrl);

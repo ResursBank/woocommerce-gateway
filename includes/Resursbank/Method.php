@@ -241,13 +241,22 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             $this->setResursCustomerData('shipping');
             $this->setResursCart($cart);
 
-            // Create order and set statuses.
-            $return = $this->setOrderDetails(
-                $order_id,
-                $resursOrderId,
-                $order,
-                $this->createResursOrder($order_id, $resursOrderId, $order, $this->METHOD)
-            );
+            $bookPaymentResult = $this->createResursOrder($order_id, $resursOrderId, $order, $this->METHOD);
+
+            if ($this->FLOW === RESURS_FLOW_TYPES::HOSTED_FLOW) {
+                $redirectUrl = array_shift($bookPaymentResult);
+                $return = $this->setResultArray($order, 'success', $redirectUrl);
+            }
+
+            if ($this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
+                // Create order and set statuses.
+                $return = $this->setOrderDetails(
+                    $order_id,
+                    $resursOrderId,
+                    $order,
+                    $bookPaymentResult
+                );
+            }
 
             // $orderReceivedUrl = $this->get_return_url($order);
 
