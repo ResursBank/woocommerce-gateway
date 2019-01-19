@@ -477,11 +477,17 @@ function resursbank_payment_gateway_initialize()
 
         /**
          * Set up main customer data for EComPHP.
+         * @param $order
          */
-        protected function setResursCustomerBasicData()
+        protected function setResursCustomerBasicData($order)
         {
             $paymentMethod = md5(str_replace('resursbank_', '', $this->getPostDataCustomer('payment', 'method')));
             $customerType = !Resursbank_Core::getIsLegal() ? 'NATURAL' : 'LEGAL';
+
+            $customerId = Resursbank_Core::getCustomerId($order);
+            if (!is_null($customerId)) {
+                $this->RESURSBANK->setMetaData('CustomerId', $customerId);
+            }
 
             // We no longer use "special forms" to catch basic data.
             $this->RESURSBANK->setCustomer(

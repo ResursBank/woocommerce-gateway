@@ -619,6 +619,32 @@ class Resursbank_Core
     }
 
     /**
+     * @param WC_Order $order
+     * @return int|null
+     */
+    public static function getCustomerId($order)
+    {
+        $return = null;
+
+        if (function_exists('wp_get_current_user')) {
+            $current_user = wp_get_current_user();
+        } else {
+            $current_user = get_currentuserinfo();
+        }
+
+        if (isset($current_user->ID)) {
+            $return = $current_user->ID;
+        }
+
+        // Created orders has higher priority since this id might have been created during order processing
+        if (!is_null($order)) {
+            $return = $order->get_user_id();
+        }
+
+        return $return;
+    }
+
+    /**
      * @param $key
      * @return mixed
      */
@@ -1607,7 +1633,8 @@ class Resursbank_Core
     /**
      * @return string
      */
-    private static function getCostOfPurchaseHtmlBefore() {
+    private static function getCostOfPurchaseHtmlBefore()
+    {
         $buttonCssClasses = apply_filters(
             'resursbank_readmore_button_css_class',
             'btn btn-info active woocommerce button'
@@ -1627,7 +1654,8 @@ class Resursbank_Core
         );
     }
 
-    private static function resursbankCostOfPurchaseCss() {
+    private static function resursbankCostOfPurchaseCss()
+    {
         return (array)apply_filters(
             'resursbank_cost_of_purchase_css',
             array(_RESURSBANK_GATEWAY_URL . 'css/costofpurchase.css')

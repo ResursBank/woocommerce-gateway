@@ -171,7 +171,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          * @return array|bool
          * @throws Exception
          */
-        private function canProcessPayment($order)
+        private function canProcessPayment()
         {
             $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
 
@@ -223,7 +223,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             }
 
             try {
-                $this->canProcessPayment($order);
+                $this->canProcessPayment();
             } catch (\Exception $e) {
                 return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
             }
@@ -234,13 +234,7 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 update_post_meta($order_id, 'resursStoreId', $storeId);
             }
 
-            /** @link https://test.resurs.com/docs/x/moBx */
-            $this->setCustomerSigningData($order_id, $resursOrderId, $order);
-            $this->setResursCustomerBasicData();
-            $this->setResursCustomerData('billing');
-            $this->setResursCustomerData('shipping');
-            $this->setResursCart($cart);
-
+            $this->handleResursOrder($order_id, $resursOrderId, $cart, $order);
             $bookPaymentResult = $this->createResursOrder($order_id, $resursOrderId, $order, $this->METHOD);
 
             if ($this->FLOW === RESURS_FLOW_TYPES::HOSTED_FLOW) {
@@ -264,6 +258,22 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         }
 
         /**
+         * @param string $woocommerceOrderId
+         * @param string $resursOrderId
+         * @param $cart
+         * @param $order
+         */
+        private function handleResursOrder($woocommerceOrderId = '', $resursOrderId = '', $cart, $order)
+        {
+            /** @link https://test.resurs.com/docs/x/moBx */
+            $this->setCustomerSigningData($woocommerceOrderId, $resursOrderId, $order);
+            $this->setResursCustomerBasicData($order);
+            $this->setResursCustomerData('billing');
+            $this->setResursCustomerData('shipping');
+            $this->setResursCart($cart);
+        }
+
+        /**
          * Handle special form fields. This method resided in the former method class files and has been converted to
          * a modern way handling Resurs Bank flows, without the deprecated flow dependency start_payment_session which
          * infested the prior release.
@@ -275,18 +285,17 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
 
 
         // RCO
-
         private function getRcoException($message, $code)
         {
             $html = '<div class="resursCheckoutIframeException">';
 
             $html .= sprintf(
-                __(
-                    'An error (%s) occured when trying to set up a shopUrl for Resurs Checkout',
-                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                ),
-                $code
-            ) . ':<br>';
+                    __(
+                        'An error (%s) occured when trying to set up a shopUrl for Resurs Checkout',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    $code
+                ) . ':<br>';
 
             $html .= '<div class="resursCheckoutIframeExceptionMessage">' . $message . '</div>';
             $html .= '</div>';
@@ -299,12 +308,30 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
          */
         public function resursCheckoutIframeContainer()
         {
+            global $woocommerce;
+
             $html = '';
             try {
                 $this->RESURSBANK->setShopUrl($this->getProperShopUrl());
             } catch (Exception $e) {
                 $html = $this->getRcoException($e->getMessage(), $e->getCode());
             }
+
+            try {
+                $this->canProcessPayment();
+            } catch (\Exception $e) {
+                $html = $this->getRcoException($e->getMessage(), $e->getCode());
+            }
+
+            $order = new WC_Order();
+
+            $this->handleResursOrder(
+                null,
+                md5(time()),
+                $woocommerce->cart,
+                $order
+
+            );
 
             if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 // Have it prepared in non-RCO mode.
