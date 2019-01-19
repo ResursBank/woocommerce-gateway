@@ -60,4 +60,5 @@ add_filter('resursbank_get_customer_field_html_read_more', 'Resursbank_Forms::ge
 
 // Miscellaneous.
 add_filter('resursbank_config_save_data_paymentMethodListTimer', 'Resursbank_Core::getPaymentListTimer');
-
+add_action('wp_logout', 'Resursbank_Core::resursSessionEnd');
+add_action('wp_login', 'Resursbank_Core::resursSessionEnd');

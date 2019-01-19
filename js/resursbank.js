@@ -8,6 +8,23 @@ $resurs_bank(document).on('updated_checkout', function () {
 });
 
 /**
+ * Translation object between RCO and WooCommerce default fields.
+ *
+ * @type {{firstname: string, surname: string, address: string, addressExtra: string, postal: string, city: string, countryCode: string, telephone: string, email: string}}
+ */
+var resursCheckoutAddressObject = {
+    "firstname": "first_name",
+    "surname": "last_name",
+    "address": "address_1",
+    "addressExtra": "address_2",
+    "postal": "postcode",
+    "city": "city",
+    "countryCode": "country",
+    "telephone": "phone",
+    "email": "email"
+};
+
+/**
  * Ajaxify element dismissals
  *
  * @param element
@@ -69,15 +86,97 @@ function getResursCostOfPurchase(id, total) {
     );
 }
 
+var releaseRco;
+
+function setResursCheckoutInterceptor() {
+    // In interceptor mode, we hook into a global ajax hook to look after checkout responses, as redirecting
+    // will be anchor based, to prevent the checkout to redirect itself somewhere.
+    $resurs_bank(document).ajaxSuccess(function (event, xhr, settings) {
+        if (typeof xhr.responseJSON !== 'undefined') {
+            var processOrderResponse = xhr.responseJSON;
+            // Go when everything is ok.
+            if (typeof processOrderResponse['result'] !== 'undefined' && typeof releaseRco !== 'undefined') {
+                if (processOrderResponse['result'] === 'success') {
+                    releaseRco.confirm(true);
+                }
+            }
+        }
+    });
+
+    if (typeof _resursCheckout !== 'undefined') {
+        _resursCheckout.init({
+            debug: false,
+            container: 'resurs-checkout-container',
+            domain: resurs_bank_payment_gateway['iframeUrl'],
+            interceptor: true,
+            on: {
+                loaded: null,
+                booked: function (data) {
+                    releaseRco = data;
+                    $resurs_bank('#place_order').click();
+                },
+                fail: function () {
+
+                },
+                change: function (changeDataObject) {
+                    getResursCheckoutFields(changeDataObject);
+                }
+            }
+        });
+    }
+}
+
+function setResursCheckoutFields(addressObject, addressType) {
+    var currentMatchingKey;
+    for (var addrKey in addressObject) {
+        if (typeof resursCheckoutAddressObject[addrKey] !== 'undefined') {
+            currentMatchingKey = resursCheckoutAddressObject[addrKey];
+            if (addressObject[addrKey] !== '' && $resurs_bank('#currentMatchingKey').length > -1) {
+                $resurs_bank('#' + addressType + '_' + currentMatchingKey).val(addressObject[addrKey]);
+            }
+        }
+    }
+}
+
+function getWoocommerceShippingCheckboxByResurs(hasShipping) {
+    if ($resurs_bank('#ship-to-different-address-checkbox').length > 0) {
+        var shippingAddressBox = $resurs_bank('#ship-to-different-address-checkbox')[0];
+        if (!shippingAddressBox.checked && hasShipping) {
+            shippingAddressBox.click();
+        }
+        if (shippingAddressBox.checked && !hasShipping) {
+            shippingAddressBox.click();
+        }
+    }
+}
+
+function getResursCheckoutFields(changeDataObject) {
+    var paymentMethod = changeDataObject['paymentMethod'];
+    if (typeof changeDataObject['address'] !== 'undefined') {
+        setResursCheckoutFields(changeDataObject['address'], 'billing');
+    }
+    if (typeof changeDataObject['delivery'] !== 'undefined' && typeof changeDataObject['delivery']['firstname'] !== 'undefined') {
+        getWoocommerceShippingCheckboxByResurs(true);
+        setResursCheckoutFields(changeDataObject['delivery'], 'shipping');
+    } else {
+        getWoocommerceShippingCheckboxByResurs(false);
+    }
+}
+
 function resursBankLoaded() {
     $resurs_bank('#resursbankcustom_getaddress_governmentid').on('keyup', function (a) {
         var currentFormField = $resurs_bank("input[id*='resursbankcustom_government_id_']").filter(':visible');
         currentFormField.val(this.value);
     });
+
+    setResursCheckoutInterceptor();
+
     if (typeof resursBankWooInitialize === 'function') {
         resursBankWooInitialize();
     }
     if (resurs_bank_payment_gateway['suggested_flow'] === 'checkout') {
         resursBankHandleCheckoutForms();
     }
+
 }
+

@@ -62,6 +62,10 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                         400
                     );
                 }
+                if ($this->FLOW === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                    // My new name.
+                    $this->id = 'resursbank_checkout';
+                }
             }
 
             $this->REQUEST = Resursbank_Core::getQueryRequest();
@@ -155,122 +159,15 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         /**
          * Session counter that keeps in track of how many times this class has been passed and loaded.
          *
-         * @return bool|void
          * @throws Exception
          */
         public function updateMethodInitializer()
         {
             // This always happens in the checkout.
-            return $this->CORE->setSession(
+            $this->CORE->setSession(
                 'session_gateway_method_init',
                 intval($this->CORE->getSession('session_gateway_method_init')) + 1
             );
-        }
-
-        /**
-         * @return array|bool
-         * @throws Exception
-         */
-        private function canProcessPayment()
-        {
-            $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
-
-            if (!$lastLocationWasCheckout) {
-                throw new \Exception(
-                    __(
-                        'Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).',
-                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    400
-                );
-            }
-
-            // Validate exceptions silently - this one is used for special exceptions. Throwing something at this moment,
-            // will reflect an error in the checkout.
-            do_action('resursbank_validate_process_payment');
-
-            return true;
-        }
-
-        /**
-         * Handle the current order.
-         *
-         * This is a rewrite of the old version process_payment rather than a copy-paste as we're merging
-         * the way how to handle multiple flows in one piece. It does not directly include the static
-         * RCO flow as RCO must happen in backend.
-         *
-         * @param int $order_id
-         * @return array
-         * @throws Exception
-         */
-        public function process_payment($order_id)
-        {
-            global $woocommerce;
-
-            $return = array(
-                'result' => '',         // success
-                'redirect' => ''        // processSuccessUrl
-            );
-
-            $order = new WC_Order($order_id);
-            $resursOrderId = $this->getResursOrderId($order_id);
-
-            /** @var WC_Cart $cart */
-            $cart = $woocommerce->cart;
-
-            if (get_class($cart) !== 'WC_Cart') {
-                return $this->setPaymentError($order, 'No cart is present', 400);
-            }
-
-            try {
-                $this->canProcessPayment();
-            } catch (\Exception $e) {
-                return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
-            }
-
-            $storeId = apply_filters('resursbank_set_storeid', '');
-            if (!empty($storeId)) {
-                $this->RESURSBANK->setStoreId($storeId);
-                update_post_meta($order_id, 'resursStoreId', $storeId);
-            }
-
-            $this->handleResursOrder($order_id, $resursOrderId, $cart, $order);
-            $bookPaymentResult = $this->createResursOrder($order_id, $resursOrderId, $order, $this->METHOD);
-
-            if ($this->FLOW === RESURS_FLOW_TYPES::HOSTED_FLOW) {
-                $redirectUrl = array_shift($bookPaymentResult);
-                $return = $this->setResultArray($order, 'success', $redirectUrl);
-            }
-
-            if ($this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
-                // Create order and set statuses.
-                $return = $this->setOrderDetails(
-                    $order_id,
-                    $resursOrderId,
-                    $order,
-                    $bookPaymentResult
-                );
-            }
-
-            // $orderReceivedUrl = $this->get_return_url($order);
-
-            return $return;
-        }
-
-        /**
-         * @param string $woocommerceOrderId
-         * @param string $resursOrderId
-         * @param $cart
-         * @param $order
-         */
-        private function handleResursOrder($woocommerceOrderId = '', $resursOrderId = '', $cart, $order)
-        {
-            /** @link https://test.resurs.com/docs/x/moBx */
-            $this->setCustomerSigningData($woocommerceOrderId, $resursOrderId, $order);
-            $this->setResursCustomerBasicData($order);
-            $this->setResursCustomerData('billing');
-            $this->setResursCustomerData('shipping');
-            $this->setResursCart($cart);
         }
 
         /**
@@ -282,7 +179,6 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         {
             echo $this->getPaymentFormFields($this->METHOD);
         }
-
 
         // RCO
         private function getRcoException($message, $code)
@@ -304,41 +200,75 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
         }
 
         /**
-         * Prepare container for Resurs Checkout
+         * Prepare container for Resurs Checkout.
          */
         public function resursCheckoutIframeContainer()
         {
             global $woocommerce;
-
             $html = '';
+            $hasErrors = false;
+
+            // Do not bother doing stuff if not in RCO.
+            if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                return '<div id="resurs-checkout-container" style="display: none !important;"></div>';
+            }
+
             try {
                 $this->RESURSBANK->setShopUrl($this->getProperShopUrl());
             } catch (Exception $e) {
                 $html = $this->getRcoException($e->getMessage(), $e->getCode());
+                $hasErrors = true;
             }
-
             try {
                 $this->canProcessPayment();
             } catch (\Exception $e) {
                 $html = $this->getRcoException($e->getMessage(), $e->getCode());
+                $hasErrors = true;
             }
 
-            $order = new WC_Order();
+            // Initiate order iframe.
+            $resursOrderId = $this->getResursOrderId(null);
 
-            $this->handleResursOrder(
+            $this->prepareResursOrder(
                 null,
-                md5(time()),
+                $resursOrderId,
                 $woocommerce->cart,
-                $order
-
+                null
             );
 
-            if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
-                // Have it prepared in non-RCO mode.
-                echo '<div id="resurs-checkout-container" style="display: none !important;"></div>';
-            } else {
-                echo sprintf('<div id="resurs-checkout-container">%s</div>', $html);
+            // If no errors occured, fetch the iframe.
+            if (!$hasErrors) {
+                try {
+                    $bookPaymentResult = $this->createResursOrder(null, $resursOrderId, null, $this->METHOD);
+                    // Silent internal errors.
+                    if (isset($bookPaymentResult['result']) && $bookPaymentResult['result'] === 'failure') {
+                        // Terminate current session orderid if errors occurs here.
+                        Resursbank_Core::terminateRco();
+                        wc_add_notice(_(
+                                'An error occured while trying to initialize Resurs Bank iframe solution.',
+                                'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
+                        wp_safe_redirect(wc_get_cart_url());
+                        die;
+                    }
+                    $html = array_shift($bookPaymentResult); // the iframe code
+                } catch (Exception $e) {
+                    $html = $this->getRcoException($e->getMessage(), $e->getCode());
+                }
             }
+
+            // Show errors or final result.
+            echo $this->setIframeContainer($html);
+        }
+
+        /**
+         * @param $html
+         * @return string
+         */
+        private function setIframeContainer($html)
+        {
+            return sprintf('<div id="resurs-checkout-container">%s</div>', $html);
         }
 
         /**
@@ -360,8 +290,5 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
                 1
             );
         }
-
-
     }
-
 }

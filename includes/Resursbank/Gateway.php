@@ -44,6 +44,7 @@ function resursbank_payment_gateway_initialize()
         /** @var RESURS_FLOW_TYPES */
         protected $FLOW;
 
+        /** @var */
         protected $COUNTRY;
 
         /**
@@ -279,8 +280,7 @@ function resursbank_payment_gateway_initialize()
          */
         protected function setResursCartDiscount($cart)
         {
-            if ($cart->coupons_enabled()) {
-
+            if (wc_coupons_enabled()) {
                 /** @var WC_Coupon $coupons */
                 $coupons = $cart->get_coupons();
 
@@ -485,13 +485,19 @@ function resursbank_payment_gateway_initialize()
             $customerType = !Resursbank_Core::getIsLegal() ? 'NATURAL' : 'LEGAL';
 
             $customerId = Resursbank_Core::getCustomerId($order);
-            if (!is_null($customerId)) {
+            if (intval($customerId)) {
                 $this->RESURSBANK->setMetaData('CustomerId', $customerId);
+            }
+
+            $governmentId = $this->getPostDataCustomer('resursbankcustom', 'government_id_' . $paymentMethod);
+            if (empty($governmentId)) {
+                // TODO: Fetch proper data for custom governmentId
+                //$governmentId = 'change-my-value-and activate-it';
             }
 
             // We no longer use "special forms" to catch basic data.
             $this->RESURSBANK->setCustomer(
-                $this->getPostDataCustomer('resursbankcustom', 'government_id_' . $paymentMethod),
+                $governmentId,
                 $this->getPostDataCustomer('billing', 'phone'),
                 $this->getPostDataCustomer('billing', 'phone'),
                 $this->getPostDataCustomer('billing', 'email'),
@@ -517,18 +523,59 @@ function resursbank_payment_gateway_initialize()
         }
 
         /**
+         * Generates an order id for Resurs flows. Method takes height for RCO, which has higher sensitivity witg
+         * duplicates and conflicting numbers.
+         *
+         * @return string
+         */
+        private function getResursPaymentIdByRco()
+        {
+            $rcoSessionPaymentId = $this->CORE->getSession('resurs_rco_preferred_id');
+
+            if (!empty($rcoSessionPaymentId)) {
+                $return = $rcoSessionPaymentId;
+            } else {
+                $orderIdSuffix = '';
+                if ($this->FLOW === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                    $orderIdSuffix = 'RCO';
+                }
+                $return = $this->RESURSBANK->getPreferredPaymentId(25, $orderIdSuffix);
+                $this->CORE->setSession('resurs_rco_preferred_id', $return);
+            }
+
+            return $return;
+        }
+
+        /**
+         * Pregenerate order id for orders. In cases of RCO $order_id can (or should) be null.
+         *
          * @param $order_id
          * @return string
          */
         protected function getResursOrderId($order_id)
         {
-            if (Resursbank_Core::getResursOption('postidreference')) {
+            // Using postid requires that we don't run RCO in this moment as references for RCO will be
+            // updated elsewhere.
+            if (Resursbank_Core::getResursOption('postidreference') && $this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
                 $preferredId = $order_id;
             } else {
-                $preferredId = $this->RESURSBANK->getPreferredPaymentId();
+                $preferredId = $this->getResursPaymentIdByRco();
             }
-            update_post_meta($order_id, 'paymentId', $preferredId);
-            update_post_meta($order_id, 'flow', $this->FLOW);
+
+            try {
+                $getPlausibleOrder = $this->RESURSBANK->getPayment($preferredId);
+                // This will regenerate only if there is an order present at Resurs Bank.
+                if (is_array($getPlausibleOrder) || is_object($getPlausibleOrder)) {
+                    Resursbank_Core::terminateRco();
+                    $preferredId = $this->getResursOrderId(null);
+                }
+            } catch (Exception $e) {
+            }
+
+            if ((int)$order_id) {
+                update_post_meta($order_id, 'paymentId', $preferredId);
+                update_post_meta($order_id, 'flow', $this->FLOW);
+            }
 
             return $preferredId;
         }
@@ -598,6 +645,7 @@ function resursbank_payment_gateway_initialize()
          */
         public function setOrderDetails($woocommerceOrderId, $resursOrderId, $order, $bookPaymentResult)
         {
+            Resursbank_Core::terminateRco();
             $this->testBookPaymentStatus($order, $bookPaymentResult);
 
             switch ($bookPaymentResult['bookPaymentStatus']) {
@@ -638,17 +686,138 @@ function resursbank_payment_gateway_initialize()
          */
         protected function setResultArray($order, $result = 'success', $redirect = '')
         {
+            if (is_null($order)) {
+                $order = new WC_Order();
+            }
+
             if ($result === 'failure' && empty($redirect)) {
                 $redirect = html_entity_decode($order->get_cancel_order_url());
             }
             if ($result === 'success' && empty($redirect)) {
-                $redirect = $this->get_return_url($order);
+                if (!is_null($redirect)) {
+                    $redirect = $this->get_return_url($order);
+                }
             }
 
             return array(
                 'result' => $result,
                 'redirect' => $redirect
             );
+        }
+
+        /**
+         * Handle the current order.
+         *
+         * This is a rewrite of the old version process_payment rather than a copy-paste as we're merging
+         * the way how to handle multiple flows in one piece. It does not directly include the static
+         * RCO flow as RCO must happen in backend.
+         *
+         * @param int $order_id
+         * @return array
+         * @throws Exception
+         */
+        public function process_payment($order_id)
+        {
+            global $woocommerce;
+
+            $return = array(
+                'result' => '',         // success
+                'redirect' => ''        // processSuccessUrl
+            );
+
+            $order = new WC_Order($order_id);
+            $resursOrderId = $this->getResursOrderId($order_id);
+
+            /** @var WC_Cart $cart */
+            $cart = $woocommerce->cart;
+
+            if (get_class($cart) !== 'WC_Cart') {
+                return $this->setPaymentError($order, 'No cart is present', 400);
+            }
+
+            try {
+                $this->canProcessPayment();
+            } catch (\Exception $e) {
+                return $this->setPaymentError($order, $e->getMessage(), $e->getCode());
+            }
+
+            $storeId = apply_filters('resursbank_set_storeid', '');
+            if (!empty($storeId)) {
+                $this->RESURSBANK->setStoreId($storeId);
+                update_post_meta($order_id, 'resursStoreId', $storeId);
+            }
+
+            $this->prepareResursOrder($order_id, $resursOrderId, $cart, $order);
+            // Skip booking if we're in RCO as the booking is happening remotely.
+            if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                $bookPaymentResult = $this->createResursOrder($order_id, $resursOrderId, $order, $this->METHOD);
+            } else {
+                // Try not going anywhere.
+                $return = $this->setResultArray($order, 'success', '#');
+            }
+
+            if ($this->FLOW === RESURS_FLOW_TYPES::HOSTED_FLOW) {
+                $redirectUrl = array_shift($bookPaymentResult);
+                $return = $this->setResultArray($order, 'success', $redirectUrl);
+            }
+
+            if ($this->FLOW === RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
+                // Create order and set statuses.
+                $return = $this->setOrderDetails(
+                    $order_id,
+                    $resursOrderId,
+                    $order,
+                    $bookPaymentResult
+                );
+            }
+
+            // $orderReceivedUrl = $this->get_return_url($order);
+
+            return $return;
+        }
+
+        /**
+         * @param string $woocommerceOrderId
+         * @param string $resursOrderId
+         * @param $cart
+         * @param $order
+         */
+        protected function prepareResursOrder($woocommerceOrderId = '', $resursOrderId = '', $cart, $order)
+        {
+            /** @link https://test.resurs.com/docs/x/moBx */
+            $this->setCustomerSigningData($woocommerceOrderId, $resursOrderId, $order);
+            $this->setResursCustomerBasicData($order);
+            // Waste of time here.
+            if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                $this->setResursCustomerData('billing');
+                $this->setResursCustomerData('shipping');
+            }
+            $this->setResursCart($cart);
+        }
+
+        /**
+         * @return array|bool
+         * @throws Exception
+         */
+        protected function canProcessPayment()
+        {
+            $lastLocationWasCheckout = Resursbank_Core::getWasInCheckout();
+
+            if (!$lastLocationWasCheckout) {
+                throw new \Exception(
+                    __(
+                        'Unable to process your order. Your session has expired. Please reload the checkout and try again (error #getWasInCheckout).',
+                        'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    400
+                );
+            }
+
+            // Validate exceptions silently - this one is used for special exceptions. Throwing something at this moment,
+            // will reflect an error in the checkout.
+            do_action('resursbank_validate_process_payment');
+
+            return true;
         }
 
         /**
@@ -682,6 +851,11 @@ function resursbank_payment_gateway_initialize()
          */
         protected function setCustomerSigningData($woocommerceOrderId, $resursOrderId, $order)
         {
+            if (is_null($order)) {
+                // Generate a temporary order to pick up urls if null.
+                $order = new WC_Order();
+            }
+
             $this->RESURSBANK->setSigning(
                 $this->getSuccessUrl(
                     $woocommerceOrderId,
@@ -691,7 +865,7 @@ function resursbank_payment_gateway_initialize()
                     $order->get_cancel_order_url()
                 ),
                 (bool)Resursbank_Core::getResursOption('forcePaymentSigning'),
-                $this->getBackUrl($order)
+                $this->getBackUrl($order, $resursOrderId)
             );
         }
 
@@ -732,10 +906,13 @@ function resursbank_payment_gateway_initialize()
          * @param $order
          * @return string
          */
-        protected function getBackUrl($order)
+        protected function getBackUrl($order, $resursOrderId = null)
         {
             $backurl = html_entity_decode($order->get_cancel_order_url());
             $backurl .= ($this->FLOW === RESURS_FLOW_TYPES::HOSTED_FLOW ? "&isBack=1" : "");
+            if (!is_null($resursOrderId)) {
+                $backurl .= "&r_id=" . $resursOrderId;
+            }
             return $backurl;
         }
 
@@ -769,6 +946,8 @@ function resursbank_payment_gateway_initialize()
          */
         private function setSignedPayment($woocommerceOrderId, $orderPaymentId, $order)
         {
+            Resursbank_Core::terminateRco();
+
             $return = false;
             try {
                 $signingResponse = $this->RESURSBANK->bookSignedPayment($orderPaymentId);

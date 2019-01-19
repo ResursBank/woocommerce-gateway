@@ -1698,11 +1698,45 @@ class Resursbank_Core
     }
 
     /**
+     * Terminate session stuff.
+     *
+     * @throws Exception
+     */
+    public static function resursSessionEnd()
+    {
+        self::terminateRco();
+    }
+
+    /**
+     * Terminates RCO data during a session.
+     *
+     * @throws Exception
+     */
+    public static function terminateRco()
+    {
+        $return = false;
+        try {
+            $CORE = self::getResursCore();
+            $getActiveKey = $CORE->getSession('resurs_rco_preferred_id');
+            if (!empty($getActiveKey)) {
+                $CORE->setSession('resurs_rco_preferred_id', null);
+                $return = true;
+            }
+        } catch (Exception $e) {
+        }
+
+        return $return;
+    }
+
+    /**
      * Prepare enqueing
      */
     public static function setResursBankScripts()
     {
         $CORE = self::getResursCore();
+
+        $iFrameUrl = !is_admin() && is_checkout() ? self::getIframeUrl() : '';
+
         $varsToLocalize = array(
             'resurs_bank_payment_gateway' => array(
                 'available' => true,
@@ -1714,7 +1748,8 @@ class Resursbank_Core
                     'resursBankGatewayNonce'
                 ),
                 'getCostOfPurchaseBackendUrl' => RESURSBANK_GATEWAY_BACKEND . '&run=get_cost_of_purchase_html',
-                'suggested_flow' => $CORE->getFlowByCountry(self::getCustomerCountry())
+                'suggested_flow' => $CORE->getFlowByCountry(self::getCustomerCountry()),
+                'iframeUrl' => $iFrameUrl
             )
         );
 
@@ -1771,14 +1806,6 @@ class Resursbank_Core
             foreach ($varsToLocalize as $varKey => $varArray) {
                 wp_localize_script('resurs_bank_payment_gateway_js', $varKey, $varArray);
             }
-        }
-
-        if ($iFrameUrl = self::getIframeUrl() && !is_admin()) {
-            wp_localize_script(
-                'resurs_bank_payment_gateway_js',
-                'RESURSCHECKOUT_IFRAME_URL',
-                (array)$iFrameUrl
-            );
         }
     }
 
@@ -1848,5 +1875,4 @@ class Resursbank_Core
         }
         return 'i.have.no.idea-beta';
     }
-
 }
