@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks Resurs Bank payment gateway for "
 "WooCommerce\n"
-"POT-Creation-Date: 2019-01-18 23:16+0100\n"
-"PO-Revision-Date: 2019-01-18 23:16+0100\n"
+"POT-Creation-Date: 2019-01-19 09:43+0100\n"
+"PO-Revision-Date: 2019-01-19 09:44+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language: sv_SE\n"
@@ -30,7 +30,7 @@ msgstr "Resurs Bank betalningar"
 msgid "Unnamed config section"
 msgstr "Namnlöst konfigurationsavsnitt"
 
-#: includes/Resursbank/Admin.php:291
+#: includes/Resursbank/Admin.php:293
 msgid ""
 "Coexisting note: This plugin has discovered a prior version of Resurs Bank "
 "Payment Gateway!"
@@ -38,7 +38,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en tidigare version av "
 "Resurs Banks Betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:295
+#: includes/Resursbank/Admin.php:297
 msgid ""
 "This should not be a problem as they are coexistent. However, running them "
 "simultaneously is probably not what you want."
@@ -46,7 +46,7 @@ msgstr ""
 "Detta bör inte vara ett problem eftersom de är samexisterande. Men att köra "
 "dem samtidigt är förmodligen inte vad du vill."
 
-#: includes/Resursbank/Admin.php:311 includes/Resursbank/Admin.php:331
+#: includes/Resursbank/Admin.php:314 includes/Resursbank/Admin.php:334
 msgid ""
 "Coexisting note: This plugin has discovered a similar version of Resurs Bank "
 "Payment Gateway!"
@@ -54,7 +54,7 @@ msgstr ""
 "Samexisterande Anmärkning: Detta plugin har upptäckt en liknande version av "
 "Resurs Banks betalningsgateway!"
 
-#: includes/Resursbank/Admin.php:315
+#: includes/Resursbank/Admin.php:318
 msgid ""
 "This probably means you are running on duplicate software. You should "
 "consider disabling one of them!"
@@ -62,7 +62,7 @@ msgstr ""
 "Detta innebär förmodligen att du kör på duplicerad programvara. Du bör "
 "överväga att inaktivera en av dem!"
 
-#: includes/Resursbank/Admin.php:335
+#: includes/Resursbank/Admin.php:338
 msgid ""
 "This plugin has disabled the coexisting prior version of Resurs Bank for "
 "WooCommerce on demand."
@@ -70,7 +70,7 @@ msgstr ""
 "Detta plugin har på begäran avaktiverat den tidigare versionen av Resurs "
 "Bank för WooCommerce."
 
-#: includes/Resursbank/Admin.php:339
+#: includes/Resursbank/Admin.php:342
 msgid ""
 "If you do not know what this is about, you might want to take a look in the "
 "configuration, where this feature can be shut off."
@@ -78,7 +78,7 @@ msgstr ""
 "Om du inte vet vad det här handlar om, kan du ta dig en titt i "
 "inställningarna, där denna egenskap kan stängas av."
 
-#: includes/Resursbank/Admin.php:390
+#: includes/Resursbank/Admin.php:393
 #, php-format
 msgid ""
 "It seems that you run on a WooCommerce version that is lower than %s. It is "
@@ -252,7 +252,7 @@ msgstr "Om"
 msgid "Plugin information"
 msgstr "Plugin-information"
 
-#: includes/Resursbank/Core.php:219
+#: includes/Resursbank/Core.php:220
 #, php-format
 msgid ""
 "Payment methods are not available for country \"%s\" or site has not yet "
@@ -261,49 +261,65 @@ msgstr ""
 "Betalningsmetoder är inte tillgängliga för land \"%s\" eller så har butiken "
 "ännu inte konfigurerats."
 
-#: includes/Resursbank/Core.php:312
+#: includes/Resursbank/Core.php:313
 msgid "Not available."
 msgstr "Ej tillgängligt."
 
-#: includes/Resursbank/Core.php:603
+#: includes/Resursbank/Core.php:604
 msgid "Private"
 msgstr "Privat"
 
-#: includes/Resursbank/Core.php:604
+#: includes/Resursbank/Core.php:605
 msgid "Company"
 msgstr "Företag"
 
-#: includes/Resursbank/Core.php:611
+#: includes/Resursbank/Core.php:612
 msgid "Government ID"
 msgstr "Personnummer"
 
-#: includes/Resursbank/Core.php:613
+#: includes/Resursbank/Core.php:614
 msgid "Enter your government id (social security number)"
 msgstr "Ange ditt personnummer"
 
-#: includes/Resursbank/Core.php:738
+#: includes/Resursbank/Core.php:739
 msgid "Request failed due to missing credentials."
 msgstr "Begäran misslyckades på grund av saknade autentiseringsuppgifter."
 
-#: includes/Resursbank/Core.php:839
+#: includes/Resursbank/Core.php:840
 msgid "Dismissed notices"
 msgstr "Avfärdade meddelanden"
 
-#: includes/Resursbank/Core.php:843
+#: includes/Resursbank/Core.php:844
 msgid "Restore notices and elements hidden by plugin"
 msgstr "Återställ meddelanden och element som är dolda av tillägget"
 
-#: includes/Resursbank/Core.php:981 includes/Resursbank/Core.php:995
+#: includes/Resursbank/Core.php:982 includes/Resursbank/Core.php:996
 msgid "Security verification failure."
 msgstr "Säkerhetsverifiering misslyckad."
 
-#: includes/Resursbank/Core.php:985
+#: includes/Resursbank/Core.php:986
 msgid "You must be administator."
 msgstr "Du måste vara administratör."
 
-#: includes/Resursbank/Core.php:999
+#: includes/Resursbank/Core.php:1000
 msgid "Security key mismatch."
 msgstr "Säkerhetsnyckeln matchade inte."
+
+#: includes/Resursbank/Core.php:1626
+msgid "Close"
+msgstr "Stäng"
+
+#: includes/Resursbank/Core.php:1652
+msgid "No payment method has been selected."
+msgstr "Ingen betalningsmetod har valts."
+
+#: includes/Resursbank/Core.php:1667
+msgid ""
+"The cost of purchase module is not available right now. Please try again "
+"later."
+msgstr ""
+"Modulen för kostnadsexempel är inte tillgänglig för tillfället. Vänligen "
+"försök igen senare."
 
 #: includes/Resursbank/Forms.php:14
 msgid "Contact government ID"
@@ -337,7 +353,7 @@ msgstr "Kort"
 msgid "Card number"
 msgstr "Kortnummer"
 
-#: includes/Resursbank/Forms.php:50
+#: includes/Resursbank/Forms.php:50 includes/Resursbank/Forms.php:150
 msgid "Read more"
 msgstr "Läs mer"
 
@@ -347,32 +363,32 @@ msgid ""
 "countries."
 msgstr "Komplett betalningslösning för resurs bank, med stöd för flera länder."
 
-#: includes/Resursbank/Gateway.php:180 includes/Resursbank/Gateway.php:181
+#: includes/Resursbank/Gateway.php:168 includes/Resursbank/Gateway.php:169
 msgid "shipping"
 msgstr "frakt"
 
-#: includes/Resursbank/Gateway.php:236
+#: includes/Resursbank/Gateway.php:224
 msgid "coupon"
 msgstr "kupong"
 
-#: includes/Resursbank/Gateway.php:545
+#: includes/Resursbank/Gateway.php:536
 msgid "BookPaymentStatus could not be determined"
 msgstr "BookPaymentStatus kunde inte hittas."
 
-#: includes/Resursbank/Gateway.php:556
+#: includes/Resursbank/Gateway.php:547
 msgid "Order was instantly booked."
 msgstr "Ordern bokades direkt."
 
-#: includes/Resursbank/Gateway.php:567
+#: includes/Resursbank/Gateway.php:558
 msgid "Customer went to signing process."
 msgstr "Kunden pekades om till signeringsprocess."
 
-#: includes/Resursbank/Gateway.php:723
+#: includes/Resursbank/Gateway.php:714
 msgid "Customer signed payment - order is booked."
 msgstr "Kund har signerat betalningen - ordern är bokad."
 
 #: includes/Resursbank/Helpers/Adminforms.php:210
-#: includes/Resursbank/Method.php:138
+#: includes/Resursbank/Method.php:134
 msgid "Resurs Checkout"
 msgstr "Resurs Checkout"
 
@@ -400,19 +416,19 @@ msgstr ""
 "Kontrollera också att du uppdaterar dina autentiseringsuppgifter när du "
 "växlar mellan test/staging och produktion."
 
-#: includes/Resursbank/Helpers/Adminforms.php:282
+#: includes/Resursbank/Helpers/Adminforms.php:283
 msgid "Active"
 msgstr "Aktiv"
 
-#: includes/Resursbank/Helpers/Adminforms.php:312
+#: includes/Resursbank/Helpers/Adminforms.php:313
 msgid "Chosen shopflow"
 msgstr "Valt shopflöde"
 
-#: includes/Resursbank/Method.php:63
+#: includes/Resursbank/Method.php:59
 msgid "Payment method name and flow mismatch."
 msgstr "Betalningsmetodens namn och flöde matchar ej."
 
-#: includes/Resursbank/Method.php:203
+#: includes/Resursbank/Method.php:181
 msgid ""
 "Unable to process your order. Your session has expired. Please reload the "
 "checkout and try again (error #getWasInCheckout)."
