@@ -129,8 +129,10 @@ abstract class Resursbank_Config
                         'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     ),
                     'shopSettings' => array(
-                        'title' => __('Shop related settings',
-                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'title' => __(
+                            'Shop related settings',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
                         'type' => 'title'
                     ),
                     'useProfileStoreId' => array(

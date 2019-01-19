@@ -81,4 +81,3 @@ function resursBankLoaded() {
         resursBankHandleCheckoutForms();
     }
 }
-

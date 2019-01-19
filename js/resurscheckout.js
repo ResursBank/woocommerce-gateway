@@ -1,7 +1,7 @@
 /**
  * Resurs Checkout JS v1.0.0
  */
-window._resursCheckout = (function() {
+window._resursCheckout = (function () {
 
     var _settings = {
         debug: false,
@@ -28,7 +28,7 @@ window._resursCheckout = (function() {
     var _frameData = {};
 
 
-    document.addEventListener('DOMContentLoaded', function(event) {
+    document.addEventListener('DOMContentLoaded', function (event) {
         _eventTypes = {
             'checkout:loaded': _handleLoadedEvent,
             'checkout:user-info-change': _handleUserInfoChangeEvent,
@@ -40,7 +40,7 @@ window._resursCheckout = (function() {
         _setup();
     });
 
-    var init = function(settings) {
+    var init = function (settings) {
         // Merge default settings with the user provided settings
         _extend(_settings, settings);
         // Push the callbacks to the _callbacks array so events can be stacked
@@ -51,7 +51,7 @@ window._resursCheckout = (function() {
         }
     }
 
-    var on = function(event, callback) {
+    var on = function (event, callback) {
         if (!_callbacks.hasOwnProperty(event)) {
             console.error(event + ' is not supported.');
             return;
@@ -61,7 +61,7 @@ window._resursCheckout = (function() {
         _callbacks[event].push(callback);
     }
 
-    var _extend = function(a, b) {
+    var _extend = function (a, b) {
         for (var key in b) {
             if (b[key] === Object(b[key]) && typeof b[key] !== 'function') {
                 _extend(a[key], b[key]);
@@ -71,7 +71,7 @@ window._resursCheckout = (function() {
         }
     }
 
-    var _setup = function() {
+    var _setup = function () {
         _container = document.getElementById(_settings.container);
         if (!_container) {
             return;
@@ -95,7 +95,7 @@ window._resursCheckout = (function() {
         window.addEventListener('message', _handlePostMessages);
     }
 
-    var _postMessage = function(data) {
+    var _postMessage = function (data) {
         if (typeof _contentWindow.postMessage !== "function") {
             console.error("The iframe element is not supporting postMessage.");
         }
@@ -107,7 +107,7 @@ window._resursCheckout = (function() {
         _contentWindow.postMessage(JSON.stringify(data), _settings.domain);
     }
 
-    var _handlePostMessages = function(event) {
+    var _handlePostMessages = function (event) {
         // Don't do anything if it doesn't come from a trusted source.
         if (event.origin !== _settings.domain || typeof event.data !== 'string') {
             return;
@@ -125,7 +125,7 @@ window._resursCheckout = (function() {
         }
     }
 
-    var _handleLoadedEvent = function(data) {
+    var _handleLoadedEvent = function (data) {
         if (_settings.interceptor) {
             _postMessage({
                 eventType: "checkout:set-purchase-button-interceptor",
@@ -136,7 +136,7 @@ window._resursCheckout = (function() {
         _runEventCallback('loaded', {});
     }
 
-    var _handleUserInfoChangeEvent = function(data) {
+    var _handleUserInfoChangeEvent = function (data) {
         _frameData = {
             address: data.address || {},
             delivery: data.delivery || {},
@@ -147,17 +147,17 @@ window._resursCheckout = (function() {
         _runEventCallback('change', _frameData);
     }
 
-    var _handlePaymentMethodChangeEvent = function(data) {
+    var _handlePaymentMethodChangeEvent = function (data) {
         _frameData.paymentMethod = data.method || '';
 
         _runEventCallback('change', _frameData);
     }
 
-    var _handlePurchaseButtonClickEvent = function(data) {
+    var _handlePurchaseButtonClickEvent = function (data) {
 
         _runEventCallback('booked', {
             rcoData: _frameData,
-            confirm: function(confirm) {
+            confirm: function (confirm) {
                 _postMessage({
                     eventType: 'checkout:order-status',
                     orderReady: confirm
@@ -166,12 +166,12 @@ window._resursCheckout = (function() {
         })
     }
 
-    var _handlePurchaseFailEvent = function(data) {
+    var _handlePurchaseFailEvent = function (data) {
 
         _runEventCallback('fail', {});
     }
 
-    var _runEventCallback = function(type, params) {
+    var _runEventCallback = function (type, params) {
         // Running all stacked events
         for (var i = 0; i < _callbacks[type].length; i++) {
             _callbacks[type][i](params);

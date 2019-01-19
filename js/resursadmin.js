@@ -15,7 +15,7 @@ function resursBankAdminRun() {
  * @returns {*}
  */
 function getResursBankInputField(fieldName) {
-    return $resurs_bank('<input>', {name: fieldName, size: '24', class: 'resursCredentialsDataField'});
+    return $resurs_bank('<input>', {name: fieldName, size: '24', 'class': 'resursCredentialsDataField'});
 }
 
 /**
@@ -112,23 +112,25 @@ function resursBankCredentialField() {
         row.append($resurs_bank('<td>').html(getResursBankInputField('resursbank_credentials[' + cId + '][live][password]')).prepend('<b>Password (Live)</b><br>'));
         row.append($resurs_bank('<td>').html(
             getResursBankSelectField(
-                'resursbank_credentials[' + cId + '][country]', {
+                'resursbank_credentials[' + cId + '][country]',
+                {
                     'SE': 'Sverige',
                     'DK': 'Danmark',
                     'NO': 'Norge',
                     'FI': 'Finland'
-                })
-            ).prepend('<b>Country</b><br>')
-        );
+                }
+            )
+        ).prepend('<b>Country</b><br>'));
         row.append($resurs_bank('<td>').html(
             getResursBankSelectField(
-                'resursbank_credentials[' + cId + '][shopflow]', {
+                'resursbank_credentials[' + cId + '][shopflow]',
+                {
                     'checkout': 'Resurs Checkout',
                     'simplified': 'Simplified ShopFlow',
                     'hosted': 'Hosted ShopFlow'
-                })
-            ).prepend('<b>Chosen shopflow</b><br>')
-        );
+                }
+            )
+        ).prepend('<b>Chosen shopflow</b><br>'));
         row.append($resurs_bank('<td>').html(
             getResursBankDeleteImage(cId)
         ));
@@ -224,7 +226,6 @@ function resursBankCheckCredentials() {
         });
         getResursBankCountryArray('get_registered_callbacks', '#callback_list_', function (data) {
             if (typeof data['responseAdmin'] === 'object') {
-
             }
         });
     }

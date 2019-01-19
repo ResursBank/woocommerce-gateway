@@ -47,7 +47,7 @@ function setResursbankGatewayHeader()
 function resursbank_gateway_settings($settings)
 {
     if (is_admin()) {
-        $settings[] = include(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Admin.php');
+        $settings[] = include(RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Admin.php');
     }
 
     return $settings;

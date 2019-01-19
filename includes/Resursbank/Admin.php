@@ -55,7 +55,7 @@ class WC_Settings_ResursBank extends WC_Settings_Page
         // Initial label in cases where use the parent constructor to generate
         // the configuration structures.
         $this->label = __('Resurs Bank Payments', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce');
-        $this->label_image = '<img src="' . _RESURSBANK_GATEWAY_URL . 'images/logo2018.png" border="0">';
+        $this->label_image = '<img src="' . RESURSBANK_GATEWAY_URL . 'images/logo2018.png" border="0">';
 
         // Rewrite the label before injecting as tab.
         add_action('woocommerce_settings_' . $this->id, array($this, 'resurs_bank_settings_show'));
@@ -385,14 +385,14 @@ class WC_Settings_ResursBank extends WC_Settings_Page
     private function woocommerce_version_control()
     {
         if (defined('WOOCOMMERCE_VERSION') &&
-            version_compare(WOOCOMMERCE_VERSION, _RESURSBANK_LOWEST_WOOCOMMERCE, '<')
+            version_compare(WOOCOMMERCE_VERSION, RESURSBANK_LOWEST_WOOCOMMERCE, '<')
         ) {
             echo '<div style="color:#DD0000;background:#FECEAC; border:1px solid gray; padding:5px;">' .
                 sprintf(
                     __(
                         'It seems that you run on a WooCommerce version that is lower than %s. It is recommended that you upgrade to the latest version of WooCommerce, to maintain best possible compatibility.',
                         'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
-                    ), _RESURSBANK_LOWEST_WOOCOMMERCE
+                    ), RESURSBANK_LOWEST_WOOCOMMERCE
                 ) .
                 '</div><hr>';
         }

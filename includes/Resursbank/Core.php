@@ -337,7 +337,7 @@ class Resursbank_Core
             ),
             'version_gateway' => array(
                 'name' => 'Gateway version',
-                'value' => _RESURSBANK_GATEWAY_VERSION
+                'value' => RESURSBANK_GATEWAY_VERSION
             ),
             'version_ecomphp' => array(
                 'name' => 'EComPHP',
@@ -837,7 +837,7 @@ class Resursbank_Core
      */
     public static function getDeveloperMode()
     {
-        if (defined('_RESURSBANK_DEVELOPER_MODE') && _RESURSBANK_DEVELOPER_MODE) {
+        if (defined('RESURSBANK_DEVELOPER_MODE') && RESURSBANK_DEVELOPER_MODE) {
             return true;
         }
         return false;
@@ -1247,7 +1247,7 @@ class Resursbank_Core
      */
     public static function getSectionsByConstructor()
     {
-        return (defined('_RESURSBANK_SECTIONS_BY_CONSTRUCTOR')) ? _RESURSBANK_SECTIONS_BY_CONSTRUCTOR : false;
+        return (defined('RESURSBANK_SECTIONS_BY_CONSTRUCTOR')) ? RESURSBANK_SECTIONS_BY_CONSTRUCTOR : false;
     }
 
     /**
@@ -1577,8 +1577,8 @@ class Resursbank_Core
     private static function getGraphicsUrl($filename)
     {
         $return = null;
-        $gUrl = _RESURSBANK_GATEWAY_URL . 'images';
-        if (file_exists(_RESURSBANK_GATEWAY_PATH . 'images/' . $filename)) {
+        $gUrl = RESURSBANK_GATEWAY_URL . 'images';
+        if (file_exists(RESURSBANK_GATEWAY_PATH . 'images/' . $filename)) {
             $return = $gUrl . '/' . $filename;
         }
         return $return;
@@ -1658,7 +1658,7 @@ class Resursbank_Core
     {
         return (array)apply_filters(
             'resursbank_cost_of_purchase_css',
-            array(_RESURSBANK_GATEWAY_URL . 'css/costofpurchase.css')
+            array(RESURSBANK_GATEWAY_URL . 'css/costofpurchase.css')
         );
     }
 
@@ -1707,63 +1707,63 @@ class Resursbank_Core
             'resurs_bank_payment_gateway' => array(
                 'available' => true,
                 'graphics' => Resursbank_Core::getGraphics(),
-                'backend_url' => _RESURSBANK_GATEWAY_BACKEND,
+                'backend_url' => RESURSBANK_GATEWAY_BACKEND,
                 'backend_nonce' => wp_nonce_url(
-                    _RESURSBANK_GATEWAY_BACKEND,
+                    RESURSBANK_GATEWAY_BACKEND,
                     'resursBankBackendRequest',
                     'resursBankGatewayNonce'
                 ),
-                'getCostOfPurchaseBackendUrl' => _RESURSBANK_GATEWAY_BACKEND . '&run=get_cost_of_purchase_html',
+                'getCostOfPurchaseBackendUrl' => RESURSBANK_GATEWAY_BACKEND . '&run=get_cost_of_purchase_html',
                 'suggested_flow' => $CORE->getFlowByCountry(self::getCustomerCountry())
             )
         );
 
         wp_enqueue_style(
             'resurs_bank_payment_gateway_css',
-            _RESURSBANK_GATEWAY_URL . 'css/resursbank.css',
+            RESURSBANK_GATEWAY_URL . 'css/resursbank.css',
             array(),
-            _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+            RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
         if (is_checkout()) {
             wp_enqueue_script(
                 'resurs_bank_payment_checkout_js',
-                _RESURSBANK_GATEWAY_URL . 'js/resurscheckout.js',
+                RESURSBANK_GATEWAY_URL . 'js/resurscheckout.js',
                 array(
                     'jquery',
                 ),
-                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+                RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
             );
         }
 
         wp_enqueue_script(
             'resurs_bank_payment_gateway_js',
-            _RESURSBANK_GATEWAY_URL . 'js/resursbank.js',
+            RESURSBANK_GATEWAY_URL . 'js/resursbank.js',
             array(
                 'jquery',
             ),
-            _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+            RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
         );
 
         if (is_checkout()) {
             wp_enqueue_script(
                 'resurs_bank_payment_woocommerce_js',
-                _RESURSBANK_GATEWAY_URL . 'js/woocommerce.js',
+                RESURSBANK_GATEWAY_URL . 'js/woocommerce.js',
                 array(
                     'jquery',
                 ),
-                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+                RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
             );
         }
 
         if (is_admin()) {
             wp_enqueue_script(
                 'resurs_bank_payment_gateway_admin_js',
-                _RESURSBANK_GATEWAY_URL . 'js/resursadmin.js',
+                RESURSBANK_GATEWAY_URL . 'js/resursadmin.js',
                 array(
                     'jquery',
                 ),
-                _RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
+                RESURSBANK_GATEWAY_VERSION . (self::getDeveloperMode() ? '-' . time() : '')
             );
         }
 
@@ -1843,8 +1843,8 @@ class Resursbank_Core
      */
     public static function getPluginVersion()
     {
-        if (defined('_RESURSBANK_GATEWAY_VERSION')) {
-            return _RESURSBANK_GATEWAY_VERSION;
+        if (defined('RESURSBANK_GATEWAY_VERSION')) {
+            return RESURSBANK_GATEWAY_VERSION;
         }
         return 'i.have.no.idea-beta';
     }

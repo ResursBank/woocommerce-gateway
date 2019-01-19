@@ -892,5 +892,5 @@ function resursbank_payment_gateway_initialize()
     }
 
     // One method rules them all
-    include(_RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Method.php');
+    include(RESURSBANK_GATEWAY_PATH . 'includes/Resursbank/Method.php');
 }
