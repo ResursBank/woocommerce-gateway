@@ -128,24 +128,11 @@ function resursbank_payment_gateway_initialize()
                     );
                 }
 
-                // Card requirements - government id + card number
+                // Card requirements - government id + card number.
+                // On "NATURAL"-cases, please use the billing fields that WooCommcerce provides, so we don't need
+                // to duplicate them in our own.
                 if ($this->METHOD->type === 'CARD') {
                     $formFieldHtml['applicant_natural_card'] = $this->getPaymentFormFieldHtml('card', $PAYMENT_METHOD);
-                } else {
-                    // TODO: Remove those fields.
-                    // Natural cases, globally - gov, phone, mobile, email
-                    /*$formFieldHtml['applicant_natural_phone'] = $this->getPaymentFormFieldHtml(
-                        'applicant_phone',
-                        $PAYMENT_METHOD
-                    );
-                    $formFieldHtml['applicant_natural_mobile'] = $this->getPaymentFormFieldHtml(
-                        'applicant_mobile',
-                        $PAYMENT_METHOD
-                    );
-                    $formFieldHtml['applicant_natural_email'] = $this->getPaymentFormFieldHtml(
-                        'applicant_email',
-                        $PAYMENT_METHOD
-                    );*/
                 }
             }
 
