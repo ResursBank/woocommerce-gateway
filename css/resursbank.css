@@ -84,3 +84,19 @@
 .resursCheckoutOrderFormField {
     display: none;
 }
+
+.resursCheckoutWoocommerceOrderButtonHtml {
+    display: none !important;
+}
+
+.resursCheckoutIframeException {
+    border: 1px solid #990000;
+    font-weight: bold;
+    padding: 10px;
+    background: #ffd7cd;
+    color: #0e0099;
+}
+
+.resursCheckoutIframeExceptionMessage {
+    color: #850f38 !important;
+}

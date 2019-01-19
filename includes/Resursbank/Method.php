@@ -273,23 +273,49 @@ if (!class_exists('WC_Resursbank_Method') && class_exists('WC_Gateway_ResursBank
             echo $this->getPaymentFormFields($this->METHOD);
         }
 
+
         // RCO
+
+        private function getRcoException($message, $code)
+        {
+            $html = '<div class="resursCheckoutIframeException">';
+
+            $html .= sprintf(
+                __(
+                    'An error (%s) occured when trying to set up a shopUrl for Resurs Checkout',
+                    'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                ),
+                $code
+            ) . ':<br>';
+
+            $html .= '<div class="resursCheckoutIframeExceptionMessage">' . $message . '</div>';
+            $html .= '</div>';
+
+            return $html;
+        }
 
         /**
          * Prepare container for Resurs Checkout
          */
         public function resursCheckoutIframeContainer()
         {
+            $html = '';
+            try {
+                $this->RESURSBANK->setShopUrl($this->getProperShopUrl());
+            } catch (Exception $e) {
+                $html = $this->getRcoException($e->getMessage(), $e->getCode());
+            }
+
             if ($this->FLOW !== RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
-                echo '<div id="resurs-checkout-container"></div>';
+                // Have it prepared in non-RCO mode.
+                echo '<div id="resurs-checkout-container" style="display: none !important;"></div>';
+            } else {
+                echo sprintf('<div id="resurs-checkout-container">%s</div>', $html);
             }
         }
 
-        //
-
-
         /**
-         *
+         * Create actions and filters.
          */
         private function getActions()
         {

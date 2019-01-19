@@ -129,7 +129,8 @@ abstract class Resursbank_Config
                         'label' => __('Disable', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                     ),
                     'shopSettings' => array(
-                        'title' => __('Shop related settings', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                        'title' => __('Shop related settings',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
                         'type' => 'title'
                     ),
                     'useProfileStoreId' => array(
@@ -153,6 +154,20 @@ abstract class Resursbank_Config
                         ),
                         'tip' => __(
                             'This feature enables signing of payments in simplified and hosted flows, which requires all payments to be signed.',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'display' => true,
+                        'type' => 'checkbox',
+                        'default' => false,
+                        'label' => __('Enabled', 'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'),
+                    ),
+                    'validateShopUrlHost' => array(
+                        'title' => __(
+                            'RCO shopUrl validation',
+                            'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'tip' => __(
+                            'While setting up a shopUrl for Resurs Checkout, we can make a DNS lookup to validate that you are really using a valid host for your shop.',
                             'tornevall-networks-resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'display' => true,

@@ -794,11 +794,41 @@ function resursbank_payment_gateway_initialize()
             return $page_id;
         }
 
+        /**
+         * Hides button i RCO mode.
+         *
+         * @param $classButtonHtml
+         * @return string|string[]|null
+         */
         public function getOrderButtonByRco($classButtonHtml)
         {
             if ($this->FLOW === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
-                return '';
+                return preg_replace(
+                    '/class=\"/',
+                    'class="resursCheckoutWoocommerceOrderButtonHtml ',
+                    $classButtonHtml
+                );
             }
+
+            return $classButtonHtml;
+        }
+
+        /**
+         * Extract shopUrl by the home domain of shop. In prior versions, we used to let
+         * EComPHP extract the domain from HTTP_HOST instead.
+         *
+         * @return string
+         */
+        public function getProperShopUrl()
+        {
+            $MODULE_NETWORK = new \TorneLIB\MODULE_NETWORK();
+            $validateHostByDns = (bool)Resursbank_Core::getResursOption('validateShopUrlHost');
+            $decodedShopUrl = $MODULE_NETWORK->getUrlDomain(
+                home_url('/'),
+                $validateHostByDns
+            );
+
+            return (string)apply_filters('resursbank_set_shopurl', $decodedShopUrl[1] . "://" . $decodedShopUrl[0]);
         }
 
         /**
