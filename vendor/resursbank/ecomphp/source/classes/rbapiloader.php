@@ -6641,11 +6641,16 @@ class ResursBank
     public function getOrderStatusStringByReturnCode(
         $returnCode = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET
     ) {
+        $returnValue = "";
         switch ($returnCode) {
+            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET:
+                break;
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
-                return "pending";
+                $returnValue = "pending";
+                break;
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
-                return "processing";
+                $returnValue = "processing";
+                break;
             case $returnCode & (
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED |
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED
@@ -6653,14 +6658,19 @@ class ResursBank
                 // Return completed by default here, regardless of what actually has happened to the order
                 // to maintain compatibility. If the payment has been finalized instantly, it is not here you'd
                 // like to use another status. It's in your own code.
-                return "completed";
+                $returnValue = "completed";
+                break;
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
-                return "annul";
+                $returnValue = "annul";
+                break;
             case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
-                return "credit";
+                $returnValue = "credit";
+                break;
             default:
-                return "";
+                break;
         }
+
+        return $returnValue;
     }
 
     /**
