@@ -1928,6 +1928,7 @@ function woocommerce_gateway_resurs_bank_init()
             if (!isResursHosted()) {
                 $urlFail .= '&isSimplifiedFail=1';
             }
+            // Unencoded urls in failurl is not a problem in regular flows (only RCO).
             $this->flow->setSigning(
                     $success_url,
                     $urlFail,
