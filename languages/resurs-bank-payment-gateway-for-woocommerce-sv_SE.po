@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2019-03-14 14:41+0100\n"
-"PO-Revision-Date: 2019-03-14 14:41+0100\n"
+"POT-Creation-Date: 2019-03-14 14:47+0100\n"
+"PO-Revision-Date: 2019-03-14 14:47+0100\n"
 "Last-Translator: Tomas Tornevall <tomas.tornevall@resurs.se>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -1236,8 +1236,8 @@ msgid "UPDATE event received from Resurs Bank."
 msgstr "UPDATE-event emottogs från Resurs Bank."
 
 #: resursbankmain.php:916
-msgid "Detected frozen order"
-msgstr "Frusen order upptäcktes"
+msgid "On-Hold: Detected frozen order"
+msgstr "Pausad: Upptäckte frusen order"
 
 #: resursbankmain.php:921
 #, php-format
@@ -1792,6 +1792,9 @@ msgstr ""
 #: staticflows/flow_omni.php:224
 msgid "Custom test environment URL"
 msgstr "Anpassad URL till testmiljö"
+
+#~ msgid "Detected frozen order"
+#~ msgstr "Frusen order upptäcktes"
 
 #~ msgid "Updated order based on Resurs Bank current order status (%s/%s)"
 #~ msgstr ""

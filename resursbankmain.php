@@ -898,7 +898,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if ($currentStatus === $newStatus) {
-                resursEventLogger("Changing status from $currentStatus to $newStatus is not necessary.");
+                resursEventLogger('Changing status from $currentStatus to $newStatus is not necessary.');
             }
 
             $suggestedString = $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode);
@@ -913,7 +913,7 @@ function woocommerce_gateway_resurs_bank_init()
                     !is_null($resursOrderObject) &&
                     $suggestedStatusCode === RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET &&
                     $this->flow->isFrozen($resursOrderObject)) {
-                    $suggestedString = __('Detected frozen order', 'resurs-bank-payment-gateway-for-woocommerce');
+                    $suggestedString = __('On-Hold: Detected frozen order', 'resurs-bank-payment-gateway-for-woocommerce');
                 }
 
                 $woocommerceOrder->add_order_note(
