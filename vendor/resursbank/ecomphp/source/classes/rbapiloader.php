@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.14
+ * @version 1.3.15
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -59,10 +59,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.14');
+    define('ECOMPHP_VERSION', '1.3.15');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20181129');
+    define('ECOMPHP_MODIFY_DATE', '20190314');
 }
 
 /**
@@ -1310,12 +1310,17 @@ class ResursBank
      * @param string $username
      * @param string $password
      *
+     * @param bool $validate
+     * @return bool
+     * @throws Exception
      * @since 1.0.22
      * @since 1.1.22
      * @since 1.2.0
      */
-    public function setAuthentication($username = '', $password = '')
+    public function setAuthentication($username = '', $password = '', $validate = false)
     {
+        $result = null;
+
         $this->username = $username;
         $this->password = $password;
         if (!is_null($username)) {
@@ -1326,6 +1331,55 @@ class ResursBank
             $this->soapOptions['password'] = $password;
             $this->password = $password; // For use with initwsdl
         }
+
+        if ($validate) {
+            if (!$this->validateCredentials($this->current_environment, $username, $password)) {
+                throw new \Exception('Credentials is not valid', 401);
+            }
+            // Returning boolean is normally used for test cases.
+            $result = true;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Validate entered credentials. If credentials is initialized via the constructor, no extra parameters are required.
+     *
+     * @param int $environment
+     * @param string $username
+     * @param string $password
+     * @return bool
+     * @throws Exception Borrowing 417 (Expectation Failed) here (https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/417)
+     * @since 1.1.42
+     * @since 1.0.42
+     * @since 1.3.15
+     */
+    public function validateCredentials($environment = RESURS_ENVIRONMENTS::TEST, $username = '', $password = '')
+    {
+        $result = false;
+
+        if (empty($username) && empty($password) && empty($this->username) && empty($this->password)) {
+            throw new \Exception('Validating credentials means you have to defined credentials before validating them. Use setAuthentication() or push your credentials into this method directly.',
+                417);
+        }
+        if (!empty($username)) {
+            $this->setAuthentication($username, $password);
+        }
+
+        try {
+            $methods = $this->getPaymentMethods(array(), true);
+            // Extra layer control. If there are no payment methods something is terribly wrong.
+            if (is_array($methods) && count($methods)) {
+                $result = true;
+            } else {
+                throw new \Exception('Validating credentials was successful, but not payment methods was found.', 417);
+            }
+        } catch (\Exception $ignoreMyException) {
+
+        }
+
+        return $result;
     }
 
     /**
@@ -4056,7 +4110,7 @@ class ResursBank
             }
         }
         if (!$duplicateArticle) {
-            $this->SpecLines[] = array(
+            $specData = array(
                 'artNo' => $articleNumberOrId,
                 'description' => $description,
                 'quantity' => $quantity,
@@ -4065,6 +4119,11 @@ class ResursBank
                 'vatPct' => $vatPct,
                 'type' => !empty($articleType) ? $articleType : ""
             );
+            $newSpecData = $this->event('ecom_article_data', $specData);
+            if (!is_null($newSpecData) && is_array($newSpecData)) {
+                $specData = $newSpecData;
+            }
+            $this->SpecLines[] = $specData;
         }
         $this->renderPaymentSpec();
     }
@@ -4387,7 +4446,8 @@ class ResursBank
     /**
      * @return string
      */
-    public function getOrderLineHash() {
+    public function getOrderLineHash()
+    {
         $returnHashed = '';
         $orderLines = $this->sanitizePaymentSpec($this->getOrderLines(), RESURS_FLOW_TYPES::MINIMALISTIC);
 
@@ -5214,29 +5274,102 @@ class ResursBank
     }
 
     /**
-     * Configure signing data for the payload
-     *
-     * Note: backUrl is used when customers are clicking "back" rather than failing
+     * @param $urlType RESURS_URL_ENCODE_TYPES
+     * @return string
+     * @since 1.3.15
+     * @since 1.0.42
+     * @since 1.1.42
+     */
+    private function getEncodedUrl($url, $urlType)
+    {
+        try {
+            if ($urlType & RESURS_URL_ENCODE_TYPES::PATH_ONLY) {
+                $urlParsed = parse_url($url);
+
+                if (is_array($urlParsed)) {
+                    $queryStartEncoded = '?';
+                    $queryStartDecoded = '';
+                    if ($urlType & RESURS_URL_ENCODE_TYPES::LEAVE_FIRST_PART) {
+                        $queryStartEncoded = '';
+                        $queryStartDecoded = '?';
+                    }
+                    $encodedQuery = rawurlencode($queryStartEncoded . $urlParsed['query']);
+                    if ($urlType & RESURS_URL_ENCODE_TYPES::LEAVE_FIRST_PART) {
+                        $encodedQuery = preg_replace('/%3D/', '=', $encodedQuery, 1);
+                    }
+                    $url = sprintf(
+                        '%s://%s%s%s',
+                        $urlParsed['scheme'],
+                        $urlParsed['host'],
+                        isset($urlParsed['path']) ? $urlParsed['path'] : '/',
+                        $queryStartDecoded . $encodedQuery
+                    );
+                }
+            } else {
+                $url = rawurlencode($url);
+            }
+        } catch (\Exception $e) {
+            $url = null;
+        }
+
+        return (string)$url;
+    }
+
+    /**
+     * @param $currentUrl
+     * @param $urlType RESURS_URL_ENCODE_TYPES
+     * @param $requestBits RESURS_URL_ENCODE_TYPES
+     * @return string
+     * @since 1.3.15
+     * @since 1.0.42
+     * @since 1.1.42
+     */
+    private function getEncodedSigningUrl($currentUrl, $urlType, $requestBits)
+    {
+        if ($urlType & $requestBits) {
+            $currentUrl = $this->getEncodedUrl($currentUrl, $requestBits);
+        }
+
+        return (string)$currentUrl;
+    }
+
+    /**
+     * Configure signing data for the payload. Supports partial urlencoding since (1.3.15/1.1.42).
+     * Encoding is usually not a problem when using "nice urls".
      *
      * @param string $successUrl Successful payment redirect url
      * @param string $failUrl Payment failures redirect url
      * @param bool $forceSigning Always require signing during payment
-     * @param string $backUrl Backurl (optional for hosted flow) if anything else than failUrl
-     * @throws \Exception
+     * @param string $backUrl Backurl (optional for hosted flow where back !== fail) if anything else than failUrl
+     * @param RESURS_URL_ENCODE_TYPES $encodeType It is NOT recommended to run this on a successurl
+     * @return mixed
+     * @throws Exception
      * @since 1.0.6
      * @since 1.1.6
      */
-    public function setSigning($successUrl = '', $failUrl = '', $forceSigning = false, $backUrl = null)
-    {
+    public function setSigning(
+        $successUrl = '',
+        $failUrl = '',
+        $forceSigning = false,
+        $backUrl = null,
+        $encodeType = RESURS_URL_ENCODE_TYPES::NONE
+    ) {
         $SigningPayload['signing'] = array(
-            'successUrl' => $successUrl,
-            'failUrl' => $failUrl,
+            'successUrl' => $this->getEncodedSigningUrl($successUrl, RESURS_URL_ENCODE_TYPES::SUCCESSURL, $encodeType),
+            'failUrl' => $this->getEncodedSigningUrl($failUrl, RESURS_URL_ENCODE_TYPES::FAILURL, $encodeType),
             'forceSigning' => $forceSigning
         );
         if (!is_null($backUrl)) {
-            $SigningPayload['backUrl'] = $backUrl;
+            $SigningPayload['backUrl'] = $this->getEncodedSigningUrl(
+                $backUrl,
+                RESURS_URL_ENCODE_TYPES::BACKURL,
+                $encodeType);
         }
         $this->handlePayload($SigningPayload);
+
+        // Return data from this method to confirm output (used with tests) but may help developers
+        // check their urls also.
+        return $SigningPayload;
     }
 
     /**
@@ -5283,11 +5416,17 @@ class ResursBank
                 } else {
                     // If the payloadkey already exists, there might be something that wants to share information.
                     // In this case, append more data to the children
-                    foreach ($userDefinedPayload[$payloadKey] as $subKey => $subValue) {
-                        if (!isset($this->Payload[$payloadKey][$subKey])) {
-                            $this->Payload[$payloadKey][$subKey] = $subValue;
-                        } elseif ($replacePayload) {
-                            $this->Payload[$payloadKey][$subKey] = $subValue;
+                    if (is_array($userDefinedPayload[$payloadKey])) {
+                        foreach ($userDefinedPayload[$payloadKey] as $subKey => $subValue) {
+                            if (!isset($this->Payload[$payloadKey][$subKey])) {
+                                $this->Payload[$payloadKey][$subKey] = $subValue;
+                            } elseif ($replacePayload) {
+                                $this->Payload[$payloadKey][$subKey] = $subValue;
+                            }
+                        }
+                    } else {
+                        if (!isset($this->Payload[$payloadKey])) {
+                            $this->Payload[$payloadKey] = $payloadContent;
                         }
                     }
                 }
@@ -6163,7 +6302,7 @@ class ResursBank
      *
      * @since 1.1.22
      */
-    private function resetPayload()
+    public function resetPayload()
     {
         $this->PayloadHistory[] = array(
             'Payload' => $this->Payload,
@@ -6814,6 +6953,8 @@ class ResursBank
 
     /**
      * Returns true if the auto discovery of automatically debited payments is active
+     *
+     *
      * @return bool
      * @since 1.0.41
      * @since 1.1.41
@@ -6837,6 +6978,37 @@ class ResursBank
         $this->autoDebitableTypesActive = $activation;
     }
 
+    /**
+     * Magic function that will help us clean up unnecessary content. Future prepared.
+     *
+     * @param $name
+     * @return mixed
+     * @throws Exception
+     */
+    /*function __get($name)
+    {
+        $requestedVariableProperties = get_class_vars(__CLASS__);
+
+        switch ($name) {
+            case 'test';
+                $return = true;
+                break;
+
+            default:
+                if (isset($this->$name)) {
+
+                    if (!isset($requestedVariableProperties->$name)) {
+                        throw new \Exception(sprintf('Requested variable is not reachable: "%s"', $name), 400);
+                    }
+                    $return = $this->$name;
+                } else {
+                    throw new \Exception(sprintf('Requested variable is not defined: "%s"', $name));
+                }
+
+        }
+
+        return $return;
+    }*/
 
     /**
      * v1.1 method compatibility

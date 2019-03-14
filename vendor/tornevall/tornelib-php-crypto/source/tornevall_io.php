@@ -21,13 +21,13 @@
 
 namespace TorneLIB;
 
-if ( ! defined('TORNELIB_IO_RELEASE')) {
-    define('TORNELIB_IO_RELEASE', '6.0.14');
+if (!defined('TORNELIB_IO_RELEASE')) {
+    define('TORNELIB_IO_RELEASE', '6.0.15');
 }
-if ( ! defined('TORNELIB_IO_MODIFY')) {
-    define('TORNELIB_IO_MODIFY', '20180822');
+if (!defined('TORNELIB_IO_MODIFY')) {
+    define('TORNELIB_IO_MODIFY', '20190220');
 }
-if ( ! defined('TORNELIB_IO_CLIENTNAME')) {
+if (!defined('TORNELIB_IO_CLIENTNAME')) {
     define('TORNELIB_IO_CLIENTNAME', 'MODULE_IO');
 }
 if (!defined('IO_SKIP_AUTOLOAD')) {
@@ -36,18 +36,30 @@ if (!defined('IO_SKIP_AUTOLOAD')) {
     define('IO_CLASS_EXISTS_AUTOLOAD', false);
 }
 if (defined('TORNELIB_IO_REQUIRE')) {
-    if ( ! defined('TORNELIB_IO_REQUIRE_OPERATOR')) {
+    if (!defined('TORNELIB_IO_REQUIRE_OPERATOR')) {
         define('TORNELIB_IO_REQUIRE_OPERATOR', '==');
     }
-    define('TORNELIB_IO_ALLOW_AUTOLOAD',
-        version_compare(TORNELIB_IO_RELEASE, TORNELIB_IO_REQUIRE, TORNELIB_IO_REQUIRE_OPERATOR) ? true : false);
+    define(
+        'TORNELIB_IO_ALLOW_AUTOLOAD',
+        version_compare(
+            TORNELIB_IO_RELEASE,
+            TORNELIB_IO_REQUIRE,
+            TORNELIB_IO_REQUIRE_OPERATOR
+        ) ? true : false
+    );
 } else {
-    if ( ! defined('TORNELIB_IO_ALLOW_AUTOLOAD')) {
+    if (!defined('TORNELIB_IO_ALLOW_AUTOLOAD')) {
         define('TORNELIB_IO_ALLOW_AUTOLOAD', true);
     }
 }
 
-if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && defined('TORNELIB_IO_ALLOW_AUTOLOAD') && TORNELIB_IO_ALLOW_AUTOLOAD === true) {
+if (!class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists(
+        'TorneLIB\MODULE_IO',
+        IO_CLASS_EXISTS_AUTOLOAD
+    ) &&
+    defined('TORNELIB_IO_ALLOW_AUTOLOAD') &&
+    TORNELIB_IO_ALLOW_AUTOLOAD === true) {
 
     /**
      * Class MODULE_IO
@@ -78,7 +90,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
         {
         }
 
-        function setCrypto()
+        public function setCrypto()
         {
             if (empty($this->CRYPTO)) {
                 $this->CRYPTO = new TorneLIB_Crypto();
@@ -92,7 +104,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          *
          * @since 6.0.3
          */
-        function setCompressionLevel($compressionLevel = 9)
+        public function setCompressionLevel($compressionLevel = 9)
         {
             $this->setCrypto();
             $this->CRYPTO->setCompressionLevel($compressionLevel);
@@ -188,7 +200,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
         public function getHasXmlSerializer()
         {
             $serializerPath = stream_resolve_include_path('XML/Unserializer.php');
-            if ( ! empty($serializerPath)) {
+            if (!empty($serializerPath)) {
                 return true;
             }
 
@@ -222,7 +234,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          * The upgraded version are also supposed to work with protected values.
          *
          * @param array $objectArray
-         * @param bool  $useJsonFunction
+         * @param bool $useJsonFunction
          *
          * @return object
          * @since 6.0.0
@@ -284,13 +296,15 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
         }
 
         /**
-         * @param array            $dataArray
+         * @param array $dataArray
          * @param SimpleXMLElement $xml
          *
          * @return mixed
          * @since 6.0.3
+         * @todo Fix PSR compliance (by switching the places of default arguments, if you do want to get rid of the nulled $xml)
+         * @todo Get rid of camelcase
          */
-        private function array_to_xml($dataArray = array(), $xml)
+        private function array_to_xml($dataArray = array(), $xml = null)
         {
             foreach ($dataArray as $key => $value) {
                 $key = is_numeric($key) ? 'item' : $key;
@@ -318,10 +332,10 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
             if (is_array($dataArray)) {
                 foreach ($dataArray as $p => $v) {
                     if (is_array($v) || is_object($v)) {
-                        $v            = $this->getUtf8($v);
+                        $v = $this->getUtf8($v);
                         $newArray[$p] = $v;
                     } else {
-                        $v            = utf8_encode($v);
+                        $v = utf8_encode($v);
                         $newArray[$p] = $v;
                     }
 
@@ -337,7 +351,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          * @return bool
          * @since 6.0.2
          */
-        function isAssoc(array $arrayData)
+        public function isAssoc(array $arrayData)
         {
             if (array() === $arrayData) {
                 return false;
@@ -348,8 +362,8 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
 
         /**
          * @param string $contentString
-         * @param int    $compression
-         * @param bool   $renderAndDie
+         * @param int $compression
+         * @param bool $renderAndDie
          *
          * @return string
          * @throws \Exception
@@ -383,8 +397,8 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          * ServerRenderer: Render JSON data
          *
          * @param array $contentData
-         * @param bool  $renderAndDie
-         * @param int   $compression
+         * @param bool $renderAndDie
+         * @param int $compression
          *
          * @return string
          * @throws \Exception
@@ -401,8 +415,11 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
                 $objectArrayEncoded = $this->objectsIntoArray($this->getFromJson($contentData));
             }
 
-            $contentRendered = $this->compressString(@json_encode($objectArrayEncoded, JSON_PRETTY_PRINT), $compression,
-                $renderAndDie);
+            $contentRendered = $this->compressString(
+                @json_encode($objectArrayEncoded, JSON_PRETTY_PRINT),
+                $compression,
+                $renderAndDie
+            );
 
             if ($renderAndDie) {
                 header("Content-type: application/json; charset=utf-8");
@@ -417,8 +434,8 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          * ServerRenderer: PHP serialized
          *
          * @param array $contentData
-         * @param bool  $renderAndDie
-         * @param int   $compression
+         * @param bool $renderAndDie
+         * @param int $compression
          *
          * @return string
          * @throws \Exception
@@ -442,14 +459,14 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
 
         /**
          * @param string $serialInput
-         * @param bool   $assoc
+         * @param bool $assoc
          *
          * @return mixed
          * @since 6.0.5
          */
         public function getFromSerializerInternal($serialInput = '', $assoc = false)
         {
-            if ( ! $assoc) {
+            if (!$assoc) {
                 return @unserialize($serialInput);
             } else {
                 return $this->arrayObjectToStdClass(@unserialize($serialInput));
@@ -464,8 +481,8 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          *  pecl install yaml
          *
          * @param array $contentData
-         * @param bool  $renderAndDie
-         * @param int   $compression
+         * @param bool $renderAndDie
+         * @param int $compression
          *
          * @return string
          * @throws \Exception
@@ -478,7 +495,8 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
         ) {
             $objectArrayEncoded = $this->getUtf8($this->objectsIntoArray($contentData));
             if (function_exists('yaml_emit')) {
-                $contentRendered = $this->compressString(yaml_emit($objectArrayEncoded), $compression, $renderAndDie);
+                $contentRendered = $this->compressString(yaml_emit($objectArrayEncoded), $compression,
+                    $renderAndDie);
                 if ($renderAndDie) {
                     header("Content-Type: text/plain");
                     echo $contentRendered;
@@ -492,9 +510,9 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
         }
 
         /**
-         * @param array  $contentData
-         * @param bool   $renderAndDie
-         * @param int    $compression
+         * @param array $contentData
+         * @param bool $renderAndDie
+         * @param int $compression
          * @param string $initialTagName
          * @param string $rootName
          *
@@ -510,19 +528,19 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
             $rootName = 'XMLResponse'
         ) {
             $serializerPath = stream_resolve_include_path('XML/Serializer.php');
-            if ( ! empty($serializerPath)) {
+            if (!empty($serializerPath)) {
                 /** @noinspection PhpIncludeInspection */
                 require_once('XML/Serializer.php');
             }
             $objectArrayEncoded = $this->getUtf8($this->objectsIntoArray($contentData));
-            $options            = array(
-                'indent'         => '    ',
-                'linebreak'      => "\n",
-                'encoding'       => 'UTF-8',
-                'rootName'       => $rootName,
+            $options = array(
+                'indent' => '    ',
+                'linebreak' => "\n",
+                'encoding' => 'UTF-8',
+                'rootName' => $rootName,
                 'defaultTagName' => $initialTagName
             );
-            if (class_exists('XML_Serializer', IO_CLASS_EXISTS_AUTOLOAD) && ! $this->ENFORCE_SIMPLEXML) {
+            if (class_exists('XML_Serializer', IO_CLASS_EXISTS_AUTOLOAD) && !$this->ENFORCE_SIMPLEXML) {
                 $xmlSerializer = new \XML_Serializer($options);
                 $xmlSerializer->serialize($objectArrayEncoded);
                 $contentRendered = $xmlSerializer->getSerializedData();
@@ -530,7 +548,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
                 // <data></data>
                 if ($this->SOAP_ATTRIBUTES_ENABLED) {
                     $soapNs = 'http://schemas.xmlsoap.org/soap/envelope/';
-                    $xml    = new \SimpleXMLElement('<?xml version="1.0"?>' . '<' . $rootName . '></' . $rootName . '>',
+                    $xml = new \SimpleXMLElement('<?xml version="1.0"?>' . '<' . $rootName . '></' . $rootName . '>',
                         0, false, $soapNs, false);
                     $xml->addAttribute($rootName . ':xmlns', $soapNs);
                     $xml->addAttribute($rootName . ':xsi', 'http://www.w3.org/2001/XMLSchema-instance');
@@ -577,26 +595,27 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          * Convert XML string into an object or array
          *
          * @param string $dataIn
-         * @param bool   $normalize Normalize objects (convert to stdClass)
+         * @param bool $normalize Normalize objects (convert to stdClass)
          *
          * @return \SimpleXMLElement
          * @since 6.0.5
          */
         public function getFromXml($dataIn = '', $normalize = false)
         {
-            set_error_handler( function ( $errNo, $errStr ) {
+            set_error_handler(function ($errNo, $errStr) {
                 throw new \Exception($errStr, $errNo);
-            }, E_ALL );
+            }, E_ALL);
 
             $dataIn = trim($dataIn);
 
             // Run entity checker only if there seems to be no initial tags located in the input string, as this may cause bad loops
             // for PHP (in older versions this also cause SEGFAULTs)
-            if ( ! preg_match("/^\</", $dataIn) && preg_match("/&\b(.*?)+;(.*)/is", $dataIn)) {
+            if (!preg_match("/^\</", $dataIn) && preg_match("/&\b(.*?)+;(.*)/is", $dataIn)) {
                 $dataEntity = trim(html_entity_decode($dataIn));
                 if (preg_match("/^\</", $dataEntity)) {
 
                     restore_error_handler();
+
                     return $this->getFromXml($dataEntity, $normalize);
                 }
 
@@ -608,6 +627,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
                     }
 
                     restore_error_handler();
+
                     return $this->getFromXml($dataEntity, $normalize);
                 }
 
@@ -621,11 +641,13 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
                     $xmlSerializer = new \XML_Unserializer();
                     $xmlSerializer->unserialize($dataIn);
 
-                    if ( ! $normalize) {
+                    if (!$normalize) {
                         restore_error_handler();
+
                         return $xmlSerializer->getUnserializedData();
                     } else {
                         restore_error_handler();
+
                         return $this->arrayObjectToStdClass($xmlSerializer->getUnserializedData());
                     }
                 }
@@ -638,25 +660,32 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
                             $simpleXML = new \SimpleXMLElement($dataIn);
                         }
                         if (isset($simpleXML) && (is_object($simpleXML) || is_array($simpleXML))) {
-                            if ( ! $normalize) {
+                            if (!$normalize) {
                                 restore_error_handler();
+
                                 return $simpleXML;
                             } else {
                                 $objectClass = $this->arrayObjectToStdClass($simpleXML);
-                                if ( ! count((array)$objectClass)) {
+                                if (!count((array)$objectClass)) {
                                     $xmlExtractedPath = $this->extractXmlPath($simpleXML);
-                                    if ( ! is_null($xmlExtractedPath)) {
+                                    if (!is_null($xmlExtractedPath)) {
                                         if (is_object($xmlExtractedPath) || (is_array($xmlExtractedPath) && count($xmlExtractedPath))) {
                                             restore_error_handler();
+
                                             return $xmlExtractedPath;
                                         }
                                     }
                                 }
 
                                 restore_error_handler();
+
                                 return $objectClass;
                             }
                         }
+                    } else {
+                        // When there are no longer any chances that this parser can find xml, we at least need to restore
+                        // the error handler, or this will cause problems with other exception handlers.
+                        restore_error_handler();
                     }
                 }
             }
@@ -674,8 +703,8 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
          */
         private function extractXmlPath($simpleXML = null)
         {
-            $canReturn       = false;
-            $xmlXpath        = null;
+            $canReturn = false;
+            $xmlXpath = null;
             $xmlPathReturner = null;
             if (method_exists($simpleXML, 'xpath')) {
                 try {
@@ -686,10 +715,10 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
                 if (is_array($xmlXpath)) {
                     if (count($xmlXpath) == 1) {
                         $xmlPathReturner = array_pop($xmlXpath);
-                        $canReturn       = true;
+                        $canReturn = true;
                     } elseif (count($xmlXpath) > 1) {
                         $xmlPathReturner = $xmlXpath;
-                        $canReturn       = true;
+                        $canReturn = true;
                     }
                     if (isset($xmlPathReturner->return)) {
                         return $this->arrayObjectToStdClass($xmlPathReturner)->return;
@@ -705,7 +734,7 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
 
         /**
          * @param string $yamlString
-         * @param bool   $getAssoc
+         * @param bool $getAssoc
          *
          * @return array|mixed|object
          * @throws \Exception
@@ -736,7 +765,8 @@ if ( ! class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('To
     }
 }
 
-if ( ! class_exists('TorneLIB_IO', IO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\TorneLIB_IO', IO_CLASS_EXISTS_AUTOLOAD)) {
+if (!class_exists('TorneLIB_IO', IO_CLASS_EXISTS_AUTOLOAD) && !class_exists('TorneLIB\TorneLIB_IO',
+        IO_CLASS_EXISTS_AUTOLOAD)) {
     class TorneLIB_IO extends MODULE_IO
     {
     }
