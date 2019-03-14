@@ -1966,7 +1966,13 @@ function woocommerce_gateway_resurs_bank_init()
             if (!isResursHosted()) {
                 $urlFail .= '&isSimplifiedFail=1';
             }
-            $this->flow->setSigning($success_url, $urlFail, false, $backurl);
+            // Unencoded urls in failurl is not a problem in regular flows (only RCO).
+            $this->flow->setSigning(
+                    $success_url,
+                    $urlFail,
+                    false,
+                    $backurl
+            );
             $this->flow->setWaitForFraudControl(resursOption('waitForFraudControl'));
             $this->flow->setAnnulIfFrozen(resursOption('annulIfFrozen'));
             $this->flow->setFinalizeIfBooked(resursOption('finalizeIfBooked'));
