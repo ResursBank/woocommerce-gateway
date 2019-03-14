@@ -1,5 +1,7 @@
 <?php
 
+use Resursbank\RBEcomPHP\RESURS_URL_ENCODE_TYPES;
+
 /**
  * Static Payment Flow: OmniCheckout
  *
@@ -244,8 +246,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $getUrls = $this->createReturnUrls();
         $bookDataOmni = array(
             'orderLines' => $specLines,
-            'successUrl' => $getUrls['successUrl'],
-            'backUrl' => $getUrls['backUrl']
+        );
+
+        $this->flow->setSigning(
+            $getUrls['successUrl'],
+            $getUrls['backUrl'],
+            false,
+            $getUrls['backUrl'],
+            RESURS_URL_ENCODE_TYPES::PATH_ONLY + RESURS_URL_ENCODE_TYPES::FAILURL + RESURS_URL_ENCODE_TYPES::BACKURL
         );
 
         $storeId = apply_filters("resursbank_set_storeid", null);
