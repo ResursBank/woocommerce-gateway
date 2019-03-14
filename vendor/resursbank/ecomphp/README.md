@@ -28,7 +28,7 @@ There might be a slight chance that you also need openssl or similar, as our ser
 
 # PHP 7.3
 
-Tests are verified with the deprecated suite up to PHP 7.3 (RC3) as of 24 october 2018.
+Verified with PHP 7.3.1
 
 
 ## What this library do and do not

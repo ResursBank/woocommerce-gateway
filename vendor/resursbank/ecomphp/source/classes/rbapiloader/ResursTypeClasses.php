@@ -215,6 +215,10 @@ abstract class RESURS_PAYMENT_STATUS_RETURNCODES
     const PAYMENT_REFUND = 16;
 }
 
+/**
+ * Class RESURS_ENVIRONMENTS
+ * @package Resursbank\RBEcomPHP
+ */
 abstract class RESURS_ENVIRONMENTS
 {
     const PRODUCTION = 0;
@@ -227,6 +231,20 @@ abstract class RESURS_ENVIRONMENTS
     const ENVIRONMENT_TEST = 1;
     /** @deprecated Not in use */
     const ENVIRONMENT_NOT_SET = 2;
+}
+
+/**
+ * Class RESURS_URL_ENCODE_TYPES How to encode urls
+ * @package Resursbank\RBEcomPHP
+ */
+abstract class RESURS_URL_ENCODE_TYPES {
+    const NONE = 0;
+    const PATH_ONLY = 1;
+    const FULL = 2;
+    const SUCCESSURL = 4;
+    const BACKURL = 8;
+    const FAILURL = 16;
+    const LEAVE_FIRST_PART = 32;
 }
 
 ///
