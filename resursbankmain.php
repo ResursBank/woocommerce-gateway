@@ -2458,22 +2458,13 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                         $getRedirectUrl = $this->get_return_url($order);
 
-                        $current = $order->get_status();
-                        /*$suggestedStatusCode = $this->flow->getOrderStatusByPayment($paymentId);
-                        $suggestedStatusString = $this->flow->getOrderStatusStringByReturnCode($suggestedStatusCode);*/
-
-                        if (empty($suggestedStatusString)) {
-                            $suggestedStatusString = 'on-hold';
-                        }
-
-                        //$this->synchronizeResursOrderStatus($current, $suggestedStatusString, $order, $suggestedStatusCode);
-                        $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
-
-                        /*$order->update_status(
-                            'processing',
-                            __('The payment are signed and booked',
+                        $order->add_order_note(
+                            __('The payment are signed and booked. Waiting for further statuses.',
                                 'resurs-bank-payment-gateway-for-woocommerce')
-                        );*/
+                        );
+
+                        $current = $order->get_status();
+                        $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
                         WC()->cart->empty_cart();
                     }
                     wp_safe_redirect($getRedirectUrl);
