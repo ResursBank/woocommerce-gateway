@@ -908,7 +908,7 @@ function woocommerce_gateway_resurs_bank_init()
             if ($updateStatus && $currentStatus != $newStatus) {
                 $woocommerceOrder->update_status($newStatus);
                 $woocommerceOrder->add_order_note(__('Updated order based on Resurs Bank current order status',
-                        'resurs-bank-payment-gateway-for-woocommerce') . ' (' . $suggestedString . ')');
+                        'resurs-bank-payment-gateway-for-woocommerce') . ' (' . $suggestedString . '/'.$suggestedStatusCode.')');
 
                 return true;
             }
@@ -963,19 +963,29 @@ function woocommerce_gateway_resurs_bank_init()
                 resursEventLogger(print_r($paymentStatus, true));
                 resursEventLogger('Callback EVENT Information End');
 
+                $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+
                 switch ($suggestedStatus) {
+                    case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET:
+                        $this->synchronizeResursOrderStatus($currentWcStatus,
+                            $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET], $woocommerceOrder,
+                            $suggestedStatus);
+
+                        break;
                     case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING:
                         $this->synchronizeResursOrderStatus($currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING], $woocommerceOrder,
                             $suggestedStatus);
 
-                        return $suggestedStatus;
+                        $return = $suggestedStatus;
+                        break;
                     case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED: // PAYMENT_REFUND
                         $this->synchronizeResursOrderStatus($currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED], $woocommerceOrder,
                             $suggestedStatus);
 
-                        return $suggestedStatus;
+                        $return = $suggestedStatus;
+                        break;
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED):
 
                         if ($suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
@@ -986,13 +996,15 @@ function woocommerce_gateway_resurs_bank_init()
                                 $suggestedStatus);
                         }
 
-                        return $suggestedStatus;
+                        $return = $suggestedStatus;
+                        break;
                     case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
                         $this->synchronizeResursOrderStatus($currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING], $woocommerceOrder,
                             $suggestedStatus);
 
-                        return $suggestedStatus;
+                        $return = $suggestedStatus;
+                        break;
                     case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED: // PAYMENT_CANCELLED
                         $woocommerceOrder->update_status($paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED]);
                         if (!isWooCommerce3()) {
@@ -1000,19 +1012,16 @@ function woocommerce_gateway_resurs_bank_init()
                                 'resurs-bank-payment-gateway-for-woocommerce'));
                         }
 
-                        return $suggestedStatus;
+                        $return = $suggestedStatus;
+                        break;
                     default:
-                        $this->synchronizeResursOrderStatus($currentWcStatus,
-                            $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET],
-                            $woocommerceOrder,
-                            $suggestedStatus);
                         break;
                 }
             } catch (\Exception $e) {
                 // Ignore errors
             }
 
-            return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+            return $return;
         }
 
         /**
