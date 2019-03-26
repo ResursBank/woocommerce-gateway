@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.15
+ * @version 1.3.16
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -59,10 +59,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.15');
+    define('ECOMPHP_VERSION', '1.3.16');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190314');
+    define('ECOMPHP_MODIFY_DATE', '20190315');
 }
 
 /**
@@ -5495,7 +5495,17 @@ class ResursBank
     public function getPayload($history = false)
     {
         if (!$history) {
-            $this->preparePayload();
+            if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
+                try {
+                    $this->preparePayload();
+                } catch (\Exception $e) {
+                    // @since 1.3.16
+                    // \RESURS_EXCEPTIONS::CREATEPAYMENT_NO_ID_SET may occur here, when requesting payload during RCO.
+                }
+
+            } else {
+                $this->preparePayload();
+            }
             // Making sure payloads are returned as they should look
             if (isset($this->Payload)) {
                 if (!is_array($this->Payload)) {
@@ -5505,10 +5515,12 @@ class ResursBank
                 $this->Payload = array();
             }
 
-            return $this->Payload;
+            $return = $this->Payload;
         } else {
-            return array_pop($this->PayloadHistory);
+            $return = array_pop($this->PayloadHistory);
         }
+
+        return $return;
     }
 
     /**
@@ -6781,13 +6793,12 @@ class ResursBank
         $returnCode = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET
     ) {
         $returnValue = "";
-        switch ($returnCode) {
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET:
-                break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
+
+        switch (true) {
+            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING):
                 $returnValue = "pending";
                 break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
+            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING):
                 $returnValue = "processing";
                 break;
             case $returnCode & (
@@ -6799,10 +6810,10 @@ class ResursBank
                 // like to use another status. It's in your own code.
                 $returnValue = "completed";
                 break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
+            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED);
                 $returnValue = "annul";
                 break;
-            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
+            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED);
                 $returnValue = "credit";
                 break;
             default:
