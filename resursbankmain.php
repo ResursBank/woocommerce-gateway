@@ -608,8 +608,10 @@ function woocommerce_gateway_resurs_bank_init()
                                         $responseArray['registeredCallbacks'] = $regCount;
                                         $responseArray['registeredTemplates'] = $rList;
                                         $responseArray['testTriggerActive'] = $triggeredTest;
-                                        $responseArray['testTriggerTimestamp'] = strftime('%Y-%m-%d (%H:%M:%S)',
-                                            time());
+                                        $responseArray['testTriggerTimestamp'] = strftime(
+                                            '%Y-%m-%d (%H:%M:%S)',
+                                            time()
+                                        );
                                     } catch (Exception $e) {
                                         $responseArray['errorstring'] = $e->getMessage();
                                     }
@@ -4600,6 +4602,11 @@ function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings"
     } else {
         // No value set
         $response = null;
+
+        $notsetGetDefaultValue = resursFormFieldArray($namespace);
+        if (isset($notsetGetDefaultValue[$key]) && isset($notsetGetDefaultValue[$key]['default'])) {
+            $response = $notsetGetDefaultValue[$key]['default'];
+        }
     }
 
     if (empty($response)) {
@@ -4616,6 +4623,11 @@ function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings"
     }
     if ($response === "no") {
         return false;
+    }
+
+    $filteredResponse = apply_filters('resurs_option', $response, $key);
+    if (!is_null($filteredResponse) && $response !== $filteredResponse) {
+        $response = $filteredResponse;
     }
 
     return $response;
