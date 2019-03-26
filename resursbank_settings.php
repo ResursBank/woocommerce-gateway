@@ -1095,7 +1095,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('omniFrameNotReloading', $namespace);
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
                     echo $this->setCheckBox('resursCheckoutMultipleMethods', $namespace);
-                    //echo $this->setCheckBox( 'secureFieldsNotNull', $namespace );
                 } elseif ($section == "advanced") {
                     echo $this->setSeparator(__('URL Settings', 'WC_Payment_Gateway'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
@@ -1126,12 +1125,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         'configSeparateTitleSmall');
                     echo $this->setTextBox('devFlags', $namespace, 'onkeyup="devFlagsControl(this)"');
                     echo $this->setCheckBox('demoshopMode', $namespace);
-
-                    /*
-                    echo $this->setCheckBox('getAddressUseProduction', $namespace);
-                    echo $this->setTextBox('ga_login', $namespace);
-                    echo $this->setTextBox('ga_password', $namespace);
-                    */
 
                     echo $this->setSeparator(__('Network', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('handleNatConnections', $namespace);
