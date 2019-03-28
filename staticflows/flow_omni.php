@@ -248,12 +248,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             'orderLines' => $specLines,
         );
 
-        $useEncodedFailUrls = getResursOption('encodeRcoFailurl', 'resurs_bank_omnicheckout');
         $failurlFlags = RESURS_URL_ENCODE_TYPES::NONE;
-        if ($useEncodedFailUrls) {
-            $failurlFlags = RESURS_URL_ENCODE_TYPES::PATH_ONLY + RESURS_URL_ENCODE_TYPES::FAILURL + RESURS_URL_ENCODE_TYPES::BACKURL;
-        }
-
         $this->flow->setSigning(
             $getUrls['successUrl'],
             $getUrls['backUrl'],

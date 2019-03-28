@@ -660,13 +660,6 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'desc_tip' => true,
                 ),
-                'encodeRcoFailurl' => array(
-                    'title' => __('Properly encode RCO failurl', 'WC_Payment_Gateway'),
-                    'type' => 'checkbox',
-                    'default' => 'true',
-                    'description' => __('This setting secures that the failurl when using RCO is encoded properly.'),
-                    'desc_tip' => true,
-                ),
             );
 
             // If this store ever had the setting for iframe location in payment method list (or have)
