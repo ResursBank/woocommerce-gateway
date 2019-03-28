@@ -248,13 +248,12 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             'orderLines' => $specLines,
         );
 
-        $failurlFlags = RESURS_URL_ENCODE_TYPES::NONE;
         $this->flow->setSigning(
             $getUrls['successUrl'],
             $getUrls['backUrl'],
             false,
             $getUrls['backUrl'],
-            $failurlFlags
+            RESURS_URL_ENCODE_TYPES::NONE
         );
 
         $storeId = apply_filters("resursbank_set_storeid", null);
