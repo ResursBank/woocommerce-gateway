@@ -83,9 +83,6 @@ abstract class RESURS_CHECKOUT_CALL_TYPES
  */
 abstract class RESURS_CALLBACK_TYPES
 {
-    /**
-     * Skip "not in use" since this off-value may cause flaws in status updates (true when matching false flags).
-     */
     const NOT_SET = 0;
     const UNFREEZE = 1;
     const ANNULMENT = 2;
@@ -203,6 +200,9 @@ abstract class RESURS_CALLBACK_REACHABILITY
  */
 abstract class RESURS_PAYMENT_STATUS_RETURNCODES
 {
+    /**
+     * Skip "not in use" since this off-value may cause flaws in status updates (true when matching false flags).
+     */
     const NOT_IN_USE = 0;
     const PAYMENT_PENDING = 1;
     const PAYMENT_PROCESSING = 2;
@@ -238,10 +238,16 @@ abstract class RESURS_ENVIRONMENTS
 }
 
 /**
- * Class RESURS_URL_ENCODE_TYPES How to encode urls
+ * Class RESURS_URL_ENCODE_TYPES How to encode urls.
+ *
+ * This class of encoding rules are based on emergency solutions if something went wrong with
+ * the standard [unencoded] urls.
+ *
  * @package Resursbank\RBEcomPHP
+ * @since 1.3.16
  */
-abstract class RESURS_URL_ENCODE_TYPES {
+abstract class RESURS_URL_ENCODE_TYPES
+{
     const NONE = 0;
     const PATH_ONLY = 1;
     const FULL = 2;
