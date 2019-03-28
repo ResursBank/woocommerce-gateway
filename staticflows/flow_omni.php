@@ -253,7 +253,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $getUrls['backUrl'],
             false,
             $getUrls['backUrl'],
-            RESURS_URL_ENCODE_TYPES::PATH_ONLY + RESURS_URL_ENCODE_TYPES::FAILURL + RESURS_URL_ENCODE_TYPES::BACKURL
+            RESURS_URL_ENCODE_TYPES::NONE
         );
 
         $storeId = apply_filters("resursbank_set_storeid", null);

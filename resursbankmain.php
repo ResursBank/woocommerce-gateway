@@ -608,8 +608,10 @@ function woocommerce_gateway_resurs_bank_init()
                                         $responseArray['registeredCallbacks'] = $regCount;
                                         $responseArray['registeredTemplates'] = $rList;
                                         $responseArray['testTriggerActive'] = $triggeredTest;
-                                        $responseArray['testTriggerTimestamp'] = strftime('%Y-%m-%d (%H:%M:%S)',
-                                            time());
+                                        $responseArray['testTriggerTimestamp'] = strftime(
+                                            '%Y-%m-%d (%H:%M:%S)',
+                                            time()
+                                        );
                                     } catch (Exception $e) {
                                         $responseArray['errorstring'] = $e->getMessage();
                                     }
@@ -913,7 +915,8 @@ function woocommerce_gateway_resurs_bank_init()
                     !is_null($resursOrderObject) &&
                     $suggestedStatusCode === RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET &&
                     $this->flow->isFrozen($resursOrderObject)) {
-                    $suggestedString = __('On-Hold: Detected frozen order', 'resurs-bank-payment-gateway-for-woocommerce');
+                    $suggestedString = __('On-Hold: Detected frozen order',
+                        'resurs-bank-payment-gateway-for-woocommerce');
                 }
 
                 $woocommerceOrder->add_order_note(
@@ -984,17 +987,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                 $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
 
-                switch ($suggestedStatus) {
-                    case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET:
-                        $this->synchronizeResursOrderStatus(
-                            $currentWcStatus,
-                            $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET],
-                            $woocommerceOrder,
-                            $suggestedStatus,
-                            $paymentIdOrPaymentObject
-                        );
-                        break;
-                    case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING:
+                switch (true) {
+                    case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING):
                         $this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING],
@@ -1005,7 +999,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                         $return = $suggestedStatus;
                         break;
-                    case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED: // PAYMENT_REFUND
+                    case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED): // PAYMENT_REFUND
                         $this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED],
@@ -1032,7 +1026,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                         $return = $suggestedStatus;
                         break;
-                    case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
+                    case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING):
                         $this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING],
@@ -1043,7 +1037,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                         $return = $suggestedStatus;
                         break;
-                    case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED: // PAYMENT_CANCELLED
+                    case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED): // PAYMENT_CANCELLED
                         $woocommerceOrder->update_status($paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED]);
                         if (!isWooCommerce3()) {
                             $woocommerceOrder->cancel_order(__('Resurs Bank annulled the order',
@@ -1968,10 +1962,10 @@ function woocommerce_gateway_resurs_bank_init()
             }
             // Unencoded urls in failurl is not a problem in regular flows (only RCO).
             $this->flow->setSigning(
-                    $success_url,
-                    $urlFail,
-                    false,
-                    $backurl
+                $success_url,
+                $urlFail,
+                false,
+                $backurl
             );
             $this->flow->setWaitForFraudControl(resursOption('waitForFraudControl'));
             $this->flow->setAnnulIfFrozen(resursOption('annulIfFrozen'));
@@ -4066,47 +4060,26 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
 
         $invoices = array();
         if (empty($hasError)) {
-            $status = "AUTHORIZE";
-            if (is_array($resursPaymentInfo->paymentDiffs)) {
-                $invoices = $rb->getPaymentInvoices($resursPaymentInfo);
-                foreach ($resursPaymentInfo->paymentDiffs as $paymentDiff) {
-                    if ($paymentDiff->type === "DEBIT") {
-                        $status = "DEBIT";
-                    }
-                    if ($paymentDiff->type === "ANNUL") {
-                        $status = "ANNUL";
-                    }
-                    if ($paymentDiff->type === "CREDIT") {
-                        $status = "CREDIT";
-                    }
+
+            // We no longer use WooCommerce paymentdiffs to decide what's happened to the order as - for example - a
+            // partially debited and annulled order may give a falsely annulled status in the end. Instead,
+            // we ask EComPHP for the most proper, current, status.
+            $currentOrderStatus = ucfirst($rb->getOrderStatusStringByReturnCode($rb->getOrderStatusByPayment($resursPaymentInfo)));
+
+            if (empty($currentOrderStatus)) {
+                $currentOrderStatus = __('Not set', 'resurs-bank-payment-gateway-for-woocommerce');
+                if ($rb->isFrozen($resursPaymentInfo)) {
+                    $currentOrderStatus = __('Frozen', 'resurs-bank-payment-gateway-for-woocommerce');
                 }
-            } else {
-                if ($resursPaymentInfo->paymentDiffs->type === "DEBIT") {
-                    $status = "DEBIT";
-                }
-                if ($resursPaymentInfo->paymentDiffs->type === "ANNUL") {
-                    $status = "ANNUL";
-                }
-                if ($resursPaymentInfo->paymentDiffs->type === "CREDIT") {
-                    $status = "CREDIT";
-                }
-            }
-            $renderedResursData .= '<div class="resurs_orderinfo_text paymentInfoWrapStatus paymentInfoHead">';
-            if ($status === "AUTHORIZE") {
-                $renderedResursData .= __('The order is booked', 'resurs-bank-payment-gateway-for-woocommerce');
-            } elseif ($status === "DEBIT") {
-                if (!$rb->canDebit($resursPaymentInfo)) {
-                    $renderedResursData .= __('The order is debited', 'resurs-bank-payment-gateway-for-woocommerce');
-                } else {
-                    $renderedResursData .= __('The order is partially debited',
-                        'resurs-bank-payment-gateway-for-woocommerce');
-                }
-            } elseif ($status === "CREDIT") {
-                $renderedResursData .= __('The order is credited', 'resurs-bank-payment-gateway-for-woocommerce');
-            } elseif ($status === "ANNUL") {
-                $renderedResursData .= __('The order is annulled', 'resurs-bank-payment-gateway-for-woocommerce');
             }
 
+            $renderedResursData .= '<div class="resurs_orderinfo_text paymentInfoWrapStatus paymentInfoHead">';
+            $renderedResursData .= sprintf(
+                __('Status from Resurs Bank: %s.',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ),
+                $currentOrderStatus
+            );
             $renderedResursData .= '</div>
                      <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
                 ';
@@ -4629,6 +4602,11 @@ function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings"
     } else {
         // No value set
         $response = null;
+
+        $notsetGetDefaultValue = resursFormFieldArray($namespace);
+        if (isset($notsetGetDefaultValue[$key]) && isset($notsetGetDefaultValue[$key]['default'])) {
+            $response = $notsetGetDefaultValue[$key]['default'];
+        }
     }
 
     if (empty($response)) {
@@ -4645,6 +4623,11 @@ function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings"
     }
     if ($response === "no") {
         return false;
+    }
+
+    $filteredResponse = apply_filters('resurs_option', $response, $key);
+    if (!is_null($filteredResponse) && $response !== $filteredResponse) {
+        $response = $filteredResponse;
     }
 
     return $response;

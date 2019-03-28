@@ -1125,7 +1125,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         'configSeparateTitleSmall');
                     echo $this->setTextBox('devFlags', $namespace, 'onkeyup="devFlagsControl(this)"');
                     echo $this->setCheckBox('demoshopMode', $namespace);
-
                     echo $this->setSeparator(__('Network', 'WC_Payment_Gateway'));
                     echo $this->setCheckBox('handleNatConnections', $namespace);
                     echo $this->setSeparator(__('Maintenance', 'WC_Payment_Gateway'));

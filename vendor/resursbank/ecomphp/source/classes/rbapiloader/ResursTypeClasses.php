@@ -200,7 +200,10 @@ abstract class RESURS_CALLBACK_REACHABILITY
  */
 abstract class RESURS_PAYMENT_STATUS_RETURNCODES
 {
-    const PAYMENT_STATUS_COULD_NOT_BE_SET = 0;  // No flags are set
+    /**
+     * Skip "not in use" since this off-value may cause flaws in status updates (true when matching false flags).
+     */
+    const NOT_IN_USE = 0;
     const PAYMENT_PENDING = 1;
     const PAYMENT_PROCESSING = 2;
     const PAYMENT_COMPLETED = 4;
@@ -208,6 +211,7 @@ abstract class RESURS_PAYMENT_STATUS_RETURNCODES
     const PAYMENT_CREDITED = 16;
     const PAYMENT_AUTOMATICALLY_DEBITED = 32;
     const PAYMENT_MANUAL_INSPECTION = 64;   // When an order by some reason gets stuck in manual inspections
+    const PAYMENT_STATUS_COULD_NOT_BE_SET = 128;  // No flags are set
 
     /** @deprecated Fallback status only, use PAYMENT_ANNULLED */
     const PAYMENT_CANCELLED = 8;
@@ -234,10 +238,16 @@ abstract class RESURS_ENVIRONMENTS
 }
 
 /**
- * Class RESURS_URL_ENCODE_TYPES How to encode urls
+ * Class RESURS_URL_ENCODE_TYPES How to encode urls.
+ *
+ * This class of encoding rules are based on emergency solutions if something went wrong with
+ * the standard [unencoded] urls.
+ *
  * @package Resursbank\RBEcomPHP
+ * @since 1.3.16
  */
-abstract class RESURS_URL_ENCODE_TYPES {
+abstract class RESURS_URL_ENCODE_TYPES
+{
     const NONE = 0;
     const PATH_ONLY = 1;
     const FULL = 2;
