@@ -2070,6 +2070,53 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
+         * Secure update of correct orderlines (when payment reference updates are activated).
+         *
+         * @param $requestedPaymentId
+         * @param $paymentSpec
+         * @param $returnResult
+         * @param $flow
+         * @return mixed
+         */
+        private function updateOrderLines($requestedPaymentId, $paymentSpec, $returnResult, $flow)
+        {
+            try {
+                $secondPaymentId = wc_get_order_id_by_payment_id($requestedPaymentId);
+
+                // Synchronize items with Resurs session before creating order locally. On failures,
+                // this should not go further in the process.
+                $flow->updateCheckoutOrderLines($requestedPaymentId, $paymentSpec['specLines']);
+                $returnResult['success'] = true;
+            } catch (\Exception $e) {
+                $returnResult['success'] = false;
+                $code = $e->getCode();
+                if (!intval($code)) {
+                    $code = 500;
+                }
+
+                if (getResursOption('postidreference')) {
+                    $reUpdateOrderByDifferentId = $this->updateOrderLines(
+                            $secondPaymentId,
+                            $paymentSpec,
+                            $returnResult,
+                            $flow
+                    );
+                }
+
+                if (!(bool)$reUpdateOrderByDifferentId['success']) {
+                    $returnResult['errorString'] = $e->getMessage();
+                    $returnResult['errorCode'] = $code;
+                    $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
+                    die;
+                } else {
+                    $returnResult = $reUpdateOrderByDifferentId;
+                }
+            }
+
+            return $returnResult;
+        }
+
+        /**
          * Prepare the order for the checkout
          */
         public function prepare_omni_order()
@@ -2123,17 +2170,7 @@ function woocommerce_gateway_resurs_bank_init()
             $flow = initializeResursFlow();
             $paymentSpec = self::get_payment_spec(WC()->cart);
             if (is_array($paymentSpec['specLines'])) {
-                try {
-                    // Synchronize items with Resurs session before creating order locally. On failures,
-                    // this should not go further in the process.
-                    $flow->updateCheckoutOrderLines($requestedPaymentId, $paymentSpec['specLines']);
-                } catch (\Exception $e) {
-                    $returnResult['success'] = false;
-                    $returnResult['errorString'] = $e->getMessage();
-                    $returnResult['errorCode'] = 500;
-                    $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
-                    die;
-                }
+                $returnResult = $this->updateOrderLines($requestedPaymentId, $paymentSpec, $returnResult, $flow);
             }
 
             if (isset($_REQUEST['updateReference'])) {
@@ -2464,7 +2501,11 @@ function woocommerce_gateway_resurs_bank_init()
                         );
 
                         $current = $order->get_status();
-                        $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
+                        try {
+                            $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
+                        } catch (Exception $e) {
+                            $order>add_order_note($e->getMessage());
+                        }
                         WC()->cart->empty_cart();
                     }
                     wp_safe_redirect($getRedirectUrl);
