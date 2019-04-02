@@ -15,17 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ * The below version is the package version, not the separate version.
  * @package TorneLIB
- * @version 6.0.11
+ * @version 6.0.21
  */
 
 namespace TorneLIB;
 
 if (!defined('TORNELIB_IO_RELEASE')) {
-    define('TORNELIB_IO_RELEASE', '6.0.15');
+    define('TORNELIB_IO_RELEASE', '6.0.16');
 }
 if (!defined('TORNELIB_IO_MODIFY')) {
-    define('TORNELIB_IO_MODIFY', '20190220');
+    define('TORNELIB_IO_MODIFY', '20190402');
 }
 if (!defined('TORNELIB_IO_CLIENTNAME')) {
     define('TORNELIB_IO_CLIENTNAME', 'MODULE_IO');
@@ -466,6 +467,12 @@ if (!class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) &&
          */
         public function getFromSerializerInternal($serialInput = '', $assoc = false)
         {
+            // Skip this if there's nothing to serialize, as some error handlers might pick up errors even if we
+            // suppress them.
+            $trimData = trim($serialInput);
+            if (empty($trimData)) {
+                return null;
+            }
             if (!$assoc) {
                 return @unserialize($serialInput);
             } else {
@@ -495,8 +502,11 @@ if (!class_exists('MODULE_IO', IO_CLASS_EXISTS_AUTOLOAD) &&
         ) {
             $objectArrayEncoded = $this->getUtf8($this->objectsIntoArray($contentData));
             if (function_exists('yaml_emit')) {
-                $contentRendered = $this->compressString(yaml_emit($objectArrayEncoded), $compression,
-                    $renderAndDie);
+                $contentRendered = $this->compressString(
+                    yaml_emit($objectArrayEncoded),
+                    $compression,
+                    $renderAndDie
+                );
                 if ($renderAndDie) {
                     header("Content-Type: text/plain");
                     echo $contentRendered;
