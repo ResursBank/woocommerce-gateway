@@ -1162,7 +1162,8 @@ function woocommerce_gateway_resurs_bank_init()
                 $_tax = new WC_Tax();  //looking for appropriate vat for specific product
                 $rates = array();
                 $taxClass = $data->get_tax_class();
-                $rates = @array_shift($_tax->get_rates($taxClass));
+                $ratesArray = $_tax->get_rates($taxClass);
+                $rates = @array_shift($ratesArray);
                 if (isset($rates['rate'])) {
                     $vatPct = (double)$rates['rate'];
                 } else {
@@ -2176,14 +2177,24 @@ function woocommerce_gateway_resurs_bank_init()
             if (isset($_REQUEST['updateReference'])) {
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
+
+                        /*if (isset($_REQUEST['orderId'])) {
+                            $referenceWasUpdated = (bool)get_post_meta($_REQUEST['orderId'], 'referenceWasUpdated');
+                        }*/
+
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
                             try {
+/*                                $referenceWasUpdated = (bool)get_post_meta($_REQUEST['orderId'], 'referenceWasUpdated');
+                                if (!$referenceWasUpdated) {
+                                }*/
                                 $flow->updatePaymentReference($_REQUEST['orderRef'], $_REQUEST['orderId']);
                                 update_post_meta($_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId']);
                                 update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $_REQUEST['orderRef']);
+                                update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', true);
                                 $returnResult['success'] = true;
                                 $this->returnJsonResponse($returnResult, 200);
                             } catch (\Exception $e) {
+                                update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', false);
                                 $returnResult['success'] = false;
                                 $returnResult['errorString'] = $e->getMessage();
                                 $returnResult['errorCode'] = 500;
@@ -2215,8 +2226,9 @@ function woocommerce_gateway_resurs_bank_init()
 
             // Without the nonce, no background order can prepare
             if (isset($_REQUEST['omnicheckout_nonce'])) {
-                if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
-
+                // Debugging only.
+                $debugWithoutNonceProblems = false;
+                if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout") || $debugWithoutNonceProblems) {
                     $hasInternalErrors = false;
                     $returnResult['verified'] = true;
 
@@ -2360,8 +2372,19 @@ function woocommerce_gateway_resurs_bank_init()
                     } else {
                         // If the order already exists, continue without errors (if we reached this code, it has been because of the nonce which should be considered safe enough)
                         $order = new WC_Order($testLocalOrder);
+                        $currentOrderStatus = $order->get_status();
+                        if ($currentOrderStatus === 'failed') {
+                            $order->set_status(
+                                'pending',
+                                __(
+                                    'Customer retried to place order',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        }
                         $order->set_address($wooBillingAddress, 'billing');
                         $order->set_address($wooDeliveryAddress, 'shipping');
+                        $order->save();
                         $returnResult['success'] = true;
                         $returnResult['hasOrder'] = true;
                         $returnResult['usingOrder'] = $testLocalOrder;
@@ -2369,6 +2392,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $returnResult['errorCode'] = 200;
                         $responseCode = 200;
                     }
+
                 } else {
                     $returnResult['errorString'] = "nonce mismatch";
                     $returnResult['errorCode'] = 403;
