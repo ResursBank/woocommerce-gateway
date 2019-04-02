@@ -238,16 +238,10 @@ abstract class RESURS_ENVIRONMENTS
 }
 
 /**
- * Class RESURS_URL_ENCODE_TYPES How to encode urls.
- *
- * This class of encoding rules are based on emergency solutions if something went wrong with
- * the standard [unencoded] urls.
- *
+ * Class RESURS_URL_ENCODE_TYPES How to encode urls
  * @package Resursbank\RBEcomPHP
- * @since 1.3.16
  */
-abstract class RESURS_URL_ENCODE_TYPES
-{
+abstract class RESURS_URL_ENCODE_TYPES {
     const NONE = 0;
     const PATH_ONLY = 1;
     const FULL = 2;
