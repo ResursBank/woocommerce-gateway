@@ -1828,7 +1828,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
-         * @param $order
+         * @param WC_Order $order
          * @param $order_id
          * @param $bookPaymentResult
          * @param $preferredId
@@ -1903,7 +1903,7 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'DENIED':
                     $order->update_status('failed');
-                    update_post_meta($order->getId(), 'orderDenied', true);
+                    update_post_meta($order_id, 'orderDenied', true);
                     wc_add_notice(__('The payment can not complete. Contact customer services for more information.',
                         'resurs-bank-payment-gateway-for-woocommerce'), 'error');
 
@@ -2607,7 +2607,6 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->update_status('processing',
                         __('The payment are signed and booked', 'resurs-bank-payment-gateway-for-woocommerce'));
                 } elseif ($bookedStatus == 'FINALIZED') {
-                    //define('RB_SYNCHRONOUS_MODE', true);
                     WC()->session->set("order_awaiting_payment", true);
                     try {
                         $order->set_status('completed',
@@ -2624,7 +2623,7 @@ function woocommerce_gateway_resurs_bank_init()
                         __('The payment are signed and debited', 'resurs-bank-payment-gateway-for-woocommerce'));
                 } elseif ($bookedStatus == 'DENIED') {
                     $order->update_status('failed');
-                    update_post_meta($order->getId(), 'orderDenied', true);
+                    update_post_meta($order_id, 'orderDenied', true);
                     wc_add_notice(__('The payment can not complete. Contact customer services for more information.',
                         'resurs-bank-payment-gateway-for-woocommerce'), 'error');
                     $getRedirectUrl = wc_get_cart_url();
