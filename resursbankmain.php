@@ -3120,7 +3120,12 @@ function woocommerce_gateway_resurs_bank_init()
 
             if ($payment_id) {
                 try {
-                    $payment = $resursFlow->getPayment($payment_id);
+                    $payment = getPaymentInfo($order, $payment_id);
+                    if (isset($payment->id) && $payment_id !== $payment->id) {
+                        // If something went wrong during the order processing at customer level
+                        // we can still prevent wrong id's to be fixed at this point.
+                        $payment_id = $payment->id;
+                    }
                 } catch (\Exception $getPaymentException) {
                     return;
                 }
@@ -3997,11 +4002,15 @@ function resurs_order_data_info_after_shipping($order = null)
 function resurs_no_debit_debited($instant = false)
 {
     if (!$instant) {
-        $message = __('It seems this order has already been finalized from an external system - if your order is finished you may update it here aswell',
-            'resurs-bank-payment-gateway-for-woocommerce');
+        $message = __(
+            'It seems this order has already been finalized from an external system - if your order is finished you may update it here aswell',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        );
     } else {
-        $message = __('It seems this order has been instantly finalized due to the payment method type. This means that you probably must handle it manually.',
-            'resurs-bank-payment-gateway-for-woocommerce');
+        $message = __(
+            'It seems this order has been instantly finalized due to the payment method type. This means that you probably must handle it manually.',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        );
     }
 
     ?>
@@ -4009,6 +4018,35 @@ function resurs_no_debit_debited($instant = false)
         <p><?php echo $message; ?></p>
     </div>
     <?php
+}
+
+function getPaymentInfo($order, $getPaymentId = '', $fallback = false)
+{
+    $resursPaymentIdLast = get_post_meta($order->get_id(), 'paymentIdLast', true);
+
+    $rb = initializeResursFlow();
+    $rb->setFlag('GET_PAYMENT_BY_SOAP');
+    $resursPaymentInfo = null;
+    try {
+        $resursPaymentInfo = $rb->getPayment($getPaymentId);
+    } catch (\Exception $e) {
+        if (resursOption('postidreference')) {
+            if ($e->getCode() === 8 && $getPaymentId !== $resursPaymentIdLast) {
+                $resursPaymentInfo = getPaymentInfo($order, $resursPaymentIdLast, $fallback);
+                $fallback = true;
+            } else {
+                throw $e;
+            }
+        } else {
+            // Do not make a second lookup if postidreferences are disabled and just throw.
+            throw $e;
+        }
+    }
+    if (is_object($resursPaymentInfo)) {
+        $resursPaymentInfo->fallback = $fallback;
+    }
+
+    return $resursPaymentInfo;
 }
 
 /**
@@ -4045,10 +4083,10 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             $rb = initializeResursFlow();
             try {
                 $rb->setFlag('GET_PAYMENT_BY_SOAP');
-                $resursPaymentInfo = $rb->getPayment($resursPaymentId);
+                $resursPaymentInfo = getPaymentInfo($order, $resursPaymentId);
             } catch (\Exception $e) {
                 $errorMessage = $e->getMessage();
-                if ($e->getCode() == 8) {
+                if ($e->getCode() === 8) {
                     // REFERENCED_DATA_DONT_EXISTS
                     $errorMessage = __("Referenced data don't exist",
                             'resurs-bank-payment-gateway-for-woocommerce') . "<br>\n<br>\n";
@@ -4059,6 +4097,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $checkoutPurchaseFailTest = get_post_meta($orderId, 'soft_purchase_fail', true);
                 $checkoutRcoPurchaseFailTest = get_post_meta($orderId, 'rcoOrderFailed', true);
                 $resursCancelUrlUsage = get_post_meta($orderId, 'resursCancelUrl', true);
+
                 if ($checkoutPurchaseFailTest == '1') {
                     $errorMessage = __(
                         'The order was denied at Resurs Bank and therefore has not been created',
@@ -4096,6 +4135,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
 
                 return;
             }
+
             $currentWcStatus = $order->get_status();
             $notIn = array("completed", "cancelled", "refunded");
             if (!$rb->canDebit($resursPaymentInfo) && $rb->getIsDebited($resursPaymentInfo) && !in_array($currentWcStatus,
@@ -4115,6 +4155,16 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 <div class="resurs-read-more-box">
                 <div style="padding: 30px;border:none;" id="resursInfo">
                 ';
+
+        if (isset($resursPaymentInfo->fallback) && (bool)$resursPaymentInfo->fallback) {
+            $resursPaymentIdLast = get_post_meta($order->get_id(), 'paymentIdLast', true);
+
+            $renderedResursData .=
+                '<div style="border: 1px solid #990000; margin-bottom: 5px; color:#000099; margin-top: 0px; background-color: #ffffff; padding: 3px; font-style: italic;">' . sprintf(__(
+                    'The payment reference was never updated during the order creating, so this payment is using its fallback reference: %s.',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ), $resursPaymentIdLast) . '</div>';
+        }
 
         $invoices = array();
         if (empty($hasError)) {
