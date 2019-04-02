@@ -2957,56 +2957,28 @@ class ResursBank
     }
 
     /**
-     * Get metadata from a payment. As of 1.3.16 metadata can also be fetched from pre set payload.
-     *
      * @param string $paymentId
      *
      * @return array
      * @throws \Exception
      */
-    public function getMetaData($paymentId = '', $internalMetadata = false, $assoc = false)
+    public function getMetaData($paymentId = '')
     {
         $metaDataResponse = array();
-
-        if ($internalMetadata) {
-            if (isset($this->Payload['metaData'])) {
-                if ($assoc) {
-                    $newArray = array();
-                    foreach ($this->Payload['metaData'] as $req) {
-                        if (isset($req['key'])) {
-                            $newArray[$req['key']] = $req['value'];
-                        }
-                    }
-                    $metaDataResponse = array(
-                        'payloadMetaData' => $newArray
-                    );
-                } else {
-                    $metaDataResponse = array(
-                        'payloadMetaData' => $this->Payload['metaData']
-                    );
-                }
-            } else {
-                $metaDataResponse = array('payloadMetaData' => array());
-            }
-
+        if (is_string($paymentId)) {
+            $payment = $this->getPayment($paymentId);
+        } elseif (is_object($paymentId)) {
+            $payment = $paymentId;
         } else {
-            if (is_string($paymentId)) {
-                $payment = $this->getPayment($paymentId);
-            } elseif (is_object($paymentId)) {
-                $payment = $paymentId;
-            } else {
-                if (!$internalMetadata) {
-                    throw new Exception("getMetaDataException: PaymentID is neither and id nor object", 500);
-                }
-            }
-            if (isset($payment) && isset($payment->metaData)) {
-                foreach ($payment->metaData as $metaIndexArray) {
-                    if (isset($metaIndexArray->key) && !empty($metaIndexArray->key)) {
-                        if (!isset($metaDataResponse[$metaIndexArray->key])) {
-                            $metaDataResponse[$metaIndexArray->key] = $metaIndexArray->value;
-                        } else {
-                            $metaDataResponse[$metaIndexArray->key][] = $metaIndexArray->value;
-                        }
+            throw new Exception("getMetaDataException: PaymentID is neither and id nor object", 500);
+        }
+        if (isset($payment) && isset($payment->metaData)) {
+            foreach ($payment->metaData as $metaIndexArray) {
+                if (isset($metaIndexArray->key) && !empty($metaIndexArray->key)) {
+                    if (!isset($metaDataResponse[$metaIndexArray->key])) {
+                        $metaDataResponse[$metaIndexArray->key] = $metaIndexArray->value;
+                    } else {
+                        $metaDataResponse[$metaIndexArray->key][] = $metaIndexArray->value;
                     }
                 }
             }
@@ -3266,40 +3238,22 @@ class ResursBank
      *
      * @param $key
      * @param $value
-     * @throws Exception
      * @since 1.0.40
      * @since 1.1.40
      * @since 1.3.13
      */
-    public function setMetaData($key, $value, $preventDuplicates = true)
+    public function setMetaData($key, $value)
     {
         if (!isset($this->Payload['metaData'])) {
             $this->Payload['metaData'] = array();
         }
-
-        if (!$preventDuplicates || !$this->hasMetaDataKey($key)) {
-            if (!empty($key)) {
-                if ($this->getPreferredPaymentFlowService() !== RESURS_FLOW_TYPES::HOSTED_FLOW) {
-                    $this->Payload['metaData'][] = array('key' => $key, 'value' => $value);
-                } else {
-                    $this->Payload['metaData'][] = array($key => $value);
-                }
+        if (!empty($key)) {
+            if ($this->getPreferredPaymentFlowService() !== RESURS_FLOW_TYPES::HOSTED_FLOW) {
+                $this->Payload['metaData'][] = array('key' => $key, 'value' => $value);
+            } else {
+                $this->Payload['metaData'][] = array($key => $value);
             }
-        } else {
-            throw new Exception(sprintf('Metadata key "%s" is already set.', $key), 400);
         }
-    }
-
-    public function hasMetaDataKey($key)
-    {
-        $return = false;
-        $metaList = $this->getMetaData(null, true, true);
-
-        if (isset($metaList['payloadMetaData'][$key])) {
-            $return = true;
-        }
-
-        return $return;
     }
 
     /**
@@ -5541,17 +5495,7 @@ class ResursBank
     public function getPayload($history = false)
     {
         if (!$history) {
-            if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
-                try {
-                    $this->preparePayload();
-                } catch (\Exception $e) {
-                    // @since 1.3.16
-                    // \RESURS_EXCEPTIONS::CREATEPAYMENT_NO_ID_SET may occur here, when requesting payload during RCO.
-                }
-
-            } else {
-                $this->preparePayload();
-            }
+            $this->preparePayload();
             // Making sure payloads are returned as they should look
             if (isset($this->Payload)) {
                 if (!is_array($this->Payload)) {
@@ -5561,12 +5505,10 @@ class ResursBank
                 $this->Payload = array();
             }
 
-            $return = $this->Payload;
+            return $this->Payload;
         } else {
-            $return = array_pop($this->PayloadHistory);
+            return array_pop($this->PayloadHistory);
         }
-
-        return $return;
     }
 
     /**
@@ -6724,12 +6666,7 @@ class ResursBank
         }
 
         if ($this->getFraudFlagStatus() && $this->isFraud($paymentData)) {
-            if ($return & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
-                $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_MANUAL_INSPECTION;
-            } else {
-                $return += RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_MANUAL_INSPECTION;
-            }
-
+            $return += RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_MANUAL_INSPECTION;
         }
 
         // Return generic
@@ -6790,10 +6727,12 @@ class ResursBank
         $preAnalyzePayment = $this->getOrderStatusByPaymentStatuses($paymentData);
 
         // Analyzed during a callback event, which have higher priority than a regular control
-        switch (true) {
-            case $byCallbackEvent & (RESURS_CALLBACK_TYPES::ANNULMENT):
+        switch ($byCallbackEvent) {
+            case RESURS_CALLBACK_TYPES::NOT_SET:
+                break;
+            case RESURS_CALLBACK_TYPES::ANNULMENT:
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
-            case $byCallbackEvent & (RESURS_CALLBACK_TYPES::AUTOMATIC_FRAUD_CONTROL):
+            case RESURS_CALLBACK_TYPES::AUTOMATIC_FRAUD_CONTROL:
                 if (is_string($callbackEventDataArrayOrString)) {
                     if ($callbackEventDataArrayOrString === 'THAWED') {
                         return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
@@ -6801,7 +6740,7 @@ class ResursBank
                 }
 
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
-            case $byCallbackEvent & (RESURS_CALLBACK_TYPES::BOOKED):
+            case RESURS_CALLBACK_TYPES::BOOKED:
                 // Frozen set, but not true OR frozen not set at all - Go processing
                 if ($this->isFrozen()) {
                     return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
@@ -6810,16 +6749,17 @@ class ResursBank
                 // callback, so we'll continue checking the order by statuses if this order is not frozen
                 return $preAnalyzePayment;
                 break;
-            case $byCallbackEvent & (RESURS_CALLBACK_TYPES::FINALIZATION):
+            case RESURS_CALLBACK_TYPES::FINALIZATION:
                 return (
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED |
                     $this->getInstantFinalizationStatus($paymentData, $paymentMethodObject)
                 );
-            case $byCallbackEvent & (RESURS_CALLBACK_TYPES::UNFREEZE):
+            case RESURS_CALLBACK_TYPES::UNFREEZE:
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
-            case $byCallbackEvent & (RESURS_CALLBACK_TYPES::UPDATE):
+            case RESURS_CALLBACK_TYPES::UPDATE:
                 return $preAnalyzePayment;
             default:
+                // NOT_SET
                 break;
         }
 
@@ -6841,12 +6781,13 @@ class ResursBank
         $returnCode = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET
     ) {
         $returnValue = "";
-
-        switch (true) {
-            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING):
+        switch ($returnCode) {
+            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET:
+                break;
+            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING:
                 $returnValue = "pending";
                 break;
-            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING):
+            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
                 $returnValue = "processing";
                 break;
             case $returnCode & (
@@ -6858,10 +6799,10 @@ class ResursBank
                 // like to use another status. It's in your own code.
                 $returnValue = "completed";
                 break;
-            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED);
+            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED;
                 $returnValue = "annul";
                 break;
-            case $returnCode & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED);
+            case RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED;
                 $returnValue = "credit";
                 break;
             default:

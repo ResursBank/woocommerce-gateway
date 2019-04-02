@@ -21,6 +21,8 @@ $RB(document).on('updated_checkout', function () {
     }
 });
 
+var rbRefUpdated = false;
+
 $RB(document).ready(function ($) {
 
     preSetResursMethods(currentCustomerType.toUpperCase(), resursvars["customerTypes"]);
@@ -191,10 +193,6 @@ $RB(document).ready(function ($) {
                             if (typeof successData["orderId"] !== "undefined") {
                                 orderId = successData["orderId"];
                             }
-                            // Failover does not work as it somehow breaks the checkout.
-                            //if (typeof successData["usingOrder" !== "undefined"]) {
-                            //    orderId = successData["usingOrder"];
-                            //}
                             if (typeof successData.success !== "undefined") {
                                 if (successData.success === true) {
                                     isSuccess = true;
@@ -702,6 +700,7 @@ function rbUpdatePaymentReference(refobj, paymentDataObject) {
                 }
             }).done(function (data) {
                 if (data.success) {
+                    rbRefUpdated = true;
                     return refobj.confirmOrder(true);
                 } else {
                     handleResursCheckoutError(getResursPhrase("updatePaymentReferenceFailure") + " - " + data.errorString);
