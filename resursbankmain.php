@@ -2178,15 +2178,8 @@ function woocommerce_gateway_resurs_bank_init()
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
 
-                        /*if (isset($_REQUEST['orderId'])) {
-                            $referenceWasUpdated = (bool)get_post_meta($_REQUEST['orderId'], 'referenceWasUpdated');
-                        }*/
-
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
                             try {
-/*                                $referenceWasUpdated = (bool)get_post_meta($_REQUEST['orderId'], 'referenceWasUpdated');
-                                if (!$referenceWasUpdated) {
-                                }*/
                                 $flow->updatePaymentReference($_REQUEST['orderRef'], $_REQUEST['orderId']);
                                 update_post_meta($_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId']);
                                 update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $_REQUEST['orderRef']);
