@@ -9,6 +9,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Resurs Bank Payment Gateway for WooCommerce.
+Maintenance release.
 
 
 == Description ==
@@ -88,6 +89,16 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 The changelog is listing only the latest releases.
 For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
 
+= 2.2.15 =
+
+    * [WOO-311] - (Task) Preloader hooks and filter
+    * [WOO-360] - (Task) Payments fails when going denied and switching over to happy (Simplified)
+    * [WOO-353] - (Bug) Bitwise checks for frozen payments ends up in "completed" status instead of held status
+    * [WOO-355] - (Bug) When no callbacks are registered RCO sends all orders into processing regardless of frozen.
+    * [WOO-357] - (Bug) getPayment when updatePaymentReference was used and order failed
+    * [WOO-359] - (Bug) Payments fails when going denied and switching over to happy (RCO)
+    * [WOO-361] - (Bug) customerType fails on undefined type (addressed in 2.2.14.1 with release update information)
+
 = 2.2.14 =
 
     * [WOO-300] - Making RCO compatible with other payment methods
@@ -101,20 +112,7 @@ For a full list of our releases, have a look at [this site](https://resursbankpl
     * [WOO-309] - Synchronize orderlines in async interceptor-mode for RCO
     * [WOO-310] - Zero fees prevents negative fees be sent into ECom Payload (discount-fee-ish-fix)
 
-= 2.2.13 =
 
-Bad luck numbering abandoned.
-
-= 2.2.12 =
-
-    * [WOO-270] - Optional controller to change order status behaviour on callbacks
-    * [WOO-286] - Problem solving direct debited payment methods during callback handling (SWISH, etc)
-    * [WOO-293] - Allow more testings (by filter) in register callbacks section
-    * [WOO-294] - Allow event logging
-    * [WOO-298] - WooCommerce 3.5.0 and WP5 checks
-    * [WOO-289] - Fees are added to "Resurs cart" even if they have 0 amount
-    * [WOO-292] - nb_NO locale may be broken in next release
-    * [WOO-295] - Slow shopflow configuration
 
 
 == Upgrade Notice ==
