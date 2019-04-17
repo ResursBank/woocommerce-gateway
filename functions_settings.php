@@ -1277,9 +1277,7 @@ EOT;
             $login = getResursOption('login');
             $password = getResursOption('password');
             if (!empty($login) && !empty($password) && is_admin()) {
-                /*
-                 * Make sure callbacks are up to date with an interval
-                 */
+                // Make sure callbacks are up to date with an interval
                 $cbuInterval = getResursOption('callbackUpdateInterval');
                 $callbackUpdateInterval = !empty($cbuInterval) ? intval($cbuInterval) : 7;
                 if ($callbackUpdateInterval > 7 || $callbackUpdateInterval < 0) {

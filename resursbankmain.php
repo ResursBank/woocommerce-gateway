@@ -590,7 +590,9 @@ function woocommerce_gateway_resurs_bank_init()
                                     set_transient('resurs_bank_last_callback_setup', time());
                                     try {
                                         $salt = uniqid(mt_rand(), true);
-                                        set_transient('resurs_bank_digest_salt', $salt);
+                                        // Deprecation of transient storage.
+                                        //set_transient('resurs_bank_digest_salt', $salt);
+                                        setResursOption('resurs_bank_digest_salt', $salt, 'wc_resurs2_salt');
                                         $regCount = 0;
                                         $responseArray['registeredCallbacks'] = 0;
                                         $rList = array();
@@ -732,43 +734,118 @@ function woocommerce_gateway_resurs_bank_init()
 
                 return;
             }
-            $currentSalt = get_transient('resurs_bank_digest_salt');
 
             $orderId = wc_get_order_id_by_payment_id($request['paymentId']);
             $order = new WC_Order($orderId);
-            if (!$this->flow->getValidatedCallbackDigest(isset($request['paymentId']) ? $request['paymentId'] : null,
-                $currentSalt, isset($request['digest']) ? $request['digest'] : null,
-                isset($request['result']) ? $request['result'] : null)) {
-                $order->add_order_note(__('The Resurs Bank event ' . $event_type . ' was received but not accepted (digest fault)',
-                    'resurs-bank-payment-gateway-for-woocommerce'));
-                header('HTTP/1.1 406 Digest not accepted', true, 406);
-                echo "406: Digest not accepted";
+
+            $currentValidation = $this->validateCallback($request);
+            // SKIP_DIGEST_VALIDATION is for test purposes only.
+            if (empty($currentValidation) && !getResursFlag('SKIP_DIGEST_VALIDATION')) {
+                $order->add_order_note(
+                    sprintf(
+                        __(
+                            '[Resurs Bank] The event %s was rejected by the plugin when the digest was processed. The salt key may need to be updated, by re-registering the callbacks again.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        $event_type
+                    )
+                );
+                header('HTTP/1.1 406 Digest rejected by plugin', true, 406);
+                echo '406: Callback digest validation failed, rejected by plugin';
                 exit;
             }
 
+            $currentValidationString = sprintf(
+                __(
+                    'By OrderID %s',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ), $currentValidation
+            );
+
+            if (getResursFlag('SKIP_DIGEST_VALIDATION')) {
+                $order->add_order_note(
+                    __('[Resurs Bank] Experimental setting SKIP_DIGEST_VALIDATION is active and therefore saltkey-digest validation is disabled on this callback.',
+                        'resurs-bank-payment-gateway-for-woocommerce')
+                );
+            }
+
             $currentStatus = $order->get_status();
+
+            $order->add_order_note(
+                sprintf(
+                    __(
+                        '[Resurs Bank] The event %s received. Additional result flag: %s.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    $event_type,
+                    isset($request['result']) ? $request['result'] : __('No extra flags.',
+                        'resurs-bank-payment-gateway-for-woocommerce')
+                )
+            );
+
             switch ($event_type) {
                 case 'UNFREEZE':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
-                        RESURS_CALLBACK_TYPES::UNFREEZE);
-                    $order->add_order_note(__('The Resurs Bank event UNFREEZE received',
-                        'resurs-bank-payment-gateway-for-woocommerce'));
+                    $statusValue = $this->updateOrderByResursPaymentStatus(
+                        $order,
+                        $currentStatus,
+                        $request['paymentId'],
+                        RESURS_CALLBACK_TYPES::UNFREEZE
+                    );
+                    if (!(bool)$statusValue & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
+                        $order->add_order_note(
+                            sprintf(
+                                __(
+                                    '[Resurs Bank] The event %s updated the order to %s [%s].',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $event_type,
+                                $this->getOrderStatusByResursReturnCode($statusValue),
+                                $currentValidationString
+                            )
+                        );
+                    }
                     ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'AUTOMATIC_FRAUD_CONTROL':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
-                        RESURS_CALLBACK_TYPES::AUTOMATIC_FRAUD_CONTROL, $request['result']);
+                    $statusValue = $this->updateOrderByResursPaymentStatus(
+                        $order,
+                        $currentStatus,
+                        $request['paymentId'],
+                        RESURS_CALLBACK_TYPES::AUTOMATIC_FRAUD_CONTROL,
+                        $request['result']
+                    );
+
                     switch ($request['result']) {
                         case 'THAWED':
-                            $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned THAWED',
-                                'resurs-bank-payment-gateway-for-woocommerce'));
+                            $order->add_order_note(
+                                sprintf(
+                                    __(
+                                        '[Resurs Bank] The event %s updated the order to %s by its value %s [%s].',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $event_type,
+                                    $this->getOrderStatusByResursReturnCode($statusValue),
+                                    $request['result'],
+                                    $currentValidationString
+                                )
+                            );
                             ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                             break;
                         case 'FROZEN':
-                            $order->add_order_note(__('The Resurs Bank event AUTOMATIC_FRAUD_CONTROL returned FROZEN',
-                                'resurs-bank-payment-gateway-for-woocommerce'));
+                            $order->add_order_note(
+                                sprintf(
+                                    __(
+                                        '[Resurs Bank] The event %s updated the order to %s by its value %s [%s].',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $event_type,
+                                    $this->getOrderStatusByResursReturnCode($statusValue),
+                                    $request['result'],
+                                    $currentValidationString
+                                )
+                            );
                             ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                             break;
                         default:
@@ -781,21 +858,57 @@ function woocommerce_gateway_resurs_bank_init()
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     update_post_meta($order->get_id(), 'hasAnnulment', 1);
                     $order->update_status('cancelled');
+
+                    $order->add_order_note(
+                        sprintf(
+                            __(
+                                '[Resurs Bank] The event %s cancelled the order.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ),
+                            $event_type
+                        )
+                    );
+
                     // Not running suggestedMethod here as we have anoter procedure to cancel orders
                     ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'FINALIZATION':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    $finalizationStatus = $this->updateOrderByResursPaymentStatus($order, $currentStatus,
+                    $finalizationStatus = $this->updateOrderByResursPaymentStatus(
+                        $order,
+                        $currentStatus,
                         $request['paymentId'],
-                        RESURS_CALLBACK_TYPES::FINALIZATION);
+                        RESURS_CALLBACK_TYPES::FINALIZATION
+                    );
 
                     if ($finalizationStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
-                        $order->add_order_note(__('FINALIZATION event received from Resurs Bank, but the used payment method indicated that instant finalization is available for it. If it\'s not already completed you might have to update the order manually.',
-                            'resurs-bank-payment-gateway-for-woocommerce'));
+                        if (!(bool)$finalizationStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
+                            $order->add_order_note(
+                                sprintf(
+                                    __(
+                                        '[Resurs Bank] The event %s received but the used payment method indicated that instant finalization is available for it. If it\'s not already completed you might have to update the order manually (%s) [%s].',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $event_type,
+                                    $this->getOrderStatusByResursReturnCode($finalizationStatus),
+                                    $currentValidationString
+                                )
+                            );
+                        }
                     } else {
-                        $order->add_order_note(__('FINALIZATION event received from Resurs Bank.',
-                            'resurs-bank-payment-gateway-for-woocommerce'));
+                        if (!(bool)$finalizationStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
+                            $order->add_order_note(
+                                sprintf(
+                                    __(
+                                        '[Resurs Bank] The event %s completed the order (%s) [%s].',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $event_type,
+                                    $this->getOrderStatusByResursReturnCode($finalizationStatus),
+                                    $currentValidationString
+                                )
+                            );
+                        }
                         $order->payment_complete();
                     }
 
@@ -814,10 +927,27 @@ function woocommerce_gateway_resurs_bank_init()
                                 $order->reduce_order_stock();
                             }
                         }
-                        $this->updateOrderByResursPaymentStatus($order, $currentStatus, $request['paymentId'],
-                            RESURS_CALLBACK_TYPES::BOOKED);
-                        $order->add_order_note(__('BOOKED event received from Resurs Bank',
-                            'resurs-bank-payment-gateway-for-woocommerce'));
+                        $statusValue = $this->updateOrderByResursPaymentStatus(
+                            $order,
+                            $currentStatus,
+                            $request['paymentId'],
+                            RESURS_CALLBACK_TYPES::BOOKED
+                        );
+
+                        if (!(bool)$statusValue & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
+                            $order->add_order_note(
+                                sprintf(
+                                    __(
+                                        '[Resurs Bank] The event %s updated the order to %s [%s].',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $event_type,
+                                    $this->getOrderStatusByResursReturnCode($statusValue),
+                                    $currentValidationString
+                                )
+                            );
+                        }
+
                         ThirdPartyHooksSetPaymentTrigger("callback", $request['paymentId'], $orderId, $event_type);
                     }
                     break;
@@ -856,16 +986,34 @@ function woocommerce_gateway_resurs_bank_init()
 					}
 				}*/
                 case 'UPDATE':
-                    $callbackUpdateStatus = $this->updateOrderByResursPaymentStatus($order, $currentStatus,
+                    $callbackUpdateStatus = $this->updateOrderByResursPaymentStatus(
+                        $order,
+                        $currentStatus,
                         $request['paymentId'],
-                        RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE);
+                        RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE
+                    );
 
-                    if ($callbackUpdateStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
-                        $order->add_order_note(__('UPDATE event received from Resurs Bank. The order seem to be FINALIZED and the payment method this order uses, indicates that it supports instant finalization. If it\'s not already completed you might have to update the order manually.',
-                            'resurs-bank-payment-gateway-for-woocommerce'));
-                    } else {
-                        $order->add_order_note(__('UPDATE event received from Resurs Bank.',
-                            'resurs-bank-payment-gateway-for-woocommerce'));
+                    if (!(bool)$callbackUpdateStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
+                        $order->add_order_note(
+                            sprintf(
+                                __(
+                                    '[Resurs Bank] The event %s updated the order to %s [%s].',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $event_type,
+                                $this->getOrderStatusByResursReturnCode($callbackUpdateStatus),
+                                $currentValidationString
+                            )
+                        );
+
+                        if ($callbackUpdateStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
+                            $order->add_order_note(
+                                __(
+                                    '[Resurs Bank] Additional Note: The order seem to be FINALIZED and the payment method this order uses, indicates that it supports instant finalization. If it\'s not already completed you might have to update the order manually.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        }
                     }
 
                     break;
@@ -874,6 +1022,70 @@ function woocommerce_gateway_resurs_bank_init()
             }
             header('HTTP/1.1 204 Accepted');
             die();
+        }
+
+        /**
+         * Used to fetch AND convert current callbacks only.
+         *
+         * @return string
+         */
+        private function getCurrentSalt() {
+            $currentStoredSalt = getResursOption('resurs_bank_digest_salt', 'wc_resurs2_salt');
+
+            // Deprecating transient storages.
+            $currentDeprecatedSalt = get_transient('resurs_bank_digest_salt');
+
+            if (empty($currentStoredSalt) && !empty($currentDeprecatedSalt)) {
+                $return = $currentDeprecatedSalt;
+                setResursOption('resurs_bank_digest_salt', $currentDeprecatedSalt);
+            } else {
+                $return = $currentStoredSalt;
+            }
+
+            return (string)$return;
+        }
+
+        private function getValidatedDigestResponse($paymentId, $currentSalt, $digest, $result) {
+            return $this->flow->getValidatedCallbackDigest($paymentId, $currentSalt, $digest, $result);
+        }
+
+        /**
+         * @param $request
+         * @return bool
+         */
+        private function validateCallback($request)
+        {
+            $success = null;
+
+            $paymentId = isset($request['paymentId']) ? $request['paymentId'] : null;
+            $digest = isset($request['digest']) ? $request['digest'] : null;
+            $result = isset($request['result']) ? $request['result'] : null;
+
+            $testDigestArray = array($paymentId);
+
+            if ($paymentId !== wc_get_payment_id_by_order_id($paymentId)) {
+                $testDigestArray[] = wc_get_payment_id_by_order_id($paymentId);
+            }
+            if ($paymentId !== wc_get_order_id_by_payment_id($paymentId)) {
+                $testDigestArray[] = wc_get_order_id_by_payment_id($paymentId);
+            }
+
+            // Suspecting that payment id and/or references may change depending
+            // on the current setup, we will scan through more options before denying
+            // a callback.
+            foreach ($testDigestArray as $testId) {
+                if ($this->getValidatedDigestResponse(
+                    $testId,
+                    $this->getCurrentSalt(),
+                    $digest,
+                    $result)
+                ) {
+                    $success = $testId;
+                    break;
+                }
+            }
+
+            return (string)$success;
         }
 
         /**
@@ -915,13 +1127,15 @@ function woocommerce_gateway_resurs_bank_init()
                     !is_null($resursOrderObject) &&
                     $suggestedStatusCode === RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET &&
                     $this->flow->isFrozen($resursOrderObject)) {
-                    $suggestedString = __('On-Hold: Detected frozen order',
-                        'resurs-bank-payment-gateway-for-woocommerce');
+                    $suggestedString = __(
+                        '[Resurs Bank] On-Hold: Detected frozen order',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    );
                 }
 
                 $woocommerceOrder->add_order_note(
                     sprintf(
-                        __('Updated order based on Resurs Bank current order status (%s/%s).',
+                        __('[Resurs Bank] Updated order status (%s/%s).',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         $suggestedString,
@@ -933,12 +1147,46 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $woocommerceOrder->add_order_note(
-                __('Resurs Bank order status change request skipped: Order is already updated',
-                    'resurs-bank-payment-gateway-for-woocommerce') .
-                ' (' . $suggestedString . ')'
+                sprintf(
+                    __('[Resurs Bank] Update order request (%s/%s) skipped since the status is already set.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    $suggestedString,
+                    $suggestedStatusCode
+                )
             );
 
             return false;
+        }
+
+        /**
+         * @return array
+         */
+        public function getResursOrderStatusArray()
+        {
+            return array(
+                RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING => 'processing',
+                RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED => 'refunded',
+                RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED => 'completed',
+                RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING => 'on-hold',
+                RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED => 'cancelled',
+                RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET => 'on-hold',
+            );
+        }
+
+        /**
+         * @param $code
+         * @return mixed|string
+         */
+        public function getOrderStatusByResursReturnCode($code) {
+            $return = 'Unknown';
+            $arrayList = $this->getResursOrderStatusArray();
+
+            if (isset($arrayList[$code])) {
+                $return = $arrayList[$code];
+            }
+
+            return $return;
         }
 
         /**
@@ -968,14 +1216,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                 // Developers and merchants should normally not need to touch this section unless they really know what they're doing.
 
-                $paymentStatus = array(
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING => 'processing',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED => 'refunded',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED => 'completed',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING => 'on-hold',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED => 'cancelled',
-                    RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET => 'on-hold',
-                );
+                $paymentStatus = $this->getResursOrderStatusArray();
 
                 resursEventLogger('Callback Event ' . $this->flow->getCallbackTypeString($byCallbackEvent) . '.');
                 resursEventLogger(print_r($paymentIdOrPaymentObject, true));
@@ -989,53 +1230,56 @@ function woocommerce_gateway_resurs_bank_init()
 
                 switch (true) {
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING):
-                        $this->synchronizeResursOrderStatus(
+                        if ($this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING],
                             $woocommerceOrder,
                             $suggestedStatus,
                             $paymentIdOrPaymentObject
-                        );
+                        )) {
+                            $return = $suggestedStatus;
+                        }
 
-                        $return = $suggestedStatus;
                         break;
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED): // PAYMENT_REFUND
-                        $this->synchronizeResursOrderStatus(
+                        if ($this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_CREDITED],
                             $woocommerceOrder,
                             $suggestedStatus,
                             $paymentIdOrPaymentObject
-                        );
-
-                        $return = $suggestedStatus;
+                        )) {
+                            $return = $suggestedStatus;
+                        }
                         break;
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED):
 
                         if ($suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                             $woocommerceOrder->update_status(getResursOption('autoDebitStatus'));
                         } else {
-                            $this->synchronizeResursOrderStatus(
+                            if ($this->synchronizeResursOrderStatus(
                                 $currentWcStatus,
                                 $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED],
                                 $woocommerceOrder,
                                 $suggestedStatus,
                                 $paymentIdOrPaymentObject
-                            );
+                            )) {
+                                $return = $suggestedStatus;
+                            }
                         }
 
-                        $return = $suggestedStatus;
                         break;
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING):
-                        $this->synchronizeResursOrderStatus(
+                        if ($this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING],
                             $woocommerceOrder,
                             $suggestedStatus,
                             $paymentIdOrPaymentObject
-                        );
+                        )) {
+                            $return = $suggestedStatus;
+                        }
 
-                        $return = $suggestedStatus;
                         break;
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED): // PAYMENT_CANCELLED
                         $woocommerceOrder->update_status($paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED]);
@@ -1096,7 +1340,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $uriTemplate .= "&XDEBUG_SESSION_START=" . $xDebugTest;
                 }
                 $callbackType = $this->flow->getCallbackTypeByString($type);
-                $this->flow->setCallbackDigestSalt(get_transient('resurs_bank_digest_salt'));
+                $this->flow->setCallbackDigestSalt($this->getCurrentSalt());
                 $this->flow->setRegisterCallback($callbackType, $uriTemplate);
             } catch (Exception $e) {
                 throw new Exception($e);
@@ -2512,7 +2756,7 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                         $getRedirectUrl = $this->get_return_url($order);
 
-                        $order->add_order_note(
+                        $order->add_order_note('[Resurs Bank] ' .
                             __('The payment are signed and booked. Waiting for further statuses.',
                                 'resurs-bank-payment-gateway-for-woocommerce')
                         );
@@ -3748,8 +3992,7 @@ function woocommerce_gateway_resurs_bank_init()
         $methods[] = 'WC_Resurs_Bank';
         if (is_admin() && is_array($methods)) {
             foreach ($methods as $id => $m) {
-                //if (preg_match("/^resurs_bank_nr_/i", $m) || $m == "WC_Resurs_Bank") {
-                if (preg_match("/^resurs_bank_/i", $m)) {
+                if (is_string($m) && preg_match("/^resurs_bank_/i", $m)) {
                     unset($methods[$id]);
                 }
             }
@@ -3873,9 +4116,12 @@ function woocommerce_gateway_resurs_bank_init()
                                 $displayAnnuity .= '<div style="font-size: 11px !important; font-color:#990000 !important; font-style: italic; padding:0px !important; margin: 0px !important;">' . __('Test enabled: In production, this information is shown when the minimum amount is above',
                                         'resurs-bank-payment-gateway-for-woocommerce') . " <b>" . $realPaymentLimit . "</b></div>";
                             }
-                            $displayAnnuity .= '<span>' . __('Part pay from',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . ' ' . $payFromAnnuity . ' ' . __('per month',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . '</span> | ';
+
+                            $displayAnnuity .= '<span>' . sprintf(__(
+                                    'Part pay from %s per month',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                            ), $payFromAnnuity) . '</span> | ';
+
                             $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __('Info',
                                     'resurs-bank-payment-gateway-for-woocommerce') . '</span>';
                             $displayAnnuity .= '</div>';
@@ -4575,10 +4821,18 @@ function resurs_remove_order_item($item_id)
 function wc_get_order_id_by_payment_id($paymentId = '')
 {
     global $wpdb;
-    $order_id = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and meta_value = '%s'",
-        $paymentId));
-    $order_id_last = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentIdLast' and meta_value = '%s'",
-        $paymentId));
+    $order_id = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and meta_value = '%s'",
+            $paymentId
+        )
+    );
+    $order_id_last = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentIdLast' and meta_value = '%s'",
+            $paymentId
+        )
+    );
 
     // If updateOrderReference-setting is enabled, also look for a prior variable, to track down the correct order based on the metadata tag paymentIdLast
     if (getResursOption('postidreference') && !empty($order_id_last) && empty($order_id)) {
@@ -4598,8 +4852,12 @@ function wc_get_order_id_by_payment_id($paymentId = '')
 function wc_get_payment_id_by_order_id($orderId = '')
 {
     global $wpdb;
-    $order_id = $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and post_id = '%s'",
-        $orderId));
+    $order_id = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT meta_value FROM {$wpdb->prefix}postmeta WHERE meta_key = 'paymentId' and post_id = '%s'",
+            $orderId
+        )
+    );
 
     return $order_id;
 }
