@@ -1255,7 +1255,20 @@ function woocommerce_gateway_resurs_bank_init()
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED | RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED):
 
                         if ($suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
-                            $woocommerceOrder->update_status(getResursOption('autoDebitStatus'));
+                            $autoDebitStatus = getResursOption('autoDebitStatus');
+                            if ($autoDebitStatus === 'default') {
+                                if ($this->synchronizeResursOrderStatus(
+                                    $currentWcStatus,
+                                    $paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED],
+                                    $woocommerceOrder,
+                                    $suggestedStatus,
+                                    $paymentIdOrPaymentObject
+                                )) {
+                                    $return = $suggestedStatus;
+                                }
+                            } else {
+                                $woocommerceOrder->update_status($autoDebitStatus);
+                            }
                         } else {
                             if ($this->synchronizeResursOrderStatus(
                                 $currentWcStatus,
