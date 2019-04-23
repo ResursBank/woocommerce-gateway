@@ -86,33 +86,18 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-The changelog is listing only the latest releases.
-For a full list of our releases, have a look at [this site](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived)
+For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.15 =
+= 2.2.16 =
 
-    * [WOO-311] - (Task) Preloader hooks and filter
-    * [WOO-360] - (Task) Payments fails when going denied and switching over to happy (Simplified)
-    * [WOO-353] - (Bug) Bitwise checks for frozen payments ends up in "completed" status instead of held status
-    * [WOO-355] - (Bug) When no callbacks are registered RCO sends all orders into processing regardless of frozen.
-    * [WOO-357] - (Bug) getPayment when updatePaymentReference was used and order failed
-    * [WOO-359] - (Bug) Payments fails when going denied and switching over to happy (RCO)
-    * [WOO-361] - (Bug) customerType fails on undefined type (addressed in 2.2.14.1 with release update information)
-
-= 2.2.14 =
-
-    * [WOO-300] - Making RCO compatible with other payment methods
-    * [WOO-301] - Deprecate iframe location "in payment methods list"
-    * [WOO-304] - bookPaymentResponse gives us "DENIED" status. Add this to a metadata-tag
-    * [WOO-273] - Text domain-problem
-    * [WOO-296] - Resurs order ids in list view no longer visible on activation
-    * [WOO-297] - Payment method list says unauthorized even if no credentials are added
-    * [WOO-299] - Felaktigt orderid hos Resurs
-    * [WOO-305] - Deprecated functions and variables that break code inspections
-    * [WOO-309] - Synchronize orderlines in async interceptor-mode for RCO
-    * [WOO-310] - Zero fees prevents negative fees be sent into ECom Payload (discount-fee-ish-fix)
-
-
+    * [WOO-364] - Renew the way that callback digests are verified
+    * [WOO-366] - Add flag SKIP_DIGEST_VALIDATION for test puropses
+    * [WOO-367] - Clarify the inbound status notices
+    * [WOO-368] - Remove the usage of transient storages for salt keys
+    * [WOO-369] - Handle multiple payment ids during digest validation (in cases were updatePaymentReference failed)
+    * [WOO-371] - Transform more phrases into sprintf-formatting.
+    * [WOO-365] - Instant finalization statuses not properly set on plugin reset
+    * [WOO-370] - Not all payment methods apparently returns a string in order view
 
 
 == Upgrade Notice ==
