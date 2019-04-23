@@ -422,8 +422,13 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'callbackUpdateAutomation' => array(
                     'title' => __('Enable automatic callback updates', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                            'Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '<br><b>' .__(
+                            '(It is no longer recommended to actively use this setting)',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</b>',
                     'type' => 'checkbox',
                     'label' => __('Enable/Disable', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'default' => 'false'

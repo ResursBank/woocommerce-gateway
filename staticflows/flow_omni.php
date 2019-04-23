@@ -220,7 +220,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
             $flowBook = $this->flow->createPayment($omniRef, $bookDataOmni);
             $flowFrame = is_string($flowBook) ? $flowBook : "";
-            $flowFrame .= '<noscript><b>' . __('OmniCheckout will not work properly without Javascript functions enabled',
+            $flowFrame .= '<noscript><b>' . __('Resurs Checkout will not work properly without Javascript functions enabled',
                     'resurs-bank-payment-gateway-for-woocommerce') . '</b></noscript>';
             if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
                 $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL',
