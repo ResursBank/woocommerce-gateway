@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.1.1
 Requires PHP: 5.4
-Stable tag: 2.2.16
+Stable tag: 2.2.17
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,16 +88,9 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.16 =
+= 2.2.17 =
 
-    * [WOO-364] - Renew the way that callback digests are verified
-    * [WOO-366] - Add flag SKIP_DIGEST_VALIDATION for test puropses
-    * [WOO-367] - Clarify the inbound status notices
-    * [WOO-368] - Remove the usage of transient storages for salt keys
-    * [WOO-369] - Handle multiple payment ids during digest validation (in cases were updatePaymentReference failed)
-    * [WOO-371] - Transform more phrases into sprintf-formatting.
-    * [WOO-365] - Instant finalization statuses not properly set on plugin reset
-    * [WOO-370] - Not all payment methods apparently returns a string in order view
+    * [WOO-372] - Bitwise status check (logging) adjustment
 
 
 == Upgrade Notice ==
