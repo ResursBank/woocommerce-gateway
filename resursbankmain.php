@@ -1221,7 +1221,12 @@ function woocommerce_gateway_resurs_bank_init()
                 resursEventLogger('Callback Event ' . $this->flow->getCallbackTypeString($byCallbackEvent) . '.');
                 resursEventLogger(print_r($paymentIdOrPaymentObject, true));
                 resursEventLogger('Current Status: ' . $currentWcStatus);
-                resursEventLogger('Suggested status: ' . $suggestedStatus . ' (' . $paymentStatus[$suggestedStatus] . ')');
+                if (isset($paymentStatus[$suggestedStatus])) {
+                    resursEventLogger('Suggested status: ' . $suggestedStatus . ' (' . $paymentStatus[$suggestedStatus] . ')');
+                } else {
+                    resursEventLogger('Suggested status: ' . $suggestedStatus . ' (bitwise setup defines dynamically chosen status)');
+                }
+
                 resursEventLogger('Stored statuses listed.');
                 resursEventLogger(print_r($paymentStatus, true));
                 resursEventLogger('Callback EVENT Information End');
