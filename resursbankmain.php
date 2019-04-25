@@ -2627,6 +2627,8 @@ function woocommerce_gateway_resurs_bank_init()
                         // If the order already exists, continue without errors (if we reached this code, it has been because of the nonce which should be considered safe enough)
                         $order = new WC_Order($testLocalOrder);
                         $currentOrderStatus = $order->get_status();
+                        // Going generic response, to make it possible to updateOrderReference on fly
+                        // in this state.
                         $returnResult['success'] = true;
                         $returnResult['errorCode'] = 200;
                         if ($currentOrderStatus === 'failed') {
