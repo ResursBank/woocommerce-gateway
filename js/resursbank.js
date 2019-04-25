@@ -177,6 +177,8 @@ $RB(document).ready(function ($) {
                 }
             );
             if (typeof currentResursCheckoutFrame !== "undefined" && typeof currentResursCheckoutFrame.src !== "undefined") {
+                var errorString = "";
+                // Prepare order and make it annullable on errors.
                 if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
                     var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
                     $RB.ajax(
@@ -187,12 +189,12 @@ $RB(document).ready(function ($) {
                         }
                     ).success(
                         function (successData) {
-                            var errorString = "";
                             var isSuccess = false;
                             var orderId = 0;
                             if (typeof successData["orderId"] !== "undefined") {
                                 orderId = successData["orderId"];
                             }
+                            console.log("Order id reference was updated before: " + rbRefUpdated);
                             if (typeof successData.success !== "undefined") {
                                 if (successData.success === true) {
                                     isSuccess = true;
@@ -204,6 +206,8 @@ $RB(document).ready(function ($) {
                                     }
                                 }
                             }
+
+                            rbRefUpdated = false;
                             errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
                             if (!isSuccess) {
                                 if (errorString === "" || errorString === null) {
@@ -215,8 +219,8 @@ $RB(document).ready(function ($) {
                             return false;
                         }
                     ).fail(
-                        function (x, y) {
-
+                        function (x) {
+                            rbRefUpdated = false;
                             resursCheckout.confirmOrder(false);
                             var errorString = getResursPhrase("theAjaxWentWrong");
                             if (typeof x.statusText !== "undefined") {
@@ -224,10 +228,6 @@ $RB(document).ready(function ($) {
                             }
                             var partialError = getResursPhrase("theAjaxWentWrongWithThisMessage");
                             var contactUs = getResursPhrase("contactSupport");
-
-                            //if (typeof x['responseJSON'] !== 'undefined' && typeof x['responseJSON']["errorString"]) {
-                            //    errorString = x['responseJSON']["errorString"];
-                            //}
 
                             handleResursCheckoutError(partialError + errorString + " - " + contactUs);
                             return false;
@@ -690,6 +690,7 @@ function rbUpdatePaymentReference(refobj, paymentDataObject) {
     if (typeof omnivars.OmniRef !== "undefined") {
         var omniRef = omnivars.OmniRef;
         var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef + "&updateReference=true";
+        console.log("Resurs bank reference " + omniRef + " requested update to " + orderId);
         if (orderId > 0) {
             $RB.ajax({
                 type: 'POST',
@@ -700,9 +701,11 @@ function rbUpdatePaymentReference(refobj, paymentDataObject) {
                 }
             }).done(function (data) {
                 if (data.success) {
+                    console.log("Resurs Bank reference updated successfully.");
                     rbRefUpdated = true;
                     return refobj.confirmOrder(true);
                 } else {
+                    console.log("Resurs Bank references failed.");
                     handleResursCheckoutError(getResursPhrase("updatePaymentReferenceFailure") + " - " + data.errorString);
                 }
             });
