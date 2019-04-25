@@ -1352,6 +1352,7 @@ function woocommerce_gateway_resurs_bank_init()
                 } else {
                     $uriTemplate .= '&digest={digest}';
                 }
+                $uriTemplate .= '&env=' . getServerEnv();
                 $uriTemplate .= '&ts=' . strftime("%y%m%d%H%M", time());
                 $xDebugTest = getResursFlag('XDEBUG_SESSION_START');
                 if (!empty($xDebugTest)) {
