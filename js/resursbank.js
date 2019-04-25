@@ -179,6 +179,7 @@ $RB(document).ready(function ($) {
             if (typeof currentResursCheckoutFrame !== "undefined" && typeof currentResursCheckoutFrame.src !== "undefined") {
                 var errorString = "";
                 // Prepare order and make it annullable on errors.
+                console.log("Resus Bank ready to pre-book order locally.");
                 if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
                     var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
                     $RB.ajax(
@@ -196,11 +197,14 @@ $RB(document).ready(function ($) {
                             }
                             console.log("Order id reference was updated before: " + rbRefUpdated);
                             if (typeof successData.success !== "undefined") {
+                                console.log("Checking if order reference needs update.");
                                 if (successData.success === true) {
                                     isSuccess = true;
                                     if (omnivars["postidreference"] == "1" && orderId > 0) {
+                                        console.log("Resurs Bank successful order creation. Update payment reference to " + orderId);
                                         return rbUpdatePaymentReference(resursCheckout, successData);
                                     } else {
+                                        console.log("Resurs Bank payment reference not necessary.");
                                         resursCheckout.confirmOrder(true);
                                         return true;
                                     }
