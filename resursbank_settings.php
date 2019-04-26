@@ -598,12 +598,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $isResursSave = true;
             wp_safe_redirect($url);
         }
-        $longSimplified = __('Simplified Shop Flow: Payments goes through Resurs Bank API (Default)',
-            'WC_Payment_Gateway');
-        $longHosted = __('Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment',
-            'WC_Payment_Gateway');
-        $longOmni = __('Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)',
-            'WC_Payment_Gateway');
+        $longSimplified = __(
+            'Simplified Shop Flow: Payments goes through Resurs Bank API (Default)',
+            'WC_Payment_Gateway'
+        );
+        $longHosted = __(
+            'Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment',
+            'WC_Payment_Gateway'
+        );
+        $longOmni = __(
+            'Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)',
+            'WC_Payment_Gateway'
+        );
 
         $methodDescription = "";
         $paymentMethodsError = null;
@@ -647,22 +653,32 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     $countryBasedPaymentMethods[$countryId] = array();
                                 }
 
-                                $transientTest = get_transient('resursMethods' . $countryId,
-                                    $countryBasedPaymentMethods[$countryId]);
+                                $transientTest = get_transient(
+                                    'resursMethods' . $countryId,
+                                    $countryBasedPaymentMethods[$countryId]
+                                );
 
-                                if (empty($countryBasedPaymentMethods[$countryId]) || (is_array($countryBasedPaymentMethods[$countryId]) && !count($countryBasedPaymentMethods[$countryId])) || empty($transientTest)) {
+                                if (empty($countryBasedPaymentMethods[$countryId]) ||
+                                    (is_array($countryBasedPaymentMethods[$countryId]) &&
+                                        !count($countryBasedPaymentMethods[$countryId])) ||
+                                    empty($transientTest)
+                                ) {
                                     $demoShopFlow->setAuthentication($countryCredentials['login'],
                                         $countryCredentials['password']);
-                                    $countryBasedPaymentMethods[$countryId] = $demoShopFlow->getPaymentMethods(array(),
-                                        true);
+                                    $countryBasedPaymentMethods[$countryId] = $demoShopFlow->getPaymentMethods(
+                                        array(),
+                                        true
+                                    );
                                     foreach ($countryBasedPaymentMethods[$countryId] as $countryObject) {
                                         $countryObject->country = $countryId;
                                     }
                                     set_transient('resursMethods' . $countryId,
                                         $countryBasedPaymentMethods[$countryId]);
                                 }
-                                $this->paymentMethods = array_merge($this->paymentMethods,
-                                    $countryBasedPaymentMethods[$countryId]);
+                                $this->paymentMethods = array_merge(
+                                    $this->paymentMethods,
+                                    $countryBasedPaymentMethods[$countryId]
+                                );
 
                                 set_transient("resursAllMethods", $this->paymentMethods);
                             }
@@ -1077,7 +1093,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo $this->setCheckBox('finalizeIfBooked', $namespace, 'onchange="wfcComboControl(this)"');
                         echo $this->setSeparator("Invoice numbering");
                         echo '<tr><td colspan="2">' . __('Next invoice number to use',
-                                'WC_Payment_Gateway') .': <span id="nextInvoiceSequence"><img src="' . $this->spinner . '"></span></td></tr>';
+                                'WC_Payment_Gateway') . ': <span id="nextInvoiceSequence"><img src="' . $this->spinner . '"></span></td></tr>';
                     }
                 } elseif ($section == "resurs_bank_omnicheckout") {
                     $namespace = "woocommerce_" . $section;
