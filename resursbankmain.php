@@ -1029,7 +1029,8 @@ function woocommerce_gateway_resurs_bank_init()
          *
          * @return string
          */
-        private function getCurrentSalt() {
+        private function getCurrentSalt()
+        {
             $currentStoredSalt = getResursOption('resurs_bank_digest_salt', 'wc_resurs2_salt');
 
             // Deprecating transient storages.
@@ -1045,7 +1046,8 @@ function woocommerce_gateway_resurs_bank_init()
             return (string)$return;
         }
 
-        private function getValidatedDigestResponse($paymentId, $currentSalt, $digest, $result) {
+        private function getValidatedDigestResponse($paymentId, $currentSalt, $digest, $result)
+        {
             return $this->flow->getValidatedCallbackDigest($paymentId, $currentSalt, $digest, $result);
         }
 
@@ -1178,7 +1180,8 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $code
          * @return mixed|string
          */
-        public function getOrderStatusByResursReturnCode($code) {
+        public function getOrderStatusByResursReturnCode($code)
+        {
             $return = 'Unknown';
             $arrayList = $this->getResursOrderStatusArray();
 
@@ -2360,10 +2363,10 @@ function woocommerce_gateway_resurs_bank_init()
 
                 if (getResursOption('postidreference')) {
                     $reUpdateOrderByDifferentId = $this->updateOrderLines(
-                            $secondPaymentId,
-                            $paymentSpec,
-                            $returnResult,
-                            $flow
+                        $secondPaymentId,
+                        $paymentSpec,
+                        $returnResult,
+                        $flow
                     );
                 }
 
@@ -2825,7 +2828,7 @@ function woocommerce_gateway_resurs_bank_init()
                         try {
                             $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
                         } catch (Exception $e) {
-                            $order>add_order_note($e->getMessage());
+                            $order > add_order_note($e->getMessage());
                         }
                         WC()->cart->empty_cart();
                     }
@@ -4180,7 +4183,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $displayAnnuity .= '<span>' . sprintf(__(
                                     'Part pay from %s per month',
                                     'resurs-bank-payment-gateway-for-woocommerce'
-                            ), $payFromAnnuity) . '</span> | ';
+                                ), $payFromAnnuity) . '</span> | ';
 
                             $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __('Info',
                                     'resurs-bank-payment-gateway-for-woocommerce') . '</span>';
@@ -5730,3 +5733,14 @@ if (!function_exists('getHadMisplacedIframeLocation')) {
 }
 
 isResursSimulation();
+
+/**
+ * @param string $description
+ * @param stdClass $paymentMethodContent
+ * @return mixed
+ */
+function resursMethodValue($description, $paymentMethodContent)
+{
+    return $paymentMethodContent->id;
+}
+add_filter('resurs_admin_sort_methods_by_value', 'resursMethodValue', 10, 2);
