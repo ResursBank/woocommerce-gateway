@@ -5733,14 +5733,3 @@ if (!function_exists('getHadMisplacedIframeLocation')) {
 }
 
 isResursSimulation();
-
-/**
- * @param string $description
- * @param stdClass $paymentMethodContent
- * @return mixed
- */
-function resursMethodValue($description, $paymentMethodContent)
-{
-    return $paymentMethodContent->id;
-}
-add_filter('resurs_admin_sort_methods_by_value', 'resursMethodValue', 10, 2);
