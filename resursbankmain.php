@@ -1029,7 +1029,8 @@ function woocommerce_gateway_resurs_bank_init()
          *
          * @return string
          */
-        private function getCurrentSalt() {
+        private function getCurrentSalt()
+        {
             $currentStoredSalt = getResursOption('resurs_bank_digest_salt', 'wc_resurs2_salt');
 
             // Deprecating transient storages.
@@ -1045,7 +1046,8 @@ function woocommerce_gateway_resurs_bank_init()
             return (string)$return;
         }
 
-        private function getValidatedDigestResponse($paymentId, $currentSalt, $digest, $result) {
+        private function getValidatedDigestResponse($paymentId, $currentSalt, $digest, $result)
+        {
             return $this->flow->getValidatedCallbackDigest($paymentId, $currentSalt, $digest, $result);
         }
 
@@ -1178,7 +1180,8 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $code
          * @return mixed|string
          */
-        public function getOrderStatusByResursReturnCode($code) {
+        public function getOrderStatusByResursReturnCode($code)
+        {
             $return = 'Unknown';
             $arrayList = $this->getResursOrderStatusArray();
 
@@ -1476,6 +1479,11 @@ function woocommerce_gateway_resurs_bank_init()
             //$payment_fee_tax_pct = (float) getResursOption( 'pricePct' );
             /** @var WC_Cart $currentCart */
             $currentCart = $cart->get_cart();
+            if (!count($currentCart)) {
+                // If there is no articles in the cart, there's no use to add
+                // shipping.
+                return array();
+            }
             $spec_lines = self::get_spec_lines($currentCart);
             $shipping = (float)$cart->shipping_total;
             $shipping_tax = (float)$cart->shipping_tax_total;
@@ -1483,8 +1491,14 @@ function woocommerce_gateway_resurs_bank_init()
             /*
              * Compatibility (Discovered in PHP7)
 			 */
-            $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping,
-                    2) * 100) ? @round($shipping_tax / $shipping, 2) * 100 : 0);
+            $shipping_tax_pct = (
+            !is_nan(
+                @round(
+                    $shipping_tax / $shipping,
+                    2
+                ) * 100
+            ) ? @round($shipping_tax / $shipping, 2) * 100 : 0
+            );
 
             $spec_lines[] = array(
                 'id' => 'frakt',
@@ -2360,10 +2374,10 @@ function woocommerce_gateway_resurs_bank_init()
 
                 if (getResursOption('postidreference')) {
                     $reUpdateOrderByDifferentId = $this->updateOrderLines(
-                            $secondPaymentId,
-                            $paymentSpec,
-                            $returnResult,
-                            $flow
+                        $secondPaymentId,
+                        $paymentSpec,
+                        $returnResult,
+                        $flow
                     );
                 }
 
@@ -2825,7 +2839,7 @@ function woocommerce_gateway_resurs_bank_init()
                         try {
                             $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
                         } catch (Exception $e) {
-                            $order>add_order_note($e->getMessage());
+                            $order > add_order_note($e->getMessage());
                         }
                         WC()->cart->empty_cart();
                     }
@@ -4180,7 +4194,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $displayAnnuity .= '<span>' . sprintf(__(
                                     'Part pay from %s per month',
                                     'resurs-bank-payment-gateway-for-woocommerce'
-                            ), $payFromAnnuity) . '</span> | ';
+                                ), $payFromAnnuity) . '</span> | ';
 
                             $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __('Info',
                                     'resurs-bank-payment-gateway-for-woocommerce') . '</span>';
