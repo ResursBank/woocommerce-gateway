@@ -88,10 +88,16 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.17 =
+= 2.2.18 =
 
-    * [WOO-372] - Bitwise status check (logging) adjustment
-
+    * [WOO-283] - (T) PAYMENT_PROVIDER and LEGAL
+    * [WOO-302] - (T) Add get-parameter in callback urls that tells about environment
+    * [WOO-312] - (T) If updatePaymentReference has been running once, it should not be run again on next click
+    * [WOO-351] - (T) Check if the meta data can be used for fetching wrongly created orders
+    * [WOO-376] - (T) Woocommerce upated so wc tested up to should be changed also
+    * [WOO-348] - (B) After a denied paymet, updatePaymentReference no longer works and the orderid will not be updated on the new order if "continued" with an approved govid
+    * [WOO-375] - (B) wp-admin payment methods: if descriptions are identical in the list, they will be overwritten
+    * [WOO-377] - (B) Missing an "arrow".
 
 == Upgrade Notice ==
 
