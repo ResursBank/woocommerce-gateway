@@ -2828,7 +2828,7 @@ function woocommerce_gateway_resurs_bank_init()
                         try {
                             $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
                         } catch (Exception $e) {
-                            $order > add_order_note($e->getMessage());
+                            $order->add_order_note($e->getMessage());
                         }
                         WC()->cart->empty_cart();
                     }
