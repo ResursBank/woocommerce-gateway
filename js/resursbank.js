@@ -204,7 +204,7 @@ $RB(document).ready(function ($) {
                                         console.log("Resurs Bank successful order creation. Update payment reference to " + orderId);
                                         return rbUpdatePaymentReference(resursCheckout, successData);
                                     } else {
-                                        console.log("Resurs Bank payment reference not necessary.");
+                                        console.log("Resurs Bank payment reference not necessary (orderid = " + orderId + ").");
                                         resursCheckout.confirmOrder(true);
                                         return true;
                                     }
@@ -233,6 +233,9 @@ $RB(document).ready(function ($) {
                             var partialError = getResursPhrase("theAjaxWentWrongWithThisMessage");
                             var contactUs = getResursPhrase("contactSupport");
 
+                            console.log("Resurs Bank preBook failed.");
+                            console.dir(x);
+
                             handleResursCheckoutError(partialError + errorString + " - " + contactUs);
                             return false;
                         }
@@ -240,7 +243,6 @@ $RB(document).ready(function ($) {
                 }
             }
         });
-
     }
 
     if ($RB('#ssnCustomerType').length && $RB('#ssnCustomerType:checked').length > 0) {

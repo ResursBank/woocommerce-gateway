@@ -2440,7 +2440,6 @@ function woocommerce_gateway_resurs_bank_init()
             if (isset($_REQUEST['updateReference'])) {
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
-
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
                             try {
                                 $flow->updatePaymentReference($_REQUEST['orderRef'], $_REQUEST['orderId']);
@@ -2629,24 +2628,66 @@ function woocommerce_gateway_resurs_bank_init()
                         // If the order already exists, continue without errors (if we reached this code, it has been because of the nonce which should be considered safe enough)
                         $order = new WC_Order($testLocalOrder);
                         $currentOrderStatus = $order->get_status();
+                        // Going generic response, to make it possible to updateOrderReference on fly
+                        // in this state.
+                        $returnResult['success'] = true;
+                        $returnResult['errorCode'] = 200;
                         if ($currentOrderStatus === 'failed') {
                             $order->set_status(
                                 'pending',
                                 __(
-                                    'Customer retried to place order',
+                                    '[Resurs Bank] Customer retried to place order, after failure.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 )
                             );
+                            //$returnResult['success'] = false;
+                            //$returnResult['errorCode'] = 499;
                         }
+
+                        $updatePaymentReferenceStatus = null;
+                        if (getResursOption("postidreference")) {
+                            if (!empty($requestedPaymentId) && !empty($requestedUpdateOrder)) {
+                                // Blindly try this once again.
+                                try {
+                                    $updatePaymentReferenceStatus = $flow->updatePaymentReference(
+                                        $requestedPaymentId,
+                                        $requestedUpdateOrder
+                                    );
+                                    $order->add_order_note(
+                                        __(
+                                            '[Resurs Bank] Rerunning updatePaymentReference got a successful update.',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        )
+                                    );
+                                } catch (\Exception $e) {
+                                    if ($e->getCode() == 404) {
+                                        //$returnResult['errorCode'] = 200;
+                                        $updatePaymentReferenceStatus = "4xx ()" . $e->getCode() . " indicates already updated.";
+                                    } else {
+                                        $updatePaymentReferenceStatus = $e->getMessage();
+                                    }
+                                }
+                            } else {
+                                $updatePaymentReferenceStatus = 'Reference or order id is missing.';
+                                $order->add_order_note(
+                                    __(
+                                        '[Resurs Bank] Reference or order id is missing, so the reference can not be updated.',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
+                            }
+                        } else {
+                            $updatePaymentReferenceStatus = 'Disabled';
+                        }
+
+                        $responseCode = $returnResult['errorCode'];
                         $order->set_address($wooBillingAddress, 'billing');
                         $order->set_address($wooDeliveryAddress, 'shipping');
                         $order->save();
-                        $returnResult['success'] = true;
                         $returnResult['hasOrder'] = true;
                         $returnResult['usingOrder'] = $testLocalOrder;
                         $returnResult['errorString'] = "Order already exists";
-                        $returnResult['errorCode'] = 200;
-                        $responseCode = 200;
+                        $returnResult['updatePaymentReferenceStatus'] = $updatePaymentReferenceStatus;
                     }
 
                 } else {
