@@ -2659,7 +2659,7 @@ function woocommerce_gateway_resurs_bank_init()
                                         )
                                     );
                                 } catch (\Exception $e) {
-                                    if ($e->getCode() >= 400) {
+                                    if ($e->getCode() == 404) {
                                         //$returnResult['errorCode'] = 200;
                                         $updatePaymentReferenceStatus = "4xx ()" . $e->getCode() . " indicates already updated.";
                                     } else {
