@@ -4185,8 +4185,10 @@ function woocommerce_gateway_resurs_bank_init()
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 ), $payFromAnnuity) . '</span> | ';
 
-                            $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __('Info',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . '</span>';
+                            $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' .
+                                __(
+                                    'Info', 'resurs-bank-payment-gateway-for-woocommerce'
+                                ) . '</span>';
                             $displayAnnuity .= '</div>';
                         }
                     }
