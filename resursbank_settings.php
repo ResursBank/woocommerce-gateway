@@ -910,7 +910,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 $description = $methodArray->description . uniqid(microtime(true));
 
                                 // Choose another sort order by the content.
-                                $anotherValue = apply_filters('resurs_admin_sort_methods_by_value', $description, $methodArray);
+                                $anotherValue = apply_filters(
+                                    'resurs_admin_sort_methods_by_value',
+                                    $description,
+                                    $methodArray
+                                );
 
                                 if (!empty($anotherValue)) {
                                     $description = $anotherValue;
