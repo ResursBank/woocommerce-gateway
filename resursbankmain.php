@@ -1479,6 +1479,11 @@ function woocommerce_gateway_resurs_bank_init()
             //$payment_fee_tax_pct = (float) getResursOption( 'pricePct' );
             /** @var WC_Cart $currentCart */
             $currentCart = $cart->get_cart();
+            if (!count($currentCart)) {
+                // If there is no articles in the cart, there's no use to add
+                // shipping.
+                return array();
+            }
             $spec_lines = self::get_spec_lines($currentCart);
             $shipping = (float)$cart->shipping_total;
             $shipping_tax = (float)$cart->shipping_tax_total;
@@ -1486,8 +1491,14 @@ function woocommerce_gateway_resurs_bank_init()
             /*
              * Compatibility (Discovered in PHP7)
 			 */
-            $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping,
-                    2) * 100) ? @round($shipping_tax / $shipping, 2) * 100 : 0);
+            $shipping_tax_pct = (
+            !is_nan(
+                @round(
+                    $shipping_tax / $shipping,
+                    2
+                ) * 100
+            ) ? @round($shipping_tax / $shipping, 2) * 100 : 0
+            );
 
             $spec_lines[] = array(
                 'id' => 'frakt',
