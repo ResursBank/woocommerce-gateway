@@ -266,7 +266,8 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * @return array
          */
-        public function getCallbackTypes() {
+        public function getCallbackTypes()
+        {
             return array(
                 'UNFREEZE' => array(
                     'uri_components' => array(
