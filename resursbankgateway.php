@@ -12,7 +12,7 @@
  * Domain Path: /language
  */
 
-define('RB_WOO_VERSION', '2.2.17');
+define('RB_WOO_VERSION', '2.2.18');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce');
 

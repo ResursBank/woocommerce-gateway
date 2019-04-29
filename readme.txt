@@ -2,7 +2,7 @@
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 5.1.1
+Tested up to: 5.2
 Requires PHP: 5.4
 Stable tag: 2.2.18
 License: GPLv2 or later
@@ -90,6 +90,7 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
 
 = 2.2.18 =
 
+    * [WOO-380] - (T) WordPress 5.2 is imminent
     * [WOO-283] - (T) PAYMENT_PROVIDER and LEGAL
     * [WOO-302] - (T) Add get-parameter in callback urls that tells about environment
     * [WOO-312] - (T) If updatePaymentReference has been running once, it should not be run again on next click
