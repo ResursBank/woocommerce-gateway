@@ -2462,20 +2462,25 @@ function woocommerce_gateway_resurs_bank_init()
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
-                            try {
-                                $flow->updatePaymentReference($_REQUEST['orderRef'], $_REQUEST['orderId']);
-                                update_post_meta($_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId']);
-                                update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $_REQUEST['orderRef']);
-                                update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', true);
+                            // Use only as a failover
+                            if (!(bool)get_post_meta($_REQUEST['orderId'], 'referenceWasUpdated')) {
+                                try {
+                                    $flow->updatePaymentReference($_REQUEST['orderRef'], $_REQUEST['orderId']);
+                                    update_post_meta($_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId']);
+                                    update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $_REQUEST['orderRef']);
+                                    update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', true);
+                                    $returnResult['success'] = true;
+                                    $this->returnJsonResponse($returnResult, 200);
+                                } catch (\Exception $e) {
+                                    update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', false);
+                                    $returnResult['success'] = false;
+                                    $returnResult['errorString'] = $e->getMessage();
+                                    $returnResult['errorCode'] = 500;
+                                    $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
+                                }
+                            } else {
                                 $returnResult['success'] = true;
                                 $this->returnJsonResponse($returnResult, 200);
-                            } catch (\Exception $e) {
-                                update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', false);
-                                $returnResult['success'] = false;
-                                $returnResult['errorString'] = $e->getMessage();
-                                $returnResult['errorCode'] = 500;
-                                $this->returnJsonResponse($returnResult, $returnResult['errorCode']);
-
                             }
                         } else {
                             $returnResult['success'] = false;
@@ -2579,6 +2584,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 $_REQUEST["shipping_" . $deliveryKey] = $deliveryValue;
                             }
                         }
+
+                        // Having a brand new order to process.
                         $resursOrder = new WC_Checkout();
                         try {
                             // As we work with the session, we'd try to get the current order that way.
@@ -2587,6 +2594,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $internalErrorMessage = "";
                             $internalErrorCode = 0;
                             try {
+                                // Create order by WOO internal API.
                                 $resursOrder->process_checkout();
                                 $wcNotices = wc_get_notices();
                                 if (isset($wcNotices['error'])) {
@@ -2618,6 +2626,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $returnResult['orderId'] = $orderId;
                             $returnResult['session'] = WC()->session;
                             $returnResult['hasInternalErrors'] = $hasInternalErrors;
+                            $returnResult['updatePaymentReferenceStatus'] = null;
                             if ($orderId > 0 && !$hasInternalErrors) {
                                 /** @var WC_Gateway_ResursBank_Omni $omniClass */
                                 $omniClass = new WC_Gateway_ResursBank_Omni();
@@ -2628,6 +2637,20 @@ function woocommerce_gateway_resurs_bank_init()
                                 update_post_meta($orderId, 'omniPaymentMethod', $omniPaymentMethod);
                                 $hasInternalErrors = false;
                                 $internalErrorMessage = null;
+                                $updatePaymentReferenceStatus = $this->updateOrderReference(
+                                    $order,
+                                    $flow,
+                                    $requestedPaymentId,
+                                    $orderId
+                                );
+                                // If we experience successful order references here, the first
+                                // backend call may have failed.
+                                if ((bool)$updatePaymentReferenceStatus === true) {
+                                    update_post_meta($orderId, 'paymentId', $orderId);
+                                    update_post_meta($orderId, 'paymentIdLast', $requestedPaymentId);
+                                    update_post_meta($orderId, 'referenceWasUpdated', true);
+                                }
+                                $returnResult['updatePaymentReferenceStatus'] = $updatePaymentReferenceStatus;
                             } else {
                                 $returnResult['success'] = false;
                                 $returnResult['errorString'] = !empty($internalErrorMessage) ? $internalErrorMessage : "OrderId missing";
@@ -2661,44 +2684,21 @@ function woocommerce_gateway_resurs_bank_init()
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 )
                             );
-                            //$returnResult['success'] = false;
-                            //$returnResult['errorCode'] = 499;
                         }
 
-                        $updatePaymentReferenceStatus = null;
-                        if (getResursOption("postidreference")) {
-                            if (!empty($requestedPaymentId) && !empty($requestedUpdateOrder)) {
-                                // Blindly try this once again.
-                                try {
-                                    $updatePaymentReferenceStatus = $flow->updatePaymentReference(
-                                        $requestedPaymentId,
-                                        $requestedUpdateOrder
-                                    );
-                                    $order->add_order_note(
-                                        __(
-                                            '[Resurs Bank] Rerunning updatePaymentReference got a successful update.',
-                                            'resurs-bank-payment-gateway-for-woocommerce'
-                                        )
-                                    );
-                                } catch (\Exception $e) {
-                                    if ($e->getCode() == 404) {
-                                        //$returnResult['errorCode'] = 200;
-                                        $updatePaymentReferenceStatus = "4xx ()" . $e->getCode() . " indicates already updated.";
-                                    } else {
-                                        $updatePaymentReferenceStatus = $e->getMessage();
-                                    }
-                                }
-                            } else {
-                                $updatePaymentReferenceStatus = 'Reference or order id is missing.';
-                                $order->add_order_note(
-                                    __(
-                                        '[Resurs Bank] Reference or order id is missing, so the reference can not be updated.',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    )
-                                );
-                            }
-                        } else {
-                            $updatePaymentReferenceStatus = 'Disabled';
+                        $updatePaymentReferenceStatus = $this->updateOrderReference(
+                            $order,
+                            $flow,
+                            $requestedPaymentId,
+                            $testLocalOrder
+                        );
+
+                        // If we experience successful order references here, the first
+                        // backend call may have failed.
+                        if ((bool)$updatePaymentReferenceStatus === true) {
+                            update_post_meta($order->get_id(), 'paymentId', $order->get_id());
+                            update_post_meta($order->get_id(), 'paymentIdLast', $requestedPaymentId);
+                            update_post_meta($order->get_id(), 'referenceWasUpdated', true);
                         }
 
                         $responseCode = $returnResult['errorCode'];
@@ -2723,6 +2723,58 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $this->returnJsonResponse($returnResult, $responseCode, $resursOrder);
+        }
+
+        /**
+         * @param $order
+         * @param $flow
+         * @param $requestedPaymentId
+         * @param $requestedUpdateOrder
+         * @return string
+         */
+        private function updateOrderReference($order, $flow, $requestedPaymentId, $requestedUpdateOrder)
+        {
+            if (getResursOption("postidreference")) {
+
+                if (empty($requestedUpdateOrder)) {
+                    $currentPaymentId = r_wc_get_order_id_by_order_item_id('paymentId');
+                }
+
+                if (!empty($requestedPaymentId) && !empty($requestedUpdateOrder)) {
+                    // Blindly try this once again.
+                    try {
+                        $updatePaymentReferenceStatus = $flow->updatePaymentReference(
+                            $requestedPaymentId,
+                            $requestedUpdateOrder
+                        );
+                        $order->add_order_note(
+                            __(
+                                '[Resurs Bank] Rerunning updatePaymentReference got a successful update.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
+                    } catch (\Exception $e) {
+                        if ($e->getCode() == 404) {
+                            //$returnResult['errorCode'] = 200;
+                            $updatePaymentReferenceStatus = "4xx ()" . $e->getCode() . " indicates already updated.";
+                        } else {
+                            $updatePaymentReferenceStatus = $e->getMessage();
+                        }
+                    }
+                } else {
+                    $updatePaymentReferenceStatus = 'Reference or order id is missing.';
+                    $order->add_order_note(
+                        __(
+                            '[Resurs Bank] Reference or order id is missing, so the reference can not be updated.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        )
+                    );
+                }
+            } else {
+                $updatePaymentReferenceStatus = 'Disabled';
+            }
+
+            return $updatePaymentReferenceStatus;
         }
 
         /**
@@ -2838,8 +2890,10 @@ function woocommerce_gateway_resurs_bank_init()
                         $getRedirectUrl = $this->get_return_url($order);
 
                         $order->add_order_note('[Resurs Bank] ' .
-                            __('The payment are signed and booked. Waiting for further statuses.',
-                                'resurs-bank-payment-gateway-for-woocommerce')
+                            __(
+                                'The payment are signed and booked. Waiting for further statuses.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
                         );
 
                         $current = $order->get_status();
@@ -2858,8 +2912,12 @@ function woocommerce_gateway_resurs_bank_init()
 
             if ($paymentId != $requestedPaymentId && !$isHostedFlow) {
                 $order->update_status('failed');
-                wc_add_notice(__('The payment can not complete. Contact customer services for more information.',
-                    'resurs-bank-payment-gateway-for-woocommerce'), 'error');
+                wc_add_notice(
+                    __(
+                        'The payment can not complete. Contact customer services for more information.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ), 'error'
+                );
             }
 
             $signedResult = null;
@@ -4359,9 +4417,22 @@ function getPaymentInfo($order, $getPaymentId = '', $fallback = false)
         $resursPaymentInfo = $rb->getPayment($getPaymentId);
     } catch (\Exception $e) {
         if (resursOption('postidreference')) {
-            if ($e->getCode() === 8 && $getPaymentId !== $resursPaymentIdLast) {
-                $resursPaymentInfo = getPaymentInfo($order, $resursPaymentIdLast, $fallback);
-                $fallback = true;
+            if ($e->getCode() === 8) {
+                if (!empty($resursPaymentIdLast) && $getPaymentId !== $resursPaymentIdLast) {
+                    $resursPaymentInfo = getPaymentInfo($order, $resursPaymentIdLast, $fallback);
+                    $fallback = true;
+                } else {
+                    if (!$fallback) {
+                        // When the paymentIdLast is not properly registered, we'll get an empty string here.
+                        // In this case, something gone terribly wrong, so we have to fallback to an originating id.
+                        // This probably occurs when the "terribly wrong" part is about the updatePaymentReference, where
+                        // this actually has been successful but not properly been registered.
+                        $fallback = true;
+                        $resursPaymentInfo = getPaymentInfo($order, $order->get_id(), $fallback);
+                    } else {
+                        throw new \Exception('Order was not found at Resurs Bank', 8);
+                    }
+                }
             } else {
                 throw $e;
             }
@@ -4416,10 +4487,14 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $errorMessage = $e->getMessage();
                 if ($e->getCode() === 8) {
                     // REFERENCED_DATA_DONT_EXISTS
-                    $errorMessage = __("Referenced data don't exist",
-                            'resurs-bank-payment-gateway-for-woocommerce') . "<br>\n<br>\n";
-                    $errorMessage .= __("This error might occur when for example a payment doesn't exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed",
-                        'resurs-bank-payment-gateway-for-woocommerce');
+                    $errorMessage = __(
+                            'Referenced data don\'t exist',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . "<br>\n<br>\n";
+                    $errorMessage .= __(
+                        'This error might occur when for example a payment doesn\'t exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    );
                 }
 
                 $checkoutPurchaseFailTest = get_post_meta($orderId, 'soft_purchase_fail', true);
@@ -4452,8 +4527,11 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     <div style="padding: 30px;border:none;" id="resursInfo">
                         <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
                         <fieldset>
-                        <b>' . __('Following error ocurred when we tried to fetch information about the payment',
-                        'resurs-bank-payment-gateway-for-woocommerce') . '</b><br>
+                        <b>' .
+                    __(
+                        'Following error ocurred when we tried to fetch information about the payment',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '</b><br>
                         <br>
                         ' . $errorMessage . '<br>
                     </fieldset>
@@ -4487,16 +4565,26 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
         if (isset($resursPaymentInfo->fallback) && (bool)$resursPaymentInfo->fallback) {
             $resursPaymentIdLast = get_post_meta($order->get_id(), 'paymentIdLast', true);
 
-            $renderedResursData .=
-                '<div style="border: 1px solid #990000; margin-bottom: 5px; color:#000099; margin-top: 0px; background-color: #ffffff; padding: 3px; font-style: italic;">' . sprintf(__(
-                    'The payment reference was never updated during the order creating, so this payment is using its fallback reference: %s.',
+            if (empty($resursPaymentIdLast)) {
+                $resursPaymentIdLast = sprintf(__(
+                    'Incomplete. The fallback tried to use %d.',
                     'resurs-bank-payment-gateway-for-woocommerce'
-                ), $resursPaymentIdLast) . '</div>';
+                ), $order->get_id());
+            }
+
+            $renderedResursData .=
+                '<div style="border: 1px solid #990000; margin-bottom: 5px; color:#000099; margin-top: 0px; background-color: #ffffff; padding: 3px; font-style: italic;">' .
+                sprintf(
+                    __(
+                        'Something went wrong during the payment reference update and the order creating, so this payment is using a fallback reference instead: %s.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ), $resursPaymentIdLast
+                ) .
+                '</div>';
         }
 
         $invoices = array();
         if (empty($hasError)) {
-
             // We no longer use WooCommerce paymentdiffs to decide what's happened to the order as - for example - a
             // partially debited and annulled order may give a falsely annulled status in the end. Instead,
             // we ask EComPHP for the most proper, current, status.
