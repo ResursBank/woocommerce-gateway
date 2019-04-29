@@ -92,73 +92,7 @@ function woocommerce_gateway_resurs_bank_init()
             $this->id = "resurs-bank";
             $this->method_title = "Resurs Bank Administration";
             $this->has_fields = false;
-            $this->callback_types = array(
-                'UNFREEZE' => array(
-                    'uri_components' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                    'digest_parameters' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                ),
-                'AUTOMATIC_FRAUD_CONTROL' => array(
-                    'uri_components' => array(
-                        'paymentId' => 'paymentId',
-                        'result' => 'result',
-                    ),
-                    'digest_parameters' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                ),
-                'ANNULMENT' => array(
-                    'uri_components' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                    'digest_parameters' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                ),
-                'FINALIZATION' => array(
-                    'uri_components' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                    'digest_parameters' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                ),
-                'BOOKED' => array(
-                    'uri_components' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                    'digest_parameters' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                ),
-                'UPDATE' => array(
-                    'uri_components' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                    'digest_parameters' => array(
-                        'paymentId' => 'paymentId',
-                    ),
-                ),
-                'TEST' => array(
-                    'uri_components' => array(
-                        'prm1' => 'param1',
-                        'prm2' => 'param2',
-                        'prm3' => 'param3',
-                        'prm4' => 'param4',
-                        'prm5' => 'param5'
-                    ),
-                    'digest_parameters' => array(
-                        'parameter1' => 'param1',
-                        'parameter2' => 'param2',
-                        'parameter3' => 'param3',
-                        'parameter4' => 'param4',
-                        'parameter5' => 'param5'
-                    )
-                )
-            );
+            $this->callback_types = $this->getCallbackTypes();
             $this->init_form_fields();
             $this->init_settings();
             $this->title = $this->get_option('title');
@@ -327,6 +261,79 @@ function woocommerce_gateway_resurs_bank_init()
             if (!$this->is_valid_for_use()) {
                 $this->enabled = false;
             }
+        }
+
+        /**
+         * @return array
+         */
+        public function getCallbackTypes() {
+            return array(
+                'UNFREEZE' => array(
+                    'uri_components' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                    'digest_parameters' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                ),
+                'AUTOMATIC_FRAUD_CONTROL' => array(
+                    'uri_components' => array(
+                        'paymentId' => 'paymentId',
+                        'result' => 'result',
+                    ),
+                    'digest_parameters' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                ),
+                'ANNULMENT' => array(
+                    'uri_components' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                    'digest_parameters' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                ),
+                'FINALIZATION' => array(
+                    'uri_components' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                    'digest_parameters' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                ),
+                'BOOKED' => array(
+                    'uri_components' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                    'digest_parameters' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                ),
+                'UPDATE' => array(
+                    'uri_components' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                    'digest_parameters' => array(
+                        'paymentId' => 'paymentId',
+                    ),
+                ),
+                'TEST' => array(
+                    'uri_components' => array(
+                        'prm1' => 'param1',
+                        'prm2' => 'param2',
+                        'prm3' => 'param3',
+                        'prm4' => 'param4',
+                        'prm5' => 'param5'
+                    ),
+                    'digest_parameters' => array(
+                        'parameter1' => 'param1',
+                        'parameter2' => 'param2',
+                        'parameter3' => 'param3',
+                        'parameter4' => 'param4',
+                        'parameter5' => 'param5'
+                    )
+                )
+            );
         }
 
         /**
