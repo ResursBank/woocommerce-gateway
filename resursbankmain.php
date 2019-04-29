@@ -148,7 +148,6 @@ function woocommerce_gateway_resurs_bank_init()
                 <form method="post" action="?flowconfig">
                 <select name="setflow">
                 ';
-                    $selectedFlowType = "";
                     foreach ($availableFlowTypes as $selectFlowType => $flowTypeDescription) {
                         if ($selectFlowType == $currentFlowType) {
                             $selectedFlowType = "selected";
