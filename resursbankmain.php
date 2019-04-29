@@ -2839,7 +2839,7 @@ function woocommerce_gateway_resurs_bank_init()
                         try {
                             $this->updateOrderByResursPaymentStatus($order, $current, $paymentId);
                         } catch (Exception $e) {
-                            $order > add_order_note($e->getMessage());
+                            $order->add_order_note($e->getMessage());
                         }
                         WC()->cart->empty_cart();
                     }
@@ -4196,8 +4196,10 @@ function woocommerce_gateway_resurs_bank_init()
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 ), $payFromAnnuity) . '</span> | ';
 
-                            $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' . __('Info',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . '</span>';
+                            $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' .
+                                __(
+                                    'Info', 'resurs-bank-payment-gateway-for-woocommerce'
+                                ) . '</span>';
                             $displayAnnuity .= '</div>';
                         }
                     }

@@ -901,8 +901,25 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             <?php
 
                             $sortByDescription = array();
+                            // Sort by description but make all array values unique so that descriptions
+                            // do not collide.
                             foreach ($this->paymentMethods as $methodArray) {
-                                $description = $methodArray->description;
+                                // Description at this location is only used as an assoc array
+                                // and should not interfere with the listview itself since the listview
+                                // are showing the assoc value.
+                                $description = $methodArray->description . uniqid(microtime(true));
+
+                                // Choose another sort order by the content.
+                                $anotherValue = apply_filters(
+                                    'resurs_admin_sort_methods_by_value',
+                                    $description,
+                                    $methodArray
+                                );
+
+                                if (!empty($anotherValue)) {
+                                    $description = $anotherValue;
+                                }
+
                                 if (isResursDemo() && isset($methodArray->country)) {
                                     $description .= " [" . $methodArray->country . "]";
                                 }
@@ -932,12 +949,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                                 $maTitle = $methodArray->description;
                                 // Unacceptable title set (WOO-96)
-                                if (isset($settingsControl['title']) && strtolower($settingsControl['title']) == "resurs bank") {
+                                if (isset($settingsControl['title']) &&
+                                    strtolower($settingsControl['title']) == "resurs bank"
+                                ) {
                                     // Make sure this will be unset as it's detected
-                                    setResursOption("title", '', $optionNamespace);
+                                    setResursOption('title', '', $optionNamespace);
                                     $settingsControl['title'] = "";
                                 }
-                                if (isset($settingsControl['title']) && !empty($settingsControl['title']) && !isResursOmni(true)) {
+                                if (isset($settingsControl['title']) &&
+                                    !empty($settingsControl['title']) && !isResursOmni(true)
+                                ) {
                                     $maTitle = $settingsControl['title'];
                                 }
 
