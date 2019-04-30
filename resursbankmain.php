@@ -2637,7 +2637,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 update_post_meta($orderId, 'omniPaymentMethod', $omniPaymentMethod);
                                 $hasInternalErrors = false;
                                 $internalErrorMessage = null;
-                                $updatePaymentReferenceStatus = $this->updateOrderReference(
+                                $updatePaymentReferenceStatus = $this->updatePaymentReference(
                                     $order,
                                     $flow,
                                     $requestedPaymentId,
@@ -2686,7 +2686,7 @@ function woocommerce_gateway_resurs_bank_init()
                             );
                         }
 
-                        $updatePaymentReferenceStatus = $this->updateOrderReference(
+                        $updatePaymentReferenceStatus = $this->updatePaymentReference(
                             $order,
                             $flow,
                             $requestedPaymentId,
@@ -2732,7 +2732,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $requestedUpdateOrder
          * @return string
          */
-        private function updateOrderReference($order, $flow, $requestedPaymentId, $requestedUpdateOrder)
+        private function updatePaymentReference($order, $flow, $requestedPaymentId, $requestedUpdateOrder)
         {
             if (getResursOption("postidreference")) {
 
