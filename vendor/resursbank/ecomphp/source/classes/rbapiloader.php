@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.17
+ * @version 1.3.18
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -59,10 +59,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.17');
+    define('ECOMPHP_VERSION', '1.3.18');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190417');
+    define('ECOMPHP_MODIFY_DATE', '20190430');
 }
 
 /**
@@ -3171,16 +3171,41 @@ class ResursBank
         }
         $this->InitializeServices();
         $url = $this->getCheckoutUrl() . '/checkout/payments/' . $paymentId . '/updatePaymentReference';
-        $result = $this->CURL->doPut($url, array('paymentReference' => $to),
-            NETCURL_POST_DATATYPES::DATATYPE_JSON);
+        try {
+            $result = $this->CURL->doPut(
+                $url,
+                array('paymentReference' => $to),
+                NETCURL_POST_DATATYPES::DATATYPE_JSON
+            );
+        } catch (\Exception $e) {
+            $exceptionFromBody = $this->CURL->getBody();
+
+            if (is_string($exceptionFromBody) && !empty($exceptionFromBody)) {
+                $jsonized = @json_decode($exceptionFromBody);
+                if (
+                    isset($jsonized->errorCode) &&
+                    ((int)$jsonized->errorCode > 0 || strlen($jsonized->errorCode) > 3)
+                ) {
+                    if (isset($jsonized->description)) {
+                        throw new Exception($jsonized->description, $jsonized->errorCode, $e);
+                    } elseif (isset($jsonized->detailedMessage)) {
+                        // If Resurs Bank returns a non numeric error code we need to fall back to a real
+                        // code. In such cases we use HTTP error codes. In other NORMAL STANDARDIZED cases
+                        // we run their errorcode.
+                        $intErrWanted = is_numeric($jsonized->errorCode) ? $jsonized->errorCode : $e->getCode();
+                        throw new Exception($jsonized->detailedMessage, $intErrWanted, $e);
+                    }
+                }
+            }
+
+            throw $e;
+        }
         $ResponseCode = $this->CURL->getCode($result);
         if ($ResponseCode >= 200 && $ResponseCode <= 250) {
             return true;
         }
-        if ($ResponseCode >= 400) {
-            throw new Exception("Payment reference could not be updated", $ResponseCode);
-        }
 
+        // Probably we'll never get here.
         return false;
     }
 
