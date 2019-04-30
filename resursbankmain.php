@@ -4236,13 +4236,23 @@ function woocommerce_gateway_resurs_bank_init()
         foreach ($columns as $column_name => $column_info) {
             $new_columns[$column_name] = $column_info;
             if (!$hasColumnOnce && ($column_name == 'order_number' || $column_name == 'order_title')) {
-                $new_columns['resurs_order_id'] = __('Resurs Reference', 'resurs-bank-payment-gateway-for-woocommerce');
+                if (getResursOption('showPaymentIdInOrderList')) {
+                    $new_columns['resurs_order_id'] = __(
+                        'Resurs Reference',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    );
+                }
+                $new_columns['resurs_payment_method'] = __(
+                    'Resurs Method',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                );
                 $hasColumnOnce = true;
             }
         }
 
         return $new_columns;
     }
+
 
     /**
      * @param $column
@@ -4253,6 +4263,12 @@ function woocommerce_gateway_resurs_bank_init()
         if ($column == 'resurs_order_id') {
             $resursId = wc_get_payment_id_by_order_id($post->ID);
             echo $resursId;
+        }
+        if ($column == 'resurs_payment_method') {
+            $omniMethod = get_post_meta($post->ID, 'omniPaymentMethod');
+            if (is_array($omniMethod) && isset($omniMethod[0])) {
+                echo $omniMethod[0];
+            }
         }
     }
 
@@ -4421,10 +4437,10 @@ function woocommerce_gateway_resurs_bank_init()
     add_filter('woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check');
     add_action('woocommerce_single_product_summary', 'resurs_annuity_factors');
 
-    if (getResursOption("showPaymentIdInOrderList")) {
-        add_filter('manage_edit-shop_order_columns', 'resurs_order_column_header');
-        add_action('manage_shop_order_posts_custom_column', 'resurs_order_column_info');
-    }
+    // Deprecate me
+    //if (getResursOption('showPaymentIdInOrderList')) {}
+    add_filter('manage_edit-shop_order_columns', 'resurs_order_column_header');
+    add_action('manage_shop_order_posts_custom_column', 'resurs_order_column_info');
 }
 
 /**
