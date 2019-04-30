@@ -93,7 +93,6 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
     * [WOO-380] - (T) WordPress 5.2 is imminent
     * [WOO-283] - (T) PAYMENT_PROVIDER and LEGAL
     * [WOO-302] - (T) Add get-parameter in callback urls that tells about environment
-    * [WOO-312] - (T) If updatePaymentReference has been running once, it should not be run again on next click
     * [WOO-351] - (T) Check if the meta data can be used for fetching wrongly created orders
     * [WOO-376] - (T) Woocommerce upated so wc tested up to should be changed also
     * [WOO-348] - (B) After a denied paymet, updatePaymentReference no longer works and the orderid will not be updated on the new order if "continued" with an approved govid
