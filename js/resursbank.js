@@ -230,6 +230,9 @@ $RB(document).ready(function ($) {
                             if (typeof x.statusText !== "undefined") {
                                 errorString = x.statusText;
                             }
+                            if (typeof x.responseJSON !== "undefined" && typeof x.responseJSON.errorString !== "undefined") {
+                                errorString = x.statusText + " - " + x.responseJSON.errorString;
+                            }
                             var partialError = getResursPhrase("theAjaxWentWrongWithThisMessage");
                             var contactUs = getResursPhrase("contactSupport");
 
