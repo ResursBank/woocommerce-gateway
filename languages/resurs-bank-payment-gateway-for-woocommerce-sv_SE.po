@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2019-05-02 14:07+0200\n"
-"PO-Revision-Date: 2019-05-02 14:11+0200\n"
+"POT-Creation-Date: 2019-05-02 14:52+0200\n"
+"PO-Revision-Date: 2019-05-02 14:52+0200\n"
 "Last-Translator: Tomas Tornevall <tomas.tornevall@resurs.se>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -24,7 +24,7 @@ msgstr ""
 #: functions_settings.php:102 functions_settings.php:433
 #: functions_settings.php:441 functions_settings.php:505
 #: functions_settings.php:507 functions_settings.php:555
-#: resursbank_settings.php:895
+#: resursbank_settings.php:894
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktiverar"
 
@@ -34,7 +34,7 @@ msgstr "Aktivera/inaktiverar"
 #: functions_settings.php:318 functions_settings.php:331
 #: functions_settings.php:343 functions_settings.php:356
 #: functions_settings.php:396 functions_settings.php:1246
-#: resursbank_settings.php:990 resursbank_settings.php:1078
+#: resursbank_settings.php:989 resursbank_settings.php:1075
 #: resursbankmain.php:536 resursbankmain.php:554 staticflows/flow_omni.php:133
 msgid "Enabled"
 msgstr "Aktiverad"
@@ -126,7 +126,7 @@ msgid ""
 msgstr "Det här kontrollerar betalmetodens titel som kunden ser i kassan."
 
 #: functions_settings.php:155 functions_settings.php:530
-#: functions_settings.php:568
+#: functions_settings.php:568 resursbank_settings.php:869
 msgid "Description"
 msgstr "Beskrivning"
 
@@ -765,11 +765,11 @@ msgstr ""
 msgid "In payment method list (Deprecated, not recommended to use)"
 msgstr "I lista med betalmetoder (Borttagen, rekommenderas ej)"
 
-#: functions_settings.php:1188 resursbank_settings.php:869
+#: functions_settings.php:1188
 msgid "Method"
 msgstr "Metod"
 
-#: functions_settings.php:1190 resursbank_settings.php:887
+#: functions_settings.php:1190 resursbank_settings.php:868
 msgid "ID"
 msgstr "ID"
 
@@ -781,8 +781,8 @@ msgstr "Status"
 msgid "Process"
 msgstr "Process"
 
-#: functions_settings.php:1238 resursbank_settings.php:1020
-#: resursbank_settings.php:1070 resursbankmain.php:517 resursbankmain.php:550
+#: functions_settings.php:1238 resursbank_settings.php:1019
+#: resursbank_settings.php:1067 resursbankmain.php:517 resursbankmain.php:550
 #: staticflows/flow_omni.php:133
 msgid "Disabled"
 msgstr "Avaktiverad"
@@ -887,7 +887,7 @@ msgstr "Plugin och kassa"
 msgid "API Settings"
 msgstr "API-inställningar"
 
-#: resursbank_settings.php:768 resursbank_settings.php:1140
+#: resursbank_settings.php:768 resursbank_settings.php:1137
 msgid "Callbacks"
 msgstr "Callbacks"
 
@@ -924,7 +924,7 @@ msgstr "Aldrig"
 msgid "Last test received"
 msgstr "Senast mottagna test"
 
-#: resursbank_settings.php:823 resursbank_settings.php:1171
+#: resursbank_settings.php:823 resursbank_settings.php:1168
 msgid "Payment methods"
 msgstr "Betalningsmetoder"
 
@@ -970,11 +970,11 @@ msgstr "Delbetalningsfaktor"
 msgid "Activate/disable by clicking the X-boxes"
 msgstr "Aktivera/avaktivera genom att klicka på X:en"
 
-#: resursbank_settings.php:891
+#: resursbank_settings.php:890
 msgid "Fee"
 msgstr "Avgift"
 
-#: resursbank_settings.php:1100
+#: resursbank_settings.php:1097
 msgid ""
 "Shop flow settings are not editable when using Resurs Checkout - Contact "
 "support if you want to do any changes"
@@ -982,7 +982,7 @@ msgstr ""
 "Inställningarna för shopflödet är inte möjliga att redigera när Resurs "
 "Checkout är aktivt - Kontakta supporten om du vill göra några förändringar"
 
-#: resursbank_settings.php:1110
+#: resursbank_settings.php:1107
 msgid ""
 "When all the below settings are unchecked, you are running the plugin with a "
 "Resurs Bank preferred configuration"
@@ -990,90 +990,90 @@ msgstr ""
 "När alla inställningarna nedan är avmarkerade, så använder pluginet en, av "
 "Resurs Bank föredragen, konfiguration."
 
-#: resursbank_settings.php:1116
+#: resursbank_settings.php:1113
 msgid "Next invoice number to use"
 msgstr "Nästa fakturanummer att använda"
 
-#: resursbank_settings.php:1123
+#: resursbank_settings.php:1120
 msgid "Visuals"
 msgstr "Visuellt"
 
-#: resursbank_settings.php:1126
+#: resursbank_settings.php:1123
 msgid "Checkout"
 msgstr "Kassan"
 
-#: resursbank_settings.php:1131
+#: resursbank_settings.php:1128
 msgid "Advanced"
 msgstr "Avancerat"
 
-#: resursbank_settings.php:1136
+#: resursbank_settings.php:1133
 msgid "URL Settings"
 msgstr "URL-inställningar"
 
-#: resursbank_settings.php:1145
+#: resursbank_settings.php:1142
 msgid "Miscellaneous callback configuration"
 msgstr "Diverse callback-inställningar"
 
-#: resursbank_settings.php:1150
+#: resursbank_settings.php:1147
 msgid "Customer and store"
 msgstr "Kunder och butik"
 
-#: resursbank_settings.php:1153
+#: resursbank_settings.php:1150
 msgid "Testing and development"
 msgstr "Test och utveckling"
 
-#: resursbank_settings.php:1158
+#: resursbank_settings.php:1155
 msgid "Miscellaneous"
 msgstr "Blandat"
 
-#: resursbank_settings.php:1161
+#: resursbank_settings.php:1158
 msgid "Special test occasions"
 msgstr "Speciella test-tillfällen"
 
-#: resursbank_settings.php:1165
+#: resursbank_settings.php:1162
 msgid "Network"
 msgstr "Nätverk"
 
-#: resursbank_settings.php:1167
+#: resursbank_settings.php:1164
 msgid "Maintenance"
 msgstr "Underhåll"
 
-#: resursbank_settings.php:1168
+#: resursbank_settings.php:1165
 msgid "Clean up "
 msgstr "Städa upp"
 
-#: resursbank_settings.php:1169
+#: resursbank_settings.php:1166
 msgid "Resurs settings"
 msgstr "Resurs inställningar"
 
-#: resursbank_settings.php:1173
+#: resursbank_settings.php:1170
 msgid "Cached data"
 msgstr "Cachelagrad data"
 
-#: resursbank_settings.php:1186
+#: resursbank_settings.php:1183
 msgid "Default title set by Resurs Bank is "
 msgstr "Standardtiteln som satts av Resurs Bank är"
 
-#: resursbank_settings.php:1198
+#: resursbank_settings.php:1195
 msgid ""
 "The payment method editor is not availabe while Resurs Checkout is active"
 msgstr ""
 "Redigeraren för betalningsmetoder är inte tillgänglig när Resurs Checkout är "
 "aktiv"
 
-#: resursbank_settings.php:1202
+#: resursbank_settings.php:1199
 msgid "Save above configuration with the button below"
 msgstr "Spara ovanstående data med hjälp av knappen nedan"
 
-#: resursbank_settings.php:1215
+#: resursbank_settings.php:1212
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
 
-#: resursbank_settings.php:1216 resursbankmain.php:4798 resursbankmain.php:4807
+#: resursbank_settings.php:1213 resursbankmain.php:4798 resursbankmain.php:4807
 msgid "Yes"
 msgstr "Ja"
 
-#: resursbank_settings.php:1216 resursbankmain.php:4798 resursbankmain.php:4807
+#: resursbank_settings.php:1213 resursbankmain.php:4798 resursbankmain.php:4807
 msgid "No"
 msgstr "Nej"
 
@@ -1327,8 +1327,8 @@ msgid ""
 "accepted. Please reload the page and try again. If this happens again, "
 "contact support."
 msgstr ""
-"Den tidsbegränsade engångsnyckeln har utgått eller matchar inte, så köpet "
-"kan inte godkännas. Vänligen ladda om sidan och försök igen. Om felet "
+"Den tidsbegränsade säkerhetsnyckeln har utgått eller matchar inte, så köpet "
+"kan inte accepteras. Vänligen ladda om sidan och försök igen. Om felet "
 "återkommer, kontakta supporten."
 
 #: resursbankmain.php:2787
@@ -1336,7 +1336,7 @@ msgid ""
 "The nonce key is missing, so the payment can not be accepted. Please reload "
 "the page and try again. If this happens again, contact support."
 msgstr ""
-"Den tidsbegränsade engångsnyckeln saknas, så köpet kan inte godkännas. "
+"Den tidsbegränsade säkerhetsnyckeln saknas, så köpet kan inte accepteras. "
 "Vänligen ladda om sidan och försök igen. Om felet återkommer, kontakta "
 "supporten."
 
@@ -1619,7 +1619,7 @@ msgstr "Resurs referens"
 
 #: resursbankmain.php:4252
 msgid "Resurs Method"
-msgstr "Resurs metod"
+msgstr "Resurs method"
 
 #: resursbankmain.php:4346
 msgid ""
@@ -1796,24 +1796,6 @@ msgstr ""
 #: staticflows/flow_omni.php:226
 msgid "Custom test environment URL"
 msgstr "Anpassad URL till testmiljö"
-
-#~ msgid ""
-#~ "The nonce key has expired or mismatching, so the payment can not be "
-#~ "accepted. Please reload the page and try again."
-#~ msgstr ""
-#~ "Den tidsbegränsade engångsnyckeln har utgått eller matchar inte, så köpet "
-#~ "kan inte godkännas. Vänligen ladda om sidan och försök igen."
-
-#~ msgid ""
-#~ "The nonce key is missing, so the payment can not be accepted. Please "
-#~ "reload the page and try again."
-#~ msgstr ""
-#~ "Den tidsbegränsade engångsnyckeln saknas, så köpet kan inte godkännas. "
-#~ "Vänligen ladda om sidan och försök igen."
-
-#~ msgid "The nonce key is missing."
-#~ msgstr ""
-#~ "Den tidsbegränsade engångsnyckeln saknas för att köpet skall godkännas."
 
 #~ msgid ""
 #~ "The payment reference was never updated during the order creating, so "

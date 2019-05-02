@@ -865,8 +865,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                style="width: inherit;">
                             <thead>
                             <tr>
-                                <th class="sort"></th>
-                                <th class="name"><?php echo __('Method', 'WC_Payment_Gateway') ?></th>
+                                <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
+                                <th class="name"><?php echo __('Description', 'WC_Payment_Gateway') ?></th>
                                 <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
                                 <th class="annuityfactor"><?php echo __('AnnuityFactor', 'WC_Payment_Gateway') ?>
                                     <br><span
@@ -884,7 +884,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                                 <?php if (!isResursOmni(true)) {
                                     ?>
-                                    <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
                                     <?php
                                     if (getResursFlag('FEE_EDITOR')) {
                                         ?>
@@ -964,7 +963,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                                 ?>
                                 <tr>
-                                    <td width="1%">&nbsp;</td>
+                                    <td class="id"><?php echo $methodArray->id; ?></td>
                                     <td class="name" width="300px">
                                         <?php if (!isResursOmni(true)) { ?>
                                             <a href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
@@ -1034,8 +1033,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     }
 
                                     if (!isResursOmni(true)) { ?>
-                                        <td class="id"><?php echo $methodArray->id; ?></td>
-
                                         <?php
                                         if (getResursFlag('FEE_EDITOR')) {
                                             ?>
