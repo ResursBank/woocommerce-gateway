@@ -2775,12 +2775,18 @@ function woocommerce_gateway_resurs_bank_init()
                     }
 
                 } else {
-                    $returnResult['errorString'] = "nonce mismatch";
+                    $returnResult['errorString'] = __(
+                        'The nonce key has expired or mismatching, so the payment can not be accepted. Please reload the page and try again. If this happens again, contact support.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    );
                     $returnResult['errorCode'] = 403;
                     $responseCode = 403;
                 }
             } else {
-                $returnResult['errorString'] = "nonce missing";
+                $returnResult['errorString'] = __(
+                    'The nonce key is missing, so the payment can not be accepted. Please reload the page and try again. If this happens again, contact support.',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                );
                 $returnResult['errorCode'] = 403;
                 $responseCode = 403;
             }
