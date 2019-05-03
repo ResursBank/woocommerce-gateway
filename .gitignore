@@ -1,6 +1,7 @@
 .idea
 run
-/includes/resurs*
+**/includes/*/.htaccess
+**/resurs_bank_nr*
 clean
 node_modules
 Makefile

@@ -451,8 +451,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     private function UnusedPaymentClassesCleanup($temp_class_files)
     {
         $allIncludes = array();
-        $path = plugin_dir_path(__FILE__) . 'includes/';
-        $globInclude = glob(plugin_dir_path(__FILE__) . 'includes/*.php');
+        $path = plugin_dir_path(__FILE__) . getResursPaymentMethodModelPath();
+        $globInclude = glob(plugin_dir_path(__FILE__) . getResursPaymentMethodModelPath() .'*.php');
         if (is_array($globInclude)) {
             foreach ($globInclude as $filename) {
                 $allIncludes[] = str_replace($path, '', $filename);
@@ -479,7 +479,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      */
     private function canWrite()
     {
-        $path = plugin_dir_path(__FILE__) . 'includes/';
+        $path = plugin_dir_path(__FILE__) . getResursPaymentMethodModelPath();
         $filename = $path . "this" . rand(1000, 9999);
         @file_put_contents($filename, null);
         if (file_exists($filename)) {
