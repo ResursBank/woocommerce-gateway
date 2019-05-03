@@ -5965,12 +5965,3 @@ function getResursPaymentMethodModelPath() {
 }
 
 isResursSimulation();
-
-/*
-function altPrefix($return) {
-    global $table_prefix;
-    $return = preg_replace('/[^0-9]/', '', $table_prefix);
-    return $return;
-}
-add_filter('resurs_bank_model_prefix', 'altPrefix');
-*/
