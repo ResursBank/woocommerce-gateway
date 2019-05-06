@@ -576,7 +576,6 @@ function woocommerce_gateway_resurs_bank_init()
                                 $password = getResursOption("password");
 
                                 if (!empty($login) && !empty($password)) {
-
                                     $lastFetchedCacheTime = time() - get_transient("resurs_callback_templates_cache_last");
                                     $lastFetchedCache = get_transient("resurs_callback_templates_cache");
                                     $_REQUEST['force'] = true;
