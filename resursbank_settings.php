@@ -529,13 +529,25 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $hasSoap = class_exists("\SoapClient") ? true : false;
         $hasCurlInit = true;
         $hasSsl = true;
-        if (!function_exists('curl_init')) {
+        if (!function_exists('curl_init') || !function_exists('curl_exec')) {
             $hasCurlInit = false;
         }
         $streamWrappers = @stream_get_wrappers();
         if (!in_array('https', $streamWrappers)) {
             $hasSsl = false;
         }
+
+        // If above function not working, use this.
+        /*
+        $disableFunc = @ini_get('disable_functions');
+        if (!empty($disableFunc)) {
+            $disableFunc = @array_map('trim', explode(',', $disableFunc));
+            if (in_array('curl_exec', $disableFunc)) {
+                $hasCurlInit = false;
+            }
+        }
+        */
+
 
         $pluginInfo = $this->setSeparator(__('Plugin information', 'WC_Payment_Gateway'));
         $topCss = 'style="vertical-align: top !important;" valign="top"';
