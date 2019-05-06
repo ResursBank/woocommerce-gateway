@@ -537,18 +537,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $hasSsl = false;
         }
 
-        // If above function not working, use this.
-        /*
-        $disableFunc = @ini_get('disable_functions');
-        if (!empty($disableFunc)) {
-            $disableFunc = @array_map('trim', explode(',', $disableFunc));
-            if (in_array('curl_exec', $disableFunc)) {
-                $hasCurlInit = false;
-            }
-        }
-        */
-
-
         $pluginInfo = $this->setSeparator(__('Plugin information', 'WC_Payment_Gateway'));
         $topCss = 'style="vertical-align: top !important;" valign="top"';
         //$topCursor  = 'style="vertical-align: top !important;cursor:pointer;" valign="top"';
