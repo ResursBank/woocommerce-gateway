@@ -4105,19 +4105,19 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function start_session()
     {
-        /** @var bool $do_not_start_session Using this filter and setting return value to true will be the same as disabling the session during this phase */
+        /** @var bool $do_not_start_session Disable internal handling of session. */
         $do_not_start_session = (bool)apply_filters("resursbank_start_session_before", null);
 
-        /** @var bool $session_outside_admin Disable session creation when in admin if true (will make a !is_admin()-check) - https://resursbankplugins.atlassian.net/browse/WOO-247 */
+        /** @var bool $session_outside_admin Disable session creation when in admin if true. */
         $session_outside_admin = (bool)apply_filters("resursbank_start_session_outside_admin_only", null);
 
         if (!(bool)$do_not_start_session) {
             if ((bool)$session_outside_admin) {
-                if (!is_admin() && !session_id()) {
+                if (!is_admin() && session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
             } else {
-                if (!session_id()) {
+                if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
             }
@@ -4129,7 +4129,23 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function end_session()
     {
-        session_destroy();
+        /** @var bool $do_not_start_session Disable internal handling of session. */
+        $do_not_start_session = (bool)apply_filters("resursbank_start_session_before", null);
+
+        /** @var bool $session_outside_admin Disable session creation when in admin if true. */
+        $session_outside_admin = (bool)apply_filters("resursbank_start_session_outside_admin_only", null);
+
+        if (!(bool)$do_not_start_session) {
+            if ((bool)$session_outside_admin) {
+                if (!is_admin() && session_status() === PHP_SESSION_ACTIVE) {
+                    session_destroy();
+                }
+            } else {
+                if (session_status() === PHP_SESSION_ACTIVE) {
+                    session_destroy();
+                }
+            }
+        }
     }
 
     /**
