@@ -4137,11 +4137,11 @@ function woocommerce_gateway_resurs_bank_init()
 
         if (!(bool)$do_not_start_session) {
             if ((bool)$session_outside_admin) {
-                if (!is_admin() && !session_id()) {
+                if (!is_admin() && session_id()) {
                     @session_destroy();
                 }
             } else {
-                if (!session_id()) {
+                if (session_id()) {
                     @session_destroy();
                 }
             }
