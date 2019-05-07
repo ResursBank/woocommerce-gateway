@@ -529,7 +529,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $hasSoap = class_exists("\SoapClient") ? true : false;
         $hasCurlInit = true;
         $hasSsl = true;
-        if (!function_exists('curl_init')) {
+        if (!function_exists('curl_init') || !function_exists('curl_exec')) {
             $hasCurlInit = false;
         }
         $streamWrappers = @stream_get_wrappers();

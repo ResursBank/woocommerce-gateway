@@ -239,6 +239,7 @@ function runResursAdminCallback(callbackName) {
             testProcElement.html('');
         }
 
+        var errorCode = typeof data["errorMessage"] !== 'undefined' ? data["errorMessage"] : null;
         if (typeof callbackName !== "undefined" && typeof data["response"] === "object" && data["response"] != null && typeof data["response"][callbackName + "Response"] !== "undefined") {
             var response = data["response"][callbackName + "Response"];
             if (typeof response["element"] !== "undefined" && typeof response["html"] !== "undefined") {
@@ -247,7 +248,7 @@ function runResursAdminCallback(callbackName) {
             if (typeof data["success"] !== "undefined" && typeof data["errorMessage"] !== "undefined") {
                 if (data["success"] === false && data["errorMessage"] !== "") {
                     if (typeof testProcElement === "object") {
-                        testProcElement.html('<div id="cbError' + callbackName + '" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + data["errorMessage"] + '</div>');
+                        testProcElement.html('<div id="cbError' + callbackName + '" class="labelBoot labelBoot-danger" style="font-color: #990000;">' + '(' + errorCode + ') ' + data["errorMessage"] + '</div>');
                     } else {
                         if (typeof data["session"] !== "undefined") {
                             if (data["session"] == "0") {
@@ -273,7 +274,7 @@ function runResursAdminCallback(callbackName) {
         } else {
             if (typeof data["errorMessage"] !== "undefined") {
                 if (typeof data["element"] !== "undefined") {
-                    $RB('#' + data["element"]).html(data["errorMessage"]);
+                    $RB('#' + data["element"]).html("(" + errorCode + ") " + data["errorMessage"]);
                 } else {
                     if (typeof data["session"] !== "undefined") {
                         if (data["session"] == "0") {
@@ -400,8 +401,9 @@ function showResursCallbackArray(cbArrayResponse) {
             $RB('#callbackContent').html(cbArrayResponse["errorMessage"]);
         }
     } else {
+        var errorCode = typeof cbArrayResponse["errorCode"] !== 'undefined' ? cbArrayResponse["errorCode"] : null;
         if (typeof cbArrayResponse["errorMessage"] !== "undefined" && cbArrayResponse["errorMessage"] !== "") {
-            $RB('#callbackContent').html(cbArrayResponse["errorMessage"]);
+            $RB('#callbackContent').html('(' + errorCode + ') ' + cbArrayResponse["errorMessage"]);
         }
     }
 }
