@@ -2484,17 +2484,12 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (!is_string($updatePaymentReferenceStatus) && (bool)$updatePaymentReferenceStatus === true) {
                                     update_post_meta($_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId']);
                                     update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', true);
                                     $returnResult['success'] = true;
                                     $this->returnJsonResponse($returnResult, 200);
                                 } else {
                                     update_post_meta($_REQUEST['orderId'], 'paymentId', $requestedPaymentId);
                                     update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', true);
-                                    update_post_meta($_REQUEST['orderId'], 'referenceUpdateErrorMessage',
-                                        $updatePaymentReferenceStatus);
-                                    // Make payment successful regardless of failures in the reference or this process
-                                    // will hang completely.
+
                                     $returnResult['success'] = true;
                                     $this->returnJsonResponse($returnResult, 200);
                                 }
@@ -2668,16 +2663,9 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (!is_string($updatePaymentReferenceStatus) && (bool)$updatePaymentReferenceStatus === true) {
                                     update_post_meta($orderId, 'paymentId', $orderId);
                                     update_post_meta($orderId, 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($orderId, 'referenceWasUpdated', true);
-                                    //update_post_meta($orderId, 'referenceUpdateErrorMessage', 'NO_ERRORS');
                                 } else {
                                     update_post_meta($orderId, 'paymentId', $requestedPaymentId);
                                     update_post_meta($orderId, 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($orderId, 'referenceWasUpdated', false);
-                                    /*update_post_meta(
-                                        $orderId, 'referenceUpdateErrorMessage',
-                                        $updatePaymentReferenceStatus
-                                    );*/
                                 }
                                 $returnResult['updatePaymentReferenceStatus'] = $updatePaymentReferenceStatus;
                             } else {
@@ -2727,8 +2715,6 @@ function woocommerce_gateway_resurs_bank_init()
                         if (!is_string($updatePaymentReferenceStatus) && (bool)$updatePaymentReferenceStatus === true) {
                             update_post_meta($order->get_id(), 'paymentId', $order->get_id());
                             update_post_meta($order->get_id(), 'paymentIdLast', $requestedPaymentId);
-                            update_post_meta($order->get_id(), 'referenceWasUpdated', true);
-                            //update_post_meta($order->get_id(), 'referenceUpdateErrorMessage', 'NO_ERRORS');
                         } else {
                             $order->add_order_note(
                                 sprintf(
@@ -2739,12 +2725,6 @@ function woocommerce_gateway_resurs_bank_init()
                             );
                             update_post_meta($order->get_id(), 'paymentId', $requestedPaymentId);
                             update_post_meta($order->get_id(), 'paymentIdLast', $requestedPaymentId);
-                            update_post_meta($order->get_id(), 'referenceWasUpdated', false);
-                            /*update_post_meta(
-                                $order->get_id(),
-                                'referenceUpdateErrorMessage',
-                                $updatePaymentReferenceStatus
-                            );*/
                         }
 
                         $responseCode = $returnResult['errorCode'];
