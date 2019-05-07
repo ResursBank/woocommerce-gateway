@@ -408,6 +408,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $myResponse = null;
                 $myBool = false;
                 $errorMessage = "";
+                $errorCode = null;
 
                 $setType = isset($_REQUEST['puts']) ? $_REQUEST['puts'] : "";
                 $setValue = isset($_REQUEST['value']) ? $_REQUEST['value'] : "";
@@ -418,7 +419,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $newPaymentMethodsList = null;
                 $envVal = null;
                 if (!empty($reqType) || !empty($setType)) {
-                    if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
+                    if (wp_verify_nonce($reqNonce, "requestResursAdmin") && !empty($reqType)) {
                         $mySession = true;
                         $reqType = str_replace($reqNamespace . "_", '', $reqType);
                         $myBool = true;
@@ -427,59 +428,64 @@ function woocommerce_gateway_resurs_bank_init()
                             // Make sure this returns a string and not a bool.
                             $myResponse = '';
                         }
-                    } elseif (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
-                        $mySession = true;
-                        $failSetup = false;
-                        $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
-                        $envVal = isset($_REQUEST['e']) ? $_REQUEST['e'] : "";
-                        if ($setType == "woocommerce_resurs-bank_password") {
-                            $testUser = $subVal;
-                            $testPass = $setValue;
-                            $flowEnv = getServerEnv();
-                            if (!empty($envVal)) {
-                                if ($envVal == "test") {
-                                    $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
-                                } elseif ($envVal == "live") {
-                                    $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
-                                } elseif ($envVal == "production") {
-                                    $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                    } elseif (!empty($setType)) {
+                        // Prevent weird errors with nonces.
+                        $hasNonceErrors = (bool)getResursFlag('NONCE_ERRORS') ? true : false;
+                        if ($hasNonceErrors || wp_verify_nonce($reqNonce, "requestResursAdmin")) {
+                            $mySession = true;
+                            $failSetup = false;
+                            $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
+                            $envVal = isset($_REQUEST['e']) ? $_REQUEST['e'] : "";
+                            if ($setType == "woocommerce_resurs-bank_password") {
+                                $testUser = $subVal;
+                                $testPass = $setValue;
+                                $flowEnv = getServerEnv();
+                                if (!empty($envVal)) {
+                                    if ($envVal == "test") {
+                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
+                                    } elseif ($envVal == "live") {
+                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                                    } elseif ($envVal == "production") {
+                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                                    }
+                                    $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv);
+                                } else {
+                                    $newFlow = initializeResursFlow($testUser, $testPass);
                                 }
-                                $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv);
-                            } else {
-                                $newFlow = initializeResursFlow($testUser, $testPass);
+                                try {
+                                    $newPaymentMethodsList = $newFlow->getPaymentMethods([], true);
+                                    $myBool = true;
+                                } catch (Exception $e) {
+                                    $myBool = false;
+                                    $failSetup = true;
+                                    /** @var $errorMessage */
+                                    $errorMessage = $e->getMessage();
+                                    /** @var $prevError \Exception */
+                                    $prevError = $e->getPrevious();
+                                    if (!empty($prevError)) {
+                                        $errorMessage = $prevError->getMessage();
+                                    }
+                                }
+
                             }
-                            try {
-                                $newPaymentMethodsList = $newFlow->getPaymentMethods(array(), true);
-                                $myBool = true;
-                            } catch (Exception $e) {
-                                $myBool = false;
+                            if (isset($newPaymentMethodsList['error']) && !empty($newPaymentMethodsList['error'])) {
                                 $failSetup = true;
-                                /** @var $errorMessage */
-                                $errorMessage = $e->getMessage();
-                                /** @var $prevError \Exception */
-                                $prevError = $e->getPrevious();
-                                if (!empty($prevError)) {
-                                    $errorMessage = $prevError->getMessage();
+                                $errorMessage = $newPaymentMethodsList['error'];
+                                $myBool = false;
+                            }
+                            $setType = str_replace($reqNamespace . "_", '', $setType);
+                            if (!$failSetup) {
+                                $myBool = true;
+                                setResursOption($setType, $setValue);
+                                setResursOption("login", $subVal);
+                                if (!empty($envVal)) {
+                                    setResursOption("serverEnv", $envVal);
                                 }
+                                $myResponse['element'] = ["currentResursPaymentMethods", "callbackContent"];
+                                set_transient('resurs_bank_last_callback_setup', 0);
+                                $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated',
+                                        'resurs-bank-payment-gateway-for-woocommerce') . '</div><br><br>';
                             }
-                        }
-                        if (isset($newPaymentMethodsList['error']) && !empty($newPaymentMethodsList['error'])) {
-                            $failSetup = true;
-                            $errorMessage = $newPaymentMethodsList['error'];
-                            $myBool = false;
-                        }
-                        $setType = str_replace($reqNamespace . "_", '', $setType);
-                        if (!$failSetup) {
-                            $myBool = true;
-                            setResursOption($setType, $setValue);
-                            setResursOption("login", $subVal);
-                            if (!empty($envVal)) {
-                                setResursOption("serverEnv", $envVal);
-                            }
-                            $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
-                            set_transient('resurs_bank_last_callback_setup', 0);
-                            $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . '</div><br><br>';
                         }
                     }
                 } else {
@@ -580,6 +586,14 @@ function woocommerce_gateway_resurs_bank_init()
                                             $myBool = true;
                                         } catch (Exception $e) {
                                             $errorMessage = $e->getMessage();
+                                            $errorCode = $e->getCode();
+
+                                            // Extra controller of curl, as we MIGHT get wrong error codes here
+                                            // when streams fails the connection.
+                                            if (!function_exists('curl_init') || !function_exists('curl_exec')) {
+                                                $errorCode = 500;
+                                                $errorMessage = 'curl failed';
+                                            }
                                         }
                                         set_transient("resurs_callback_templates_cache", $responseArray['callbacks']);
                                         $responseArray['cached'] = false;
@@ -726,7 +740,8 @@ function woocommerce_gateway_resurs_bank_init()
                     'response' => $myResponse,
                     'success' => $myBool,
                     'session' => $mySession === true ? 1 : 0,
-                    'errorMessage' => nl2br($errorMessage)
+                    'errorMessage' => nl2br($errorMessage),
+                    'errorCode' => $errorCode,
                 );
                 $this->returnJsonResponse($response);
                 exit;
@@ -1370,6 +1385,7 @@ function woocommerce_gateway_resurs_bank_init()
                 }
                 $callbackType = $this->flow->getCallbackTypeByString($type);
                 $this->flow->setCallbackDigestSalt($this->getCurrentSalt());
+                //$this->flow->setRegisterCallbacksViaRest();
                 $this->flow->setRegisterCallback($callbackType, $uriTemplate);
             } catch (Exception $e) {
                 throw new Exception($e);
