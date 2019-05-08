@@ -73,6 +73,7 @@ $RB(document).ready(function ($) {
                 ).success(
                     function (successData) {
                         // Do nothing, as we actually only touch the status.
+                        //console.log(successData);
                     }
                 ).fail(
                     function (x, y) {
@@ -179,7 +180,7 @@ $RB(document).ready(function ($) {
             if (typeof currentResursCheckoutFrame !== "undefined" && typeof currentResursCheckoutFrame.src !== "undefined") {
                 var errorString = "";
                 // Prepare order and make it annullable on errors.
-                console.log("Resus Bank ready to pre-book order locally.");
+                console.log("[Resurs Bank/Plugin] Backend PreOrder Execute.");
                 if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
                     var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
                     $RB.ajax(
@@ -190,36 +191,17 @@ $RB(document).ready(function ($) {
                         }
                     ).success(
                         function (successData) {
-                            var isSuccess = false;
-                            var orderId = 0;
-                            if (typeof successData["orderId"] !== "undefined") {
-                                orderId = successData["orderId"];
-                            }
-                            console.log("Order id reference was updated before: " + rbRefUpdated);
-                            if (typeof successData.success !== "undefined") {
-                                console.log("Checking if order reference needs update.");
-                                if (successData.success === true) {
-                                    isSuccess = true;
-                                    if (omnivars["postidreference"] == "1" && orderId > 0) {
-                                        console.log("Resurs Bank successful order creation. Update payment reference to " + orderId);
-                                        return rbUpdatePaymentReference(resursCheckout, successData);
-                                    } else {
-                                        console.log("Resurs Bank payment reference not necessary (orderid = " + orderId + ").");
-                                        resursCheckout.confirmOrder(true);
-                                        return true;
-                                    }
-                                }
+                            var success = typeof successData.success !== 'undefined' ? successData.success : false;
+                            var errorCode = typeof successData.errorCode !== 'undefined' ? successData.errorCode : 0;
+                            var errorString = typeof successData.errorString !== 'undefined' ? successData.errorString : '';
+
+                            if (success) {
+                                resursCheckout.confirmOrder(success);
+                            } else {
+                                var contactUs = getResursPhrase("contactSupport");
+                                handleResursCheckoutError(errorString + " ("+errorCode+") " + contactUs);
                             }
 
-                            rbRefUpdated = false;
-                            errorString = (typeof successData.errorString !== "undefined" ? successData.errorString : "");
-                            if (!isSuccess) {
-                                if (errorString === "" || errorString === null) {
-                                    errorString = getResursPhrase("theAjaxWasNotAccepted");
-                                }
-                                handleResursCheckoutError(errorString);
-                            }
-                            resursCheckout.confirmOrder(false);
                             return false;
                         }
                     ).fail(
@@ -686,40 +668,5 @@ function rbFormChange(formFieldName, o) {
             }
         }
     }
-}
-
-function rbUpdatePaymentReference(refobj, paymentDataObject) {
-    var resRef = "";
-    var orderId = 0;
-    if (typeof paymentDataObject["resursData"]["reqId"] !== "undefined") {
-        resRef = paymentDataObject["resursData"]["reqId"];
-        orderId = paymentDataObject["orderId"];
-    }
-
-    if (typeof omnivars.OmniRef !== "undefined") {
-        var omniRef = omnivars.OmniRef;
-        var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef + "&updateReference=true";
-        console.log("Resurs bank reference " + omniRef + " requested update to " + orderId);
-        if (orderId > 0) {
-            $RB.ajax({
-                type: 'POST',
-                url: preBookUrl,
-                data: {
-                    'ref': resRef,
-                    'orderId': orderId
-                }
-            }).done(function (data) {
-                if (data.success) {
-                    console.log("Resurs Bank reference updated successfully.");
-                    rbRefUpdated = true;
-                    return refobj.confirmOrder(true);
-                } else {
-                    console.log("Resurs Bank references failed.");
-                    handleResursCheckoutError(getResursPhrase("updatePaymentReferenceFailure") + " - " + data.errorString);
-                }
-            });
-        }
-    }
-    return false;
 }
 
