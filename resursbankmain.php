@@ -2254,6 +2254,8 @@ function woocommerce_gateway_resurs_bank_init()
             /** @var \Resursbank\RBEcomPHP\ResursBank */
             $this->flow = initializeResursFlow();
             $this->process_payment_prepare_customer();
+
+            setResursPaymentMethodMeta($order_id);
             $preferredId = $this->process_payment_get_payment_id($order_id);
             $success_url = $this->getSuccessUrl($order_id, $preferredId);
             $backurl = $this->process_payment_get_backurl($order);
@@ -2647,6 +2649,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $orderId = null;
                             try {
                                 $orderId = WC()->session->get("order_awaiting_payment");
+                                setResursPaymentMethodMeta($orderId);
                                 $order = new WC_Order($orderId);
                             } catch (Exception $e) {
                                 $hasInternalErrors = true;
@@ -2702,8 +2705,10 @@ function woocommerce_gateway_resurs_bank_init()
                         $responseCode = 200;
                         WC()->session->set("resursCreatePass", "1");
                     } else {
-                        // If the order already exists, continue without errors (if we reached this code, it has been because of the nonce which should be considered safe enough)
+                        // If the order already exists, continue without errors (if we reached this code,
+                        // it has been because of the nonce which should be considered safe enough)
                         $order = new WC_Order($testLocalOrder);
+                        setResursPaymentMethodMeta($order->get_id());
                         $currentOrderStatus = $order->get_status();
                         // Going generic response, to make it possible to updateOrderReference on fly
                         // in this state.
@@ -4304,8 +4309,15 @@ function woocommerce_gateway_resurs_bank_init()
         }
         if ($column == 'resurs_payment_method') {
             $omniMethod = get_post_meta($post->ID, 'omniPaymentMethod');
+            // Overrides the omniPaymentMethod that is only there for backward compatibility
+            $newMethodInfo = get_post_meta($post->ID, 'resursBankMetaPaymentMethod');
+            if (is_array($newMethodInfo) && isset($newMethodInfo[0])) {
+                echo $newMethodInfo[0];
+                return;
+            }
             if (is_array($omniMethod) && isset($omniMethod[0])) {
                 echo $omniMethod[0];
+                return;
             }
         }
     }
@@ -5969,6 +5981,22 @@ if (!function_exists('getHadMisplacedIframeLocation')) {
  */
 function getResursUpdatePaymentReferenceResult($id) {
     return (bool)get_post_meta($id, 'updateResursReferenceSuccess');
+}
+
+/**
+ * @param $id
+ */
+function setResursPaymentMethodMeta($id)
+{
+    if ($id > 0) {
+        //delete_post_meta($id, 'resursBankMetaPaymentMethod');
+
+        update_post_meta(
+            $id,
+            'resursBankMetaPaymentMethod',
+            isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : ''
+        );
+    }
 }
 
 isResursSimulation();
