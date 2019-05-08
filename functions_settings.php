@@ -10,8 +10,6 @@ if (!defined('ABSPATH')) {
 
 require_once(__DIR__ . "/vendor/autoload.php");
 
-use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
-
 load_plugin_textdomain('resurs-bank-payment-gateway-for-woocommerce', false,
     dirname(plugin_basename(__FILE__)) . '/languages');
 
@@ -489,10 +487,17 @@ if (!function_exists('getResursWooFormFields')) {
                 ),
                 'autoDebitMethods' => array(
                     'title' => __('Instant debitable payment methods', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Payment methods that are considered instantly debitable during a payment process',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Payment methods that are considered instantly debitable during a payment process. If you choose the top alternative the plugin will choose for you if the correct default method (swish) are available.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'select',
-                    'options' => array(),
+                    'options' => array(
+                        'NONE' => __(
+                            'Chosen by plugin',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                    ),
                     'default' => array('SWISH' => 'SWISH'),
                     'desc_tip' => true,
                 ),
