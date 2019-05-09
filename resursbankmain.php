@@ -408,6 +408,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $myResponse = null;
                 $myBool = false;
                 $errorMessage = "";
+                $errorCode = null;
 
                 $setType = isset($_REQUEST['puts']) ? $_REQUEST['puts'] : "";
                 $setValue = isset($_REQUEST['value']) ? $_REQUEST['value'] : "";
@@ -418,7 +419,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $newPaymentMethodsList = null;
                 $envVal = null;
                 if (!empty($reqType) || !empty($setType)) {
-                    if (wp_verify_nonce($reqNonce, "requestResursAdmin") && $reqType) {
+                    if (wp_verify_nonce($reqNonce, "requestResursAdmin") && !empty($reqType)) {
                         $mySession = true;
                         $reqType = str_replace($reqNamespace . "_", '', $reqType);
                         $myBool = true;
@@ -427,59 +428,64 @@ function woocommerce_gateway_resurs_bank_init()
                             // Make sure this returns a string and not a bool.
                             $myResponse = '';
                         }
-                    } elseif (wp_verify_nonce($reqNonce, "requestResursAdmin") && $setType) {
-                        $mySession = true;
-                        $failSetup = false;
-                        $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
-                        $envVal = isset($_REQUEST['e']) ? $_REQUEST['e'] : "";
-                        if ($setType == "woocommerce_resurs-bank_password") {
-                            $testUser = $subVal;
-                            $testPass = $setValue;
-                            $flowEnv = getServerEnv();
-                            if (!empty($envVal)) {
-                                if ($envVal == "test") {
-                                    $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
-                                } elseif ($envVal == "live") {
-                                    $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
-                                } elseif ($envVal == "production") {
-                                    $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                    } elseif (!empty($setType)) {
+                        // Prevent weird errors with nonces.
+                        $hasNonceErrors = (bool)getResursFlag('NONCE_ERRORS') ? true : false;
+                        if ($hasNonceErrors || wp_verify_nonce($reqNonce, "requestResursAdmin")) {
+                            $mySession = true;
+                            $failSetup = false;
+                            $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : "";
+                            $envVal = isset($_REQUEST['e']) ? $_REQUEST['e'] : "";
+                            if ($setType == "woocommerce_resurs-bank_password") {
+                                $testUser = $subVal;
+                                $testPass = $setValue;
+                                $flowEnv = getServerEnv();
+                                if (!empty($envVal)) {
+                                    if ($envVal == "test") {
+                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
+                                    } elseif ($envVal == "live") {
+                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                                    } elseif ($envVal == "production") {
+                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                                    }
+                                    $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv);
+                                } else {
+                                    $newFlow = initializeResursFlow($testUser, $testPass);
                                 }
-                                $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv);
-                            } else {
-                                $newFlow = initializeResursFlow($testUser, $testPass);
+                                try {
+                                    $newPaymentMethodsList = $newFlow->getPaymentMethods([], true);
+                                    $myBool = true;
+                                } catch (Exception $e) {
+                                    $myBool = false;
+                                    $failSetup = true;
+                                    /** @var $errorMessage */
+                                    $errorMessage = $e->getMessage();
+                                    /** @var $prevError \Exception */
+                                    $prevError = $e->getPrevious();
+                                    if (!empty($prevError)) {
+                                        $errorMessage = $prevError->getMessage();
+                                    }
+                                }
+
                             }
-                            try {
-                                $newPaymentMethodsList = $newFlow->getPaymentMethods(array(), true);
-                                $myBool = true;
-                            } catch (Exception $e) {
-                                $myBool = false;
+                            if (isset($newPaymentMethodsList['error']) && !empty($newPaymentMethodsList['error'])) {
                                 $failSetup = true;
-                                /** @var $errorMessage */
-                                $errorMessage = $e->getMessage();
-                                /** @var $prevError \Exception */
-                                $prevError = $e->getPrevious();
-                                if (!empty($prevError)) {
-                                    $errorMessage = $prevError->getMessage();
+                                $errorMessage = $newPaymentMethodsList['error'];
+                                $myBool = false;
+                            }
+                            $setType = str_replace($reqNamespace . "_", '', $setType);
+                            if (!$failSetup) {
+                                $myBool = true;
+                                setResursOption($setType, $setValue);
+                                setResursOption("login", $subVal);
+                                if (!empty($envVal)) {
+                                    setResursOption("serverEnv", $envVal);
                                 }
+                                $myResponse['element'] = ["currentResursPaymentMethods", "callbackContent"];
+                                set_transient('resurs_bank_last_callback_setup', 0);
+                                $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated',
+                                        'resurs-bank-payment-gateway-for-woocommerce') . '</div><br><br>';
                             }
-                        }
-                        if (isset($newPaymentMethodsList['error']) && !empty($newPaymentMethodsList['error'])) {
-                            $failSetup = true;
-                            $errorMessage = $newPaymentMethodsList['error'];
-                            $myBool = false;
-                        }
-                        $setType = str_replace($reqNamespace . "_", '', $setType);
-                        if (!$failSetup) {
-                            $myBool = true;
-                            setResursOption($setType, $setValue);
-                            setResursOption("login", $subVal);
-                            if (!empty($envVal)) {
-                                setResursOption("serverEnv", $envVal);
-                            }
-                            $myResponse['element'] = array("currentResursPaymentMethods", "callbackContent");
-                            set_transient('resurs_bank_last_callback_setup', 0);
-                            $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . '</div><br><br>';
                         }
                     }
                 } else {
@@ -580,6 +586,14 @@ function woocommerce_gateway_resurs_bank_init()
                                             $myBool = true;
                                         } catch (Exception $e) {
                                             $errorMessage = $e->getMessage();
+                                            $errorCode = $e->getCode();
+
+                                            // Extra controller of curl, as we MIGHT get wrong error codes here
+                                            // when streams fails the connection.
+                                            if (!function_exists('curl_init') || !function_exists('curl_exec')) {
+                                                $errorCode = 500;
+                                                $errorMessage = 'curl failed';
+                                            }
                                         }
                                         set_transient("resurs_callback_templates_cache", $responseArray['callbacks']);
                                         $responseArray['cached'] = false;
@@ -726,7 +740,8 @@ function woocommerce_gateway_resurs_bank_init()
                     'response' => $myResponse,
                     'success' => $myBool,
                     'session' => $mySession === true ? 1 : 0,
-                    'errorMessage' => nl2br($errorMessage)
+                    'errorMessage' => nl2br($errorMessage),
+                    'errorCode' => $errorCode,
                 );
                 $this->returnJsonResponse($response);
                 exit;
@@ -1370,6 +1385,7 @@ function woocommerce_gateway_resurs_bank_init()
                 }
                 $callbackType = $this->flow->getCallbackTypeByString($type);
                 $this->flow->setCallbackDigestSalt($this->getCurrentSalt());
+                //$this->flow->setRegisterCallbacksViaRest();
                 $this->flow->setRegisterCallback($callbackType, $uriTemplate);
             } catch (Exception $e) {
                 throw new Exception($e);
@@ -2238,6 +2254,8 @@ function woocommerce_gateway_resurs_bank_init()
             /** @var \Resursbank\RBEcomPHP\ResursBank */
             $this->flow = initializeResursFlow();
             $this->process_payment_prepare_customer();
+
+            setResursPaymentMethodMeta($order_id);
             $preferredId = $this->process_payment_get_payment_id($order_id);
             $success_url = $this->getSuccessUrl($order_id, $preferredId);
             $backurl = $this->process_payment_get_backurl($order);
@@ -2468,10 +2486,10 @@ function woocommerce_gateway_resurs_bank_init()
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
                             // Error handler that deprecates this.
                             $refErrorString = get_post_meta($_REQUEST['orderId'], 'referenceUpdateErrorMessage');
-                            // Use only as a failover
-                            if (!(bool)get_post_meta($_REQUEST['orderId'],
-                                    'referenceWasUpdated') && empty($refErrorString)) {
+                            // Use the new way to detect updated references as the old is about to get removed.
+                            if (!getResursUpdatePaymentReferenceResult($_REQUEST['orderId'])) {
                                 $order = new WC_Order($_REQUEST['orderId']);
+
                                 // If we experience successful order references here, the first
                                 // backend call may have failed.
                                 $updatePaymentReferenceStatus = $this->updatePaymentReference(
@@ -2484,33 +2502,14 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (!is_string($updatePaymentReferenceStatus) && (bool)$updatePaymentReferenceStatus === true) {
                                     update_post_meta($_REQUEST['orderId'], 'paymentId', $_REQUEST['orderId']);
                                     update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', true);
                                     $returnResult['success'] = true;
                                     $this->returnJsonResponse($returnResult, 200);
                                 } else {
-                                    $order->add_order_note(
-                                        sprintf(
-                                            __(
-                                                '[Resurs Bank] Order id reference could not be updated during payment: %s.',
-                                                'resurs-bank-payment-gateway-for-woocommerce'
-                                            ), $updatePaymentReferenceStatus)
-                                    );
                                     update_post_meta($_REQUEST['orderId'], 'paymentId', $requestedPaymentId);
                                     update_post_meta($_REQUEST['orderId'], 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', true);
-                                    update_post_meta($_REQUEST['orderId'], 'referenceUpdateErrorMessage',
-                                        $updatePaymentReferenceStatus);
-                                    // Make payment successful regardless of failures in the reference or this process
-                                    // will hang completely.
+
                                     $returnResult['success'] = true;
                                     $this->returnJsonResponse($returnResult, 200);
-
-                                    // Do we really want this?
-                                    /*update_post_meta($_REQUEST['orderId'], 'referenceWasUpdated', false);
-                                    $returnResult['success'] = false;
-                                    $returnResult['errorString'] = $updatePaymentReferenceStatus;
-                                    $returnResult['errorCode'] = 500;
-                                    $this->returnJsonResponse($returnResult, $returnResult['errorCode']);*/
                                 }
                             } else {
                                 $returnResult['success'] = true;
@@ -2650,6 +2649,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $orderId = null;
                             try {
                                 $orderId = WC()->session->get("order_awaiting_payment");
+                                setResursPaymentMethodMeta($orderId);
                                 $order = new WC_Order($orderId);
                             } catch (Exception $e) {
                                 $hasInternalErrors = true;
@@ -2682,22 +2682,9 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (!is_string($updatePaymentReferenceStatus) && (bool)$updatePaymentReferenceStatus === true) {
                                     update_post_meta($orderId, 'paymentId', $orderId);
                                     update_post_meta($orderId, 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($orderId, 'referenceWasUpdated', true);
-                                    update_post_meta($orderId, 'referenceUpdateErrorMessage', 'NO_ERRORS');
                                 } else {
                                     update_post_meta($orderId, 'paymentId', $requestedPaymentId);
                                     update_post_meta($orderId, 'paymentIdLast', $requestedPaymentId);
-                                    update_post_meta($orderId, 'referenceWasUpdated', false);
-                                    update_post_meta($orderId, 'referenceUpdateErrorMessage',
-                                        $updatePaymentReferenceStatus);
-
-                                    $order->add_order_note(
-                                        sprintf(
-                                            __(
-                                                '[Resurs Bank] Order id reference could not be updated during payment: %s.',
-                                                'resurs-bank-payment-gateway-for-woocommerce'
-                                            ), $updatePaymentReferenceStatus)
-                                    );
                                 }
                                 $returnResult['updatePaymentReferenceStatus'] = $updatePaymentReferenceStatus;
                             } else {
@@ -2718,8 +2705,10 @@ function woocommerce_gateway_resurs_bank_init()
                         $responseCode = 200;
                         WC()->session->set("resursCreatePass", "1");
                     } else {
-                        // If the order already exists, continue without errors (if we reached this code, it has been because of the nonce which should be considered safe enough)
+                        // If the order already exists, continue without errors (if we reached this code,
+                        // it has been because of the nonce which should be considered safe enough)
                         $order = new WC_Order($testLocalOrder);
+                        setResursPaymentMethodMeta($order->get_id());
                         $currentOrderStatus = $order->get_status();
                         // Going generic response, to make it possible to updateOrderReference on fly
                         // in this state.
@@ -2747,8 +2736,6 @@ function woocommerce_gateway_resurs_bank_init()
                         if (!is_string($updatePaymentReferenceStatus) && (bool)$updatePaymentReferenceStatus === true) {
                             update_post_meta($order->get_id(), 'paymentId', $order->get_id());
                             update_post_meta($order->get_id(), 'paymentIdLast', $requestedPaymentId);
-                            update_post_meta($order->get_id(), 'referenceWasUpdated', true);
-                            update_post_meta($order->get_id(), 'referenceUpdateErrorMessage', 'NO_ERRORS');
                         } else {
                             $order->add_order_note(
                                 sprintf(
@@ -2759,9 +2746,6 @@ function woocommerce_gateway_resurs_bank_init()
                             );
                             update_post_meta($order->get_id(), 'paymentId', $requestedPaymentId);
                             update_post_meta($order->get_id(), 'paymentIdLast', $requestedPaymentId);
-                            update_post_meta($order->get_id(), 'referenceWasUpdated', false);
-                            update_post_meta($order->get_id(), 'referenceUpdateErrorMessage',
-                                $updatePaymentReferenceStatus);
                         }
 
                         $responseCode = $returnResult['errorCode'];
@@ -2804,9 +2788,18 @@ function woocommerce_gateway_resurs_bank_init()
         private function updatePaymentReference($order, $flow, $requestedPaymentId, $requestedUpdateOrder)
         {
             if (getResursOption("postidreference")) {
-
                 if (empty($requestedUpdateOrder)) {
                     $currentPaymentId = r_wc_get_order_id_by_order_item_id('paymentId');
+                }
+
+                if (getResursUpdatePaymentReferenceResult($requestedUpdateOrder)) {
+                    $order->add_order_note(
+                        sprintf(__(
+                            '[Resurs Bank] updatePaymentReference has already been executed once.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ), $requestedPaymentId, $requestedUpdateOrder)
+                    );
+                    return true;
                 }
 
                 if (!empty($requestedPaymentId) && !empty($requestedUpdateOrder)) {
@@ -2816,11 +2809,13 @@ function woocommerce_gateway_resurs_bank_init()
                             $requestedPaymentId,
                             $requestedUpdateOrder
                         );
+                        update_post_meta($requestedUpdateOrder, 'updateResursReferenceSuccess', true);
+                        update_post_meta($requestedUpdateOrder, 'updateResursReferenceMessage', '');
                         $order->add_order_note(
-                            __(
-                                '[Resurs Bank] Rerunning updatePaymentReference got a successful update.',
+                            sprintf(__(
+                                '[Resurs Bank] updatePaymentReference successful. Changed from %s to %s.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
-                            )
+                            ), $requestedPaymentId, $requestedUpdateOrder)
                         );
                     } catch (\Exception $e) {
                         // Errors that will be refelected down to order notices where the references is
@@ -2835,6 +2830,32 @@ function woocommerce_gateway_resurs_bank_init()
                         } else {
                             $updatePaymentReferenceStatus = $e->getMessage();
                         }
+                        update_post_meta($requestedUpdateOrder,
+                            'updateResursReferenceSuccess',
+                            false
+                        );
+                        update_post_meta(
+                            $requestedUpdateOrder,
+                            'updateResursReferenceMessage',
+                            sprintf(
+                                '%s: %s',
+                                $e->getCode(),
+                                $e->getMessage()
+                            ),
+                            false
+                        );
+
+                        $order->add_order_note(
+                            sprintf(__(
+                                '[Resurs Bank] updatePaymentReference received exception from API, when trying set %s to %s: (%s) %s. Is it already updated?',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ),
+                                $requestedPaymentId,
+                                $requestedUpdateOrder,
+                                $e->getCode(),
+                                $e->getMessage()
+                            )
+                        );
                     }
                 } else {
                     $updatePaymentReferenceStatus = 'Reference or order id is missing.';
@@ -4105,19 +4126,19 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function start_session()
     {
-        /** @var bool $do_not_start_session Using this filter and setting return value to true will be the same as disabling the session during this phase */
+        /** @var bool $do_not_start_session Disable internal handling of session. */
         $do_not_start_session = (bool)apply_filters("resursbank_start_session_before", null);
 
-        /** @var bool $session_outside_admin Disable session creation when in admin if true (will make a !is_admin()-check) - https://resursbankplugins.atlassian.net/browse/WOO-247 */
+        /** @var bool $session_outside_admin Disable session creation when in admin if true. */
         $session_outside_admin = (bool)apply_filters("resursbank_start_session_outside_admin_only", null);
 
         if (!(bool)$do_not_start_session) {
             if ((bool)$session_outside_admin) {
-                if (!is_admin() && !session_id()) {
+                if (!is_admin() && session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
             } else {
-                if (!session_id()) {
+                if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
             }
@@ -4129,7 +4150,23 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function end_session()
     {
-        session_destroy();
+        /** @var bool $do_not_start_session Disable internal handling of session. */
+        $do_not_start_session = (bool)apply_filters("resursbank_start_session_before", null);
+
+        /** @var bool $session_outside_admin Disable session creation when in admin if true. */
+        $session_outside_admin = (bool)apply_filters("resursbank_start_session_outside_admin_only", null);
+
+        if (!(bool)$do_not_start_session) {
+            if ((bool)$session_outside_admin) {
+                if (!is_admin() && session_status() === PHP_SESSION_ACTIVE) {
+                    session_destroy();
+                }
+            } else {
+                if (session_status() === PHP_SESSION_ACTIVE) {
+                    session_destroy();
+                }
+            }
+        }
     }
 
     /**
@@ -4272,8 +4309,15 @@ function woocommerce_gateway_resurs_bank_init()
         }
         if ($column == 'resurs_payment_method') {
             $omniMethod = get_post_meta($post->ID, 'omniPaymentMethod');
+            // Overrides the omniPaymentMethod that is only there for backward compatibility
+            $newMethodInfo = get_post_meta($post->ID, 'resursBankMetaPaymentMethod');
+            if (is_array($newMethodInfo) && isset($newMethodInfo[0])) {
+                echo $newMethodInfo[0];
+                return;
+            }
             if (is_array($omniMethod) && isset($omniMethod[0])) {
                 echo $omniMethod[0];
+                return;
             }
         }
     }
@@ -5962,6 +6006,30 @@ function getResursPaymentMethodModelPath() {
     }
 
     return $return;
+}
+
+/**
+ * @param $id
+ * @return bool
+ */
+function getResursUpdatePaymentReferenceResult($id) {
+    return (bool)get_post_meta($id, 'updateResursReferenceSuccess');
+}
+
+/**
+ * @param $id
+ */
+function setResursPaymentMethodMeta($id)
+{
+    if ($id > 0) {
+        //delete_post_meta($id, 'resursBankMetaPaymentMethod');
+
+        update_post_meta(
+            $id,
+            'resursBankMetaPaymentMethod',
+            isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : ''
+        );
+    }
 }
 
 isResursSimulation();
