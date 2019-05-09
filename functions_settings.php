@@ -690,10 +690,10 @@ if (is_admin()) {
                 return;
             }
             $class_name = 'resurs_bank_nr_' . $payment_method->id;
-            if (!file_exists(plugin_dir_path(__FILE__) . '/includes/' . $class_name)) {
+            if (!file_exists(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name)) {
             } else {
-                if (!in_array(plugin_dir_path(__FILE__) . '/includes/' . $class_name, get_included_files())) {
-                    include(plugin_dir_path(__FILE__) . '/includes/' . $class_name);
+                if (!in_array(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name, get_included_files())) {
+                    include(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name);
                 }
             }
 
@@ -1167,7 +1167,7 @@ if (is_admin()) {
     }
 EOT;
 
-            $path = plugin_dir_path(__FILE__) . '/includes/' . $classFileName;
+            $path = plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $classFileName;
             $path = str_replace('//', '/', $path);
 
             @file_put_contents($path, $class);

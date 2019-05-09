@@ -692,13 +692,13 @@ function woocommerce_gateway_resurs_bank_init()
 
                                 }
                                 // Make sure that the globs does not return anything else than an array.
-                                $globIncludes = glob(plugin_dir_path(__FILE__) . 'includes/*.php');
+                                $globIncludes = glob(plugin_dir_path(__FILE__) . getResursPaymentMethodModelPath() . '*.php');
                                 if (is_array($globIncludes)) {
                                     foreach ($globIncludes as $filename) {
                                         @unlink($filename);
                                         $numDel++;
                                     }
-                                    $globIncludes = glob(plugin_dir_path(__FILE__) . 'includes/*.php');
+                                    $globIncludes = glob(plugin_dir_path(__FILE__) . getResursPaymentMethodModelPath() . '*.php');
                                     if (is_array($globIncludes)) {
                                         foreach ($globIncludes as $filename) {
                                             $numConfirm++;
@@ -3330,8 +3330,8 @@ function woocommerce_gateway_resurs_bank_init()
         private function UnusedPaymentClassesCleanup($temp_class_files)
         {
             $allIncludes = array();
-            $path = plugin_dir_path(__FILE__) . 'includes/';
-            $globIncludes = glob(plugin_dir_path(__FILE__) . 'includes/*.php');
+            $path = plugin_dir_path(__FILE__) . getResursPaymentMethodModelPath();
+            $globIncludes = glob(plugin_dir_path(__FILE__) . getResursPaymentMethodModelPath() . '*.php');
             if (is_array($globIncludes)) {
                 foreach ($globIncludes as $filename) {
                     $allIncludes[] = str_replace($path, '', $filename);
@@ -4204,7 +4204,7 @@ function woocommerce_gateway_resurs_bank_init()
     }
 
     // If glob returns null (error) nothing should run
-    $incGlob = glob(plugin_dir_path(__FILE__) . '/includes/*.php');
+    $incGlob = glob(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . '*.php');
     if (is_array($incGlob)) {
         foreach ($incGlob as $filename) {
             if (!in_array($filename, get_included_files())) {
@@ -5973,6 +5973,39 @@ if (!function_exists('getHadMisplacedIframeLocation')) {
         }
         return $hadIframeInMethods;
     }
+}
+
+/**
+ * Get path to payment method models. Should work with multisites.
+ *
+ * @return string
+ */
+function getResursPaymentMethodModelPath() {
+    global $table_prefix;
+
+    $includesPath = 'includes/';
+    if (!empty($table_prefix) && preg_match('/_$/', $table_prefix)) {
+        $return = $includesPath . preg_replace('/_$/', '', $table_prefix);
+    } else {
+        $return = $includesPath;
+    }
+
+    $alternativePrefixPath = apply_filters('resurs_bank_model_prefix', $table_prefix);
+    if (!empty($alternativePrefixPath) && $alternativePrefixPath !== $table_prefix) {
+        $return = $includesPath . $alternativePrefixPath;
+    }
+
+    // Reformat trailing slashes.
+    $return = preg_replace('/\/$/',  '', $return) . '/';
+    $modelPath = plugin_dir_path(__FILE__) . $return;
+
+    if (!file_exists($modelPath)) {
+        // Silently prepare for sub-includes.
+        @mkdir($modelPath);
+        @file_put_contents($modelPath . '.htaccess', 'Options -indexes');
+    }
+
+    return $return;
 }
 
 /**
