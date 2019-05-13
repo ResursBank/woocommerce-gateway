@@ -2259,7 +2259,7 @@ function woocommerce_gateway_resurs_bank_init()
             $this->flow = initializeResursFlow();
             $this->process_payment_prepare_customer();
 
-            setResursPaymentMethodMeta($order_id);
+            setResursPaymentMethodMeta($order_id, $className);
             $preferredId = $this->process_payment_get_payment_id($order_id);
             $success_url = $this->getSuccessUrl($order_id, $preferredId);
             $backurl = $this->process_payment_get_backurl($order);
@@ -4314,11 +4314,12 @@ function woocommerce_gateway_resurs_bank_init()
         if ($column == 'resurs_payment_method') {
             $omniMethod = get_post_meta($post->ID, 'omniPaymentMethod');
             // Overrides the omniPaymentMethod that is only there for backward compatibility
-            $newMethodInfo = get_post_meta($post->ID, 'resursBankMetaPaymentMethod');
-            if (is_array($newMethodInfo) && isset($newMethodInfo[0])) {
-                echo $newMethodInfo[0];
-                return;
+
+            $newMethodInfo = getResursPaymentMethodMeta($post->ID);
+            if (!empty($newMethodInfo)) {
+                return $newMethodInfo;
             }
+
             if (is_array($omniMethod) && isset($omniMethod[0])) {
                 echo $omniMethod[0];
                 return;
@@ -4735,6 +4736,14 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $currentOrderStatus = __('Frozen', 'resurs-bank-payment-gateway-for-woocommerce');
                 }
             }
+
+            if (isset($resursPaymentInfo->paymentMethodId)) {
+                $methodInfoMeta = getResursPaymentMethodMeta($orderId);
+                if (empty($methodInfoMeta)) {
+                    setResursPaymentMethodMeta($orderId, $resursPaymentInfo->paymentMethodId);
+                }
+            }
+
 
             $renderedResursData .= '<div class="resurs_orderinfo_text paymentInfoWrapStatus paymentInfoHead">';
             $renderedResursData .= sprintf(
@@ -6022,18 +6031,37 @@ function getResursUpdatePaymentReferenceResult($id) {
 
 /**
  * @param $id
+ * @param string $methodName
  */
-function setResursPaymentMethodMeta($id)
+function setResursPaymentMethodMeta($id, $methodName = '')
 {
     if ($id > 0) {
-        //delete_post_meta($id, 'resursBankMetaPaymentMethod');
+        $paymentMethodName = isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : '';
+        if (empty($paymentMethodName) && !empty($methodName)) {
+            $paymentMethodName = $methodName;
+        }
 
         update_post_meta(
             $id,
             'resursBankMetaPaymentMethod',
-            isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : ''
+            $paymentMethodName
         );
     }
+}
+
+/**
+ * @param $id
+ * @return string
+ */
+function getResursPaymentMethodMeta($id) {
+    $metaMethodTest = get_post_meta($id, 'resursBankMetaPaymentMethod');
+    if (is_array($metaMethodTest)) {
+        $fetchStoredMethod = array_pop($metaMethodTest);
+        if (!empty($fetchStoredMethod)) {
+            return (string)$fetchStoredMethod;
+        }
+    }
+    return '';
 }
 
 isResursSimulation();
