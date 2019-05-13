@@ -1327,8 +1327,12 @@ function woocommerce_gateway_resurs_bank_init()
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED): // PAYMENT_CANCELLED
                         $woocommerceOrder->update_status($paymentStatus[RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_ANNULLED]);
                         if (!isWooCommerce3()) {
-                            $woocommerceOrder->cancel_order(__('Resurs Bank annulled the order',
-                                'resurs-bank-payment-gateway-for-woocommerce'));
+                            $woocommerceOrder->cancel_order(
+                                __(
+                                    'Resurs Bank annulled the order',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
                         }
 
                         $return = $suggestedStatus;
