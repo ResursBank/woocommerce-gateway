@@ -30,7 +30,6 @@ The plugin was once written for WooCommerce v2.6 and up but as of today, we've s
 
  * Compatibility: WooCommerce - at least 3.x and up to 3.5 (it might eventually work with older versions too, however this will remain unconfirmed)
  * Plugin verified with PHP version 5.4 - 7.3
- * Plugin verified with WordPress 5.0 alpha
  * Addon scripts verified with PHP 5.3 - 7.3 (EComPHP 1.3.x and NetCURL 6.0.20+)
 
 
@@ -41,7 +40,7 @@ If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested 
 
 = Requirements and content =
 
- * At least PHP 5.4
+ * At least PHP 5.6
  * [curl](https://curl.haxx.se): For communication via rest (Hosted flow and Resurs Checkout)
  * [PHP streams](http://php.net/manual/en/book.stream.php)
  * [SoapClient](http://php.net/manual/en/class.soapclient.php)
@@ -90,14 +89,24 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
 
 = 2.2.18 =
 
-    * [WOO-380] - (T) WordPress 5.2 is imminent
     * [WOO-283] - (T) PAYMENT_PROVIDER and LEGAL
+    * [WOO-291] - (T) Only shipping information are shown in wp-admin (orders)
     * [WOO-302] - (T) Add get-parameter in callback urls that tells about environment
     * [WOO-351] - (T) Check if the meta data can be used for fetching wrongly created orders
     * [WOO-376] - (T) Woocommerce upated so wc tested up to should be changed also
-    * [WOO-348] - (B) After a denied paymet, updatePaymentReference no longer works and the orderid will not be updated on the new order if "continued" with an approved govid
-    * [WOO-375] - (B) wp-admin payment methods: if descriptions are identical in the list, they will be overwritten
+    * [WOO-380] - (T) WordPress 5.2 is imminent
+    * [WOO-384] - (T) Payment method models is unsupported in multisites
+    * [WOO-348] - (B) After a denied payment, updatePaymentReference no longer works and the orderid will not be updated on the new order if "continued" with an approved govid
+    * [WOO-349] - (B) Status handling looks weird with merchants created via "MP"
+    * [WOO-373] - (B) The list of payment methods in admin excludes methods if they inherit same description (array overwriting)
+    * [WOO-374] - (B) Not all payment methods are listed in admin (MP)
     * [WOO-377] - (B) Missing an "arrow".
+    * [WOO-379] - (B) Two windowed orders makes javascript throw "Unknown errors"
+    * [WOO-383] - (B) When credentials are used on more than one platform in the same time with incremental updateOrderReferences sites may collide
+    * [WOO-387] - (B) Ending session tries to destroy a session when it does not exist on applied filters
+    * [WOO-385] - (B) Order ids are not updated properly
+    * [WOO-386] - (B) Statuses are not updated after denied payments
+
 
 == Upgrade Notice ==
 
