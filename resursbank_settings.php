@@ -521,16 +521,34 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     }
 
     /**
+     * @return bool
+     */
+    function hasCurlConstants()
+    {
+        $const = get_defined_constants();
+        $curlConstants = 0;
+        foreach ($const as $flag) {
+            if (preg_match('/^curl/i', $flag)) {
+                $curlConstants++;
+            }
+        }
+        if ($curlConstants > 10) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @return string
      */
     function getPluginInformation()
     {
-
         $hasSoap = class_exists("\SoapClient") ? true : false;
-        $hasCurlInit = true;
+        $getEnabledCurl = true;
         $hasSsl = true;
+        $curlIsHereButDisabled = $this->hasCurlConstants();
         if (!function_exists('curl_init') || !function_exists('curl_exec')) {
-            $hasCurlInit = false;
+            $getEnabledCurl = false;
         }
         $streamWrappers = @stream_get_wrappers();
         if (!in_array('https', $streamWrappers)) {
@@ -545,7 +563,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWecomTags()" ' . $topCss . '><i>EComPHP</i></td><td ' . $topCss . '>' . $this->flow->getVersionFull() . '<br>
             <div id="rwoecomtag" style="display:none;"></div>
         </td></tr>';
-        $pluginInfo .= '<tr><td ' . $topCss . '>curl driver</td><td ' . $topCss . '>' . $this->displayAvail($hasCurlInit) . ($hasCurlInit ? "v" . $this->getCurlInformation('version') : "") . '</td></tr>';
+        $pluginInfo .= '<tr><td ' . $topCss . '>curl driver</td><td ' . $topCss . '>' . $this->displayAvail($getEnabledCurl) . ($getEnabledCurl ? "v" . $this->getCurlInformation('version') : "") . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>SoapClient</td><td ' . $topCss . '>' . $this->displayAvail($hasSoap) . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>SSL/https (wrapper)</td><td ' . $topCss . '>' . $this->displayAvail($hasSsl) . (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : "") . '</td></tr>';
         $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '> NETCURL-v' . $this->getDefined('NETCURL_RELEASE') . ' / MODULE_CURL-v' . $this->getDefined('NETCURL_CURL_RELEASE') . ' / MODULE_SOAP-v' . $this->getDefined('NETCURL_SIMPLESOAP_RELEASE') . '<br>
