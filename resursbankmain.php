@@ -4713,7 +4713,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 ), $order->get_id());
             }
 
-            $renderedResursData .=
+/*            $renderedResursData .=
                 '<div style="border: 1px solid #990000; margin-bottom: 5px; color:#000099; margin-top: 0px; background-color: #ffffff; padding: 3px; font-style: italic;">' .
                 sprintf(
                     __(
@@ -4721,7 +4721,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ), $resursPaymentIdLast
                 ) .
-                '</div>';
+                '</div>';*/
         }
 
         $invoices = array();
