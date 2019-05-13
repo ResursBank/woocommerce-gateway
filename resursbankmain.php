@@ -2259,7 +2259,7 @@ function woocommerce_gateway_resurs_bank_init()
             $this->flow = initializeResursFlow();
             $this->process_payment_prepare_customer();
 
-            setResursPaymentMethodMeta($order_id, $className);
+            setResursPaymentMethodMeta($order_id, $shortMethodName);
             $preferredId = $this->process_payment_get_payment_id($order_id);
             $success_url = $this->getSuccessUrl($order_id, $preferredId);
             $backurl = $this->process_payment_get_backurl($order);
