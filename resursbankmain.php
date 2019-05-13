@@ -4318,6 +4318,7 @@ function woocommerce_gateway_resurs_bank_init()
             $newMethodInfo = getResursPaymentMethodMeta($post->ID);
             if (!empty($newMethodInfo)) {
                 echo $newMethodInfo;
+                return;
             }
 
             if (is_array($omniMethod) && isset($omniMethod[0])) {
