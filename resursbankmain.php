@@ -4317,7 +4317,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             $newMethodInfo = getResursPaymentMethodMeta($post->ID);
             if (!empty($newMethodInfo)) {
-                return $newMethodInfo;
+                echo $newMethodInfo;
             }
 
             if (is_array($omniMethod) && isset($omniMethod[0])) {
@@ -4743,7 +4743,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     setResursPaymentMethodMeta($orderId, $resursPaymentInfo->paymentMethodId);
                 }
             }
-
 
             $renderedResursData .= '<div class="resurs_orderinfo_text paymentInfoWrapStatus paymentInfoHead">';
             $renderedResursData .= sprintf(
