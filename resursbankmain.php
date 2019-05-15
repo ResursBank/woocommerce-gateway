@@ -1,6 +1,7 @@
 <?php
 
 require_once(__DIR__ . '/vendor/autoload.php');
+require_once(__DIR__ . '/v3core.php');
 include('functions_settings.php');
 
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
@@ -84,6 +85,17 @@ function woocommerce_gateway_resurs_bank_init()
         public function __construct()
         {
             add_action('woocommerce_api_wc_resurs_bank', array($this, 'check_callback_response'));
+
+            // Payment method area
+            add_filter(
+                'woocommerce_update_order_review_fragments',
+                array(
+                    $this,
+                    'resursBankInheritOrderReviewFragments'
+                ),
+                10,
+                1
+            );
 
             hasResursOmni();
             isResursSimulation(); // Make sure settings are properly set each round
@@ -260,6 +272,20 @@ function woocommerce_gateway_resurs_bank_init()
             if (!$this->is_valid_for_use()) {
                 $this->enabled = false;
             }
+        }
+
+        // Payment method area
+        /**
+         * @param $fragments
+         * @return mixed
+         * @throws Exception
+         */
+        public function resursBankInheritOrderReviewFragments($fragments)
+        {
+            // When order is in review state, we can consider the last action as "in checkout".
+            ResursBank3_PreCore::setCustomerIsInCheckout();
+
+            return $fragments;
         }
 
         /**
