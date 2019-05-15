@@ -2488,8 +2488,6 @@ function woocommerce_gateway_resurs_bank_init()
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], "omnicheckout")) {
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
-                            // Error handler that deprecates this.
-                            $refErrorString = get_post_meta($_REQUEST['orderId'], 'referenceUpdateErrorMessage');
                             // Use the new way to detect updated references as the old is about to get removed.
                             if (!getResursUpdatePaymentReferenceResult($_REQUEST['orderId'])) {
                                 $order = new WC_Order($_REQUEST['orderId']);

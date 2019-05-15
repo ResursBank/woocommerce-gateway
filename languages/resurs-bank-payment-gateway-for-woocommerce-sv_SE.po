@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
 "POT-Creation-Date: 2019-05-13 10:21+0200\n"
-"PO-Revision-Date: 2019-05-13 10:21+0200\n"
+"PO-Revision-Date: 2019-05-13 13:32+0200\n"
 "Last-Translator: Tomas Tornevall <tomas.tornevall@resurs.se>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -26,7 +26,7 @@ msgstr ""
 #: functions_settings.php:512 functions_settings.php:560
 #: resursbank_settings.php:930
 msgid "Enable/Disable"
-msgstr "Aktivera/inaktiverar"
+msgstr "Aktivera/inaktiverarg"
 
 #: functions_settings.php:102 functions_settings.php:110
 #: functions_settings.php:242 functions_settings.php:251
