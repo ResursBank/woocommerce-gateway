@@ -4421,10 +4421,17 @@ function woocommerce_gateway_resurs_bank_init()
                                         'resurs-bank-payment-gateway-for-woocommerce') . " <b>" . $realPaymentLimit . "</b></div>";
                             }
 
-                            $displayAnnuity .= '<span>' . sprintf(__(
-                                    'Part pay from %s per month',
-                                    'resurs-bank-payment-gateway-for-woocommerce'
-                                ), $payFromAnnuity) . '</span> | ';
+                            // https://test.resurs.com/docs/pages/viewpage.action?pageId=7208965#Hooks/filtersv2.2-Filter:Partpaymentwidgetstring
+                            $defaultAnnuityString = sprintf(__(
+                                'Part pay from %s per month',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ), $payFromAnnuity);
+                            $useAnnuityString = $defaultAnnuityString;
+                            $customAnnuityString = apply_filters("resursbank_custom_annuity_string", $defaultAnnuityString, $payFromAnnuity);
+                            if (!empty($customAnnuityString)) {
+                                $useAnnuityString = $customAnnuityString;
+                            }
+                            $displayAnnuity .= '<span>' . $useAnnuityString . '</span> | ';
 
                             $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' .
                                 __(
