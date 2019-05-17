@@ -89,6 +89,7 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
 
 = 2.2.18 =
 
+    * [WOO-395] - (T) Avoid hard coding of the part payment widget
     * [WOO-283] - (T) PAYMENT_PROVIDER and LEGAL
     * [WOO-291] - (T) Only shipping information are shown in wp-admin (orders)
     * [WOO-302] - (T) Add get-parameter in callback urls that tells about environment
