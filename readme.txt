@@ -96,14 +96,18 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
     * [WOO-376] - (T) Woocommerce upated so wc tested up to should be changed also
     * [WOO-380] - (T) WordPress 5.2 is imminent
     * [WOO-384] - (T) Payment method models is unsupported in multisites
+    * [WOO-393] - (T) Renamed payment method titles may be confusing  when running simplified
     * [WOO-348] - (B) After a denied payment, updatePaymentReference no longer works and the orderid will not be updated on the new order if "continued" with an approved govid
     * [WOO-349] - (B) Status handling looks weird with merchants created via "MP"
     * [WOO-373] - (B) The list of payment methods in admin excludes methods if they inherit same description (array overwriting)
     * [WOO-374] - (B) Not all payment methods are listed in admin (MP)
-    * [WOO-377] - (B) Missing an "arrow".
+    * [WOO-377] - (B) Add_order_note is missing a pointer (important)
     * [WOO-379] - (B) Two windowed orders makes javascript throw "Unknown errors"
     * [WOO-383] - (B) When credentials are used on more than one platform in the same time with incremental updateOrderReferences sites may collide
     * [WOO-387] - (B) Ending session tries to destroy a session when it does not exist on applied filters
+    * [WOO-388] - (B) Payment method name is empty in wp-admin orderview when simplified is used
+    * [WOO-389] - (B) Guard curl functions (curl_init, curl_exec).
+    * [WOO-391] - (B) Check which payment method that is shown in the order list when the first checkout failed
     * [WOO-385] - (B) Order ids are not updated properly
     * [WOO-386] - (B) Statuses are not updated after denied payments
 
