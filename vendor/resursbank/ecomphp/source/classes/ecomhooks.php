@@ -44,7 +44,8 @@ if (!function_exists('ecom_event_register')) {
     /**
      * Reset to original state.
      */
-    function ecom_event_reset() {
+    function ecom_event_reset()
+    {
         $ecomEvents = array();
     }
 }
