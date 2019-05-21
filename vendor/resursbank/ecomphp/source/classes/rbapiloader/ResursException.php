@@ -40,6 +40,8 @@ abstract class RESURS_EXCEPTIONS
     const ECOMMERCEERROR_WEAK_PASSWORD = 502;
     const ECOMMERCEERROR_NOT_AUTHORIZED = 503;
 
+    const PAYMENT_SESSION_NOT_FOUND = 700;
+
     /**
      * Miscellaneous exceptions
      */
@@ -51,6 +53,7 @@ abstract class RESURS_EXCEPTIONS
     const REGEX_CUSTOMERTYPE_MISSING = 1004;
     const FORMFIELD_CANHIDE_EXCEPTION = 1005;
     const UNKOWN_SOAP_EXCEPTION_CODE_ZERO = 1006;
+    const TEST_ERROR_CODE_AS_STRING = 1007;
 
     /*
      * SSL/HTTP Exceptions
@@ -88,57 +91,66 @@ abstract class RESURS_EXCEPTIONS
     const EXSHOP_PROHIBITED = 7009;
     const CREATEPAYMENT_NO_ID_SET = 7008;
     const CREATEPAYMENT_TOO_FAST = 7009;
-}
 
+    /*
+     * Special treated codes.
+     */
+
+}
 
 /**
  * Class RESURS_EXCEPTION_CLASS
- * @deprecated Not in use
  */
-class RESURS_EXCEPTION_CLASS extends \Exception
+class ResursException extends \Exception
 {
-    private $fromFunction = null;
+    private $traceFunction;
+    private $stringifiedCode;
 
     public function __construct(
         $message = 'Unknown exception',
         $code = 0,
-        $fromFunction = '',
-        \Exception $previous = null
+        \Exception $previous = null,
+        $stringifiedCode = null,
+        $fromFunction = ''
     ) {
-        $this->fromFunction = $fromFunction;
         parent::__construct($message, $code, $previous);
+        $this->traceFunction = $fromFunction;
+        $this->stringifiedCode = $stringifiedCode;
+        $this->setStringifiedCode();
+    }
+
+    private function setStringifiedCode()
+    {
+        if (empty($this->code) && !empty($this->stringifiedCode)) {
+            try {
+                $constant = constant('\RESURS_EXCEPTIONS::' . $this->stringifiedCode);
+            } catch (\Exception $regularConstantException) {
+                // Ignore this.
+            }
+            if (!empty($constant)) {
+                $this->code = constant('\RESURS_EXCEPTIONS::' . $this->stringifiedCode);
+            } else {
+                $this->code = $this->stringifiedCode;
+            }
+        }
     }
 
     public function __toString()
     {
-        if (null === $this->fromFunction) {
+        if (empty($this->traceFunction)) {
             return "RBEcomPHP Exception: [{$this->code}]: {$this->message}";
         } else {
-            return "RBEcomPHP {$this->fromFunction}Exception {$this->code}: {$this->message}";
+            return "RBEcomPHP {$this->traceFunction}Exception {$this->code}: {$this->message}";
         }
     }
 
-    public function getFromFunction()
+    public function getStringifiedCode()
     {
-        if (empty($this->fromFunction)) {
-            return "NaN";
-        }
-        return $this->fromFunction;
+        return $this->stringifiedCode;
     }
-}
 
-/**
- * Class ResursExceptions
- * @deprecated Use RESURS_EXCEPTIONS
- */
-abstract class ResursExceptions extends RESURS_EXCEPTIONS
-{
-}
-
-/**
- * Class ResursException
- * @deprecated Use RESURS_EXCEPTION_CLASS
- */
-class ResursException extends RESURS_EXCEPTION_CLASS
-{
+    public function getTraceFunction()
+    {
+        return $this->traceFunction;
+    }
 }
