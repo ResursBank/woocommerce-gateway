@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.18
+ * @version 1.3.19
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -59,10 +59,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.18');
+    define('ECOMPHP_VERSION', '1.3.19');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190520');
+    define('ECOMPHP_MODIFY_DATE', '20190527');
 }
 
 /**
@@ -226,6 +226,11 @@ class ResursBank
      * @var null
      */
     private $metaDataKey;
+
+    /**
+     * @var array Last stored getPayment()
+     */
+    private $lastPaymentStored;
 
     ///// Package related
     /**
@@ -464,7 +469,7 @@ class ResursBank
         'unregisterEventCallback' => 'ConfigurationService',
         'getRegisteredEventCallback' => 'ConfigurationService',
         'peekInvoiceSequence' => 'ConfigurationService',
-        'setInvoiceSequence' => 'ConfigurationService'
+        'setInvoiceSequence' => 'ConfigurationService',
     );
 
     /**
@@ -508,7 +513,7 @@ class ResursBank
         'connection_timeout' => 60,
         'login' => '',
         'password' => '',
-        'trace' => 1
+        'trace' => 1,
     );
     /**
      * Don't want to use SSL verifiers in curl mode
@@ -658,6 +663,9 @@ class ResursBank
         } else {
             $theHost = "nohost.localhost";
         }
+
+        $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty(MEMORY_SAFE_LIMIT) ? MEMORY_SAFE_LIMIT : -1;
+        $this->getMemoryLimitAdjusted('128M', $memoryLimit);
 
         if (!is_null($debug) && is_bool($debug)) {
             $this->debug = $debug;
@@ -843,7 +851,6 @@ class ResursBank
      */
     private function InitializeServices($reInitializeCurl = true)
     {
-
         $inheritExtendedSoapWarnings = false;
         if (is_null($this->CURL)) {
             $reInitializeCurl = true;
@@ -1373,7 +1380,9 @@ class ResursBank
             if (is_array($methods) && count($methods)) {
                 $result = true;
             } else {
-                throw new \ResursException('Validating credentials was successful, but not payment methods was found.', 417);
+                throw new \ResursException(
+                    'Validating credentials was successful, but not payment methods was found.',
+                    417);
             }
         } catch (\Exception $ignoreMyException) {
 
@@ -1440,7 +1449,7 @@ class ResursBank
         $this->validateExternalUrl = array(
             'url' => $url,
             'http_accept' => $expectedHttpAcceptCode,
-            'http_error' => $expectedHttpErrorCode
+            'http_error' => $expectedHttpErrorCode,
         );
     }
 
@@ -1499,7 +1508,7 @@ class ResursBank
             'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
             'abcdefghijklmnopqrstuvwxyz',
             '0123456789',
-            '!@#$%*?'
+            '!@#$%*?',
         );
 
         // Set complexity to no limit if type 5 is requested
@@ -1833,6 +1842,31 @@ class ResursBank
     }
 
     /**
+     * Check if external url validation should be done and throw only on failures.
+     * This is per default skipped unless requested.
+     *
+     * @return bool
+     * @throws \ResursException
+     */
+    private function setRegisterCallbackAddressValidation()
+    {
+        if (is_array($this->validateExternalUrl) && count($this->validateExternalUrl)) {
+            $isValidAddress = $this->validateExternalAddress();
+            if ($isValidAddress == RESURS_CALLBACK_REACHABILITY::IS_NOT_REACHABLE) {
+                throw new \ResursException(
+                    'Reachability Response: Your site might not be available to our callbacks'
+                );
+            } elseif ($isValidAddress == RESURS_CALLBACK_REACHABILITY::IS_REACHABLE_WITH_PROBLEMS) {
+                throw new \ResursException(
+                    'Reachability Response: Your site is available from the outside, ' .
+                    'but problems occurred, that indicates that your site can not respond to external calls.'
+                );
+            }
+        }
+        return true;
+    }
+
+    /**
      * Register a callback URL with Resurs Bank
      *
      * @param int $callbackType
@@ -1854,16 +1888,10 @@ class ResursBank
         $basicAuthPassword = null
     ) {
         $this->InitializeServices();
-        if (is_array($this->validateExternalUrl) && count($this->validateExternalUrl)) {
-            $isValidAddress = $this->validateExternalAddress();
-            if ($isValidAddress == RESURS_CALLBACK_REACHABILITY::IS_NOT_REACHABLE) {
-                throw new \ResursException('Reachability Response: Your site might not be available to our callbacks');
-            } elseif ($isValidAddress == RESURS_CALLBACK_REACHABILITY::IS_REACHABLE_WITH_PROBLEMS) {
-                throw new \ResursException('Reachability Response: Your site is available from the outside, ' .
-                    'but problems occurred, that indicates that your site can not respond to external calls.'
-                );
-            }
-        }
+
+        // Not thrown = Success or skipped
+        $this->setRegisterCallbackAddressValidation();
+
         // The final array
         $renderCallback = array();
 
@@ -1885,35 +1913,36 @@ class ResursBank
 
         ////// DIGEST CONFIGURATION BEGIN
         $renderCallback['digestConfiguration'] = array(
-            'digestParameters' => $this->getCallbackTypeParameters($callbackType)
+            'digestParameters' => $this->getCallbackTypeParameters($callbackType),
         );
-        if (
-            isset($digestData['digestAlgorithm']) && strtolower($digestData['digestAlgorithm']) != "sha1" &&
-            strtolower($digestData['digestAlgorithm']) != "md5"
+
+        if (isset($digestData['digestAlgorithm']) &&
+            (
+                strtolower($digestData['digestAlgorithm']) === "sha1" ||
+                strtolower($digestData['digestAlgorithm']) === "md5"
+            )
         ) {
-            $renderCallback['digestConfiguration']['digestAlgorithm'] = "sha1";
-        } elseif (!isset($callbackDigest['digestAlgorithm'])) {
-            $renderCallback['digestConfiguration']['digestAlgorithm'] = "sha1";
+            $renderCallback['digestConfiguration']['digestAlgorithm'] = strtoupper($digestData['digestAlgorithm']);
+        } else {
+            // Always uppercase.
+            $renderCallback['digestConfiguration']['digestAlgorithm'] = "SHA1";
         }
-        $renderCallback['digestConfiguration']['digestAlgorithm'] = strtoupper(
-            $renderCallback['digestConfiguration']['digestAlgorithm']
-        );
-        if (!empty($callbackDigest['digestSalt'])) {
-            if ($digestData['digestSalt']) {
-                $renderCallback['digestConfiguration']['digestSalt'] = $digestData['digestSalt'];
+
+        $hasDigest = false;
+        if (isset($digestData['digestSalt']) && !empty($digestData['digestSalt'])) {
+            $renderCallback['digestConfiguration']['digestSalt'] = $digestData['digestSalt'];
+            $hasDigest = true;
+        }
+
+        if (!$hasDigest) {
+            if (isset($this->digestKey[$renderCallback['eventType']]) &&
+                !empty($this->digestKey[$renderCallback['eventType']])) {
+                $renderCallback['digestConfiguration']['digestSalt'] = $this->digestKey[$renderCallback['eventType']];
+            } elseif (!empty($this->globalDigestKey)) {
+                $renderCallback['digestConfiguration']['digestSalt'] = $this->globalDigestKey;
             }
         }
-        // Overriders - if the globalDigestKey or the digestKey (specific type required) is set,
-        // it means that setCallbackDigest has been used.
-        if (!empty($this->globalDigestKey)) {
-            $renderCallback['digestConfiguration']['digestSalt'] = $this->globalDigestKey;
-        }
-        if (
-            isset($this->digestKey[$renderCallback['eventType']]) &&
-            !empty($this->digestKey[$renderCallback['eventType']])
-        ) {
-            $renderCallback['digestConfiguration']['digestSalt'] = $this->digestKey['eventType'];
-        }
+
         if (empty($renderCallback['digestConfiguration']['digestSalt'])) {
             throw new \ResursException("Can not continue without a digest salt key",
                 \RESURS_EXCEPTIONS::CALLBACK_SALTDIGEST_MISSING);
@@ -1926,9 +1955,16 @@ class ResursBank
             if (isset($renderCallback['eventType'])) {
                 unset($renderCallback['eventType']);
             }
-            $renderedResponse = $this->CURL->doPost($renderCallbackUrl, $renderCallback,
-                NETCURL_POST_DATATYPES::DATATYPE_JSON);
-            $code = $this->CURL->getCode($renderedResponse);
+            try {
+                $renderedResponse = $this->CURL->doPost(
+                    $renderCallbackUrl,
+                    $renderCallback,
+                    NETCURL_POST_DATATYPES::DATATYPE_JSON
+                );
+                $code = $this->CURL->getCode($renderedResponse);
+            } catch (\Exception $e) {
+                $code = $e->getCode();
+            }
         } else {
             $registerBy = 'wsdl';
             $renderCallbackUrl = $this->getServiceUrl("registerEventCallback");
@@ -2066,8 +2102,8 @@ class ResursBank
                 rand(10000, 30000),
                 rand(10000, 30000),
                 rand(10000, 30000),
-                rand(10000, 30000)
-            )
+                rand(10000, 30000),
+            ),
         );
         try {
             /** @noinspection PhpUndefinedMethodInspection */
@@ -2472,7 +2508,7 @@ class ResursBank
             $paymentScanList = $this->findPayments(array('statusSet' => array($paymentType)), 1, $scanDebitCount,
                 array(
                     'ascending' => false,
-                    'sortColumns' => array('FINALIZED_TIME', 'MODIFIED_TIME', 'BOOKED_TIME')
+                    'sortColumns' => array('FINALIZED_TIME', 'MODIFIED_TIME', 'BOOKED_TIME'),
                 ));
             $lastHighestInvoice = $this->getHighestValueFromPaymentList($paymentScanList, $lastHighestInvoice);
         }
@@ -2539,7 +2575,7 @@ class ResursBank
         $paymentMethods = $this->postService("getPaymentMethods", array(
             'customerType' => isset($parameters['customerType']) ? $parameters['customerType'] : null,
             'language' => isset($parameters['language']) ? $parameters['language'] : null,
-            'purchaseAmount' => isset($parameters['purchaseAmount']) ? $parameters['purchaseAmount'] : null
+            'purchaseAmount' => isset($parameters['purchaseAmount']) ? $parameters['purchaseAmount'] : null,
         ));
         // Make sure this method always returns an array even if it is only one method.
         // Ecommerce will, in case of only one available method return an object instead of an array.
@@ -2738,7 +2774,7 @@ class ResursBank
         return $this->postService("getAddress", array(
             'governmentId' => $governmentId,
             'customerType' => $customerType,
-            'customerIpAddress' => $customerIpAddress
+            'customerIpAddress' => $customerIpAddress,
         ));
     }
 
@@ -2936,7 +2972,7 @@ class ResursBank
         if ($this->isFlag('GET_PAYMENT_BY_REST') || !$this->SOAP_AVAILABLE) {
             // This will ALWAYS run if SOAP is unavailable
             try {
-                return $this->getPaymentByRest($paymentId);
+                return ($this->lastPaymentStored = $this->getPaymentByRest($paymentId));
             } catch (\ResursException $e) {
                 // 3 = The order does not exist, default REST error.
                 // If we for some reason get 404 errors here, the error should be retrown as 3.
@@ -2949,11 +2985,19 @@ class ResursBank
         }
 
         try {
-            return $this->getPaymentBySoap($paymentId);
+            return ($this->lastPaymentStored = $this->getPaymentBySoap($paymentId));
         } catch (Exception $e) {
             // 8 = REFERENCED_DATA_DONT_EXISTS
             throw $e;
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getPaymentCached()
+    {
+        return $this->lastPaymentStored;
     }
 
     /**
@@ -2978,11 +3022,11 @@ class ResursBank
                         }
                     }
                     $metaDataResponse = array(
-                        'payloadMetaData' => $newArray
+                        'payloadMetaData' => $newArray,
                     );
                 } else {
                     $metaDataResponse = array(
-                        'payloadMetaData' => $this->Payload['metaData']
+                        'payloadMetaData' => $this->Payload['metaData'],
                     );
                 }
             } else {
@@ -3080,7 +3124,7 @@ class ResursBank
         $searchCriterias = array(
             'searchCriteria' => $searchCriteria,
             'pageNumber' => $pageNumber,
-            'itemsPerPage' => $itemsPerPage
+            'itemsPerPage' => $itemsPerPage,
         );
         if (!empty($sortBy)) {
             $searchCriterias['sortBy'] = $sortBy;
@@ -3190,7 +3234,7 @@ class ResursBank
                         isset($jsonized->detailedMessage) ? $jsonized->detailedMessage : $e->getMessage();
                     throw new \ResursException(
                         $errorMessage,
-                        is_numeric($jsonized->errorCode) ? $jsonized->errorCode :0,
+                        is_numeric($jsonized->errorCode) ? $jsonized->errorCode : 0,
                         null,
                         !is_numeric($jsonized->errorCode) && is_string($jsonized->errorCode) ? $jsonized->errorCode : null,
                         __FUNCTION__
@@ -3271,7 +3315,7 @@ class ResursBank
         $metaDataArray = array(
             'paymentId' => $paymentId,
             'key' => $metaDataKey,
-            'value' => $metaDataValue
+            'value' => $metaDataValue,
         );
         /** @noinspection PhpUndefinedMethodInspection */
         $metaDataResponse = $this->CURL->doGet($this->getServiceUrl("addMetaData"))->addMetaData($metaDataArray);
@@ -3467,7 +3511,7 @@ class ResursBank
     ) {
         $returnHtml = $this->postService("getCostOfPurchaseHtml", array(
             'paymentMethodId' => $paymentMethod,
-            'amount' => $amount
+            'amount' => $amount,
         ));
         // Try to make the target open as a different target, if set. This will not invoke, if not set.
         if (!empty($hrefTarget)) {
@@ -4196,7 +4240,7 @@ class ResursBank
                 'unitMeasure' => $unitMeasure,
                 'unitAmountWithoutVat' => $unitAmountWithoutVat,
                 'vatPct' => $vatPct,
-                'type' => !empty($articleType) ? $articleType : ""
+                'type' => !empty($articleType) ? $articleType : "",
             );
             $newSpecData = $this->event('ecom_article_data', $specData);
             if (!is_null($newSpecData) && is_array($newSpecData)) {
@@ -4227,7 +4271,7 @@ class ResursBank
             // Try correctify speclines that have been merged in the wrong way
             if (isset($this->SpecLines['artNo'])) {
                 $this->SpecLines = array(
-                    $this->SpecLines
+                    $this->SpecLines,
                 );
             }
             foreach ($this->SpecLines as $specIndex => $specRow) {
@@ -4275,7 +4319,7 @@ class ResursBank
                 $this->Payload['orderData'] = array(
                     'specLines' => $this->sanitizePaymentSpec($this->SpecLines, $myFlow),
                     'totalAmount' => $paymentSpec['totalAmount'],
-                    'totalVatAmount' => $paymentSpec['totalVatAmount']
+                    'totalVatAmount' => $paymentSpec['totalVatAmount'],
                 );
             }
             if ($myFlow === RESURS_FLOW_TYPES::HOSTED_FLOW) {
@@ -4284,7 +4328,7 @@ class ResursBank
                 $this->Payload['orderData'] = array(
                     'orderLines' => $this->sanitizePaymentSpec($this->SpecLines, $myFlow),
                     'totalAmount' => $paymentSpec['totalAmount'],
-                    'totalVatAmount' => $paymentSpec['totalVatAmount']
+                    'totalVatAmount' => $paymentSpec['totalVatAmount'],
                 );
             }
             if ($myFlow == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
@@ -4393,7 +4437,8 @@ class ResursBank
             $this->setSessionVar('lastPaymentExecute', time());
         }
         if (trim(strtolower($this->username)) == "exshop") {
-            throw new \ResursException("The use of exshop is no longer supported", \RESURS_EXCEPTIONS::EXSHOP_PROHIBITED);
+            throw new \ResursException("The use of exshop is no longer supported",
+                \RESURS_EXCEPTIONS::EXSHOP_PROHIBITED);
         }
         $error = array();
         $myFlow = $this->getPreferredPaymentFlowService();
@@ -4654,7 +4699,8 @@ class ResursBank
             $payment_id_or_method = $this->preferredId;
         }
         if (!count($this->Payload)) {
-            throw new \ResursException("No payload are set for this payment", \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA);
+            throw new \ResursException("No payload are set for this payment",
+                \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA);
         }
 
         // Obsolete way to handle multidimensional specrows
@@ -4959,7 +5005,7 @@ class ResursBank
                 'unitMeasure',
                 'unitAmountWithoutVat',
                 'vatPct',
-                'type'
+                'type',
             ),
             'hosted' => array(
                 'artNo',
@@ -4969,7 +5015,7 @@ class ResursBank
                 'unitAmountWithoutVat',
                 'vatPct',
                 'totalVatAmount',
-                'totalAmount'
+                'totalAmount',
             ),
             'simplified' => array(
                 'id',
@@ -4980,14 +5026,14 @@ class ResursBank
                 'unitAmountWithoutVat',
                 'vatPct',
                 'totalVatAmount',
-                'totalAmount'
+                'totalAmount',
             ),
             'minimalistic' => array(
                 'artNo',
                 'description',
                 'unitAmountWithoutVat',
-                'quantity'
-            )
+                'quantity',
+            ),
         );
         if (is_array($specLines)) {
             $myFlow = $this->getPreferredPaymentFlowService();
@@ -5103,7 +5149,7 @@ class ResursBank
             'lastName' => $lastName,
             'addressRow1' => $addressRow1,
             'postalArea' => $postalArea,
-            'postalCode' => $postalCode
+            'postalCode' => $postalCode,
         );
 
         $trimAddress = trim($addressRow2); // PHP Compatibility
@@ -5440,7 +5486,7 @@ class ResursBank
         $SigningPayload['signing'] = array(
             'successUrl' => $this->getEncodedSigningUrl($successUrl, RESURS_URL_ENCODE_TYPES::SUCCESSURL, $encodeType),
             'failUrl' => $this->getEncodedSigningUrl($failUrl, RESURS_URL_ENCODE_TYPES::FAILURL, $encodeType),
-            'forceSigning' => $forceSigning
+            'forceSigning' => $forceSigning,
         );
         if (!is_null($backUrl)) {
             $SigningPayload['backUrl'] = $this->getEncodedSigningUrl(
@@ -6316,7 +6362,7 @@ class ResursBank
         $payloadType = RESURS_AFTERSHOP_RENDER_TYPES::NONE
     ) {
         $finalAfterShopSpec = array(
-            'paymentId' => $paymentId
+            'paymentId' => $paymentId,
         );
         if (!is_array($customPayloadItemList)) {
             // Make sure this is correct
@@ -6401,7 +6447,7 @@ class ResursBank
     {
         $this->PayloadHistory[] = array(
             'Payload' => $this->Payload,
-            'SpecLines' => $this->SpecLines
+            'SpecLines' => $this->SpecLines,
         );
 
         // Flags that prevents any reset of payloads. Here, it will be just filled.
@@ -6416,7 +6462,8 @@ class ResursBank
     /**
      * @param $paymentId
      */
-    private function setAfterShopPaymentId($paymentId) {
+    private function setAfterShopPaymentId($paymentId)
+    {
         if (empty($this->preferredId)) {
             $this->preferredId = $paymentId;
         }
@@ -6442,8 +6489,11 @@ class ResursBank
         //$this->setAfterShopPaymentId($paymentId);
 
         try {
-            $afterShopObject = $this->getAfterShopObjectByPayload($paymentId, $customPayloadItemList,
-                RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE);
+            $afterShopObject = $this->getAfterShopObjectByPayload(
+                $paymentId,
+                $customPayloadItemList,
+                RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE
+            );
         } catch (Exception $afterShopObjectException) {
             // No rows to finalize? Check if this was auto debited by internal rules, or throw back error.
             if (
@@ -6456,6 +6506,20 @@ class ResursBank
                 return true;
             }
             throw $afterShopObjectException;
+        }
+        $cachedPayment = $this->getPaymentCached();
+        if (!is_null($cachedPayment) &&
+            is_object($cachedPayment) &&
+            $cachedPayment->id === $paymentId) {
+            if ($this->isFrozen($cachedPayment)) {
+                // Throw it like Resurs Bank one step earlier. Since we do a getPayment
+                // before the finalization we do not have make an extra call if payment status
+                // is forzen.
+                throw new \ResursException(
+                    'EComPHP can not finalize frozen payments',
+                    \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE
+                );
+            }
         }
         $this->aftershopPrepareMetaData($paymentId);
         try {
@@ -6475,8 +6539,11 @@ class ResursBank
 
                 return $this->paymentFinalize($paymentId, $customPayloadItemList, true);
             }
-            throw new \ResursException($finalizationException->getMessage(), $finalizationException->getCode(),
-                $finalizationException);
+            throw new \ResursException(
+                $finalizationException->getMessage(),
+                $finalizationException->getCode(),
+                $finalizationException
+            );
         }
 
         return false;
@@ -6724,7 +6791,7 @@ class ResursBank
         $additionalDataArray = array(
             'paymentId' => $paymentId,
             'paymentSpec' => $this->Payload['orderData'],
-            'createdBy' => $createdBy
+            'createdBy' => $createdBy,
         );
         $Result = $this->postService("additionalDebitOfPayment", $additionalDataArray, true);
         if ($Result >= 200 && $Result <= 250) {
@@ -6867,7 +6934,6 @@ class ResursBank
                 // Running in synchronous mode (finalizeIfBooked) might disturb the normal way to handle the booked
                 // callback, so we'll continue checking the order by statuses if this order is not frozen
                 return $preAnalyzePayment;
-                break;
             case $byCallbackEvent & (RESURS_CALLBACK_TYPES::FINALIZATION):
                 return (
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED |
@@ -7094,6 +7160,112 @@ class ResursBank
     {
         $this->autoDebitableTypesActive = $activation;
     }
+
+    ///////////// INTERNAL MEMORY LIMIT HANDLER BEGIN
+
+    /**
+     * WP Style byte conversion for memory limits.
+     *
+     * @param $value
+     * @return mixed
+     */
+    public function getBytes($value)
+    {
+        $value = strtolower(trim($value));
+        $bytes = (int)$value;
+
+        if (false !== strpos($value, 't')) {
+            $bytes *= 1024 * 1024 * 1024 * 1024;
+        } elseif (false !== strpos($value, 'g')) {
+            $bytes *= 1024 * 1024 * 1024;
+        } elseif (false !== strpos($value, 'm')) {
+            $bytes *= 1024 * 1024;
+        } elseif (false !== strpos($value, 'k')) {
+            $bytes *= 1024;
+        } elseif (false !== strpos($value, 'b')) {
+            $bytes *= 1;
+        }
+
+        // Deal with large (float) values which run into the maximum integer size.
+        return min($bytes, PHP_INT_MAX);
+    }
+
+    /**
+     * Check if the setting is settable with ini_set(). Partially borrowed from WordPress.
+     *
+     * @param $setting
+     * @return bool
+     */
+    public function getIniSettable($setting)
+    {
+        static $ini_all;
+
+        if (!function_exists('ini_set')) {
+            return false;
+        }
+
+        if (!isset($ini_all)) {
+            $ini_all = false;
+            // Sometimes `ini_get_all()` is disabled via the `disable_functions` option for "security purposes".
+            if (function_exists('ini_get_all')) {
+                $ini_all = ini_get_all();
+            }
+        }
+
+        // Bit operator to workaround https://bugs.php.net/bug.php?id=44936 which changes access level
+        // to 63 in PHP 5.2.6 - 5.2.17.
+        if (isset($ini_all[$setting]['access']) &&
+            (INI_ALL === ($ini_all[$setting]['access'] & 7)
+                || INI_USER === ($ini_all[$setting]['access'] & 7))
+        ) {
+            return true;
+        }
+
+        // If we were unable to retrieve the details, fail gracefully to assume it's changeable.
+        if (!is_array($ini_all)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Set new memory limit for PHP.
+     *
+     * @param string $newLimitValue
+     * @return bool
+     */
+    public function setMemoryLimit($newLimitValue = '512M')
+    {
+        $return = false;
+
+        $oldMemoryValue = $this->getBytes(ini_get('memory_limit'));
+        if ($this->getIniSettable('memory_limit')) {
+            $blindIniSet = ini_set('memory_limit', $newLimitValue) !== false ? true : false;
+            $newMemoryValue = $this->getBytes(ini_get('memory_limit'));
+            $return = $blindIniSet && $oldMemoryValue !== $newMemoryValue ? true : false;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Enforce automatic adjustment if memory limit is set too low (or your defined value).
+     *
+     * @param string $minLimit
+     * @return bool
+     */
+    public function getMemoryLimitAdjusted($minLimit = '256M', $maxLimit = '-1')
+    {
+        $return = false;
+        $currentLimit = $this->getBytes(ini_get('memory_limit'));
+        $myLimit = $this->getBytes($minLimit);
+        if ($currentLimit <= $myLimit) {
+            $return = $this->setMemoryLimit($maxLimit);
+        }
+        return $return;
+    }
+    ///////////// INTERNAL MEMORY LIMIT HANDLER END
 
     /**
      * Magic function that will help us clean up unnecessary content. Future prepared.
