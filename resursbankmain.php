@@ -227,23 +227,28 @@ function woocommerce_gateway_resurs_bank_init()
                             WC()->session->set('omniRefAge', $currentOmniRefAge);
                         }
                     } else {
-                        if (isset($_REQUEST['omnicheckout_nonce']) && wp_verify_nonce($_REQUEST['omnicheckout_nonce'],
+                        if (isset($_REQUEST['omnicheckout_nonce']) &&
+                            wp_verify_nonce($_REQUEST['omnicheckout_nonce'],
                                 "omnicheckout")) {
                             if (isset($_REQUEST['purchaseFail']) && $_REQUEST['purchaseFail'] == 1) {
-                                $returnResult = array(
+                                $returnResult = [
                                     'success' => false,
                                     'errorString' => "",
                                     'errorCode' => "",
                                     'verified' => false,
                                     'hasOrder' => false,
-                                    'resursData' => array(),
-                                );
+                                    'resursData' => [],
+                                ];
                                 if (isset($_GET['pRef'])) {
                                     $purchaseFailOrderId = wc_get_order_id_by_payment_id($_GET['pRef']);
                                     $purchareFailOrder = new WC_Order($purchaseFailOrderId);
-                                    $purchareFailOrder->update_status('failed',
-                                        __('Resurs Bank denied purchase',
-                                            'resurs-bank-payment-gateway-for-woocommerce'));
+                                    $purchareFailOrder->update_status(
+                                        'failed',
+                                        __(
+                                            'Resurs Bank denied purchase',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        )
+                                    );
                                     update_post_meta($purchaseFailOrderId, 'soft_purchase_fail', true);
                                     WC()->session->set("resursCreatePass", 0);
                                     $returnResult['success'] = true;
@@ -4468,6 +4473,8 @@ function woocommerce_gateway_resurs_bank_init()
         $refundObject = new WC_Order_Refund($refundId);
         $refundStatus = false;
 
+        $resursOrderId = wc_get_payment_id_by_order_id($orderId);
+
         /** @var WC_Order_Item_Product $refundItems */
         $refundItems = $refundObject->get_items();
 
@@ -4481,6 +4488,9 @@ function woocommerce_gateway_resurs_bank_init()
                 /** @var WC_Product $product */
                 $product = $item->get_product();
 
+                // Positive decimal
+                $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
+
                 $setSku = $product->get_sku();
                 $articleId = $product->get_id();
                 $optionUseSku = getResursOption("useSku");
@@ -4491,17 +4501,17 @@ function woocommerce_gateway_resurs_bank_init()
                 $refundFlow->addOrderLine(
                     $articleId,
                     $product->get_title(),
-                    $item->get_total(),
+                    preg_replace('/^-/','',$item->get_total()),
                     $amountPct,
                     '',
                     'ORDER_LINE',
-                    $item->get_quantity()
+                    $itemQuantity
                 );
             }
         }
 
         try {
-            $refundStatus = $refundFlow->cancelPayment($orderId);
+            $refundStatus = $refundFlow->cancelPayment($resursOrderId);
         } catch (\Exception $e) {
 
         }
@@ -4509,7 +4519,29 @@ function woocommerce_gateway_resurs_bank_init()
         return $refundStatus;
     }
 
+    /**
+     * @param bool $isEditable
+     * @param $that WC_Admin_Order
+     *
+     * @return bool
+     */
+    function resurs_order_is_editable($isEditable, $that) {
+        $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
+
+        if (!empty($resursOrderId)) {
+            return true;
+        }
+
+        return $isEditable;
+    }
+
+    // Refund is not the same as woocommerce_before_delete_order_item.
+    // woocommerce_before_delete_order_item has been used earlier to remove articles from Resurs Bank
+    // but seems to be unavailable in newer versions (at least from where we usually did it).
+    // That's why the refunding action has been disabled - it was'nt necessary at the time.
     add_action('woocommerce_order_refunded', 'resurs_order_refund', 10, 2);
+    add_action('woocommerce_before_delete_order_item', 'resurs_remove_order_item');
+    add_filter('wc_order_is_editable', 'resurs_order_is_editable', 10, 2);
 
     add_filter('woocommerce_get_settings_pages', 'rb_settings_pages');
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway');
@@ -4532,7 +4564,6 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('admin_notices', 'resurs_bank_admin_notice');
 
     add_action('woocommerce_before_checkout_shipping_form', 'test_before_shipping');
-    add_action('woocommerce_before_delete_order_item', 'resurs_remove_order_item');
     add_action('woocommerce_admin_order_data_after_order_details', 'resurs_order_data_info_after_order');
     add_action('woocommerce_admin_order_data_after_billing_address', 'resurs_order_data_info_after_billing');
     add_action('woocommerce_admin_order_data_after_shipping_address', 'resurs_order_data_info_after_shipping');
