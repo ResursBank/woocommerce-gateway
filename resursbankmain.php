@@ -4484,6 +4484,7 @@ function woocommerce_gateway_resurs_bank_init()
         if (is_array($refundItems) && count($refundItems)) {
             /** @var WC_Order_Item_Product $item */
             foreach ($refundItems as $item) {
+                // Calculate the tax out of the current values.
                 $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
                 /** @var WC_Product $product */
                 $product = $item->get_product();
@@ -4498,6 +4499,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $articleId = $setSku;
                 }
 
+                // Regenerate the cancellation orderline with positive decimals.
                 $refundFlow->addOrderLine(
                     $articleId,
                     $product->get_title(),
@@ -4510,11 +4512,19 @@ function woocommerce_gateway_resurs_bank_init()
             }
         }
 
+        $errors = false;
+        $errorString = null;
+        $errorCode =null;
+
         try {
             $refundStatus = $refundFlow->cancelPayment($resursOrderId);
         } catch (\Exception $e) {
-
+            $errors = true;
+            $errorCode = $e->getCode();
+            $errorString = $e->getMessage();
         }
+
+        // Add order note here of what happened.
 
         return $refundStatus;
     }
@@ -4526,6 +4536,11 @@ function woocommerce_gateway_resurs_bank_init()
      * @return bool
      */
     function resurs_order_is_editable($isEditable, $that) {
+        // Go the normal way if this option is disabled.
+        if (!getResursOption('resursOrdersEditable')) {
+            return $isEditable;
+        }
+
         $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
 
         if (!empty($resursOrderId)) {
