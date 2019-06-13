@@ -287,8 +287,19 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Handle NAT connections', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('Defines if the plugin should perform a simple check against proxies on customer ip addresses (Not recommended to activate since it opens up for exploits, but if you have many connecting customers that seem to be on NATed networks, this may help a bit)',
+                    'description' => __(
+                        'Defines if the plugin should perform a simple check against proxies on customer ip addresses (Not recommended to activate since it opens up for exploits, but if you have many connecting customers that seem to be on NATed networks, this may help a bit)',
                         'resurs-bank-payment-gateway-for-woocommerce'),
+                    'desc_tip' => false,
+                ),
+                'resursOrdersEditable' => array(
+                    'title' => __('Allow editing of orders in progress', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __(
+                        'Make orders editable even if they are set to in progress. Note: This setting is experimental and has limited edit capabilites.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => false,
                 ),
                 'getAddress' => array(
