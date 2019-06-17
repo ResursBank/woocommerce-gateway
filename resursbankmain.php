@@ -16,9 +16,8 @@ if ($resurs_obsolete_coexistence_disable) {
 
 $resursGlobalNotice = false;
 
-// Initialize Resurs Bank Plugin when plugins is finally loaded
 /**
- *
+ * Initialize Resurs Bank Plugin when plugins is finally loaded
  */
 function woocommerce_gateway_resurs_bank_init()
 {
@@ -4841,16 +4840,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     'resurs-bank-payment-gateway-for-woocommerce'
                 ), $order->get_id());
             }
-
-            /*            $renderedResursData .=
-                            '<div style="border: 1px solid #990000; margin-bottom: 5px; color:#000099; margin-top: 0px; background-color: #ffffff; padding: 3px; font-style: italic;">' .
-                            sprintf(
-                                __(
-                                    'Something went wrong during the payment reference update and the order creating, so this payment is using a fallback reference instead: %s.',
-                                    'resurs-bank-payment-gateway-for-woocommerce'
-                                ), $resursPaymentIdLast
-                            ) .
-                            '</div>';*/
         }
 
         $invoices = [];
