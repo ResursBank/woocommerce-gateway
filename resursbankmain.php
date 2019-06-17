@@ -4433,8 +4433,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 'resurs-bank-payment-gateway-for-woocommerce'
                             ), $payFromAnnuity);
                             $useAnnuityString = $defaultAnnuityString;
-                            $customAnnuityString = apply_filters("resursbank_custom_annuity_string",
-                                $defaultAnnuityString, $payFromAnnuity);
+                            $customAnnuityString = apply_filters(
+                                "resursbank_custom_annuity_string",
+                                $defaultAnnuityString,
+                                $payFromAnnuity
+                            );
                             if (!empty($customAnnuityString)) {
                                 $useAnnuityString = $customAnnuityString;
                             }
