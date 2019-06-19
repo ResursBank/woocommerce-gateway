@@ -297,7 +297,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Make orders editable even if they are set to in progress. Note: This setting is experimental and has limited edit capabilites.',
+                        'Make orders editable even if they are set to in progress. Note: This setting is experimental and has limited edit capabilites. It should normally not be used!',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => false,
