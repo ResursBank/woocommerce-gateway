@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.19
+ * @version 1.3.20
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -3766,6 +3766,9 @@ class ResursBank
      *
      * @return mixed
      * @throws \ResursException
+     * @since 1.3.20
+     * @since 1.0.47
+     * @since 1.1.47
      */
     public function getRecalculatedQuantity($artObject, $quantity = -1)
     {
@@ -3826,12 +3829,15 @@ class ResursBank
     }
 
     /**
-     * Get total tax amount from a product price calculated with the quantity.
+     * Lazy calculation of total amounts (make sure the VAT is an integer and not a decimal value).
      *
      * @param float $unitAmountWithoutVat
      * @param int $vatPct
      * @param int $quantity
      * @return float|int
+     * @since 1.3.20
+     * @since 1.0.47
+     * @since 1.1.47
      */
     public function getTotalVatAmount($unitAmountWithoutVat, $vatPct, $quantity)
     {
@@ -3839,12 +3845,15 @@ class ResursBank
     }
 
     /**
-     * Get total amount of a product, including tax calculated with quantity.
+     * Lazy calculation of total amounts (make sure the VAT is an integer and not a decimal value).
      *
      * @param $unitAmountWithoutVat
      * @param $vatPct
      * @param $quantity
      * @return float|int
+     * @since 1.3.20
+     * @since 1.0.47
+     * @since 1.1.47
      */
     public function getTotalAmount($unitAmountWithoutVat, $vatPct, $quantity)
     {
@@ -3854,8 +3863,6 @@ class ResursBank
     /**
      * Payment spec container cleaner
      *
-     * TODO: Key on artNo, description, price instead
-     *
      * @param array $currentArray The current speclineArray.
      * @param array $cleanWith The array with the speclines that should be removed from currentArray.
      * @param bool $keepOpposite Setting this to true, will run the opposite of what the function actually do.
@@ -3863,6 +3870,7 @@ class ResursBank
      * @throws \ResursException
      * @since 1.0.0
      * @since 1.1.0
+     * @todo Key on artNo, description, price instead. This is probably recommended if we run on quantity controls.
      */
     private function removeFromArray(
         $currentArray = [],
@@ -6807,13 +6815,11 @@ class ResursBank
 
     /**
      * Aftershop Payment Annulling (ANNUL)
-     *
      * Make sure that you are running this with try-catches in cases where failures may occur.
      *
      * @param $paymentId
      * @param array $customPayloadItemList
      * @param bool $runOnce Only run this once, throw second time
-     *
      * @return bool
      * @throws \Exception
      * @since 1.0.22
@@ -6880,10 +6886,11 @@ class ResursBank
      */
     public function paymentCredit($paymentId = "", $customPayloadItemList = array(), $runOnce = false)
     {
-        //$this->setAfterShopPaymentId($paymentId);
-
-        $afterShopObject = $this->getAfterShopObjectByPayload($paymentId, $customPayloadItemList,
-            RESURS_AFTERSHOP_RENDER_TYPES::CREDIT);
+        $afterShopObject = $this->getAfterShopObjectByPayload(
+            $paymentId,
+            $customPayloadItemList,
+            RESURS_AFTERSHOP_RENDER_TYPES::CREDIT
+        );
         $this->aftershopPrepareMetaData($paymentId);
         try {
             $afterShopResponseCode = $this->postService("creditPayment", $afterShopObject, true);
@@ -6893,7 +6900,10 @@ class ResursBank
                 return true;
             }
         } catch (\Exception $creditException) {
-            if ($creditException->getCode() == 29 && !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL') && !$runOnce) {
+            if (
+                $creditException->getCode() == 29 &&
+                !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL') && !$runOnce
+            ) {
                 $this->getNextInvoiceNumberByDebits(5);
 
                 return $this->paymentCredit($paymentId, $customPayloadItemList, true);
@@ -6949,7 +6959,6 @@ class ResursBank
             $this->SpecLines = array_merge($this->SpecLines, $customPayloadItemList);
         }
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
-
         $this->aftershopPrepareMetaData($paymentId);
         try {
             // Render and check if this is customized
