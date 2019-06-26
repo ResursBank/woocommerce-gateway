@@ -6402,8 +6402,21 @@ class ResursBank
         $paymentIdOrPaymentObject = $this->getPaymentSpecByStatus($paymentIdOrPaymentObjectData);
 
         if ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE, $renderType)) {
-            $returnSpecObject = $this->removeFromArray(
-                $paymentIdOrPaymentObject['AUTHORIZE'],
+            $returnSpecObject = $this->getQuantityDifferences(
+                $this->removeFromArray(
+                    $paymentIdOrPaymentObject['AUTHORIZE'],
+                    array_merge(
+                        $paymentIdOrPaymentObject['DEBIT'],
+                        $paymentIdOrPaymentObject['ANNUL'],
+                        $paymentIdOrPaymentObject['CREDIT']
+                    ),
+                    false,
+                    array_merge(
+                        $paymentIdOrPaymentObject['DEBIT'],
+                        $paymentIdOrPaymentObject['ANNUL'],
+                        $paymentIdOrPaymentObject['CREDIT']
+                    )
+                ),
                 array_merge(
                     $paymentIdOrPaymentObject['DEBIT'],
                     $paymentIdOrPaymentObject['ANNUL'],
@@ -6678,7 +6691,6 @@ class ResursBank
 
         // Rendered order spec, use when customPayloadItemList is not set, to handle full orders
         $actualEcommerceOrderSpec = $this->sanitizeAfterShopSpec($storedPayment, $payloadType);
-
         $finalAfterShopSpec['createdBy'] = $this->getCreatedBy();
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
 
@@ -6775,8 +6787,6 @@ class ResursBank
      */
     public function paymentFinalize($paymentId = "", $customPayloadItemList = array(), $runOnce = false)
     {
-        //$this->setAfterShopPaymentId($paymentId);
-
         try {
             $afterShopObject = $this->getAfterShopObjectByPayload(
                 $paymentId,
@@ -6796,6 +6806,7 @@ class ResursBank
             }
             throw $afterShopObjectException;
         }
+
         $cachedPayment = $this->getPaymentCached();
         if (!is_null($cachedPayment) &&
             is_object($cachedPayment) &&
