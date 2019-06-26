@@ -4516,6 +4516,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $itemQuantity
                 );
 
+                // Public note: Both methods works but the below is deprecated.
                 /*$refundArray[] = [
                     'artNo' => $articleId,
                     'quantity' => $itemQuantity,
@@ -4528,7 +4529,7 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         try {
-            $refundStatus = $refundFlow->cancelPayment($resursOrderId);
+            $refundStatus = $refundFlow->cancelPayment($resursOrderId, $refundArray);
         } catch (\Exception $e) {
             $errors = true;
             $errorCode = $e->getCode();

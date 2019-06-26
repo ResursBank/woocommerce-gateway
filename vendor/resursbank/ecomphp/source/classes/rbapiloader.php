@@ -3866,6 +3866,7 @@ class ResursBank
      * @param array $currentArray The current speclineArray.
      * @param array $cleanWith The array with the speclines that should be removed from currentArray.
      * @param bool $keepOpposite Setting this to true, will run the opposite of what the function actually do.
+     * @param array $skipOnQuantityArray
      * @return array New array
      * @throws \ResursException
      * @since 1.0.0
@@ -6410,28 +6411,66 @@ class ResursBank
                 )
             );
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::CREDIT, $renderType)) {
-            $returnSpecObject = $this->removeFromArray(
-                $paymentIdOrPaymentObject['DEBIT'],
-                array_merge(
-                    $paymentIdOrPaymentObject['ANNUL'],
+            $returnSpecObject = $this->getQuantityDifferences(
+                $this->removeFromArray(
+                    $paymentIdOrPaymentObject['DEBIT'],
+                    array_merge(
+                        $paymentIdOrPaymentObject['ANNUL'],
+                        $paymentIdOrPaymentObject['CREDIT']
+                    ),
+                    false,
                     $paymentIdOrPaymentObject['CREDIT']
-                )
+                ),
+                $paymentIdOrPaymentObject['CREDIT']
             );
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::ANNUL, $renderType)) {
-            $returnSpecObject = $this->removeFromArray(
-                $paymentIdOrPaymentObject['AUTHORIZE'],
-                array_merge(
-                    $paymentIdOrPaymentObject['DEBIT'],
-                    $paymentIdOrPaymentObject['ANNUL'],
-                    $paymentIdOrPaymentObject['CREDIT']
-                )
+            $returnSpecObject = $this->getQuantityDifferences(
+                $this->removeFromArray
+                (
+                    $paymentIdOrPaymentObject['AUTHORIZE'],
+                    array_merge(
+                        $paymentIdOrPaymentObject['DEBIT'],
+                        $paymentIdOrPaymentObject['ANNUL'],
+                        $paymentIdOrPaymentObject['CREDIT']
+                    ),
+                    false,
+                    $paymentIdOrPaymentObject['ANNUL']
+                ),
+                $paymentIdOrPaymentObject['ANNUL']
             );
+
         } else {
             // If no type is chosen, return all rows
             $returnSpecObject = $this->removeFromArray($paymentIdOrPaymentObject, []);
         }
 
         return $returnSpecObject;
+    }
+
+    /**
+     * Look for differences in a quantity object, adjust it and recalculate sums.
+     *
+     * @param array $specObject
+     * @param array $whatsLeftObject
+     * @return array
+     * @throws \ResursException
+     */
+    private function getQuantityDifferences($specObject = array(), $whatsLeftObject = array())
+    {
+        foreach ($specObject as $productRow) {
+            foreach ($whatsLeftObject as $leftObject) {
+                if (is_object($leftObject) && isset($leftObject->artNo) && $leftObject->artNo === $productRow->artNo) {
+                    $productRow->quantity = intval($productRow->quantity) - intval($leftObject->quantity);
+                    $productRow = $this->getRecalculatedQuantity($productRow, $productRow->quantity);
+                }
+                if (is_array($leftObject) && isset($leftObject['artNo']) && $leftObject['artNo'] === $productRow->artNo) {
+                    $productRow->quantity = intval($productRow->quantity) - intval($leftObject['quantity']);
+                    $productRow = $this->getRecalculatedQuantity($productRow, $productRow->quantity);
+                }
+            }
+        }
+
+        return $specObject;
     }
 
     /**
@@ -6960,10 +6999,9 @@ class ResursBank
         }
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
         $this->aftershopPrepareMetaData($paymentId);
-        try {
-            // Render and check if this is customized
-            $currentOrderLines = $this->getOrderLines();
+        $currentOrderLines = $this->getOrderLines();
 
+        try {
             if (is_array($currentOrderLines) && count($currentOrderLines)) {
                 // If it is customized, we need to render the cancellation differently to specify what's what.
 
