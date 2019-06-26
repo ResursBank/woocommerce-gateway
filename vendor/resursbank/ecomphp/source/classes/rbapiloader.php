@@ -6999,6 +6999,7 @@ class ResursBank
         }
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
         $this->aftershopPrepareMetaData($paymentId);
+        // Render and current orderlines. This may contain customized orderlines.
         $currentOrderLines = $this->getOrderLines();
 
         try {
