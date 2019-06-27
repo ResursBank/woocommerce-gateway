@@ -4006,7 +4006,8 @@ class ResursBank
      * @return array
      * @throws \ResursException
      */
-    private function getMatchedQuantity($currentObject, $currentMatchObject, $asBoolean = false) {
+    private function getMatchedQuantity($currentObject, $currentMatchObject, $asBoolean = false)
+    {
         $result = $currentObject;
         $returnedBoolean = false;
         $returnType = null;
@@ -4041,7 +4042,7 @@ class ResursBank
             return [
                 'status' => $returnedBoolean,
                 'result' => $result,
-                'returnType' => $returnType
+                'returnType' => $returnType,
             ];
         }
 
