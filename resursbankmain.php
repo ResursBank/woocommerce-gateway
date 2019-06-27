@@ -16,9 +16,8 @@ if ($resurs_obsolete_coexistence_disable) {
 
 $resursGlobalNotice = false;
 
-// Initialize Resurs Bank Plugin when plugins is finally loaded
 /**
- *
+ * Initialize Resurs Bank Plugin when plugins is finally loaded
  */
 function woocommerce_gateway_resurs_bank_init()
 {
@@ -227,7 +226,8 @@ function woocommerce_gateway_resurs_bank_init()
                             WC()->session->set('omniRefAge', $currentOmniRefAge);
                         }
                     } else {
-                        if (isset($_REQUEST['omnicheckout_nonce']) && wp_verify_nonce($_REQUEST['omnicheckout_nonce'],
+                        if (isset($_REQUEST['omnicheckout_nonce']) &&
+                            wp_verify_nonce($_REQUEST['omnicheckout_nonce'],
                                 "omnicheckout")) {
                             if (isset($_REQUEST['purchaseFail']) && $_REQUEST['purchaseFail'] == 1) {
                                 $returnResult = [
@@ -241,9 +241,13 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (isset($_GET['pRef'])) {
                                     $purchaseFailOrderId = wc_get_order_id_by_payment_id($_GET['pRef']);
                                     $purchareFailOrder = new WC_Order($purchaseFailOrderId);
-                                    $purchareFailOrder->update_status('failed',
-                                        __('Resurs Bank denied purchase',
-                                            'resurs-bank-payment-gateway-for-woocommerce'));
+                                    $purchareFailOrder->update_status(
+                                        'failed',
+                                        __(
+                                            'Resurs Bank denied purchase',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        )
+                                    );
                                     update_post_meta($purchaseFailOrderId, 'soft_purchase_fail', true);
                                     WC()->session->set("resursCreatePass", 0);
                                     $returnResult['success'] = true;
@@ -4428,8 +4432,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 'resurs-bank-payment-gateway-for-woocommerce'
                             ), $payFromAnnuity);
                             $useAnnuityString = $defaultAnnuityString;
-                            $customAnnuityString = apply_filters("resursbank_custom_annuity_string",
-                                $defaultAnnuityString, $payFromAnnuity);
+                            $customAnnuityString = apply_filters(
+                                "resursbank_custom_annuity_string",
+                                $defaultAnnuityString,
+                                $payFromAnnuity
+                            );
                             if (!empty($customAnnuityString)) {
                                 $useAnnuityString = $customAnnuityString;
                             }
@@ -4456,46 +4463,136 @@ function woocommerce_gateway_resurs_bank_init()
     /**
      * This function allows partial refunding based on amount rather than article numbers.
      *
-     * Written experimental for the future - eventually - since the logcis allows a lot more than we have time to fix right now.
-     * For exampel, in this function we also need to figure out how much that is actually left to annul or credit before sending the actions.
+     * Written experimental for the future - eventually - since the logics allows a lot more than we have time to fix right now.
+     * For example, in this function we also need to figure out how much that is actually left to annul or credit before sending the actions.
      * If we try to credit more than is authorized or credit a part of the payment that is already annulled, the credit will fail.
      *
-     * @param string $refundId
-     * @param array $refundArgs
+     * @param int $refundId
+     * @param int $refundArgs
      *
      * @return bool
      */
-    function resurs_order_refund($refundId = '', $refundArgs = [])
+    function resurs_order_refund($orderId, $refundId)
     {
-        $refundStatus = false;
         $refundObject = new WC_Order_Refund($refundId);
-        $amount = $refundObject->get_amount();
-        $reason = $refundObject->get_reason();
-        $itemCount = $refundObject->get_item_count();
-        $parent = $refundObject->get_parent_id();;
-        $resursId = wc_get_payment_id_by_order_id($parent);
+        $order = new WC_Order($orderId);
+        $refundStatus = false;
+
+        $resursOrderId = wc_get_payment_id_by_order_id($orderId);
+
+        /** @var WC_Order_Item_Product $refundItems */
+        $refundItems = $refundObject->get_items();
+        $refundArray = [];
 
         /** @var $refundFlow Resursbank\RBEcomPHP\ResursBank */
         $refundFlow = initializeResursFlow();
+        $refundFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
+        if (is_array($refundItems) && count($refundItems)) {
+            /** @var WC_Order_Item_Product $item */
+            foreach ($refundItems as $item) {
+                // Calculate the tax out of the current values.
+                $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
+                /** @var WC_Product $product */
+                $product = $item->get_product();
 
-        if (!$itemCount && $amount >= 0 && $parent > 0 && !empty($resursId)) {
-            try {
-                $refundFlow->addOrderLine($reason, __('Refund', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    $amount);
-                // totalAmount / limit
-                if ($refundFlow->getIsDebited($resursId)) {
-                    $refundStatus = $refundFlow->paymentCredit($resursId);
-                } else {
-                    $refundStatus = $refundFlow->paymentAnnul($resursId);
+                // Positive decimal
+                $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
+
+                $setSku = $product->get_sku();
+                $articleId = $product->get_id();
+                $optionUseSku = getResursOption("useSku");
+                if ($optionUseSku && !empty($setSku)) {
+                    $articleId = $setSku;
                 }
-            } catch (\Exception $refundException) {
+
+                // Regenerate the cancellation orderline with positive decimals.
+                $refundFlow->addOrderLine(
+                    $articleId,
+                    $product->get_title(),
+                    preg_replace('/^-/', '', $item->get_total()),
+                    $amountPct,
+                    '',
+                    'ORDER_LINE',
+                    $itemQuantity
+                );
+
+                // Public note: Both methods works but the below is deprecated.
+                /*$refundArray[] = [
+                    'artNo' => $articleId,
+                    'quantity' => $itemQuantity,
+                ];*/
             }
         }
+
+        $errors = false;
+        $errorString = null;
+        $errorCode = null;
+
+        try {
+            $refundStatus = $refundFlow->cancelPayment($resursOrderId, $refundArray);
+        } catch (\Exception $e) {
+            $errors = true;
+            $errorCode = $e->getCode();
+            $errorString = $e->getMessage();
+        }
+
+        if (!$errors) {
+            $order->add_order_note(
+                sprintf(
+                    __(
+                        '[Resurs Bank] Refund/cancellation sent to API successfully.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    )
+                )
+            );
+        } else {
+            $order->add_order_note(
+                sprintf(
+                    __(
+                        '[Resurs Bank] Refund/cancellation sent to API with errors: (%s) %s.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    $errorCode,
+                    $errorString
+                )
+            );
+            throw new \Exception($errorString, $errorCode);
+        }
+
+        // Add order note here of what happened.
 
         return $refundStatus;
     }
 
-    //add_action( 'woocommerce_refund_created', 'resurs_order_refund' );
+    /**
+     * @param bool $isEditable
+     * @param $that WC_Admin_Order
+     *
+     * @return bool
+     */
+    function resurs_order_is_editable($isEditable, $that)
+    {
+        // Go the normal way if this option is disabled.
+        if (!getResursOption('resursOrdersEditable')) {
+            return $isEditable;
+        }
+
+        $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
+
+        if (!empty($resursOrderId)) {
+            return true;
+        }
+
+        return $isEditable;
+    }
+
+    // Refund is not the same as woocommerce_before_delete_order_item.
+    // woocommerce_before_delete_order_item has been used earlier to remove articles from Resurs Bank
+    // but seems to be unavailable in newer versions (at least from where we usually did it).
+    // That's why the refunding action has been disabled - it was'nt necessary at the time.
+    add_action('woocommerce_order_refunded', 'resurs_order_refund', 10, 2);
+    add_action('woocommerce_before_delete_order_item', 'resurs_remove_order_item');
+    add_filter('wc_order_is_editable', 'resurs_order_is_editable', 10, 2);
 
     add_filter('woocommerce_get_settings_pages', 'rb_settings_pages');
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway');
@@ -4518,7 +4615,6 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('admin_notices', 'resurs_bank_admin_notice');
 
     add_action('woocommerce_before_checkout_shipping_form', 'test_before_shipping');
-    add_action('woocommerce_before_delete_order_item', 'resurs_remove_order_item');
     add_action('woocommerce_admin_order_data_after_order_details', 'resurs_order_data_info_after_order');
     add_action('woocommerce_admin_order_data_after_billing_address', 'resurs_order_data_info_after_billing');
     add_action('woocommerce_admin_order_data_after_shipping_address', 'resurs_order_data_info_after_shipping');
@@ -4745,16 +4841,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     'resurs-bank-payment-gateway-for-woocommerce'
                 ), $order->get_id());
             }
-
-            /*            $renderedResursData .=
-                            '<div style="border: 1px solid #990000; margin-bottom: 5px; color:#000099; margin-top: 0px; background-color: #ffffff; padding: 3px; font-style: italic;">' .
-                            sprintf(
-                                __(
-                                    'Something went wrong during the payment reference update and the order creating, so this payment is using a fallback reference instead: %s.',
-                                    'resurs-bank-payment-gateway-for-woocommerce'
-                                ), $resursPaymentIdLast
-                            ) .
-                            '</div>';*/
         }
 
         $invoices = [];

@@ -283,14 +283,25 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => home_url("/") . "wp-content/plugins/resurs-bank-payment-gateway-for-woocommerce/css/costofpurchase.css",
                 ],
-                'handleNatConnections' => [
+                'handleNatConnections' => array(
                     'title' => __('Handle NAT connections', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('Defines if the plugin should perform a simple check against proxies on customer ip addresses (Not recommended to activate since it opens up for exploits, but if you have many connecting customers that seem to be on NATed networks, this may help a bit)',
+                    'description' => __(
+                        'Defines if the plugin should perform a simple check against proxies on customer ip addresses (Not recommended to activate since it opens up for exploits, but if you have many connecting customers that seem to be on NATed networks, this may help a bit)',
                         'resurs-bank-payment-gateway-for-woocommerce'),
                     'desc_tip' => false,
-                ],
+                ),
+                'resursOrdersEditable' => array(
+                    'title' => __('Allow editing of orders in progress', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __(
+                        'Make orders editable even if they are set to in progress. Note: This setting is experimental and has limited edit capabilites. It should normally not be used!',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'desc_tip' => false,
+                ),
                 'getAddress' => [
                     'title' => __('getAddressBox Enabled', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __('If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active.',
