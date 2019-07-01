@@ -3946,8 +3946,9 @@ class ResursBank
                                 if ($allowQuantityControl) {
                                     if (
                                         intval($userQuantity) > 0 &&
-                                        intval($paymentQuantity) > 0 &&
-                                        intval($userQuantity) !== intval($paymentQuantity)
+                                        intval($paymentQuantity) > 0
+                                        /*&&
+                                        intval($userQuantity) !== intval($paymentQuantity)*/
                                     ) {
                                         $cleanedArray[] = $currentObject;
                                     }
@@ -6017,8 +6018,10 @@ class ResursBank
         } else {
             $outputOrderLines = $orderLines;
         }
-        $sanitizedOutputOrderLines = $this->sanitizePaymentSpec($outputOrderLines,
-            RESURS_FLOW_TYPES::RESURS_CHECKOUT);
+        $sanitizedOutputOrderLines = $this->sanitizePaymentSpec(
+            $outputOrderLines,
+            RESURS_FLOW_TYPES::RESURS_CHECKOUT
+        );
         $updateOrderLinesResponse = $this->CURL->doPut($this->getCheckoutUrl() . "/checkout/payments/" . $paymentId,
             array('orderLines' => $sanitizedOutputOrderLines), NETCURL_POST_DATATYPES::DATATYPE_JSON);
         $updateOrderLinesResponseCode = $this->CURL->getCode($updateOrderLinesResponse);
@@ -6404,38 +6407,40 @@ class ResursBank
 
         if ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE, $renderType)) {
             $returnSpecObject = $this->getQuantityDifferences(
-                $this->removeFromArray(
+                $this->removeFromArray
+                (
                     $paymentIdOrPaymentObject['AUTHORIZE'],
                     array_merge(
                         $paymentIdOrPaymentObject['DEBIT'],
-                        $paymentIdOrPaymentObject['ANNUL'],
-                        $paymentIdOrPaymentObject['CREDIT']
+                        $paymentIdOrPaymentObject['ANNUL']
                     ),
                     false,
-                    array_merge(
-                        $paymentIdOrPaymentObject['DEBIT'],
-                        $paymentIdOrPaymentObject['ANNUL'],
-                        $paymentIdOrPaymentObject['CREDIT']
-                    )
+                    $paymentIdOrPaymentObject['DEBIT'],
+                    $paymentIdOrPaymentObject['ANNUL'],
                 ),
                 array_merge(
                     $paymentIdOrPaymentObject['DEBIT'],
-                    $paymentIdOrPaymentObject['ANNUL'],
-                    $paymentIdOrPaymentObject['CREDIT']
+                    $paymentIdOrPaymentObject['ANNUL']
                 )
             );
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::CREDIT, $renderType)) {
             $returnSpecObject = $this->getQuantityDifferences(
                 $this->removeFromArray(
-                    $paymentIdOrPaymentObject['DEBIT'],
+                    $paymentIdOrPaymentObject['AUTHORIZE'],
                     array_merge(
-                        $paymentIdOrPaymentObject['ANNUL'],
+                        $paymentIdOrPaymentObject['DEBIT'],
                         $paymentIdOrPaymentObject['CREDIT']
                     ),
                     false,
-                    $paymentIdOrPaymentObject['CREDIT']
+                    array_merge(
+                        $paymentIdOrPaymentObject['DEBIT'],
+                        $paymentIdOrPaymentObject['CREDIT']
+                    )
                 ),
-                $paymentIdOrPaymentObject['CREDIT']
+                array_merge(
+                    $paymentIdOrPaymentObject['DEBIT'],
+                    $paymentIdOrPaymentObject['CREDIT']
+                )
             );
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::ANNUL, $renderType)) {
             $returnSpecObject = $this->getQuantityDifferences(
@@ -6444,13 +6449,16 @@ class ResursBank
                     $paymentIdOrPaymentObject['AUTHORIZE'],
                     array_merge(
                         $paymentIdOrPaymentObject['DEBIT'],
-                        $paymentIdOrPaymentObject['ANNUL'],
-                        $paymentIdOrPaymentObject['CREDIT']
+                        $paymentIdOrPaymentObject['ANNUL']
                     ),
                     false,
+                    $paymentIdOrPaymentObject['DEBIT'],
                     $paymentIdOrPaymentObject['ANNUL']
                 ),
-                $paymentIdOrPaymentObject['ANNUL']
+                array_merge(
+                    $paymentIdOrPaymentObject['DEBIT'],
+                    $paymentIdOrPaymentObject['ANNUL']
+                )
             );
 
         } else {
@@ -6464,14 +6472,14 @@ class ResursBank
     /**
      * Look for differences in a quantity object, adjust it and recalculate sums.
      *
-     * @param array $specObject
+     * @param array $authorizedObject
      * @param array $whatsLeftObject
      * @return array
      * @throws \ResursException
      */
-    private function getQuantityDifferences($specObject = array(), $whatsLeftObject = array())
+    private function getQuantityDifferences($authorizedObject = array(), $whatsLeftObject = array())
     {
-        foreach ($specObject as $productRow) {
+        foreach ($authorizedObject as $productRow) {
             foreach ($whatsLeftObject as $leftObject) {
                 if (is_object($leftObject) && isset($leftObject->artNo) && $leftObject->artNo === $productRow->artNo) {
                     $productRow->quantity = intval($productRow->quantity) - intval($leftObject->quantity);
@@ -6484,7 +6492,7 @@ class ResursBank
             }
         }
 
-        return $specObject;
+        return $authorizedObject;
     }
 
     /**
@@ -6671,7 +6679,6 @@ class ResursBank
             // Make sure this is correct
             $customPayloadItemList = array();
         }
-
         $storedPayment = $this->getPayment($paymentId);
         $paymentMethod = $storedPayment->paymentMethodId;
         $paymentMethodData = $this->getPaymentMethodSpecific($paymentMethod);
@@ -6694,7 +6701,6 @@ class ResursBank
         $actualEcommerceOrderSpec = $this->sanitizeAfterShopSpec($storedPayment, $payloadType);
         $finalAfterShopSpec['createdBy'] = $this->getCreatedBy();
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
-
         try {
             // Try to fetch internal order data.
             /** @noinspection PhpUnusedLocalVariableInspection */
@@ -6709,10 +6715,41 @@ class ResursBank
                 $this->SpecLines += $this->objectsIntoArray($actualEcommerceOrderSpec); // Convert objects
             }
         }
-
         if (count($customPayloadItemList)) {
+            $currentPaymentStatusList = $this->getPaymentSpecByStatus($storedPayment);
+
+            // Is $customPayloadItemList correctly formatted?
+            switch ($payloadType) {
+                case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_FINALIZE:
+                    $customPayloadItemListValidated = $this->getValidatedAnnulObject(
+                        $currentPaymentStatusList,
+                        $customPayloadItemList
+                    );
+                    break;
+                case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_ANNUL:
+                    $customPayloadItemListValidated = $this->getValidatedAnnulObject(
+                        $currentPaymentStatusList,
+                        $customPayloadItemList
+                    );
+                    break;
+                case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_CREDIT:
+                    $customPayloadItemListValidated = $this->getValidatedCreditObject(
+                        $currentPaymentStatusList,
+                        $customPayloadItemList
+                    );
+                    break;
+                default:
+                    $customPayloadItemListValidated = $customPayloadItemList;
+            };
+
             // If there is a customized specrowArray injected, no appending should occur.
-            $this->SpecLines = $this->objectsIntoArray($customPayloadItemList);
+            $this->SpecLines = $this->objectsIntoArray(
+                $this->removeFromArray(
+                    $customPayloadItemListValidated,
+                    $customPayloadItemList,
+                    true
+                )
+            );
         }
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
         $this->setFlag('USE_AFTERSHOP_RENDERING', true);
@@ -6786,7 +6823,7 @@ class ResursBank
      * @since 1.1.22
      * @since 1.2.0
      */
-    public function paymentFinalize($paymentId = "", $customPayloadItemList = array(), $runOnce = false)
+    public function paymentFinalize($paymentId = "", $customPayloadItemList = [], $runOnce = false)
     {
         try {
             $afterShopObject = $this->getAfterShopObjectByPayload(
@@ -6996,15 +7033,13 @@ class ResursBank
      */
     public function paymentCancel($paymentId = "", $customPayloadItemList = array())
     {
-        // Collect the payment
-        $currentPayment = $this->getPayment($paymentId);
         // Collect the payment sorted by status
-        $currentPaymentSpec = $this->getPaymentSpecByStatus($currentPayment);
+        $currentPaymentSpec = $this->getPaymentSpecByStatus($this->getPayment($paymentId));
 
         // Sanitized paymentspec based on what CAN be fully CREDITed with no custom payment load.
-        $creditObject = $this->sanitizeAfterShopSpec($currentPayment, RESURS_AFTERSHOP_RENDER_TYPES::CREDIT);
+        $creditObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::CREDIT);
         // Sanitized paymentspec based on what CAN be fully ANNULLED wit no custom payment load.
-        $annulObject = $this->sanitizeAfterShopSpec($currentPayment, RESURS_AFTERSHOP_RENDER_TYPES::ANNUL);
+        $annulObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::ANNUL);
 
         if (is_array($customPayloadItemList) && count($customPayloadItemList)) {
             $this->SpecLines = array_merge($this->SpecLines, $customPayloadItemList);
@@ -7018,27 +7053,8 @@ class ResursBank
             if (is_array($currentOrderLines) && count($currentOrderLines)) {
                 // If it is customized, we need to render the cancellation differently to specify what's what.
 
-                // Validation object - Contains everything that CAN be credited
-                $validatedCreditObject = $this->removeFromArray(
-                    $currentPaymentSpec['DEBIT'],
-                    array_merge(
-                        $currentPaymentSpec['ANNUL'],
-                        $currentPaymentSpec['CREDIT']
-                    ),
-                    false,
-                    $currentOrderLines
-                );
-                // Validation object - Contains everything that CAN be annulled.
-                $validatedAnnulmentObject = $this->removeFromArray(
-                    $currentPaymentSpec['AUTHORIZE'],
-                    array_merge(
-                        $currentPaymentSpec['DEBIT'],
-                        $currentPaymentSpec['ANNUL'],
-                        $currentPaymentSpec['CREDIT']
-                    ),
-                    false,
-                    $currentOrderLines
-                );
+                $validatedCreditObject = $this->getValidatedCreditObject($currentPaymentSpec, $currentOrderLines);
+                $validatedAnnulmentObject = $this->getValidatedAnnulObject($currentPaymentSpec, $currentOrderLines);
 
                 // Clean up selected rows from the credit element and keep those rows than still can be credited and
                 // matches the orderRow-request
@@ -7080,6 +7096,57 @@ class ResursBank
         $this->resetPayload();
 
         return true;
+    }
+
+    /**
+     * Validation object - Contains everything that CAN be credited.
+     *
+     * @param $currentPaymentSpec
+     * @param $currentOrderLines
+     * @param bool $keepOpposite
+     * @return array
+     * @throws \ResursException
+     */
+    private function getValidatedCreditObject(
+        $currentPaymentSpec,
+        $currentOrderLines,
+        $keepOpposite = false
+    ) {
+        return $this->removeFromArray(
+            $currentPaymentSpec['DEBIT'],
+            array_merge(
+                $currentPaymentSpec['ANNUL'],
+                $currentPaymentSpec['CREDIT']
+            ),
+            $keepOpposite,
+            $currentOrderLines
+        );
+    }
+
+    /**
+     * Validation object - Contains everything that CAN be annulled.
+     *
+     * @param $currentPaymentSpec
+     * @param $currentOrderLines
+     * @param bool $keepOpposite
+     * @return array
+     * @throws \ResursException
+     */
+    private function getValidatedAnnulObject(
+        $currentPaymentSpec,
+        $currentOrderLines,
+        $keepOpposite = false
+    ) {
+        return $this->removeFromArray(
+            $currentPaymentSpec['AUTHORIZE'],
+            array_merge(
+                $currentPaymentSpec['DEBIT'],
+                $currentPaymentSpec['ANNUL'],
+                $currentPaymentSpec['CREDIT']
+            ),
+            $keepOpposite,
+            $currentOrderLines
+        );
     }
 
     /**
