@@ -3760,8 +3760,12 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     try {
                         $resursFlow->paymentCancel($payment_id);
-                        $order->add_order_note(__('Cancelled status set: Resurs Bank API was called for cancellation',
-                            'resurs-bank-payment-gateway-for-woocommerce'));
+                        $order->add_order_note(
+                            __(
+                                'Cancelled status set: Resurs Bank API was called for cancellation',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
                     } catch (Exception $e) {
                         $flowErrorMessage = $e->getMessage();
                     }
@@ -3777,8 +3781,13 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'refunded':
                     try {
                         $resursFlow->paymentCancel($payment_id);
-                        $order->add_order_note(__('Refunded status set: Resurs Bank API was called for cancellation',
-                            'resurs-bank-payment-gateway-for-woocommerce'));
+                        $order->add_order_note
+                        (
+                            __(
+                                'Refunded status set: Resurs Bank API was called for cancellation',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
                     } catch (Exception $e) {
                         $flowErrorMessage = $e->getMessage();
                     }
@@ -4529,7 +4538,7 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         try {
-            $refundStatus = $refundFlow->cancelPayment($resursOrderId, $refundArray);
+            $refundStatus = $refundFlow->cancelPayment($resursOrderId);
         } catch (\Exception $e) {
             $errors = true;
             $errorCode = $e->getCode();
