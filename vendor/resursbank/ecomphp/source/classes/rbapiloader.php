@@ -4935,9 +4935,11 @@ class ResursBank
             }
             $payment_id_or_method = $this->preferredId;
         }
-        if (!count($this->Payload)) {
-            throw new \ResursException("No payload are set for this payment",
-                \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA);
+        if (!count($this->Payload) && !$this->isFlag('USE_AFTERSHOP_RENDERING')) {
+            throw new \ResursException(
+                "No payload are set for this payment",
+                \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA
+            );
         }
 
         // Obsolete way to handle multidimensional specrows
@@ -6703,7 +6705,9 @@ class ResursBank
         try {
             // Try to fetch internal order data.
             /** @noinspection PhpUnusedLocalVariableInspection */
+            $this->setFlag('USE_AFTERSHOP_RENDERING', true);
             $orderDataArray = $this->getOrderData();
+            $this->deleteFlag('USE_AFTERSHOP_RENDERING');
         } catch (\Exception $getOrderDataException) {
             // If there is no payload, make sure we'll render this from the current payment
             if (
@@ -6924,7 +6928,15 @@ class ResursBank
         );
         $this->aftershopPrepareMetaData($paymentId);
         try {
-            $afterShopResponseCode = $this->postService("annulPayment", $afterShopObject, true);
+            // We did nothing here since there was no orderlines.
+            if (!isset($afterShopObject['specLines']) ||
+                (
+                    is_array($afterShopObject['specLines']) &&
+                    !count($afterShopObject['specLines'])
+                )
+            ) {
+                return false;
+            }            $afterShopResponseCode = $this->postService("annulPayment", $afterShopObject, true);
             if ($afterShopResponseCode >= 200 && $afterShopResponseCode < 300) {
                 $this->resetPayload();
 
@@ -6980,6 +6992,15 @@ class ResursBank
         );
         $this->aftershopPrepareMetaData($paymentId);
         try {
+            // We did nothing here since there was no orderlines.
+            if (!isset($afterShopObject['specLines']) ||
+                (
+                    is_array($afterShopObject['specLines']) &&
+                    !count($afterShopObject['specLines'])
+                )
+            ) {
+                return false;
+            }
             $afterShopResponseCode = $this->postService("creditPayment", $afterShopObject, true);
             if ($afterShopResponseCode >= 200 && $afterShopResponseCode < 300) {
                 $this->resetPayload();
@@ -7035,10 +7056,10 @@ class ResursBank
         // Collect the payment sorted by status
         $currentPaymentSpec = $this->getPaymentSpecByStatus($this->getPayment($paymentId));
 
-        // Sanitized paymentspec based on what CAN be fully CREDITed with no custom payment load.
-        $creditObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::CREDIT);
         // Sanitized paymentspec based on what CAN be fully ANNULLED wit no custom payment load.
         $annulObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::ANNUL);
+        // Sanitized paymentspec based on what CAN be fully CREDITed with no custom payment load.
+        $creditObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::CREDIT);
 
         if (is_array($customPayloadItemList) && count($customPayloadItemList)) {
             $this->SpecLines = array_merge($this->SpecLines, $customPayloadItemList);
@@ -7082,11 +7103,11 @@ class ResursBank
                     $this->paymentAnnul($paymentId, $newAnnulObject);
                 }
             } else {
-                if (is_array($creditObject) && count($creditObject)) {
-                    $this->paymentCredit($paymentId, $creditObject);
-                }
                 if (is_array($annulObject) && count($annulObject)) {
                     $this->paymentAnnul($paymentId, $annulObject);
+                }
+                if (is_array($creditObject) && count($creditObject)) {
+                    $this->paymentCredit($paymentId, $creditObject);
                 }
             }
         } catch (\Exception $cancelException) {
