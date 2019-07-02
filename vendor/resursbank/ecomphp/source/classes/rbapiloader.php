@@ -3237,7 +3237,6 @@ class ResursBank
                     } else {
                         $errorMessage = $e->getMessage();
                     }
-
                     throw new \ResursException(
                         $errorMessage,
                         is_numeric($jsonized->errorCode) ? $jsonized->errorCode : 0,
@@ -6416,7 +6415,7 @@ class ResursBank
                     ),
                     false,
                     $paymentIdOrPaymentObject['DEBIT'],
-                    $paymentIdOrPaymentObject['ANNUL'],
+                    $paymentIdOrPaymentObject['ANNUL']
                 ),
                 array_merge(
                     $paymentIdOrPaymentObject['DEBIT'],
