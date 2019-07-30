@@ -6708,6 +6708,9 @@ class ResursBank
             $this->setFlag('USE_AFTERSHOP_RENDERING', true);
             $orderDataArray = $this->getOrderData();
             $this->deleteFlag('USE_AFTERSHOP_RENDERING');
+            if (!count($orderDataArray)) {
+                $this->SpecLines += $this->objectsIntoArray($actualEcommerceOrderSpec);
+            }
         } catch (\Exception $getOrderDataException) {
             // If there is no payload, make sure we'll render this from the current payment
             if (
