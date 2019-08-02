@@ -160,7 +160,7 @@ $RB(document).ready(function ($) {
             /*
              * Merge the rest
              */
-            $RB('[name*="checkout"] input').each(
+            $RB('[name*="checkout"] input,textarea').each(
                 function (i, e) {
                     if (typeof e.name !== "undefined") {
                         if (e.type == "checkbox") {
