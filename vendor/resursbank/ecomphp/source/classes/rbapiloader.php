@@ -6416,8 +6416,10 @@ class ResursBank
                         $paymentIdOrPaymentObject['ANNUL']
                     ),
                     false,
-                    $paymentIdOrPaymentObject['DEBIT'],
-                    $paymentIdOrPaymentObject['ANNUL']
+                    array_merge(
+                        $paymentIdOrPaymentObject['DEBIT'],
+                        $paymentIdOrPaymentObject['ANNUL']
+                    )
                 ),
                 array_merge(
                     $paymentIdOrPaymentObject['DEBIT'],
@@ -6453,8 +6455,10 @@ class ResursBank
                         $paymentIdOrPaymentObject['ANNUL']
                     ),
                     false,
-                    $paymentIdOrPaymentObject['DEBIT'],
-                    $paymentIdOrPaymentObject['ANNUL']
+                    array_merge(
+                        $paymentIdOrPaymentObject['DEBIT'],
+                        $paymentIdOrPaymentObject['ANNUL']
+                    )
                 ),
                 array_merge(
                     $paymentIdOrPaymentObject['DEBIT'],
@@ -6676,6 +6680,9 @@ class ResursBank
         $finalAfterShopSpec = array(
             'paymentId' => $paymentId,
         );
+
+        $specStatus = $this->getPaymentSpecByStatus($paymentId);
+
         if (!is_array($customPayloadItemList)) {
             // Make sure this is correct
             $customPayloadItemList = array();
@@ -6721,6 +6728,32 @@ class ResursBank
                 $this->SpecLines += $this->objectsIntoArray($actualEcommerceOrderSpec); // Convert objects
             }
         }
+
+        // Emptyness indicator.
+        if (!count($customPayloadItemList)) {
+            // As we currently want to be able to handle partial orders this part tells ecom to use the actual order
+            // spec if the custom payload item list is empty.
+            if (!count($this->SpecLines) &&
+                !count($specStatus['DEBIT']) &&
+                !count($specStatus['CREDIT']) &&
+                !count($specStatus['ANNUL'])
+            ) {
+                $customPayloadItemList = $actualEcommerceOrderSpec;
+            } else {
+                $currentOrderLines = $this->getOrderLines();
+                // Using annulment object to finalize as that object is similar to what's going on
+                // in finalizations. What is not annulled/credited can still be debited.
+                $validatedAnnulmentObject = $this->getValidatedAnnulObject($specStatus, $actualEcommerceOrderSpec);
+                $customPayloadItemList = $this->objectsIntoArray(
+                    $this->removeFromArray(
+                        $validatedAnnulmentObject,
+                        $actualEcommerceOrderSpec,
+                        true
+                    )
+                );
+            }
+        }
+
         if (count($customPayloadItemList)) {
             $currentPaymentStatusList = $this->getPaymentSpecByStatus($storedPayment);
 
@@ -6784,7 +6817,7 @@ class ResursBank
     }
 
     /**
-     * Clean up payload after usage
+     * Clean up payload after usage.
      *
      * @since 1.1.22
      */
@@ -6818,6 +6851,7 @@ class ResursBank
      * Aftershop Payment Finalization (DEBIT)
      *
      * Make sure that you are running this with try-catches in cases where failures may occur.
+     * Method rebuilt with paymentCancel as template, with a tiny twist (190802).
      *
      * @param $paymentId
      * @param array $customPayloadItemList
@@ -6939,7 +6973,8 @@ class ResursBank
                 )
             ) {
                 return false;
-            }            $afterShopResponseCode = $this->postService("annulPayment", $afterShopObject, true);
+            }
+            $afterShopResponseCode = $this->postService("annulPayment", $afterShopObject, true);
             if ($afterShopResponseCode >= 200 && $afterShopResponseCode < 300) {
                 $this->resetPayload();
 
