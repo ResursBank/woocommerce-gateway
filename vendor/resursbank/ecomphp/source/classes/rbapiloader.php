@@ -332,6 +332,11 @@ class ResursBank
      */
     private $SpecLines = array();
 
+    /**
+     * @var bool $speclineCustomization Boolean value that has purpose when using addorderlines to customize aftershop.
+     */
+    private $speclineCustomization = false;
+
     /// Environment URLs
     /**
      * Chosen environment
@@ -4447,6 +4452,8 @@ class ResursBank
         $articleType = "ORDER_LINE",
         $quantity = 1
     ) {
+        $this->speclineCustomization = true;
+
         if (!is_array($this->SpecLines)) {
             $this->SpecLines = array();
         }
@@ -6687,6 +6694,9 @@ class ResursBank
             // Make sure this is correct
             $customPayloadItemList = array();
         }
+        if ($this->speclineCustomization && !count($customPayloadItemList)) {
+            $customPayloadItemList = $this->SpecLines;
+        }
         $storedPayment = $this->getPayment($paymentId);
         $paymentMethod = $storedPayment->paymentMethodId;
         $paymentMethodData = $this->getPaymentMethodSpecific($paymentMethod);
@@ -6956,8 +6966,6 @@ class ResursBank
      */
     public function paymentAnnul($paymentId = "", $customPayloadItemList = [], $runOnce = false)
     {
-        //$this->setAfterShopPaymentId($paymentId);
-
         $afterShopObject = $this->getAfterShopObjectByPayload(
             $paymentId,
             $customPayloadItemList,
