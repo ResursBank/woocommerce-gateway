@@ -3590,6 +3590,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @param  int $order_id The order id
          * @param  string $old_status_slug The old status
          * @param  string $new_status_slug The new stauts
+         * @throws Exception
          */
         public static function order_status_changed($order_id, $old_status_slug, $new_status_slug)
         {
@@ -5674,8 +5675,6 @@ function getAddressProd($ssn = '', $customerType = '', $ip = '')
         /** @var \Resursbank\RBEcomPHP\ResursBank $initFlow */
         $initFlow = new ResursBank($username, $password);
         $initFlow->setUserAgent(RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
-        //$initFlow->setUserAgent( "ResursBankPaymentGatewayForWoocommerce" . RB_WOO_VERSION );
-        //$initFlow->setUserAgent( "WooCommerce ResursBank Payment Gateway " . ( defined( 'RB_WOO_VERSION' ) ? RB_WOO_VERSION : "Unknown version" ) );
         $initFlow->setEnvironment(RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION);
         try {
             $getResponse = $initFlow->getAddress($ssn, $customerType, $ip);
