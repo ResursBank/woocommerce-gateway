@@ -1148,7 +1148,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @param string $newStatus
          * @param WC_Order $woocommerceOrder
          * @param RESURS_PAYMENT_STATUS_RETURNCODES $suggestedStatusCode
-         *
+         * @param null $resursOrderObject
          * @return bool
          */
         private function synchronizeResursOrderStatus(
