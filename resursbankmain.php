@@ -1262,6 +1262,8 @@ function woocommerce_gateway_resurs_bank_init()
             $byCallbackEvent = RESURS_CALLBACK_TYPES::NOT_SET,
             $callbackEventDataArrayOrString = []
         ) {
+            $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+
             try {
                 /** @var $suggestedStatus RESURS_PAYMENT_STATUS_RETURNCODES */
                 $suggestedStatus = $this->flow->getOrderStatusByPayment(
@@ -1286,8 +1288,6 @@ function woocommerce_gateway_resurs_bank_init()
                 resursEventLogger('Stored statuses listed.');
                 resursEventLogger(print_r($paymentStatus, true));
                 resursEventLogger('Callback EVENT Information End');
-
-                $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
 
                 switch (true) {
                     case $suggestedStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING):
@@ -4539,7 +4539,7 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         try {
-            $refundStatus = $refundFlow->cancelPayment($resursOrderId);
+            $refundStatus = $refundFlow->paymentCancel($resursOrderId);
         } catch (\Exception $e) {
             $errors = true;
             $errorCode = $e->getCode();
