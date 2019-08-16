@@ -6414,21 +6414,26 @@ class ResursBank
         $paymentIdOrPaymentObject = $this->getPaymentSpecByStatus($paymentIdOrPaymentObjectData);
 
         // Section to fetch what's still can be debited, credited and annulled.
-        $canCreditObject = $this->getQuantityDifferences(
-            $paymentIdOrPaymentObject['AUTHORIZE'],
-            $paymentIdOrPaymentObject['DEBIT']
-        );
         $canDebitObject = $this->getQuantityDifferences(
             $paymentIdOrPaymentObject['AUTHORIZE'],
-            $paymentIdOrPaymentObject['CREDIT']
+            array_merge($paymentIdOrPaymentObject['DEBIT'], $paymentIdOrPaymentObject['CREDIT'], $paymentIdOrPaymentObject['ANNUL'])
+        );
+        $canCreditObject = $this->getQuantityDifferences(
+            $paymentIdOrPaymentObject['AUTHORIZE'],
+            array_merge($paymentIdOrPaymentObject['CREDIT'], $paymentIdOrPaymentObject['ANNUL'])
         );
         $canAnnulObject = $this->getQuantityDifferences(
             $paymentIdOrPaymentObject['AUTHORIZE'],
-                $paymentIdOrPaymentObject['CREDIT']
+            array_merge(
+                $paymentIdOrPaymentObject['ANNUL'],
+                $paymentIdOrPaymentObject['CREDIT'],
+                $paymentIdOrPaymentObject['DEBIT']
+            )
         );
 
         if ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE, $renderType)) {
-            $this->removeFromArray
+            //$returnSpecObject = $canDebitObject;
+            $returnSpecObject = $this->removeFromArray
             (
                 $paymentIdOrPaymentObject['AUTHORIZE'],
                 array_merge(
@@ -6437,12 +6442,12 @@ class ResursBank
                 ),
                 false,
                 array_merge(
-                    $canDebitObject,
-                    $canAnnulObject
+                    $canDebitObject
                 )
             );
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::CREDIT, $renderType)) {
-            $this->removeFromArray(
+            //$returnSpecObject = $canCreditObject;
+            $returnSpecObject = $this->removeFromArray(
                 $paymentIdOrPaymentObject['AUTHORIZE'],
                 array_merge(
                     $canDebitObject,
@@ -6450,12 +6455,13 @@ class ResursBank
                 ),
                 false,
                 array_merge(
-                    $canDebitObject,
                     $canCreditObject
                 )
             );
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::ANNUL, $renderType)) {
-            $this->removeFromArray
+            //$returnSpecObject = $canAnnulObject;
+
+            $returnSpecObject = $this->removeFromArray
             (
                 $paymentIdOrPaymentObject['AUTHORIZE'],
                 array_merge(
@@ -6464,7 +6470,6 @@ class ResursBank
                 ),
                 false,
                 array_merge(
-                    $canDebitObject,
                     $canAnnulObject
                 )
             );
@@ -6506,14 +6511,14 @@ class ResursBank
      * @param array $authorizedObject
      * @param array $whatsLeftObject
      * @return array
-     * @throws \ResursException
+     * @throws Exception
      */
-    private function getQuantityDifferences($authorizedObject = array(), $whatsLeftObject = array())
+    private function getQuantityDifferences($authorizedObject, $whatsLeftObject)
     {
-        $newAuthorizedObject = $authorizedObject;
+        $newAuthorizedObject = array();
 
-        foreach ($newAuthorizedObject as $productRowIndex => $productRow) {
-            $newProductRow = $productRow;
+        foreach ($authorizedObject as $productRowIndex => $productRow) {
+            $newAuthorizedObject[$productRowIndex] = (array)$productRow;
             foreach ($whatsLeftObject as $index => $leftObject) {
                 // Handle objects as objects. But only if the quantity differs. If there is no diffs we should
                 // probably consider them as equally (unchanged?).
@@ -6521,13 +6526,7 @@ class ResursBank
                     isset($leftObject->artNo) &&
                     $leftObject->artNo === $productRow->artNo
                 ) {
-/*                    if ($productRow->quantity !== $leftObject->quantity) {
-                        $newQuantity = intval($productRow->quantity) - intval($leftObject->quantity);
-                    }*/
-                    //$newProductRow = $this->getRecalculatedQuantity($productRow, $productRow->quantity);
-                    $newQuantity = intval($newProductRow->quantity) - intval($leftObject->quantity);
-                    $newProductRow = $this->getRecalculatedQuantity($newAuthorizedObject[$productRowIndex], $newQuantity);
-                    $newAuthorizedObject[$productRowIndex] = $newProductRow;
+                    $newAuthorizedObject[$productRowIndex]['quantity'] -= intval($leftObject->quantity);
                 }
 
                 // Handle arrays as arrays. But only if the quantity differs. If there is no diffs we should
@@ -6536,18 +6535,20 @@ class ResursBank
                     isset($leftObject['artNo']) &&
                     $leftObject['artNo'] === $productRow->artNo
                 ) {
-/*                    if ($productRow->quantity !== $leftObject['quantity']) {
-                        $newQuantity = intval($productRow->quantity) - intval($leftObject['quantity']);
-                    }*/
-                    $newQuantity = intval($newProductRow->quantity) - intval($leftObject->quantity);
-                    $newProductRow = $this->getRecalculatedQuantity($newAuthorizedObject[$productRowIndex], $newQuantity);
-                    $newAuthorizedObject[$productRowIndex] = $newProductRow;
+                    $newAuthorizedObject[$productRowIndex]['quantity'] -= intval($leftObject['quantity']);
                 }
             }
         }
 
-        sort($newAuthorizedObject);
-        return $newAuthorizedObject;
+        $newConvertedAuthorizeObject = array();
+        foreach ($newAuthorizedObject as $key => $value) {
+            if ($value['quantity'] > 0) {
+                $newConvertedAuthorizeObject[$key] = $this->getRecalculatedQuantity((object)$value);
+            }
+        }
+
+        //sort($newConvertedAuthorizeObject);
+        return $newConvertedAuthorizeObject;
     }
 
     /**
