@@ -3694,6 +3694,8 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
             }
 
+            $resursFlow->setLoggedInUser(getResursWordpressUser('user_login'));
+
             switch ($new_status_slug) {
                 case 'pending':
                     break;
@@ -5790,6 +5792,39 @@ function getResursWooCustomerId($order = null)
     }
 
     return $return;
+}
+
+function getResursWordpressUser($key = 'userid', $popOnArray = true)
+{
+    $wpUserId = get_current_user_id();
+    if ($key == "userid") {
+        return $wpUserId;
+    }
+
+    if ($wpUserId) {
+        if (is_null($key)) {
+            $uMeta = get_user_meta($wpUserId);
+        } else {
+            $uMeta = get_user_meta($wpUserId, $key);
+        }
+    }
+
+    if (is_array($uMeta) && !count($uMeta) && $wpUserId) {
+        /** @var WP_User $wpUserData */
+        $wpUserData = get_userdata($wpUserId);
+        $wpUserDataReturn = $wpUserData->get($key);
+        if (!empty($wpUserDataReturn)) {
+            if ($popOnArray) {
+                return $wpUserDataReturn;
+            } else {
+                return [$wpUserDataReturn];
+            }
+        }
+    }
+
+    if ($popOnArray && is_array($uMeta) && count($uMeta)) {
+        return array_pop($uMeta);
+    }
 }
 
 /**
