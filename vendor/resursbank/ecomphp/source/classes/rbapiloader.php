@@ -3875,6 +3875,7 @@ class ResursBank
      * @throws \ResursException
      * @since 1.0.0
      * @since 1.1.0
+     * @deprecated 1.3.20 Use array matcher instead.
      * @todo Key on artNo, description, price instead. This is probably recommended if we run on quantity controls.
      */
     private function removeFromArray(
@@ -3980,6 +3981,7 @@ class ResursBank
     private function getQuantityByArticle($articleObject, $artNo)
     {
         $quantity = 0;
+        $hasItem = false;
 
         if (is_array($articleObject) && count($articleObject)) {
             foreach ($articleObject as $articleItem) {
@@ -3988,8 +3990,12 @@ class ResursBank
                     isset($articleItem->quantity) &&
                     $articleItem->artNo === $artNo
                 ) {
-                    $quantity = $articleItem->quantity;
-                    break;
+                    if (!$hasItem) {
+                        $quantity = $articleItem->quantity;
+                        $hasItem = true;
+                    } else {
+                        $quantity += $articleItem->quantity;
+                    }
                 }
             }
         } else {
@@ -6387,6 +6393,260 @@ class ResursBank
     }
 
     /**
+     * Get merged paymentdiff.
+     *
+     * @param $paymentIdOrPaymentObject
+     * @param bool $getAsTable
+     * @return array|mixed
+     * @throws Exception
+     */
+    public function getPaymentDiffByStatus($paymentIdOrPaymentObject, $getAsTable = false)
+    {
+        $usePayment = $paymentIdOrPaymentObject;
+        // Current specs available: AUTHORIZE, DEBIT, CREDIT, ANNUL
+        $orderLinesByStatus = array(
+            'AUTHORIZE' => array(),
+            'DEBIT' => array(),
+            'CREDIT' => array(),
+            'ANNUL' => array(),
+        );
+        if (is_string($paymentIdOrPaymentObject)) {
+            $usePayment = $this->getPayment($paymentIdOrPaymentObject);
+        }
+        if (is_object($usePayment) && isset($usePayment->id) && isset($usePayment->paymentDiffs)) {
+            $paymentDiff = $usePayment->paymentDiffs;
+            // Single row diff should be pushed up to a proper array.
+            if (isset($paymentDiff->type)) {
+                $paymentDiff = [$paymentDiff->type => $paymentDiff];
+            }
+            if (is_array($paymentDiff) && count($paymentDiff)) {
+                // Inspired by DataGert.
+                foreach ($paymentDiff as $type => $paymentDiffObject) {
+                    $orderLinesByStatus = $this->getMergedPaymentDiff($paymentDiffObject->paymentSpec->specLines, $orderLinesByStatus, $paymentDiffObject->type);
+                }
+            }
+        }
+
+        // We use this table to collect valuable information, like what's left of each object.
+        $asTable = $this->getPaymentDiffAsTable($orderLinesByStatus);
+        foreach ($asTable as $idx => $artRow) {
+            $asTable[$idx]['ANNULLABLE'] = $artRow['AUTHORIZE'] - $artRow['DEBIT'] - $artRow['ANNUL'];
+            $asTable[$idx]['DEBITABLE'] = $artRow['AUTHORIZE'] - $artRow['DEBIT'] - $artRow['ANNUL'];
+            $asTable[$idx]['CREDITABLE'] = $artRow['DEBIT'] - $artRow['CREDIT'];
+        }
+
+        if ($getAsTable) {
+            return $asTable;
+        }
+
+        return $orderLinesByStatus;
+    }
+
+    /**
+     * @param $paymentIdOrPaymentObject
+     * @return array
+     * @throws Exception
+     */
+    public function getPaymentDiffByAbility($paymentIdOrPaymentObject) {
+        $paymentDiffTable = $this->getPaymentDiffByStatus($paymentIdOrPaymentObject, true);
+
+        $orderLinesByStatus = array(
+            'DEBIT' => array(),
+            'CREDIT' => array(),
+            'ANNUL' => array(),
+        );
+
+        foreach ($paymentDiffTable as $row) {
+            $annullable = $row['ANNULLABLE'];
+            $debitable = $row['DEBITABLE'];
+            $creditable = $row['CREDITABLE'];
+
+            $newOrderRow = $this->getPurgedPaymentRow(
+                $row,
+                [
+                    'AUTHORIZE',
+                    'DEBIT',
+                    'CREDIT',
+                    'ANNUL',
+                    'ANNULLABLE',
+                    'DEBITABLE',
+                    'CREDITABLE'
+                ]
+            );
+
+            $orderLinesByStatus['DEBIT'][] = array_merge($newOrderRow, array('quantity' => $debitable));
+            $orderLinesByStatus['CREDIT'][] = array_merge($newOrderRow, array('quantity' => $creditable));
+            $orderLinesByStatus['ANNUL'][] = array_merge($newOrderRow, array('quantity' => $annullable));
+        }
+
+        $orderLinesByStatus['DEBIT'] = $this->getRecalculatedPaymentDiff($orderLinesByStatus['DEBIT'], true);
+        $orderLinesByStatus['ANNUL'] = $this->getRecalculatedPaymentDiff($orderLinesByStatus['ANNUL'], true);
+        $orderLinesByStatus['CREDIT'] = $this->getRecalculatedPaymentDiff($orderLinesByStatus['CREDIT'],true);
+
+        return $orderLinesByStatus;
+    }
+
+    /**
+     * Pick up each order article and recalculate totalAmount-data. Supports half recursion.
+     *
+     * @param $orderRowArray
+     * @return array
+     */
+    private function getRecalculatedPaymentDiff($orderRowArray, $excludeZeroQuantity = false) {
+        $return = array();
+
+        if (is_array($orderRowArray) && count($orderRowArray)) {
+            foreach ($orderRowArray as $idx => $row) {
+
+                if (!$row['quantity'] && $excludeZeroQuantity) {
+                    unset($orderRowArray[$idx]);
+                    continue;
+                }
+
+                if (isset($row['artNo'])) {
+                    $orderRowArray[$idx]['totalVatAmount'] = $this->getTotalVatAmount(
+                        $row['unitAmountWithoutVat'],
+                        $row['vatPct'],
+                        $row['quantity']
+                    );
+                    $orderRowArray[$idx]['totalAmount'] = $this->getTotalAmount(
+                        $row['unitAmountWithoutVat'],
+                        $row['vatPct'],
+                        $row['quantity']
+                    );
+                }
+            }
+            // On exclusion we need to resort the indexes.
+            if ($excludeZeroQuantity) {
+                sort($orderRowArray);
+            }
+            $return = $orderRowArray;
+        }
+        return (array)$return;
+    }
+
+    /**
+     * Render a table with completed data about each orderline.
+     *
+     * @param $orderlineStatuses
+     * @return array
+     */
+    private function getPaymentDiffAsTable($orderlineStatuses) {
+        $tableStatusList = array();
+
+        if (is_array($orderlineStatuses) && count($orderlineStatuses) && isset($orderlineStatuses['AUTHORIZE'])) {
+            $authorizeObject = $orderlineStatuses['AUTHORIZE'];
+            foreach ($authorizeObject as $artRow) {
+                $debited = $this->getOrderRowMatch($artRow, $orderlineStatuses['DEBIT']);
+                $credited = $this->getOrderRowMatch($artRow, $orderlineStatuses['CREDIT']);
+                $annulled = $this->getOrderRowMatch($artRow, $orderlineStatuses['ANNUL']);
+                $tableStatusList[] = [
+                    'artNo' => $artRow['artNo'],
+                    'description' => $artRow['description'],
+                    'unitMeasure' => $artRow['unitMeasure'],
+                    'unitAmountWithoutVat' => $artRow['unitAmountWithoutVat'],
+                    'vatPct' => $artRow['vatPct'],
+                    'AUTHORIZE' => isset($artRow['quantity']) ? $artRow['quantity'] : 0,
+                    'DEBIT' => isset($debited['quantity']) ? $debited['quantity'] : 0,
+                    'CREDIT' => isset($credited['quantity']) ? $credited['quantity'] : 0,
+                    'ANNUL' => isset($annulled['quantity']) ? $annulled['quantity'] : 0,
+                ];
+
+            }
+        }
+
+        return $tableStatusList;
+    }
+
+    /**
+     * Compare two arrays (order rows) and return a full match.
+     *
+     * @param $artRow
+     * @param $matchList
+     * @return array|mixed
+     */
+    private function getOrderRowMatch($artRow, $matchList)
+    {
+        $return = array();
+
+        if (is_array($matchList) && count($matchList)) {
+            foreach ($matchList as $matchRow) {
+                $currentArray = array_intersect($this->getPurgedPaymentRow($artRow), $this->getPurgedPaymentRow($matchRow));
+                if (count($currentArray) === count($this->getPurgedPaymentRow($artRow))) {
+                    $return = $matchRow;
+                    break;
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $row
+     * @return mixed
+     */
+    private function getPurgedPaymentRow($row, $alsoCleanBy = array()) {
+        $cleanBy = array('totalVatAmount', 'totalAmount', 'quantity', 'id');
+        $cleanBy = array_merge($cleanBy, $alsoCleanBy);
+
+        foreach ($cleanBy as $key) {
+            if (isset($row[$key])) {
+                unset($row[$key]);
+            }
+        }
+        return $row;
+    }
+
+    /**
+     * Merge a "getPayment" by each paymentdiff. This function uses way better keying than the
+     * prior method getPaymentByStatuses() which supports "duplicate articles with diffing prices".
+     *
+     * @param $paymentRows
+     * @param $paymentDiff
+     * @param $paymentType
+     * @return mixed
+     */
+    public function getMergedPaymentDiff($paymentRows, $paymentDiff, $paymentType) {
+        // Convert to correct row, if only one.
+        if (isset($paymentRows->id)) {
+            $paymentRows = array($paymentRows);
+        }
+        if (!isset($paymentDiff[$paymentType])) {
+            $paymentDiff[$paymentType] = array();
+        }
+
+        foreach ($paymentRows as $row) {
+            $isSameArray = array();
+            $currentQuantity = $row->quantity;
+            $currentId = $row->id;
+            // Purge totalVatAmount and totalAmount from this row as the totals are based on the price
+            // and quantity in the current object, which will mismatch on comparation. While merging
+            // the blocks, we don't need those values - they must be recalculated later on. The same rule
+            // is applied to the quantity since either block may have different quantity counts.
+            $rowAsArray = $this->getPurgedPaymentRow((array)$row);
+
+            foreach ($paymentDiff[$paymentType] as $diffIndex => $diffData) {
+                $isSameArray = array_intersect($rowAsArray, $diffData);
+                if (count($isSameArray) === count($rowAsArray)) {
+                    $paymentDiff[$paymentType][$diffIndex]['quantity'] += $currentQuantity;
+                    break;
+                }
+            }
+            if (!count($isSameArray) || count($isSameArray) !== count($rowAsArray)) {
+                // Recreate the quantity and the id, as it was earlier removed to avoid bad keying.
+                $rowAsArray['quantity'] = $currentQuantity;
+                $rowAsArray['id'] = $currentId;
+                $paymentDiff[$paymentType][] = $rowAsArray;
+            }
+        }
+
+        $paymentDiff[$paymentType] = $this->getRecalculatedPaymentDiff($paymentDiff[$paymentType]);
+
+        return $paymentDiff;
+    }
+
+    /**
      * Sanitize a paymentspec from a payment id or a prepared getPayment object and return filtered depending on the
      * requested aftershop type
      *
@@ -6399,7 +6659,8 @@ class ResursBank
         $paymentIdOrPaymentObjectData = '',
         $renderType = RESURS_AFTERSHOP_RENDER_TYPES::NONE
     ) {
-        $returnSpecObject = null;
+
+        $returnSpecObject = array();
 
         $this->BIT->setBitStructure(
             [
@@ -6410,145 +6671,20 @@ class ResursBank
             ]
         );
 
-        // Get payment spec bulked.
-        $paymentIdOrPaymentObject = $this->getPaymentSpecByStatus($paymentIdOrPaymentObjectData);
-
-        // Section to fetch what's still can be debited, credited and annulled.
-        $canDebitObject = $this->getQuantityDifferences(
-            $paymentIdOrPaymentObject['AUTHORIZE'],
-            array_merge($paymentIdOrPaymentObject['DEBIT'], $paymentIdOrPaymentObject['CREDIT'], $paymentIdOrPaymentObject['ANNUL'])
-        );
-        $canCreditObject = $this->getQuantityDifferences(
-            $paymentIdOrPaymentObject['AUTHORIZE'],
-            array_merge($paymentIdOrPaymentObject['CREDIT'], $paymentIdOrPaymentObject['ANNUL'])
-        );
-        $canAnnulObject = $this->getQuantityDifferences(
-            $paymentIdOrPaymentObject['AUTHORIZE'],
-            array_merge(
-                $paymentIdOrPaymentObject['ANNUL'],
-                $paymentIdOrPaymentObject['CREDIT'],
-                $paymentIdOrPaymentObject['DEBIT']
-            )
-        );
+        $sanitizedPaymentDiff = $this->getPaymentDiffByAbility($paymentIdOrPaymentObjectData);
+        $canDebitObject = $sanitizedPaymentDiff['DEBIT'];
+        $canCreditObject = $sanitizedPaymentDiff['CREDIT'];
+        $canAnnulObject = $sanitizedPaymentDiff['ANNUL'];
 
         if ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE, $renderType)) {
-            //$returnSpecObject = $canDebitObject;
-            $returnSpecObject = $this->removeFromArray
-            (
-                $paymentIdOrPaymentObject['AUTHORIZE'],
-                array_merge(
-                    $canDebitObject,
-                    $canAnnulObject
-                ),
-                false,
-                array_merge(
-                    $canDebitObject
-                )
-            );
+            $returnSpecObject = $canDebitObject;
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::CREDIT, $renderType)) {
-            //$returnSpecObject = $canCreditObject;
-            $returnSpecObject = $this->removeFromArray(
-                $paymentIdOrPaymentObject['AUTHORIZE'],
-                array_merge(
-                    $canDebitObject,
-                    $canCreditObject
-                ),
-                false,
-                array_merge(
-                    $canCreditObject
-                )
-            );
+            $returnSpecObject = $canCreditObject;
         } elseif ($this->BIT->isBit(RESURS_AFTERSHOP_RENDER_TYPES::ANNUL, $renderType)) {
-            //$returnSpecObject = $canAnnulObject;
-
-            $returnSpecObject = $this->removeFromArray
-            (
-                $paymentIdOrPaymentObject['AUTHORIZE'],
-                array_merge(
-                    $canDebitObject,
-                    $canAnnulObject
-                ),
-                false,
-                array_merge(
-                    $canAnnulObject
-                )
-            );
-        } else {
-            // If no type is chosen, return all rows
-            $returnSpecObject = $this->removeFromArray($paymentIdOrPaymentObject, []);
+            $returnSpecObject = $canAnnulObject;
         }
 
         return $returnSpecObject;
-    }
-
-    /**
-     * Specal array cloner.
-     *
-     * @param array $arrayObject
-     * @return array
-     * @throws Exception
-     */
-    private function getClonedArray($arrayObject = [])
-    {
-        $return = [];
-
-        if (is_array($arrayObject)) {
-
-            foreach ($arrayObject as $key => $val) {
-                $return[$key] = $val;
-            }
-
-        } else {
-            throw new \Exception('Can only clone arrays', 500);
-        }
-
-        return $return;
-    }
-
-    /**
-     * Look for differences in a quantity object, adjust it and recalculate sums.
-     *
-     * @param array $authorizedObject
-     * @param array $whatsLeftObject
-     * @return array
-     * @throws Exception
-     */
-    private function getQuantityDifferences($authorizedObject, $whatsLeftObject)
-    {
-        $newAuthorizedObject = array();
-
-        foreach ($authorizedObject as $productRowIndex => $productRow) {
-            $newAuthorizedObject[$productRowIndex] = (array)$productRow;
-            foreach ($whatsLeftObject as $index => $leftObject) {
-                // Handle objects as objects. But only if the quantity differs. If there is no diffs we should
-                // probably consider them as equally (unchanged?).
-                if (is_object($leftObject) &&
-                    isset($leftObject->artNo) &&
-                    $leftObject->artNo === $productRow->artNo
-                ) {
-                    $newAuthorizedObject[$productRowIndex]['quantity'] -= intval($leftObject->quantity);
-                }
-
-                // Handle arrays as arrays. But only if the quantity differs. If there is no diffs we should
-                // probably consider them as equally (unchanged?).
-                if (is_array($leftObject) &&
-                    isset($leftObject['artNo']) &&
-                    $leftObject['artNo'] === $productRow->artNo
-                ) {
-                    $newAuthorizedObject[$productRowIndex]['quantity'] -= intval($leftObject['quantity']);
-                }
-            }
-        }
-
-        $newConvertedAuthorizeObject = array();
-        foreach ($newAuthorizedObject as $key => $value) {
-            if ($value['quantity'] > 0) {
-                $newConvertedAuthorizeObject[$key] = $this->getRecalculatedQuantity((object)$value);
-            }
-        }
-
-        //sort($newConvertedAuthorizeObject);
-        return $newConvertedAuthorizeObject;
     }
 
     /**
@@ -6684,7 +6820,6 @@ class ResursBank
             }
             $this->addMetaData($paymentId, "CustomerId", $this->customerId);
         } catch (\Exception $metaResponseException) {
-
         }
 
         return true;
@@ -6794,9 +6929,6 @@ class ResursBank
             ) {
                 $customPayloadItemList = $actualEcommerceOrderSpec;
             } else {
-                $currentOrderLines = $this->getOrderLines();
-                // Using annulment object to finalize as that object is similar to what's going on
-                // in finalizations. What is not annulled/credited can still be debited.
                 $validatedAnnulmentObject = $this->getValidatedAnnulObject($specStatus, $actualEcommerceOrderSpec);
                 $customPayloadItemList = $this->objectsIntoArray(
                     $this->removeFromArray(
@@ -6814,6 +6946,8 @@ class ResursBank
             // Is $customPayloadItemList correctly formatted?
             switch ($payloadType) {
                 case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_FINALIZE:
+                    // Using annulment object to finalize as that object is similar to what's going on
+                    // in finalizations. What is not annulled/credited can still be debited.
                     $customPayloadItemListValidated = $this->getValidatedAnnulObject(
                         $currentPaymentStatusList,
                         $customPayloadItemList
@@ -7143,13 +7277,15 @@ class ResursBank
      */
     public function paymentCancel($paymentId = "", $customPayloadItemList = array())
     {
+        $paymentData = $this->getPayment($paymentId);
         // Collect the payment sorted by status
-        $currentPaymentSpec = $this->getPaymentSpecByStatus($this->getPayment($paymentId));
+        //$currentPaymentSpec = $this->getPaymentDiffByStatus($paymentData);
+        $currentPaymentTable = $this->getPaymentDiffByStatus($paymentData, true);
 
-        // Sanitized paymentspec based on what CAN be fully ANNULLED wit no custom payment load.
-        $annulObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::ANNUL);
+        // Sanitized paymentspec based on what CAN be fully ANNULLED (and actually also debited) wit no custom payment load.
+        $fullAnnulObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::ANNUL);
         // Sanitized paymentspec based on what CAN be fully CREDITed with no custom payment load.
-        $creditObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::CREDIT);
+        $fullCreditObject = $this->sanitizeAfterShopSpec($this->getPayment($paymentId), RESURS_AFTERSHOP_RENDER_TYPES::CREDIT);
 
         if (is_array($customPayloadItemList) && count($customPayloadItemList)) {
             $this->SpecLines = array_merge($this->SpecLines, $customPayloadItemList);
@@ -7161,30 +7297,15 @@ class ResursBank
 
         try {
             if (is_array($currentOrderLines) && count($currentOrderLines)) {
-                // If it is customized, we need to render the cancellation differently to specify what's what.
+                // If the orderrows are custom (addOrderLine or "deprecated array mode") we actually don't
+                // need the old section anymore as the "GertFormula" was highly effective, when it came
+                // to recalculate "what's left". However, we should probably leave some kind of validation
+                // to make the requested object legit. For example, if developers are sending other
+                // stuff in that does not cover what's already in the order, such rows should not be
+                // able to pass trough. Also, the formula made this section broken.
 
-                $validatedCreditObject = $this->getValidatedCreditObject($currentPaymentSpec, $currentOrderLines);
-                $validatedAnnulmentObject = $this->getValidatedAnnulObject($currentPaymentSpec, $currentOrderLines);
-
-                // Clean up selected rows from the credit element and keep those rows than still can be credited and
-                // matches the orderRow-request
-                $newCreditObject = $this->objectsIntoArray(
-                    $this->removeFromArray(
-                        $validatedCreditObject,
-                        $currentOrderLines,
-                        true
-                    )
-                );
-
-                // Clean up selected rows from the credit element and keep those rows than still can be annulled and
-                // matches the orderRow-request
-                $newAnnulObject = $this->objectsIntoArray(
-                    $this->removeFromArray(
-                        $validatedAnnulmentObject,
-                        $currentOrderLines,
-                        true
-                    )
-                );
+                $newCreditObject = $this->getValidatedAftershopRows($currentPaymentTable, $currentOrderLines, 'credit');
+                $newAnnulObject = $this->getValidatedAftershopRows($currentPaymentTable, $currentOrderLines, 'annul');
 
                 if (is_array($newCreditObject) && count($newCreditObject)) {
                     $this->paymentCredit($paymentId, $newCreditObject);
@@ -7193,11 +7314,11 @@ class ResursBank
                     $this->paymentAnnul($paymentId, $newAnnulObject);
                 }
             } else {
-                if (is_array($annulObject) && count($annulObject)) {
-                    $this->paymentAnnul($paymentId, $annulObject);
+                if (is_array($fullAnnulObject) && count($fullAnnulObject)) {
+                    $this->paymentAnnul($paymentId, $fullAnnulObject);
                 }
-                if (is_array($creditObject) && count($creditObject)) {
-                    $this->paymentCredit($paymentId, $creditObject);
+                if (is_array($fullCreditObject) && count($fullCreditObject)) {
+                    $this->paymentCredit($paymentId, $fullCreditObject);
                 }
             }
         } catch (\Exception $cancelException) {
@@ -7206,6 +7327,91 @@ class ResursBank
         $this->resetPayload();
 
         return true;
+    }
+
+    /**
+     * Validating of requested aftershop orderrows.
+     *
+     * @param $currentPaymentSpecTable
+     * @param $currentOrderLines
+     * @param $type
+     * @return array
+     * @since 1.3.21
+     */
+    private function getValidatedAftershopRows($currentPaymentSpecTable, $currentOrderLines, $type) {
+        $return = array();
+        $id = 0;
+        foreach ($currentOrderLines as $idx => $orderRow) {
+            foreach ($currentPaymentSpecTable as $statusRow) {
+                if ($type === 'credit') {
+                    $quantityMatch = $statusRow['CREDITABLE'];
+                } else if ($type === 'annul') {
+                    $quantityMatch = $statusRow['ANNULLABLE'];
+                } else if ($type === 'debit') {
+                    $quantityMatch = $statusRow['DEBITABLE'];
+                } else {
+                    $quantityMatch = 0;
+                }
+
+                if (!$quantityMatch) {
+                    continue;
+                }
+
+                $useQuantity = 0;
+                // If the requested quantity is legit, we'll tell the validation that we
+                // have enough articles to handle. If not, we should skip it.
+                if ($quantityMatch >= $orderRow['quantity']) {
+                    $useQuantity = $orderRow['quantity'];
+                } else {
+                    // However, if we still DO have a quantity but the orderrow set has too many
+                    // we'll lower the requested quantity to match what the orderrow contains.
+                    if ($quantityMatch > 0) {
+                        $useQuantity = $quantityMatch;
+                    }
+                }
+
+                // Validation is based on same article, description and price.
+                // Besides this the validation is also
+                if (
+                    $orderRow['artNo'] == $statusRow['artNo'] &&
+                    $orderRow['description'] == $statusRow['description'] &&
+                    $orderRow['unitAmountWithoutVat'] == $statusRow['unitAmountWithoutVat'] &&
+                    $useQuantity > 0
+                ) {
+                    $keepQuantity = $orderRow['quantity'];
+                    $orderRow = $this->getPurgedPaymentRow(
+                        $statusRow,
+                        [
+                            'AUTHORIZE',
+                            'DEBIT',
+                            'CREDIT',
+                            'ANNUL',
+                            'ANNULLABLE',
+                            'DEBITABLE',
+                            'CREDITABLE'
+                        ]
+                    );
+
+                    // Make sure we use the correct getPaymentData.
+                    $orderRow['id'] = $id;
+                    $orderRow['quantity'] = $keepQuantity;
+                    $orderRow['totalVatAmount'] = $this->getTotalVatAmount(
+                        $orderRow['unitAmountWithoutVat'],
+                        $orderRow['vatPct'],
+                        $keepQuantity
+                    );
+                    $orderRow['totalAmount'] = $this->getTotalAmount(
+                        $orderRow['unitAmountWithoutVat'],
+                        $orderRow['vatPct'],
+                        $keepQuantity
+                    );
+                    $return[] = $orderRow;
+                    $id++;
+                }
+            }
+        }
+
+        return $return;
     }
 
     /**

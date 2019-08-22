@@ -4519,7 +4519,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $refundFlow->addOrderLine(
                     $articleId,
                     $product->get_title(),
-                    preg_replace('/^-/', '', $item->get_total()),
+                    preg_replace('/^-/', '', ($item->get_total() / $itemQuantity)),
                     $amountPct,
                     '',
                     'ORDER_LINE',
