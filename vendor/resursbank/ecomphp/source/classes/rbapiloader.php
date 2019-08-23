@@ -6429,11 +6429,6 @@ class ResursBank
 
         // We use this table to collect valuable information, like what's left of each object.
         $asTable = $this->getPaymentDiffAsTable($orderLinesByStatus);
-        foreach ($asTable as $idx => $artRow) {
-            $asTable[$idx]['ANNULLABLE'] = $artRow['AUTHORIZE'] - $artRow['DEBIT'] - $artRow['ANNUL'];
-            $asTable[$idx]['DEBITABLE'] = $artRow['AUTHORIZE'] - $artRow['DEBIT'] - $artRow['ANNUL'];
-            $asTable[$idx]['CREDITABLE'] = $artRow['DEBIT'] - $artRow['CREDIT'];
-        }
 
         if ($getAsTable) {
             return $asTable;
@@ -6553,6 +6548,12 @@ class ResursBank
                 ];
 
             }
+        }
+
+        foreach ($tableStatusList as $idx => $artRow) {
+            $tableStatusList[$idx]['ANNULLABLE'] = $artRow['AUTHORIZE'] - $artRow['DEBIT'] - $artRow['ANNUL'];
+            $tableStatusList[$idx]['DEBITABLE'] = $artRow['AUTHORIZE'] - $artRow['DEBIT'] - $artRow['ANNUL'];
+            $tableStatusList[$idx]['CREDITABLE'] = $artRow['DEBIT'] - $artRow['CREDIT'];
         }
 
         return $tableStatusList;
@@ -6867,7 +6868,9 @@ class ResursBank
             'paymentId' => $paymentId,
         );
 
-        $specStatus = $this->getPaymentSpecByStatus($paymentId);
+        // getPaymentDiffByStatus, replaces getPaymentSpecByStatus
+        $specStatus = $this->getPaymentDiffByStatus($paymentId);
+        $specStatusTable = $this->getPaymentDiffAsTable($specStatus);
 
         if (!is_array($customPayloadItemList)) {
             // Make sure this is correct
@@ -6918,7 +6921,7 @@ class ResursBank
             }
         }
 
-        // Emptyness indicator.
+        // Still-Empty Indicator.
         if (!count($customPayloadItemList)) {
             // As we currently want to be able to handle partial orders this part tells ecom to use the actual order
             // spec if the custom payload item list is empty.
@@ -6929,54 +6932,40 @@ class ResursBank
             ) {
                 $customPayloadItemList = $actualEcommerceOrderSpec;
             } else {
-                $validatedAnnulmentObject = $this->getValidatedAnnulObject($specStatus, $actualEcommerceOrderSpec);
-                $customPayloadItemList = $this->objectsIntoArray(
-                    $this->removeFromArray(
-                        $validatedAnnulmentObject,
-                        $actualEcommerceOrderSpec,
-                        true
-                    )
-                );
+                // We should probably give up here and go for the fully merged diff.
+                $customPayloadItemList = $specStatus['AUTHORIZE'];
             }
         }
 
         if (count($customPayloadItemList)) {
-            $currentPaymentStatusList = $this->getPaymentSpecByStatus($storedPayment);
-
             // Is $customPayloadItemList correctly formatted?
             switch ($payloadType) {
                 case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_FINALIZE:
-                    // Using annulment object to finalize as that object is similar to what's going on
-                    // in finalizations. What is not annulled/credited can still be debited.
-                    $customPayloadItemListValidated = $this->getValidatedAnnulObject(
-                        $currentPaymentStatusList,
-                        $customPayloadItemList
+                    $customPayloadItemListValidated = $this->getValidatedAftershopRows(
+                        $specStatusTable,
+                        $customPayloadItemList,
+                        'debit'
                     );
                     break;
                 case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_ANNUL:
-                    $customPayloadItemListValidated = $this->getValidatedAnnulObject(
-                        $currentPaymentStatusList,
-                        $customPayloadItemList
+                    $customPayloadItemListValidated = $this->getValidatedAftershopRows(
+                        $specStatusTable,
+                        $customPayloadItemList,
+                        'annul'
                     );
                     break;
                 case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_CREDIT:
-                    $customPayloadItemListValidated = $this->getValidatedCreditObject(
-                        $currentPaymentStatusList,
-                        $customPayloadItemList
+                    $customPayloadItemListValidated = $this->getValidatedAftershopRows(
+                        $specStatusTable,
+                        $customPayloadItemList,
+                        'credit'
                     );
                     break;
                 default:
                     $customPayloadItemListValidated = $customPayloadItemList;
             };
 
-            // If there is a customized specrowArray injected, no appending should occur.
-            $this->SpecLines = $this->objectsIntoArray(
-                $this->removeFromArray(
-                    $customPayloadItemListValidated,
-                    $customPayloadItemList,
-                    true
-                )
-            );
+            $this->SpecLines = $customPayloadItemListValidated;
         }
         $this->renderPaymentSpec(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
         $this->setFlag('USE_AFTERSHOP_RENDERING', true);
@@ -7349,6 +7338,8 @@ class ResursBank
                     $quantityMatch = $statusRow['ANNULLABLE'];
                 } else if ($type === 'debit') {
                     $quantityMatch = $statusRow['DEBITABLE'];
+                } else if ($type === 'authorize') {
+                    $quantityMatch = $statusRow['AUTHORIZE'];
                 } else {
                     $quantityMatch = 0;
                 }
@@ -7357,17 +7348,14 @@ class ResursBank
                     continue;
                 }
 
-                $useQuantity = 0;
-                // If the requested quantity is legit, we'll tell the validation that we
-                // have enough articles to handle. If not, we should skip it.
-                if ($quantityMatch >= $orderRow['quantity']) {
+                // If the requested quantity is legit (below the maximum matchable amount)
+                // we should use the requested quantity.
+                if ($orderRow['quantity'] <= $quantityMatch) {
                     $useQuantity = $orderRow['quantity'];
                 } else {
-                    // However, if we still DO have a quantity but the orderrow set has too many
-                    // we'll lower the requested quantity to match what the orderrow contains.
-                    if ($quantityMatch > 0) {
-                        $useQuantity = $quantityMatch;
-                    }
+                    // If the requested quantity is set too high (over the maximum matchable amount)
+                    // we should lower the value to the max-allowed quantity instead.
+                    $useQuantity = $quantityMatch;
                 }
 
                 // Validation is based on same article, description and price.
@@ -7378,7 +7366,6 @@ class ResursBank
                     $orderRow['unitAmountWithoutVat'] == $statusRow['unitAmountWithoutVat'] &&
                     $useQuantity > 0
                 ) {
-                    $keepQuantity = $orderRow['quantity'];
                     $orderRow = $this->getPurgedPaymentRow(
                         $statusRow,
                         [
@@ -7394,16 +7381,16 @@ class ResursBank
 
                     // Make sure we use the correct getPaymentData.
                     $orderRow['id'] = $id;
-                    $orderRow['quantity'] = $keepQuantity;
+                    $orderRow['quantity'] = $useQuantity;
                     $orderRow['totalVatAmount'] = $this->getTotalVatAmount(
                         $orderRow['unitAmountWithoutVat'],
                         $orderRow['vatPct'],
-                        $keepQuantity
+                        $useQuantity
                     );
                     $orderRow['totalAmount'] = $this->getTotalAmount(
                         $orderRow['unitAmountWithoutVat'],
                         $orderRow['vatPct'],
-                        $keepQuantity
+                        $useQuantity
                     );
                     $return[] = $orderRow;
                     $id++;
@@ -7412,57 +7399,6 @@ class ResursBank
         }
 
         return $return;
-    }
-
-    /**
-     * Validation object - Contains everything that CAN be credited.
-     *
-     * @param $currentPaymentSpec
-     * @param $currentOrderLines
-     * @param bool $keepOpposite
-     * @return array
-     * @throws \ResursException
-     */
-    private function getValidatedCreditObject(
-        $currentPaymentSpec,
-        $currentOrderLines,
-        $keepOpposite = false
-    ) {
-        return $this->removeFromArray(
-            $currentPaymentSpec['DEBIT'],
-            array_merge(
-                $currentPaymentSpec['ANNUL'],
-                $currentPaymentSpec['CREDIT']
-            ),
-            $keepOpposite,
-            $currentOrderLines
-        );
-    }
-
-    /**
-     * Validation object - Contains everything that CAN be annulled.
-     *
-     * @param $currentPaymentSpec
-     * @param $currentOrderLines
-     * @param bool $keepOpposite
-     * @return array
-     * @throws \ResursException
-     */
-    private function getValidatedAnnulObject(
-        $currentPaymentSpec,
-        $currentOrderLines,
-        $keepOpposite = false
-    ) {
-        return $this->removeFromArray(
-            $currentPaymentSpec['AUTHORIZE'],
-            array_merge(
-                $currentPaymentSpec['DEBIT'],
-                $currentPaymentSpec['ANNUL'],
-                $currentPaymentSpec['CREDIT']
-            ),
-            $keepOpposite,
-            $currentOrderLines
-        );
     }
 
     /**
