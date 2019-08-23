@@ -4539,7 +4539,7 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         try {
-            $refundStatus = $refundFlow->paymentCancel($resursOrderId);
+            $refundStatus = $refundFlow->paymentCancel($resursOrderId, $refundArray);
         } catch (\Exception $e) {
             $errors = true;
             $errorCode = $e->getCode();

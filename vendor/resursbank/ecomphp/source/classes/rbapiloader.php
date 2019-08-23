@@ -7063,18 +7063,38 @@ class ResursBank
     }
 
     /**
+     * If more than two fields are missing in the requested payment object, this should be considered
+     * an object with missing data.
+     *
+     * @param $duplicateState
+     * @throws Exception
+     */
+    private function checkUnsafePaymentObject ($duplicateState) {
+        if ($duplicateState > 2) {
+            throw new \Exception(
+                'There are more articles in this order that has the same article number, but where other content may differ.',
+                400
+            );
+        }
+    }
+
+    /**
      * Validating of requested aftershop orderrows.
      *
      * @param $currentPaymentSpecTable
      * @param $currentOrderLines
      * @param $type
      * @return array
+     * @throws Exception
      * @since 1.3.21
      */
     private function getValidatedAftershopRows($currentPaymentSpecTable, $currentOrderLines, $type) {
         $return = array();
         $id = 0;
+
         foreach ($currentOrderLines as $idx => $orderRow) {
+            // Count unsafe payment objects per row.
+            $isUnsafePaymentObject = 0;
             foreach ($currentPaymentSpecTable as $statusRow) {
                 if ($type === 'credit') {
                     $quantityMatch = $statusRow['CREDITABLE'];
@@ -7102,6 +7122,22 @@ class ResursBank
                     $useQuantity = $quantityMatch;
                 }
 
+                $this->checkUnsafePaymentObject($isUnsafePaymentObject);
+
+                if ((!isset($orderRow['unitAmountWithoutVat']) || empty($orderRow['unitAmountWithoutVat'])) &&
+                    $orderRow['artNo'] == $statusRow['artNo']
+                ) {
+                    $orderRow['unitAmountWithoutVat'] = $statusRow['unitAmountWithoutVat'];
+                    $isUnsafePaymentObject++;
+                }
+
+                if ((!isset($orderRow['description']) || empty($orderRow['description'])) &&
+                    $orderRow['artNo'] == $statusRow['artNo']
+                ) {
+                    $orderRow['description'] = $statusRow['description'];
+                    $isUnsafePaymentObject++;
+                }
+
                 // Validation is based on same article, description and price.
                 // Besides this the validation is also
                 if (
@@ -7119,7 +7155,7 @@ class ResursBank
                             'ANNUL',
                             'ANNULLABLE',
                             'DEBITABLE',
-                            'CREDITABLE'
+                            'CREDITABLE',
                         ]
                     );
 
