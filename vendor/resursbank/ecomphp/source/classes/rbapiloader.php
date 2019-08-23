@@ -3863,202 +3863,7 @@ class ResursBank
     {
         return ($unitAmountWithoutVat + ($unitAmountWithoutVat * $vatPct / 100)) * $quantity;
     }
-
-    /**
-     * Payment spec container cleaner
-     *
-     * @param array $currentArray The current speclineArray.
-     * @param array $cleanWith The array with the speclines that should be removed from currentArray.
-     * @param bool $keepOpposite Setting this to true, will run the opposite of what the function actually do.
-     * @param array $skipOnQuantityArray
-     * @return array New array
-     * @throws \ResursException
-     * @since 1.0.0
-     * @since 1.1.0
-     * @deprecated 1.3.20 Use array matcher instead.
-     * @todo Key on artNo, description, price instead. This is probably recommended if we run on quantity controls.
-     */
-    private function removeFromArray(
-        $currentArray = [],
-        $cleanWith = [],
-        $keepOpposite = false,
-        $skipOnQuantityArray = []
-    ) {
-        $cleanedArray = [];
-        $currentCleanObject = null;
-        foreach ($currentArray as $currentObject) {
-            if (is_array($cleanWith)) {
-                $foundObject = false;
-                foreach ($cleanWith as $currentCleanObject) {
-                    if (is_object($currentCleanObject)) {
-                        if (!empty($currentObject->artNo)) {
-                            // No longer searching on id, as that is an incremental value rather than a
-                            // dynamically added.
-                            if ($currentObject->artNo == $currentCleanObject->artNo) {
-                                $foundObject = true;
-                                if ($keepOpposite) {
-                                    $cleanedArray[] = $this->getMatchedQuantity($currentObject, $currentCleanObject);
-                                }
-                                break;
-                            }
-                        }
-                    } elseif (is_array($currentCleanObject)) {
-                        // This is above, but based on incoming array
-                        if (!empty($currentObject->artNo)) {
-                            // No longer searching on id, as that is an incremental value rather than a
-                            // dynamically added.
-                            if ($currentObject->artNo == $currentCleanObject['artNo']) {
-                                $foundObject = true;
-                                if ($keepOpposite) {
-                                    $cleanedArray[] = $this->getMatchedQuantity($currentObject, $currentCleanObject);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (!$keepOpposite) {
-                    if (!$foundObject) {
-                        $cleanedArray[] = $currentObject;
-                    } else {
-                        if (is_array($skipOnQuantityArray) && count($skipOnQuantityArray)) {
-                            // If there is a match and $skipOnQuantityArray is set, we should probably handle this
-                            // as a special quantity case (when running CREDIT or ANNUL).
-                            foreach ($skipOnQuantityArray as $article) {
-                                // User defined array with articles. This is where we will find differences to the
-                                // default getPayment-payload ($currentArray).
-                                $userQuantity = $this->getQuantityByArticle(
-                                    $cleanWith,
-                                    $currentObject->artNo
-                                );
-                                // The current quantity from the primary loop.
-                                $paymentQuantity = $this->getQuantityByArticle(
-                                    $currentArray,
-                                    $currentObject->artNo
-                                );
-
-                                // Checking if the current article of $skipOnQuantityArray contains a valid
-                                // article number. It checks both stdClass-objects and arrays.
-                                $allowQuantityControl = false;
-                                if (is_object($article) && isset($article->artNo)) {
-                                    $allowQuantityControl = true;
-                                } elseif (is_array($article) && isset($article['artNo'])) {
-                                    $allowQuantityControl = true;
-                                }
-
-                                // Checks if the current quantity differs. If they are note equal, we're
-                                // allowed to store them too.
-                                if ($allowQuantityControl) {
-                                    if (
-                                        intval($userQuantity) > 0 &&
-                                        intval($paymentQuantity) > 0
-                                        /*&&
-                                        intval($userQuantity) !== intval($paymentQuantity)*/
-                                    ) {
-                                        $cleanedArray[] = $currentObject;
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                $cleanedArray[] = $currentObject;
-            }
-        }
-
-        return $cleanedArray;
-    }
-
-    /**
-     * Extract quantity from a getPayment-object based on the article number.
-     *
-     * @param $articleObject
-     * @param $artNo
-     * @return int
-     */
-    private function getQuantityByArticle($articleObject, $artNo)
-    {
-        $quantity = 0;
-        $hasItem = false;
-
-        if (is_array($articleObject) && count($articleObject)) {
-            foreach ($articleObject as $articleItem) {
-                if (is_object($articleItem) &&
-                    isset($articleItem->artNo) &&
-                    isset($articleItem->quantity) &&
-                    $articleItem->artNo === $artNo
-                ) {
-                    if (!$hasItem) {
-                        $quantity = $articleItem->quantity;
-                        $hasItem = true;
-                    } else {
-                        $quantity += $articleItem->quantity;
-                    }
-                }
-            }
-        } else {
-            // In this case article number is not necessary as we alread have the article itself.
-            if (is_object($articleObject) && isset($articleObject->quantity)) {
-                $quantity = $articleObject->quantity;
-            } elseif (is_array($articleObject) && isset($articleObject['quantity'])) {
-                $quantity = $articleObject['quantity'];
-            }
-        }
-
-        return $quantity;
-    }
-
-    /**
-     * @param $currentObject
-     * @param $currentMatchObject
-     * @param bool $asBoolean When enabled, [status=>true,result=>the object] when there is a quantity mismatch
-     * @return array
-     * @throws \ResursException
-     */
-    private function getMatchedQuantity($currentObject, $currentMatchObject, $asBoolean = false)
-    {
-        $result = $currentObject;
-        $returnedBoolean = false;
-        $returnType = null;
-
-        // Note: The matching method converts all quantity values to integers as some of them arrives as floats.
-
-        if (is_object($currentMatchObject) && isset($currentMatchObject->quantity)) {
-            if (intval($currentObject->quantity) !== intval($currentMatchObject->quantity)) {
-                if ($asBoolean) {
-                    $returnedBoolean = true;
-                    $returnType = 'object';
-                }
-                $result = $this->getRecalculatedQuantity(
-                    $currentObject,
-                    $currentMatchObject->quantity
-                );
-            }
-        } elseif (is_array($currentMatchObject) && isset($currentMatchObject['quantity'])) {
-            if (intval($currentObject->quantity) !== intval($currentMatchObject['quantity'])) {
-                if ($asBoolean) {
-                    $returnedBoolean = true;
-                    $returnType = 'array';
-                }
-                $result = $this->getRecalculatedQuantity(
-                    $currentObject,
-                    $currentMatchObject['quantity']
-                );
-            }
-        }
-
-        if ($asBoolean) {
-            return [
-                'status' => $returnedBoolean,
-                'result' => $result,
-                'returnType' => $returnType,
-            ];
-        }
-
-        return $result;
-    }
+    
 
     ////// Client specific
 
@@ -6399,6 +6204,7 @@ class ResursBank
      * @param bool $getAsTable
      * @return array|mixed
      * @throws Exception
+     * @since 1.3.21
      */
     public function getPaymentDiffByStatus($paymentIdOrPaymentObject, $getAsTable = false)
     {
@@ -6441,6 +6247,7 @@ class ResursBank
      * @param $paymentIdOrPaymentObject
      * @return array
      * @throws Exception
+     * @since 1.3.21
      */
     public function getPaymentDiffByAbility($paymentIdOrPaymentObject) {
         $paymentDiffTable = $this->getPaymentDiffByStatus($paymentIdOrPaymentObject, true);
@@ -6485,7 +6292,9 @@ class ResursBank
      * Pick up each order article and recalculate totalAmount-data. Supports half recursion.
      *
      * @param $orderRowArray
+     * @param bool $excludeZeroQuantity
      * @return array
+     * @since 1.3.21
      */
     private function getRecalculatedPaymentDiff($orderRowArray, $excludeZeroQuantity = false) {
         $return = array();
@@ -7012,16 +6821,6 @@ class ResursBank
 
         $this->SpecLines = array();
         $this->Payload = array();
-    }
-
-    /**
-     * @param $paymentId
-     */
-    private function setAfterShopPaymentId($paymentId)
-    {
-        if (empty($this->preferredId)) {
-            $this->preferredId = $paymentId;
-        }
     }
 
     /**
