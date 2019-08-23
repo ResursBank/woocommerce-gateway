@@ -4525,12 +4525,6 @@ function woocommerce_gateway_resurs_bank_init()
                     'ORDER_LINE',
                     $itemQuantity
                 );
-
-                // Public note: Both methods works but the below is deprecated.
-                /*$refundArray[] = [
-                    'artNo' => $articleId,
-                    'quantity' => $itemQuantity,
-                ];*/
             }
         }
 
