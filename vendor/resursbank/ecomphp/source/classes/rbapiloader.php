@@ -3863,7 +3863,7 @@ class ResursBank
     {
         return ($unitAmountWithoutVat + ($unitAmountWithoutVat * $vatPct / 100)) * $quantity;
     }
-    
+
 
     ////// Client specific
 
@@ -6135,66 +6135,11 @@ class ResursBank
      *
      * @return array
      * @throws \Exception
+     * @deprecated 1.3.21 Use getPaymentDiffByStatus instead!
      */
     public function getPaymentSpecByStatus($paymentIdOrPaymentObject)
     {
-        $usePayment = $paymentIdOrPaymentObject;
-        // Current specs available: AUTHORIZE, DEBIT, CREDIT, ANNUL
-        $orderLinesByStatus = array(
-            'AUTHORIZE' => array(),
-            'DEBIT' => array(),
-            'CREDIT' => array(),
-            'ANNUL' => array(),
-        );
-        if (is_string($paymentIdOrPaymentObject)) {
-            $usePayment = $this->getPayment($paymentIdOrPaymentObject);
-        }
-        if (is_object($usePayment) && isset($usePayment->id) && isset($usePayment->paymentDiffs)) {
-            $paymentDiff = $usePayment->paymentDiffs;
-            // If the paymentdiff is an array, we'll know that more than one thing has happened to the payment,
-            // and it's probably only an authorization
-            if (is_array($paymentDiff)) {
-                foreach ($paymentDiff as $paymentDiffObject) {
-                    // Initially, let's make sure there is a key for the paymentdiff.
-                    if (!isset($orderLinesByStatus[$paymentDiffObject->type])) {
-                        $orderLinesByStatus[$paymentDiffObject->type] = array();
-                    }
-                    // Second, make sure that the paymentdiffs are collected as one array per
-                    // specType (AUTHORIZE,DEBIT,CREDIT,ANNULL)
-                    if (is_array($paymentDiffObject->paymentSpec->specLines)) {
-                        // Note: array_merge won't work if the initial array is empty. Instead we'll append
-                        // it to the above array. Also note that appending with += may fail when indexes matches
-                        // each other on both sides - in that case not all objects will be attached
-                        // properly to this array.
-                        if (!$this->isFlag('MERGEBYSTATUS_DEPRECATED_METHOD')) {
-                            foreach ($paymentDiffObject->paymentSpec->specLines as $arrayObject) {
-                                $orderLinesByStatus[$paymentDiffObject->type][] = $arrayObject;
-                            }
-                        } else {
-                            $orderLinesByStatus[$paymentDiffObject->type] += $paymentDiffObject->paymentSpec->specLines;
-                        }
-                    } elseif (is_object($paymentDiffObject)) {
-                        $orderLinesByStatus[$paymentDiffObject->type][] = $paymentDiffObject->paymentSpec->specLines;
-                    }
-                }
-            } else {
-                // If the paymentdiff is an object we'd know that only one thing has occured in the order.
-                // Keep in mind that, if an order has been debited, there should be rows both for the debiting and
-                // the authorization (which shows each orderline separated on which steps it went through).
-                if (!isset($orderLinesByStatus[$paymentDiff->type])) {
-                    $orderLinesByStatus[$paymentDiff->type] = array();
-                }
-                if (is_array($paymentDiff->paymentSpec->specLines)) {
-                    // Note: array_merge won't work if the initial array is empty. Instead we'll
-                    // append it to the above array.
-                    $orderLinesByStatus[$paymentDiff->type] += $paymentDiff->paymentSpec->specLines;
-                } elseif (is_object($paymentDiff->paymentSpec->specLines)) {
-                    $orderLinesByStatus[$paymentDiff->type][] = $paymentDiff->paymentSpec->specLines;
-                }
-            }
-        }
-
-        return $orderLinesByStatus;
+        return $this->getPaymentDiffByStatus($paymentIdOrPaymentObject);
     }
 
     /**
