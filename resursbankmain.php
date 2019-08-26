@@ -4387,7 +4387,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if (!empty($annuityMethod)) {
-                $annuityFactorPrice = $product->get_price();
+                $annuityFactorPrice = wc_get_price_to_display($product);
 
                 try {
                     $methodList = null;
