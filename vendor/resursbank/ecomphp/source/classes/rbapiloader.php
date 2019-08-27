@@ -62,7 +62,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', '1.3.22');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190823');
+    define('ECOMPHP_MODIFY_DATE', '20190827');
 }
 
 /**
@@ -259,6 +259,12 @@ class ResursBank
      * @since 1.1.1
      */
     private $CURL;
+
+    /**
+     * @var MODULE_CURL $CURL_USER_DEFINED
+     */
+    private $CURL_USER_DEFINED;
+
     /**
      * Handles created during in one http call are collected here
      * @var array
@@ -336,6 +342,8 @@ class ResursBank
      * @var bool $speclineCustomization Boolean value that has purpose when using addorderlines to customize aftershop.
      */
     private $speclineCustomization = false;
+
+    private $skipAfterShopPaymentValidation = true;
 
     /// Environment URLs
     /**
@@ -876,9 +884,14 @@ class ResursBank
         } else {
             $this->environment = $this->env_prod;
         }
-        if (class_exists('\Resursbank\RBEcomPHP\MODULE_CURL',
-                ECOM_CLASS_EXISTS_AUTOLOAD) || class_exists('\TorneLIB\MODULE_CURL', ECOM_CLASS_EXISTS_AUTOLOAD)) {
-            $this->CURL = new MODULE_CURL();
+        if (class_exists('\Resursbank\RBEcomPHP\MODULE_CURL', ECOM_CLASS_EXISTS_AUTOLOAD) ||
+            class_exists('\TorneLIB\MODULE_CURL', ECOM_CLASS_EXISTS_AUTOLOAD)
+        ) {
+            if (!is_null($this->CURL_USER_DEFINED)) {
+                $this->CURL = $this->CURL_USER_DEFINED;
+            } else {
+                $this->CURL = new MODULE_CURL();
+            }
             $this->CURL->setChain(false);
             if ($inheritExtendedSoapWarnings) {
                 $this->CURL->setFlag('SOAPWARNINGS_EXTEND', true);
@@ -887,7 +900,6 @@ class ResursBank
             $this->CURL->setStoreSessionExceptions(true);
             $this->CURL->setAuthentication($this->soapOptions['login'], $this->soapOptions['password']);
             $this->CURL->setUserAgent($this->myUserAgent);
-            //$this->CURL->setThrowableHttpCodes();
             $this->NETWORK = new MODULE_NETWORK();
             $this->BIT = $this->NETWORK->BIT;
         }
@@ -949,32 +961,28 @@ class ResursBank
     }
 
     /**
-     * Return the CURL communication handle to the client, when in debug mode (Read only)
+     * Return the CURL communication handle to the client.
      *
      * @param bool $bulk
-     *
+     * @param bool $reinitialize Get a brand new handle, in case of failures where old handles are inherited the wrong way.
      * @return array|mixed|MODULE_CURL
      * @throws \Exception
      * @since 1.0.22
      * @since 1.1.22
      * @since 1.2.0
      */
-    public function getCurlHandle($bulk = false)
+    public function getCurlHandle($bulk = false, $reinitialize = false)
     {
-        $this->InitializeServices(false);
-        if ($this->debug) {
-            if ($bulk) {
-                if (count($this->CURL_HANDLE_COLLECTOR)) {
-                    return array_pop($this->CURL_HANDLE_COLLECTOR);
-                }
-
-                return $this->CURL_HANDLE_COLLECTOR;
+        $this->InitializeServices($reinitialize);
+        if ($bulk) {
+            if (count($this->CURL_HANDLE_COLLECTOR)) {
+                return array_pop($this->CURL_HANDLE_COLLECTOR);
             }
 
-            return $this->CURL;
-        } else {
-            throw new \ResursException("Can't return handle. The module is in wrong state (non-debug mode)", 403);
+            return $this->CURL_HANDLE_COLLECTOR;
         }
+
+        return $this->CURL;
     }
 
     /**
@@ -993,6 +1001,7 @@ class ResursBank
         $this->InitializeServices();
         if ($this->debug) {
             $this->CURL = $newCurlHandle;
+            $this->CURL_USER_DEFINED = $newCurlHandle;
         } else {
             throw new \ResursException("Can't return handle. The module is in wrong state (non-debug mode)", 403);
         }
@@ -3242,6 +3251,7 @@ class ResursBank
                     } else {
                         $errorMessage = $e->getMessage();
                     }
+
                     throw new \ResursException(
                         $errorMessage,
                         is_numeric($jsonized->errorCode) ? $jsonized->errorCode : 0,
@@ -3912,9 +3922,25 @@ class ResursBank
      */
     public function getCreatedBy()
     {
-        $createdBy = $this->realClientName . "_" . $this->getVersionNumber(true);
-        if (!empty($this->loggedInuser)) {
-            $createdBy .= "/" . $this->loggedInuser;
+        // Allow clients to skip clientname (if client name is confusing in paymentadmin) by setting
+        // flag CREATED_BY_NO_CLIENT_NAME. If unset, ecomphp_decimalVesionNumber will be shown.
+        if (!$this->isFlag('CREATED_BY_NO_CLIENT_NAME')) {
+            $createdBy = $this->realClientName . "_" . $this->getVersionNumber(true);
+
+            // If logged in user is set by client or plugin, add this to the createdBy string.
+            if (!empty($this->loggedInuser)) {
+                $createdBy .= "/" . $this->loggedInuser;
+            }
+        } else {
+            // If client or plugin chose to exclude clentname, we'll still look for a logged in user.
+            if (!empty($this->loggedInuser)) {
+                $createdBy = $this->loggedInuser;
+            } else {
+                // If no logged in user is set, ecomphp will mark the createdBy-string with an indication
+                // that something or someone on the remote has done something to the order. This is
+                // done to clarify that this hasn't been done with a regular ResursBank-local interface.
+                $createdBy = "EComPHP-RemoteClientAction";
+            }
         }
 
         return $createdBy;
@@ -6132,14 +6158,14 @@ class ResursBank
      * as is.
      *
      * @param $paymentIdOrPaymentObject
-     *
+     * @param bool $getAsTable
      * @return array
      * @throws \Exception
      * @deprecated 1.3.21 Use getPaymentDiffByStatus instead!
      */
-    public function getPaymentSpecByStatus($paymentIdOrPaymentObject)
+    public function getPaymentSpecByStatus($paymentIdOrPaymentObject, $getAsTable = false)
     {
-        return $this->getPaymentDiffByStatus($paymentIdOrPaymentObject);
+        return $this->getPaymentDiffByStatus($paymentIdOrPaymentObject, $getAsTable);
     }
 
     /**
@@ -6279,8 +6305,9 @@ class ResursBank
      *
      * @param $orderlineStatuses
      * @return array
+     * @since 1.3.21
      */
-    private function getPaymentDiffAsTable($orderlineStatuses) {
+    public function getPaymentDiffAsTable($orderlineStatuses) {
         $tableStatusList = array();
 
         if (is_array($orderlineStatuses) && count($orderlineStatuses) && isset($orderlineStatuses['AUTHORIZE'])) {
@@ -6771,21 +6798,24 @@ class ResursBank
     /**
      * Aftershop Payment Finalization (DEBIT)
      *
-     * Make sure that you are running this with try-catches in cases where failures may occur.
-     * Method rebuilt with paymentCancel as template, with a tiny twist (190802).
-     *
      * @param $paymentId
      * @param array $customPayloadItemList
      * @param bool $runOnce Only run this once, throw second time
-     *
+     * @param bool $skipSpecValidation Set to true, you're skipping validation of orderrows.
      * @return bool
      * @throws \Exception
      * @since 1.0.22
      * @since 1.1.22
      * @since 1.2.0
      */
-    public function paymentFinalize($paymentId = "", $customPayloadItemList = [], $runOnce = false)
+    public function paymentFinalize($paymentId = "", $customPayloadItemList = [], $runOnce = false, $skipSpecValidation = false)
     {
+        if (!is_array($customPayloadItemList)) {
+            $customPayloadItemList = array();
+        }
+
+        $this->setAftershopPaymentValidation($skipSpecValidation);
+
         try {
             $afterShopObject = $this->getAfterShopObjectByPayload(
                 $paymentId,
@@ -6853,30 +6883,37 @@ class ResursBank
      *
      * @param string $paymentId
      * @param array $customPayloadItemList
-     *
+     * @param bool $runOnce
+     * @param bool $skipSpecValidation
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public function finalizePayment($paymentId = "", $customPayloadItemList = array())
+    public function finalizePayment($paymentId = "", $customPayloadItemList = array(), $runOnce = false, $skipSpecValidation = false)
     {
-        return $this->paymentFinalize($paymentId, $customPayloadItemList);
+        return $this->paymentFinalize($paymentId, $customPayloadItemList, $runOnce, $skipSpecValidation);
     }
 
     /**
      * Aftershop Payment Annulling (ANNUL)
-     * Make sure that you are running this with try-catches in cases where failures may occur.
      *
      * @param $paymentId
      * @param array $customPayloadItemList
      * @param bool $runOnce Only run this once, throw second time
+     * @param bool $skipSpecValidation Set to true, you're skipping validation of orderrows.
      * @return bool
      * @throws \Exception
      * @since 1.0.22
      * @since 1.1.22
      * @since 1.2.0
      */
-    public function paymentAnnul($paymentId = "", $customPayloadItemList = [], $runOnce = false)
+    public function paymentAnnul($paymentId = "", $customPayloadItemList = [], $runOnce = false, $skipSpecValidation = false)
     {
+        if (!is_array($customPayloadItemList)) {
+            $customPayloadItemList = array();
+        }
+
+        $this->setAftershopPaymentValidation($skipSpecValidation);
+
         $afterShopObject = $this->getAfterShopObjectByPayload(
             $paymentId,
             $customPayloadItemList,
@@ -6916,13 +6953,14 @@ class ResursBank
      *
      * @param string $paymentId
      * @param array $customPayloadItemList
-     *
+     * @param bool $runOnce
+     * @param bool $skipSpecValidation
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public function annulPayment($paymentId = "", $customPayloadItemList = array())
+    public function annulPayment($paymentId = "", $customPayloadItemList = array(), $runOnce = false, $skipSpecValidation = false)
     {
-        return $this->paymentAnnul($paymentId, $customPayloadItemList);
+        return $this->paymentAnnul($paymentId, $customPayloadItemList, $runOnce, $skipSpecValidation);
     }
 
     /**
@@ -6933,15 +6971,21 @@ class ResursBank
      * @param $paymentId
      * @param array $customPayloadItemList
      * @param bool $runOnce Only run this once, throw second time
-     *
+     * @param bool $skipSpecValidation Set to true, you're skipping validation of orderrows.
      * @return bool
      * @throws \Exception
      * @since 1.0.22
      * @since 1.1.22
      * @since 1.2.0
      */
-    public function paymentCredit($paymentId = "", $customPayloadItemList = array(), $runOnce = false)
+    public function paymentCredit($paymentId = "", $customPayloadItemList = array(), $runOnce = false, $skipSpecValidation = false)
     {
+        if (!is_array($customPayloadItemList)) {
+            $customPayloadItemList = array();
+        }
+
+        $this->setAftershopPaymentValidation($skipSpecValidation);
+
         $afterShopObject = $this->getAfterShopObjectByPayload(
             $paymentId,
             $customPayloadItemList,
@@ -6984,13 +7028,28 @@ class ResursBank
      *
      * @param string $paymentId
      * @param array $customPayloadItemList
-     *
+     * @param bool $runOnce
+     * @param bool $skipSpecValidation
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public function creditPayment($paymentId = "", $customPayloadItemList = array())
+    public function creditPayment($paymentId = "", $customPayloadItemList = array(), $runOnce = false, $skipSpecValidation = false)
     {
-        return $this->paymentCredit($paymentId, $customPayloadItemList);
+        return $this->paymentCredit($paymentId, $customPayloadItemList, $runOnce, $skipSpecValidation);
+    }
+
+    /**
+     * Get configuration of paymentspec validation during aftershop actions.
+     *
+     * @param bool $skipValidationStatus
+     */
+    private function setAftershopPaymentValidation($skipValidationStatus = false) {
+        // Flag overriders.
+        if ($this->isFlag('SKIP_AFTERSHOP_VALIDATION')) {
+            $skipValidationStatus = true;
+        }
+
+        $this->skipAfterShopPaymentValidation = $skipValidationStatus;
     }
 
     /**
@@ -6999,20 +7058,25 @@ class ResursBank
      * This function cancels a full order depending on the order content. Payloads MAY be customized but on your own
      * risk!
      *
-     * @param $paymentId
+     * @param string $paymentId
      * @param array $customPayloadItemList
-     *
+     * @param bool $skipSpecValidation Set to true, you're skipping validation of orderrows.
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      * @since 1.0.22
      * @since 1.1.22
      * @since 1.2.0
      */
-    public function paymentCancel($paymentId = "", $customPayloadItemList = array())
+    public function paymentCancel($paymentId = "", $customPayloadItemList = array(), $skipSpecValidation = false)
     {
+        if (!is_array($customPayloadItemList)) {
+            $customPayloadItemList = array();
+        }
+
+        $this->setAftershopPaymentValidation($skipSpecValidation);
+
         $paymentData = $this->getPayment($paymentId);
         // Collect the payment sorted by status
-        //$currentPaymentSpec = $this->getPaymentDiffByStatus($paymentData);
         $currentPaymentTable = $this->getPaymentDiffByStatus($paymentData, true);
 
         // Sanitized paymentspec based on what CAN be fully ANNULLED (and actually also debited) wit no custom payment load.
@@ -7092,9 +7156,14 @@ class ResursBank
         $return = array();
         $id = 0;
 
+        if ($this->skipAfterShopPaymentValidation) {
+            return $currentOrderLines;
+        }
+
         foreach ($currentOrderLines as $idx => $orderRow) {
             // Count unsafe payment objects per row.
             $isUnsafePaymentObject = 0;
+
             foreach ($currentPaymentSpecTable as $statusRow) {
                 if ($type === 'credit') {
                     $quantityMatch = $statusRow['CREDITABLE'];
@@ -7190,9 +7259,9 @@ class ResursBank
      * @return bool
      * @throws \Exception
      */
-    public function cancelPayment($paymentId = "", $customPayloadItemList = array())
+    public function cancelPayment($paymentId = "", $customPayloadItemList = array(), $skipSpecValidation = false)
     {
-        return $this->paymentCancel($paymentId, $customPayloadItemList);
+        return $this->paymentCancel($paymentId, $customPayloadItemList, $skipSpecValidation);
     }
 
     /**

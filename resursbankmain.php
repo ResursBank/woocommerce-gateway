@@ -4535,7 +4535,7 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         try {
-            $refundStatus = $refundFlow->paymentCancel($resursOrderId, $refundArray);
+            $refundStatus = $refundFlow->paymentCancel($resursOrderId, $refundArray, true);
         } catch (\Exception $e) {
             $errors = true;
             $errorCode = $e->getCode();
@@ -5237,7 +5237,7 @@ function resurs_remove_order_item($item_id)
 
         try {
             $order = new WC_Order($orderId);
-            $removeResursRow = $resursFlow->paymentCancel($resursPaymentId, $clientPaymentSpec);
+            $removeResursRow = $resursFlow->paymentCancel($resursPaymentId, $clientPaymentSpec, true);
             $order->add_order_note(__('Orderline Removal: Resurs Bank API was called to remove orderlines',
                 'resurs-bank-payment-gateway-for-woocommerce'));
         } catch (Exception $e) {
