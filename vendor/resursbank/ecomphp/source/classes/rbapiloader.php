@@ -7234,13 +7234,18 @@ class ResursBank
         $return = array();
         $id = 0;
 
-        if ($this->skipAfterShopPaymentValidation) {
-            return $currentOrderLines;
-        }
-
         foreach ($currentOrderLines as $idx => $orderRow) {
             // Count unsafe payment objects per row.
             $isUnsafePaymentObject = 0;
+
+            $realQuantity = null;
+            $realUnitAmount = null;
+            $realVatPct = null;
+            if ($this->skipAfterShopPaymentValidation) {
+                $realQuantity = $orderRow['quantity'];
+                $realUnitAmount = $orderRow['unitAmountWithoutVat'];
+                $realVatPct = $orderRow['vatPct'];
+            }
 
             foreach ($currentPaymentSpecTable as $statusRow) {
                 if ($type === 'credit') {
@@ -7285,12 +7290,24 @@ class ResursBank
                     $isUnsafePaymentObject++;
                 }
 
+                if ($this->skipAfterShopPaymentValidation) {
+                    $useQuantity = $realQuantity;
+                    $useUnitAmount = $realUnitAmount;
+                    $useVatPct = $realVatPct;
+                } else {
+                    $useUnitAmount = $orderRow['unitAmountWithoutVat'];
+                    $useVatPct = $orderRow['vatPct'];
+                }
+
                 // Validation is based on same article, description and price.
                 // Besides this the validation is also
                 if (
                     $orderRow['artNo'] == $statusRow['artNo'] &&
                     $orderRow['description'] == $statusRow['description'] &&
-                    $orderRow['unitAmountWithoutVat'] == $statusRow['unitAmountWithoutVat'] &&
+                    (
+                        $orderRow['unitAmountWithoutVat'] == $statusRow['unitAmountWithoutVat'] ||
+                        $this->skipAfterShopPaymentValidation
+                    ) &&
                     $useQuantity > 0
                 ) {
                     $orderRow = $this->getPurgedPaymentRow(
@@ -7310,13 +7327,13 @@ class ResursBank
                     $orderRow['id'] = $id;
                     $orderRow['quantity'] = $useQuantity;
                     $orderRow['totalVatAmount'] = $this->getTotalVatAmount(
-                        $orderRow['unitAmountWithoutVat'],
-                        $orderRow['vatPct'],
+                        $useUnitAmount,
+                        $useVatPct,
                         $useQuantity
                     );
                     $orderRow['totalAmount'] = $this->getTotalAmount(
-                        $orderRow['unitAmountWithoutVat'],
-                        $orderRow['vatPct'],
+                        $useUnitAmount,
+                        $useVatPct,
                         $useQuantity
                     );
                     $return[] = $orderRow;
