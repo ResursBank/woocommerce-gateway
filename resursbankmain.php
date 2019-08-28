@@ -4535,7 +4535,7 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         try {
-            $refundStatus = $refundFlow->paymentCancel($resursOrderId, $refundArray, true);
+            $refundStatus = $refundFlow->paymentCancel($resursOrderId);
         } catch (\Exception $e) {
             $errors = true;
             $errorCode = $e->getCode();
@@ -5220,7 +5220,8 @@ function resurs_remove_order_item($item_id)
                 } else {
                     $order_failover_test = new WC_Order($orderId);
                     $feeName = '00_' . str_replace(' ', '_',
-                            $order_failover_test->payment_method_title) . "_fee";
+                            $order_failover_test->payment_method_title
+                        ) . "_fee";
                     $clientPaymentSpec[] = [
                         'artNo' => $feeName,
                         'quantity' => 1,
