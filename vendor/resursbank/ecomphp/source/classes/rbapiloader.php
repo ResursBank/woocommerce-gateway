@@ -6230,9 +6230,9 @@ class ResursBank
         );
 
         foreach ($paymentDiffTable as $row) {
-            $annullable = $row['ANNULLABLE'];
-            $debitable = $row['DEBITABLE'];
-            $creditable = $row['CREDITABLE'];
+            $annullable = isset($row['ANNULLABLE']) ? $row['ANNULLABLE'] : 0;
+            $debitable = isset($row['DEBITABLE']) ? $row['DEBITABLE'] : 0;
+            $creditable = isset($row['CREDITABLE']) ? $row['CREDITABLE'] : 0;
 
             $newOrderRow = $this->getPurgedPaymentRow(
                 $row,
@@ -6301,10 +6301,47 @@ class ResursBank
     }
 
     /**
+     * Compile payment status diffs as a horizontal table.
+     *
+     * @param $artRow
+     * @param $orderlineStatuses
+     * @return array
+     * @throws Exception
+     * @since 1.3.21
+     */
+    private function setPaymentDiffTable($artRow, $orderlineStatuses) {
+        if (!is_array($artRow)) {
+            throw new \Exception(
+                sprintf('%s exception: Article row is not an array', __FUNCTION__),
+                500
+            );
+        }
+
+        $debited = $this->getOrderRowMatch($artRow, $orderlineStatuses['DEBIT']);
+        $credited = $this->getOrderRowMatch($artRow, $orderlineStatuses['CREDIT']);
+        $annulled = $this->getOrderRowMatch($artRow, $orderlineStatuses['ANNUL']);
+
+        $return = [
+            'artNo' => $artRow['artNo'],
+            'description' => $artRow['description'],
+            'unitMeasure' => $artRow['unitMeasure'],
+            'unitAmountWithoutVat' => $artRow['unitAmountWithoutVat'],
+            'vatPct' => $artRow['vatPct'],
+            'AUTHORIZE' => isset($artRow['quantity']) ? $artRow['quantity'] : 0,
+            'DEBIT' => isset($debited['quantity']) ? $debited['quantity'] : 0,
+            'CREDIT' => isset($credited['quantity']) ? $credited['quantity'] : 0,
+            'ANNUL' => isset($annulled['quantity']) ? $annulled['quantity'] : 0,
+        ];
+
+        return $return;
+    }
+
+    /**
      * Render a table with completed data about each orderline.
      *
      * @param $orderlineStatuses
      * @return array
+     * @throws Exception
      * @since 1.3.21
      */
     public function getPaymentDiffAsTable($orderlineStatuses) {
@@ -6313,21 +6350,7 @@ class ResursBank
         if (is_array($orderlineStatuses) && count($orderlineStatuses) && isset($orderlineStatuses['AUTHORIZE'])) {
             $authorizeObject = $orderlineStatuses['AUTHORIZE'];
             foreach ($authorizeObject as $artRow) {
-                $debited = $this->getOrderRowMatch($artRow, $orderlineStatuses['DEBIT']);
-                $credited = $this->getOrderRowMatch($artRow, $orderlineStatuses['CREDIT']);
-                $annulled = $this->getOrderRowMatch($artRow, $orderlineStatuses['ANNUL']);
-                $tableStatusList[] = [
-                    'artNo' => $artRow['artNo'],
-                    'description' => $artRow['description'],
-                    'unitMeasure' => $artRow['unitMeasure'],
-                    'unitAmountWithoutVat' => $artRow['unitAmountWithoutVat'],
-                    'vatPct' => $artRow['vatPct'],
-                    'AUTHORIZE' => isset($artRow['quantity']) ? $artRow['quantity'] : 0,
-                    'DEBIT' => isset($debited['quantity']) ? $debited['quantity'] : 0,
-                    'CREDIT' => isset($credited['quantity']) ? $credited['quantity'] : 0,
-                    'ANNUL' => isset($annulled['quantity']) ? $annulled['quantity'] : 0,
-                ];
-
+                $tableStatusList[] = $this->setPaymentDiffTable($artRow, $orderlineStatuses);
             }
         }
 
@@ -6337,7 +6360,58 @@ class ResursBank
             $tableStatusList[$idx]['CREDITABLE'] = $artRow['DEBIT'] - $artRow['CREDIT'];
         }
 
+        $tableStatusList = $this->getMissingPaymentDiffRows($orderlineStatuses, $tableStatusList);
+
         return $tableStatusList;
+    }
+
+    /**
+     * Find the rest of an order that was added after authorization (like "own credited rows).
+     *
+     * @param $orderlineStatuses
+     * @param $tableStatusList
+     * @return array
+     * @since 1.3.21
+     */
+    private function getMissingPaymentDiffRows($orderlineStatuses, $tableStatusList) {
+        foreach ($orderlineStatuses as $type => $contentArray) {
+            if ($type === "AUTHORIZE") {
+                continue;
+            }
+            foreach ($contentArray as $artRow) {
+                if (!$this->getIsInAuthorize($artRow, $orderlineStatuses['AUTHORIZE'])) {
+                    $setRow = [
+                        'artNo' => $artRow['artNo'],
+                        'description' => $artRow['description'],
+                        'unitMeasure' => $artRow['unitMeasure'],
+                        'unitAmountWithoutVat' => $artRow['unitAmountWithoutVat'],
+                        'vatPct' => $artRow['vatPct'],
+                        'AUTHORIZE' => 0,
+                        'DEBIT' => 0,
+                        'CREDIT' => 0,
+                        'ANNUL' => 0,
+                    ];
+                    $setRow[strtoupper($type)] += $artRow['quantity'];
+                    $tableStatusList[] = $setRow;
+                }
+            }
+        }
+        return $tableStatusList;
+    }
+
+    /**
+     * Check if an article is located in, what we expect, the AUTHORIZE object.
+     *
+     * @param $paymentDiffArtRow
+     * @param $authorizeObject
+     * @return bool
+     */
+    private function getIsInAuthorize($paymentDiffArtRow, $authorizeObject) {
+        $return = false;
+        if ($this->getOrderRowMatch($paymentDiffArtRow, $authorizeObject)) {
+            $return = true;
+        }
+        return $return;
     }
 
     /**
@@ -6353,6 +6427,10 @@ class ResursBank
 
         if (is_array($matchList) && count($matchList)) {
             foreach ($matchList as $matchRow) {
+                if (!is_array($artRow)) {
+                    // When something went wrong with an expected array.
+                    continue;
+                }
                 $currentArray = array_intersect($this->getPurgedPaymentRow($artRow), $this->getPurgedPaymentRow($matchRow));
                 if (count($currentArray) === count($this->getPurgedPaymentRow($artRow))) {
                     $return = $matchRow;
