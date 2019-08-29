@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.2
 Requires PHP: 5.4
-Stable tag: 2.2.19
+Stable tag: 2.2.21
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,30 +87,16 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.18 =
+= 2.2.21 =
 
-    * [WOO-395] - (T) Avoid hard coding of the part payment widget
-    * [WOO-283] - (T) PAYMENT_PROVIDER and LEGAL
-    * [WOO-291] - (T) Only shipping information are shown in wp-admin (orders)
-    * [WOO-302] - (T) Add get-parameter in callback urls that tells about environment
-    * [WOO-351] - (T) Check if the meta data can be used for fetching wrongly created orders
-    * [WOO-376] - (T) Woocommerce upated so wc tested up to should be changed also
-    * [WOO-380] - (T) WordPress 5.2 is imminent
-    * [WOO-384] - (T) Payment method models is unsupported in multisites
-    * [WOO-393] - (T) Renamed payment method titles may be confusing  when running simplified
-    * [WOO-348] - (B) After a denied payment, updatePaymentReference no longer works and the orderid will not be updated on the new order if "continued" with an approved govid
-    * [WOO-349] - (B) Status handling looks weird with merchants created via "MP"
-    * [WOO-373] - (B) The list of payment methods in admin excludes methods if they inherit same description (array overwriting)
-    * [WOO-374] - (B) Not all payment methods are listed in admin (MP)
-    * [WOO-377] - (B) Add_order_note is missing a pointer (important)
-    * [WOO-379] - (B) Two windowed orders makes javascript throw "Unknown errors"
-    * [WOO-383] - (B) When credentials are used on more than one platform in the same time with incremental updateOrderReferences sites may collide
-    * [WOO-387] - (B) Ending session tries to destroy a session when it does not exist on applied filters
-    * [WOO-388] - (B) Payment method name is empty in wp-admin orderview when simplified is used
-    * [WOO-389] - (B) Guard curl functions (curl_init, curl_exec).
-    * [WOO-391] - (B) Check which payment method that is shown in the order list when the first checkout failed
-    * [WOO-385] - (B) Order ids are not updated properly
-    * [WOO-386] - (B) Statuses are not updated after denied payments
+
+= 2.2.20 =
+
+    * Micro fix for cost of purchase (part payment on single product row)
+
+= 2.2.19 =
+
+    * Micro fix for order comments.
 
 
 == Upgrade Notice ==
