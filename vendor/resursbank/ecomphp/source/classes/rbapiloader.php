@@ -7326,6 +7326,9 @@ class ResursBank
                     // Make sure we use the correct getPaymentData.
                     $orderRow['id'] = $id;
                     $orderRow['quantity'] = $useQuantity;
+                    $orderRow['unitAmountWithoutVat'] = $useUnitAmount;
+                    $orderRow['vatPct'] = $useVatPct;
+
                     $orderRow['totalVatAmount'] = $this->getTotalVatAmount(
                         $useUnitAmount,
                         $useVatPct,

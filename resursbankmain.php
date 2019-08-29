@@ -4517,11 +4517,13 @@ function woocommerce_gateway_resurs_bank_init()
                     $articleId = $setSku;
                 }
 
+                $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
+
                 // Regenerate the cancellation orderline with positive decimals.
                 $refundFlow->addOrderLine(
                     $articleId,
                     $product->get_title(),
-                    preg_replace('/^-/', '', ($item->get_total() / $itemQuantity)),
+                    $itemTotal,
                     $amountPct,
                     '',
                     'ORDER_LINE',
