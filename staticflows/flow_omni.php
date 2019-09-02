@@ -236,6 +236,21 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     }
 
     /**
+     * Quickly fetch data from a billing/shipping object without worring of missing keys.
+     *
+     * @param $billingObject
+     * @param $key
+     * @return string
+     */
+    private function getDataFromCustomerObject($billingObject, $key) {
+        $return = '';
+        if (isset($billingObject[$key])) {
+            $return = $billingObject[$key];
+        }
+        return $return;
+    }
+
+    /**
      * @return array
      * @throws Exception
      */
@@ -247,6 +262,37 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $bookDataOmni = array(
             'orderLines' => $specLines,
         );
+
+        // If user is logged in, fetch data and send to RCO.
+        // Note: Cookies may override this feature.
+        if (is_user_logged_in()) {
+            $this->flow->setFlag('KEEP_RCO_DELIVERY', true);
+            $loggedInCustomer = new WC_Customer(get_current_user_id());
+            $loggedInBilling = $loggedInCustomer->get_billing();
+            $this->flow->setCustomer(
+                '',
+                '',
+                $this->getDataFromCustomerObject($loggedInBilling, 'phone'),
+                $this->getDataFromCustomerObject($loggedInBilling, 'email'),
+                'NATURAL',
+                ''
+            );
+            $this->flow->setDeliveryAddress(
+                $this->getDataFromCustomerObject(
+                        $loggedInBilling,
+                    'first_name'
+                ) . ' ' . $this->getDataFromCustomerObject(
+                        $loggedInBilling, 'last_name'
+                ),
+                $this->getDataFromCustomerObject($loggedInBilling, 'first_name'),
+                $this->getDataFromCustomerObject($loggedInBilling, 'last_name'),
+                $this->getDataFromCustomerObject($loggedInBilling, 'address_1'),
+                $this->getDataFromCustomerObject($loggedInBilling, 'address_2'),
+                $this->getDataFromCustomerObject($loggedInBilling, 'city'),
+                $this->getDataFromCustomerObject($loggedInBilling, 'postcode'),
+                $this->getDataFromCustomerObject($loggedInBilling, 'country')
+            );
+        }
 
         $this->flow->setSigning(
             $getUrls['successUrl'],
