@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.22
+ * @version 1.3.23
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -59,10 +59,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.22');
+    define('ECOMPHP_VERSION', '1.3.23');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190827');
+    define('ECOMPHP_MODIFY_DATE', '20190904');
 }
 
 /**
@@ -219,29 +219,6 @@ class ResursBank
      * @var string
      */
     private $realClientName = "EComPHP";
-
-    /**
-     * $metaDataHashEnabled When enabled, ECom uses Resurs metadata to add a sha1-encoded hash string,
-     * based on parts of the payload to secure the data transport (unfinished)
-     * @var bool
-     */
-    private $metaDataHashEnabled = false;
-    /**
-     * $metaDataHashEncrypted When enabled, ECom will try to pack and encrypt metadata strings instead of
-     * hashing it (unfinished)
-     * @var bool
-     */
-    private $metaDataHashEncrypted = false;
-    /**
-     * Encryption AES IV
-     * @var string
-     */
-    private $metaDataIv;
-    /**
-     * Encryption AES Key
-     * @var null
-     */
-    private $metaDataKey;
 
     /**
      * @var array Last stored getPayment()
@@ -5514,6 +5491,7 @@ class ResursBank
         if (!empty($phone)) {
             $this->Payload['customer']['phone'] = $phone;
         }
+        // The field for cellphone in RCO is called mobile.
         if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             if (!empty($cellphone)) {
                 $this->Payload['customer']['mobile'] = $cellphone;
@@ -6460,6 +6438,7 @@ class ResursBank
      * @param $paymentDiffArtRow
      * @param $authorizeObject
      * @return bool
+     * @since 1.3.22
      */
     private function getIsInAuthorize($paymentDiffArtRow, $authorizeObject) {
         $return = false;
@@ -6475,6 +6454,7 @@ class ResursBank
      * @param $artRow
      * @param $matchList
      * @return array|mixed
+     * @since 1.3.22
      */
     private function getOrderRowMatch($artRow, $matchList)
     {
@@ -6594,7 +6574,7 @@ class ResursBank
      * @param $paymentDiff
      * @param $paymentType
      * @return mixed
-     * @since 1.3.20
+     * @since 1.3.22
      */
     public function getMergedPaymentDiff($paymentRows, $paymentDiff, $paymentType) {
         // Convert to correct row, if only one.
@@ -6643,7 +6623,7 @@ class ResursBank
      * @param int $renderType RESURS_AFTERSHOP_RENDER_TYPES as unique type or bitmask
      * @return array
      * @throws \Exception
-     * @since Beginning of time.
+     * @since First book of moses.
      */
     public function sanitizeAfterShopSpec(
         $paymentIdOrPaymentObjectData = '',
@@ -7379,13 +7359,13 @@ class ResursBank
 
             foreach ($currentPaymentSpecTable as $statusRow) {
                 if ($type === 'credit') {
-                    $quantityMatch = $statusRow['CREDITABLE'];
+                    $quantityMatch = isset($statusRow['CREDITABLE']) ? $statusRow['CREDITABLE'] : 0;
                 } else if ($type === 'annul') {
-                    $quantityMatch = $statusRow['ANNULLABLE'];
+                    $quantityMatch = isset($statusRow['ANNULLABLE']) ? $statusRow['ANNULLABLE'] : 0;
                 } else if ($type === 'debit') {
-                    $quantityMatch = $statusRow['DEBITABLE'];
+                    $quantityMatch = isset($statusRow['DEBITABLE']) ? $statusRow['DEBITABLE'] : 0;
                 } else if ($type === 'authorize') {
-                    $quantityMatch = $statusRow['AUTHORIZE'];
+                    $quantityMatch = isset($statusRow['AUTHORIZE']) ? $statusRow['AUTHORIZE'] : 0;
                 } else {
                     $quantityMatch = 0;
                 }
@@ -7424,9 +7404,6 @@ class ResursBank
                     $useQuantity = $realQuantity;
                     $useUnitAmount = $realUnitAmount;
                     $useVatPct = $realVatPct;
-                } else {
-                    $useUnitAmount = $orderRow['unitAmountWithoutVat'];
-                    $useVatPct = $orderRow['vatPct'];
                 }
 
                 // Validation is based on same article, description and price.
@@ -7452,6 +7429,12 @@ class ResursBank
                             'CREDITABLE',
                         ]
                     );
+
+                    if (!$this->skipAfterShopPaymentValidation) {
+                        $useUnitAmount = $orderRow['unitAmountWithoutVat'];
+                        $useVatPct = $orderRow['vatPct'];
+                    }
+
 
                     // Make sure we use the correct getPaymentData.
                     $orderRow['id'] = $id;
@@ -7483,9 +7466,9 @@ class ResursBank
      *
      * @param string $paymentId
      * @param array $customPayloadItemList
-     *
      * @return bool
      * @throws \Exception
+     * @since Forever.
      */
     public function cancelPayment($paymentId = "", $customPayloadItemList = array(), $skipSpecValidation = false)
     {
