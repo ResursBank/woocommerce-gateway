@@ -5680,7 +5680,7 @@ function initializeResursFlow(
         }
         if (isset($current_user->user_login)) {
             // Used for aftershop and is not used for metadata
-            $initFlow->setLoggedInUser(getResursWooCustomerId());
+            $initFlow->setLoggedInUser(getResursWordpressUser('user_login'));
         }
     } catch (Exception $e) {
     }
