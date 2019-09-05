@@ -3745,10 +3745,11 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'processing':
                     break;
                 case 'completed':
+                    $customFinalize = self::getOrderRowsByRefundedItems($order, $resursFlow);
                     $flowErrorMessage = "";
                     if ($resursFlow->canDebit($payment)) {
                         try {
-                            $successFinalize = $resursFlow->paymentFinalize($payment_id);
+                            $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
                             resursEventLogger($payment_id . ': Finalization - Payment Content');
                             resursEventLogger(print_r($payment, true));
                             resursEventLogger($payment_id . ': Finalization ' . $successFinalize ? 'OK' : 'NOT OK');
@@ -4459,8 +4460,10 @@ function woocommerce_gateway_resurs_bank_init()
                         } else {
                             $annuityDuration = getResursOption("resursAnnuityDuration");
                         }
-                        $payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice, $annuityFactors,
-                            $annuityDuration);
+                        $payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice,
+                            annuityFactors,
+                            $annuityDuration
+                        );
                         $currentCountry = getResursOption('country');
                         if ($currentCountry != "FI") {
                             $paymentLimit = 150;
