@@ -179,6 +179,8 @@ class ResursBank
      */
     private $getPaymentDefaultPurge = ['totalVatAmount', 'totalAmount', 'quantity', 'id'];
 
+    private $getPaymentDefaultPurgeSet = false;
+
     /**
      * Keys to keep original values for, in a match-session during aftershop.
      *
@@ -332,10 +334,16 @@ class ResursBank
     private $SpecLines = array();
 
     /**
-     * @var bool $speclineCustomization Boolean value that has purpose when using addorderlines to customize aftershop.
+     * Boolean value that has purpose when using addorderlines to customize aftershop.
+     * @var bool $speclineCustomization
+     * @since 1.3.23
      */
     private $speclineCustomization = false;
 
+    /**
+     * @var bool
+     * @since 1.3.23
+     */
     private $skipAfterShopPaymentValidation = true;
 
     /// Environment URLs
@@ -5071,10 +5079,12 @@ class ResursBank
      * Get paymentSpec key scheme.
      *
      * @param string $key checkout, hosted, simplified, minimalistic, tiny (tiny=what Resurs normally use as keying).
+     * @param bool $throwOnFaultyKey
      * @return array
+     * @throws Exception
      * @since 1.3.23
      */
-    public function getPaymentSpecKeyScheme($key = '')
+    public function getPaymentSpecKeyScheme($key = '', $throwOnFaultyKey = false)
     {
         $return = [
             'checkout' => [
@@ -5124,6 +5134,10 @@ class ResursBank
             return $return[$key];
         }
 
+        if ($throwOnFaultyKey && !isset($return[$key])) {
+            throw new \Exception('No such paymentSpec key scheme', 500);
+        }
+
         return $return;
     }
 
@@ -5138,6 +5152,7 @@ class ResursBank
      * @param int $myFlowOverrider
      *
      * @return array
+     * @throws Exception
      * @since 1.0.4
      * @since 1.1.4
      */
@@ -6488,6 +6503,7 @@ class ResursBank
             // Touch on changes only
             if (count($keys)) {
                 $this->getPaymentDefaultPurge = $keys;
+                $this->getPaymentDefaultPurgeSet = true;
             }
         } else {
             throw new \Exception(sprintf("Keys sent to %s must be a function!", __FUNCTION__));
@@ -6503,10 +6519,11 @@ class ResursBank
      * @throws Exception
      * @since 1.3.23
      */
-    public function setGetPaymentKeys($keepKeys = ['title', 'description', 'unitAmountWithoutVat']) {
+    public function setGetPaymentMatchKeys($keepKeys = ['title', 'description', 'unitAmountWithoutVat']) {
         $return = array();
         if (is_string($keepKeys)) {
-            $useKeys = $this->getPaymentSpecKeyScheme($keepKeys);
+            // If this is a string, make sure that the string belongs to a predefined spec.
+            $useKeys = $this->getPaymentSpecKeyScheme($keepKeys, true);
         } else {
             if (is_array($keepKeys) && !count($keepKeys)) {
                 $useKeys = $this->getPaymentSpecKeyScheme('tiny');
@@ -6555,8 +6572,12 @@ class ResursBank
      * @return mixed
      * @since 1.3.23
      */
-    private function getPurgedPaymentRow($row, $alsoCleanBy = array()) {
-        $cleanBy = array_merge($this->getPaymentDefaultPurge, $alsoCleanBy);
+    private function getPurgedPaymentRow($row, $alsoCleanBy = array(), $excludeDefaults = false) {
+        if (!$excludeDefaults) {
+            $cleanBy = array_merge($this->getPaymentDefaultPurge, $alsoCleanBy);
+        } else {
+            $cleanBy = $alsoCleanBy;
+        }
 
         foreach ($cleanBy as $key) {
             if (isset($row[$key])) {
@@ -7351,7 +7372,14 @@ class ResursBank
             $realQuantity = null;
             $realUnitAmount = null;
             $realVatPct = null;
+
+            $realData = [];
             if ($this->skipAfterShopPaymentValidation) {
+                foreach ($this->getPaymentDefaultUnPurge as $field) {
+                    if (isset($orderRow[$field])) {
+                        $realData[$field] = $orderRow[$field];
+                    }
+                }
                 $realQuantity = $orderRow['quantity'];
                 $realUnitAmount = $orderRow['unitAmountWithoutVat'];
                 $realVatPct = $orderRow['vatPct'];
@@ -7401,6 +7429,15 @@ class ResursBank
                 }
 
                 if ($this->skipAfterShopPaymentValidation) {
+                    if (count($realData)) {
+                        foreach ($realData as $key => $value) {
+                            // Protect a few fields from mistakes that is already considered below in the
+                            // validation parts.
+                            if (!in_array($key, ['artNo', 'description', 'quantity'])) {
+                                $orderRow[$key] = $value;
+                            }
+                        }
+                    }
                     $useQuantity = $realQuantity;
                     $useUnitAmount = $realUnitAmount;
                     $useVatPct = $realVatPct;
@@ -7427,14 +7464,14 @@ class ResursBank
                             'ANNULLABLE',
                             'DEBITABLE',
                             'CREDITABLE',
-                        ]
+                        ],
+                        $this->getPaymentDefaultPurgeSet ? true : false
                     );
 
                     if (!$this->skipAfterShopPaymentValidation) {
                         $useUnitAmount = $orderRow['unitAmountWithoutVat'];
                         $useVatPct = $orderRow['vatPct'];
                     }
-
 
                     // Make sure we use the correct getPaymentData.
                     $orderRow['id'] = $id;
