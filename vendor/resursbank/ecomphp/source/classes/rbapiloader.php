@@ -4276,7 +4276,7 @@ class ResursBank
      * @param string $unitMeasure
      * @param string $articleType ORDER_LINE, DISCOUNT, SHIPPING_FEE
      * @param int $quantity
-     *
+     * @throws Exception
      * @since 1.0.2
      * @since 1.1.2
      * @since 1.2.0
@@ -4339,6 +4339,7 @@ class ResursBank
      * @param int $overrideFlow
      *
      * @return mixed
+     * @throws Exception
      * @since 1.0.2
      * @since 1.1.2
      */
@@ -7314,17 +7315,17 @@ class ResursBank
                 $newAnnulObject = $this->getValidatedAftershopRows($currentPaymentTable, $currentOrderLines, 'annul');
 
                 if (is_array($newCreditObject) && count($newCreditObject)) {
-                    $this->paymentCredit($paymentId, $newCreditObject);
+                    $this->paymentCredit($paymentId, $newCreditObject, $this->skipAfterShopPaymentValidation);
                 }
                 if (is_array($newAnnulObject) && count($newAnnulObject)) {
-                    $this->paymentAnnul($paymentId, $newAnnulObject);
+                    $this->paymentAnnul($paymentId, $newAnnulObject, false, $this->skipAfterShopPaymentValidation);
                 }
             } else {
                 if (is_array($fullAnnulObject) && count($fullAnnulObject)) {
-                    $this->paymentAnnul($paymentId, $fullAnnulObject);
+                    $this->paymentAnnul($paymentId, $fullAnnulObject, $this->skipAfterShopPaymentValidation);
                 }
                 if (is_array($fullCreditObject) && count($fullCreditObject)) {
-                    $this->paymentCredit($paymentId, $fullCreditObject);
+                    $this->paymentCredit($paymentId, $fullCreditObject, $this->skipAfterShopPaymentValidation);
                 }
             }
         } catch (\Exception $cancelException) {
