@@ -179,6 +179,12 @@ class ResursBank
      */
     private $getPaymentDefaultPurge = ['totalVatAmount', 'totalAmount', 'quantity', 'id'];
 
+    /**
+     * Notify internally if the keyset has been changed.
+     *
+     * @var bool
+     * @since 1.3.23
+     */
     private $getPaymentDefaultPurgeSet = false;
 
     /**
@@ -3924,7 +3930,7 @@ class ResursBank
     public function getCreatedBy()
     {
         // Allow clients to skip clientname (if client name is confusing in paymentadmin) by setting
-        // flag CREATED_BY_NO_CLIENT_NAME. If unset, ecomphp_decimalVesionNumber will be shown.
+        // flag CREATED_BY_NO_CLIENT_NAME. If unset, ecomphp_decimalVersionNumber will be shown.
         if (!$this->isFlag('CREATED_BY_NO_CLIENT_NAME')) {
             $createdBy = $this->realClientName . "_" . $this->getVersionNumber(true);
 
@@ -7505,8 +7511,9 @@ class ResursBank
      *
      * @param string $paymentId
      * @param array $customPayloadItemList
+     * @param bool $skipSpecValidation
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      * @since Forever.
      */
     public function cancelPayment($paymentId = "", $customPayloadItemList = array(), $skipSpecValidation = false)
