@@ -3643,6 +3643,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             $order = new WC_Order($order_id);
             $payment_method = $order->get_payment_method();
+            /** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
             $resursFlow = initializeResursFlow();
 
             $payment_id = get_post_meta($order->get_id(), 'paymentId', true);
@@ -3668,7 +3669,6 @@ function woocommerce_gateway_resurs_bank_init()
             $url = add_query_arg('action', 'edit', $url);
             $old_status = get_term_by('slug', sanitize_title($old_status_slug), 'shop_order_status');
 
-            /** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
             $flowErrorMessage = null;
 
             if ($payment_id) {
@@ -3735,7 +3735,9 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
             }
 
-            $resursFlow->setLoggedInUser(getResursWordpressUser('user_login'));
+            $currentRunningUser = getResursWordpressUser();
+            $currentRunningUsername = getResursWordpressUser('user_login');
+            $resursFlow->setLoggedInUser($currentRunningUsername);
 
             switch ($new_status_slug) {
                 case 'pending':
@@ -3803,20 +3805,24 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'on-hold':
                     break;
                 case 'cancelled':
-                    try {
-                        $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
-                        if ($customCancel) {
-                            $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                    if ($currentRunningUser) {
+                        try {
+                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                            if ($customCancel) {
+                                $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                            }
+                            $resursFlow->paymentCancel($payment_id, null, $customCancel);
+                            $order->add_order_note(
+                                __(
+                                    'Cancelled status set: Resurs Bank API was called for cancellation',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        } catch (Exception $e) {
+                            $flowErrorMessage = $e->getMessage();
                         }
-                        $resursFlow->paymentCancel($payment_id, null, $customCancel);
-                        $order->add_order_note(
-                            __(
-                                'Cancelled status set: Resurs Bank API was called for cancellation',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            )
-                        );
-                    } catch (Exception $e) {
-                        $flowErrorMessage = $e->getMessage();
+                    } else {
+                        $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
                         $_SESSION['resurs_bank_admin_notice'] = [
@@ -3828,21 +3834,25 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     break;
                 case 'refunded':
-                    try {
-                        $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
-                        if ($customCancel) {
-                            $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                    if ($currentRunningUser) {
+                        try {
+                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                            if ($customCancel) {
+                                $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                            }
+                            $resursFlow->paymentCancel($payment_id, null, $customCancel);
+                            $order->add_order_note
+                            (
+                                __(
+                                    'Refunded status set: Resurs Bank API was called for cancellation',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        } catch (Exception $e) {
+                            $flowErrorMessage = $e->getMessage();
                         }
-                        $resursFlow->paymentCancel($payment_id, null, $customCancel);
-                        $order->add_order_note
-                        (
-                            __(
-                                'Refunded status set: Resurs Bank API was called for cancellation',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            )
-                        );
-                    } catch (Exception $e) {
-                        $flowErrorMessage = $e->getMessage();
+                    } else {
+                        $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
                         $_SESSION['resurs_bank_admin_notice'] = [
