@@ -3694,7 +3694,9 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
             }
 
-            $resursFlow->setLoggedInUser(getResursWordpressUser('user_login'));
+            $currentRunningUser = getResursWordpressUser();
+            $currentRunningUsername = getResursWordpressUser('user_login');
+            $resursFlow->setLoggedInUser($currentRunningUsername);
 
             switch ($new_status_slug) {
                 case 'pending':
@@ -3761,16 +3763,20 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'on-hold':
                     break;
                 case 'cancelled':
-                    try {
-                        $resursFlow->paymentCancel($payment_id);
-                        $order->add_order_note(
-                            __(
-                                'Cancelled status set: Resurs Bank API was called for cancellation',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            )
-                        );
-                    } catch (Exception $e) {
-                        $flowErrorMessage = $e->getMessage();
+                    if ($currentRunningUser) {
+                        try {
+                            $resursFlow->paymentCancel($payment_id);
+                            $order->add_order_note(
+                                __(
+                                    'Cancelled status set: Resurs Bank API was called for cancellation',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        } catch (Exception $e) {
+                            $flowErrorMessage = $e->getMessage();
+                        }
+                    } else {
+                        $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
                         $_SESSION['resurs_bank_admin_notice'] = [
@@ -3782,17 +3788,21 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     break;
                 case 'refunded':
-                    try {
-                        $resursFlow->paymentCancel($payment_id);
-                        $order->add_order_note
-                        (
-                            __(
-                                'Refunded status set: Resurs Bank API was called for cancellation',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            )
-                        );
-                    } catch (Exception $e) {
-                        $flowErrorMessage = $e->getMessage();
+                    if ($currentRunningUser) {
+                        try {
+                            $resursFlow->paymentCancel($payment_id);
+                            $order->add_order_note
+                            (
+                                __(
+                                    'Refunded status set: Resurs Bank API was called for cancellation',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        } catch (Exception $e) {
+                            $flowErrorMessage = $e->getMessage();
+                        }
+                    } else {
+                        $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
                         $_SESSION['resurs_bank_admin_notice'] = [
