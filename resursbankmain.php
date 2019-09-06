@@ -5626,6 +5626,7 @@ function initializeResursFlow(
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
     $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
     $initFlow->setSimplifiedPsp(true);
+    $initFlow->setRealClientName('WOO');
 
     if (isResursHosted()) {
         $initFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW);
