@@ -3694,7 +3694,9 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
             }
 
-            $resursFlow->setLoggedInUser(getResursWordpressUser('user_login'));
+            $currentRunningUser = getResursWordpressUser();
+            $currentRunningUsername = getResursWordpressUser('user_login');
+            $resursFlow->setLoggedInUser($currentRunningUsername);
 
             switch ($new_status_slug) {
                 case 'pending':
@@ -3761,16 +3763,20 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'on-hold':
                     break;
                 case 'cancelled':
-                    try {
-                        $resursFlow->paymentCancel($payment_id);
-                        $order->add_order_note(
-                            __(
-                                'Cancelled status set: Resurs Bank API was called for cancellation',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            )
-                        );
-                    } catch (Exception $e) {
-                        $flowErrorMessage = $e->getMessage();
+                    if ($currentRunningUser) {
+                        try {
+                            $resursFlow->paymentCancel($payment_id);
+                            $order->add_order_note(
+                                __(
+                                    'Cancelled status set: Resurs Bank API was called for cancellation',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        } catch (Exception $e) {
+                            $flowErrorMessage = $e->getMessage();
+                        }
+                    } else {
+                        $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
                         $_SESSION['resurs_bank_admin_notice'] = [
@@ -3782,17 +3788,21 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     break;
                 case 'refunded':
-                    try {
-                        $resursFlow->paymentCancel($payment_id);
-                        $order->add_order_note
-                        (
-                            __(
-                                'Refunded status set: Resurs Bank API was called for cancellation',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            )
-                        );
-                    } catch (Exception $e) {
-                        $flowErrorMessage = $e->getMessage();
+                    if ($currentRunningUser) {
+                        try {
+                            $resursFlow->paymentCancel($payment_id);
+                            $order->add_order_note
+                            (
+                                __(
+                                    'Refunded status set: Resurs Bank API was called for cancellation',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
+                        } catch (Exception $e) {
+                            $flowErrorMessage = $e->getMessage();
+                        }
+                    } else {
+                        $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
                         $_SESSION['resurs_bank_admin_notice'] = [
@@ -4616,12 +4626,24 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function resurs_order_is_editable($isEditable, $that)
     {
+        $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
+
+        $resursFlow = initializeResursFlow();
+        try {
+            if ($resursFlow->canDebit($resursOrderId)) {
+                $paymentMethodType = getResursPaymentMethodMeta($resursOrderId, 'resursBankMetaPaymentMethodType');
+                if ($paymentMethodType === 'PAYMENT_PROVIDER') {
+                    return false;
+                }
+            }
+        } catch (Exception $e) {
+            //Silently ignore this
+        }
+
         // Go the normal way if this option is disabled.
         if (!getResursOption('resursOrdersEditable')) {
             return $isEditable;
         }
-
-        $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
 
         if (!empty($resursOrderId)) {
             return true;
@@ -4905,6 +4927,12 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $methodInfoMeta = getResursPaymentMethodMeta($orderId);
                 if (empty($methodInfoMeta)) {
                     setResursPaymentMethodMeta($orderId, $resursPaymentInfo->paymentMethodId);
+                }
+                $methodInfoType = getResursPaymentMethodMeta($orderId, 'resursBankMetaPaymentMethodType');
+                if (empty($methodInfoType)) {
+                    $flow = initializeResursFlow();
+                    $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
+                    setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodType', $methodInfo->type);
                 }
             }
 
@@ -5626,6 +5654,7 @@ function initializeResursFlow(
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
     $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
     $initFlow->setSimplifiedPsp(true);
+    $initFlow->setRealClientName('Woo');
 
     if (isResursHosted()) {
         $initFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW);
@@ -6229,8 +6258,10 @@ function getResursUpdatePaymentReferenceResult($id)
 /**
  * @param $id
  * @param string $methodName
+ * @param string $key
+ * @param string $value
  */
-function setResursPaymentMethodMeta($id, $methodName = '')
+function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMetaPaymentMethod', $value = '')
 {
     if ($id > 0) {
         $paymentMethodName = isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : '';
@@ -6248,15 +6279,29 @@ function setResursPaymentMethodMeta($id, $methodName = '')
 
 /**
  * @param $id
+ * @param $key
+ * @param $value
+ */
+function setResursOrderMetaData($id, $key, $value) {
+    update_post_meta(
+        $id,
+        $key,
+        $value
+    );
+}
+
+/**
+ * @param $id
+ * @param string $key
  * @return string
  */
-function getResursPaymentMethodMeta($id)
+function getResursPaymentMethodMeta($id, $key = 'resursBankMetaPaymentMethod')
 {
-    $metaMethodTest = get_post_meta($id, 'resursBankMetaPaymentMethod');
+    $metaMethodTest = get_post_meta($id, $key);
     if (is_array($metaMethodTest)) {
-        $fetchStoredMethod = array_pop($metaMethodTest);
-        if (!empty($fetchStoredMethod)) {
-            return (string)$fetchStoredMethod;
+        $returnValue = array_pop($metaMethodTest);
+        if (!empty($returnValue)) {
+            return (string)$returnValue;
         }
     }
     return '';

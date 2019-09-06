@@ -8,7 +8,6 @@ $RB(document).ready(function ($) {
 
     if ($RB('#nextInvoiceSequence').length > 0) {
         runResursAdminCallback('getNextInvoiceSequence', function (x) {
-            console.dir(x);
             if (typeof x['response'] !== 'undefined') {
                 $RB('#nextInvoiceSequence').html(x['response']['getNextInvoiceSequenceResponse']['nextInvoice']);
             }
@@ -64,6 +63,10 @@ var flowRules = {
     "no": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
     "fi": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
 };
+
+function noRefund() {
+    jQuery('.refund-items').hide();
+}
 
 function adminResursChangeFlowByCountry(o) {
     var country = o.value.toLowerCase();
