@@ -3805,6 +3805,9 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     try {
                         $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                        if ($customCancel) {
+                            $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                        }
                         $resursFlow->paymentCancel($payment_id, null, $customCancel);
                         $order->add_order_note(
                             __(
@@ -3825,8 +3828,11 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     break;
                 case 'refunded':
-                    $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
                     try {
+                        $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                        if ($customCancel) {
+                            $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                        }
                         $resursFlow->paymentCancel($payment_id, null, $customCancel);
                         $order->add_order_note
                         (
