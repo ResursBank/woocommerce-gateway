@@ -227,6 +227,11 @@ class ResursBank
      * @var string
      */
     private $realClientName = "EComPHP";
+    /**
+     * Flags up that client name has been set by user/developer/integrator
+     * @var bool
+     */
+    private $userSetClientName = false;
 
     /**
      * @var array Last stored getPayment()
@@ -3932,7 +3937,11 @@ class ResursBank
         // Allow clients to skip clientname (if client name is confusing in paymentadmin) by setting
         // flag CREATED_BY_NO_CLIENT_NAME. If unset, ecomphp_decimalVersionNumber will be shown.
         if (!$this->isFlag('CREATED_BY_NO_CLIENT_NAME')) {
-            $createdBy = $this->realClientName . "_" . $this->getVersionNumber(true);
+            if (!$this->userSetClientName) {
+                $createdBy = $this->realClientName . "_" . $this->getVersionNumber(true);
+            } else {
+                $createdBy = $this->realClientName;
+            }
 
             // If logged in user is set by client or plugin, add this to the createdBy string.
             if (!empty($this->loggedInuser)) {
@@ -3969,6 +3978,23 @@ class ResursBank
         }
 
         return $decVersion;
+    }
+
+    /**
+     * @param $clientName
+     * @since 1.3.23
+     */
+    public function setRealClientName($clientName) {
+        $this->userSetClientName = true;
+        $this->realClientName = $clientName;
+    }
+
+    /**
+     * @return string
+     * @since 1.3.23
+     */
+    public function getRealClientName() {
+        return $this->realClientName;
     }
 
     /**
