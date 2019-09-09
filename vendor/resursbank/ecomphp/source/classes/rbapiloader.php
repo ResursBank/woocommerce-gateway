@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.22
+ * @version 1.3.23
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -59,10 +59,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.22');
+    define('ECOMPHP_VERSION', '1.3.23');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190827');
+    define('ECOMPHP_MODIFY_DATE', '20190904');
 }
 
 /**
@@ -172,6 +172,30 @@ class ResursBank
     private $desiredPaymentMethod;
 
     /**
+     * Keys to purge from a match-session in aftershop.
+     *
+     * @var array
+     * @since 1.3.23
+     */
+    private $getPaymentDefaultPurge = ['totalVatAmount', 'totalAmount', 'quantity', 'id'];
+
+    /**
+     * Notify internally if the keyset has been changed.
+     *
+     * @var bool
+     * @since 1.3.23
+     */
+    private $getPaymentDefaultPurgeSet = false;
+
+    /**
+     * Keys to keep original values for, in a match-session during aftershop.
+     *
+     * @var array
+     * @since 1.3.23
+     */
+    private $getPaymentDefaultUnPurge = [];
+
+    /**
      * Enable the possibility to push over User-Agent from customer into header (debugging related)
      * @var bool
      */
@@ -208,29 +232,6 @@ class ResursBank
      * @var bool
      */
     private $userSetClientName = false;
-
-    /**
-     * $metaDataHashEnabled When enabled, ECom uses Resurs metadata to add a sha1-encoded hash string,
-     * based on parts of the payload to secure the data transport (unfinished)
-     * @var bool
-     */
-    private $metaDataHashEnabled = false;
-    /**
-     * $metaDataHashEncrypted When enabled, ECom will try to pack and encrypt metadata strings instead of
-     * hashing it (unfinished)
-     * @var bool
-     */
-    private $metaDataHashEncrypted = false;
-    /**
-     * Encryption AES IV
-     * @var string
-     */
-    private $metaDataIv;
-    /**
-     * Encryption AES Key
-     * @var null
-     */
-    private $metaDataKey;
 
     /**
      * @var array Last stored getPayment()
@@ -344,10 +345,16 @@ class ResursBank
     private $SpecLines = array();
 
     /**
-     * @var bool $speclineCustomization Boolean value that has purpose when using addorderlines to customize aftershop.
+     * Boolean value that has purpose when using addorderlines to customize aftershop.
+     * @var bool $speclineCustomization
+     * @since 1.3.23
      */
     private $speclineCustomization = false;
 
+    /**
+     * @var bool
+     * @since 1.3.23
+     */
     private $skipAfterShopPaymentValidation = true;
 
     /// Environment URLs
@@ -3928,7 +3935,7 @@ class ResursBank
     public function getCreatedBy()
     {
         // Allow clients to skip clientname (if client name is confusing in paymentadmin) by setting
-        // flag CREATED_BY_NO_CLIENT_NAME. If unset, ecomphp_decimalVesionNumber will be shown.
+        // flag CREATED_BY_NO_CLIENT_NAME. If unset, ecomphp_decimalVersionNumber will be shown.
         if (!$this->isFlag('CREATED_BY_NO_CLIENT_NAME')) {
             if (!$this->userSetClientName) {
                 $createdBy = $this->realClientName . "_" . $this->getVersionNumber(true);
@@ -4301,7 +4308,7 @@ class ResursBank
      * @param string $unitMeasure
      * @param string $articleType ORDER_LINE, DISCOUNT, SHIPPING_FEE
      * @param int $quantity
-     *
+     * @throws Exception
      * @since 1.0.2
      * @since 1.1.2
      * @since 1.2.0
@@ -4364,6 +4371,7 @@ class ResursBank
      * @param int $overrideFlow
      *
      * @return mixed
+     * @throws Exception
      * @since 1.0.2
      * @since 1.1.2
      */
@@ -5101,6 +5109,72 @@ class ResursBank
     }
 
     /**
+     * Get paymentSpec key scheme.
+     *
+     * @param string $key checkout, hosted, simplified, minimalistic, tiny (tiny=what Resurs normally use as keying).
+     * @param bool $throwOnFaultyKey
+     * @return array
+     * @throws Exception
+     * @since 1.3.23
+     */
+    public function getPaymentSpecKeyScheme($key = '', $throwOnFaultyKey = false)
+    {
+        $return = [
+            'checkout' => [
+                'artNo',
+                'description',
+                'quantity',
+                'unitMeasure',
+                'unitAmountWithoutVat',
+                'vatPct',
+                'type',
+            ],
+            'hosted' => [
+                'artNo',
+                'description',
+                'quantity',
+                'unitMeasure',
+                'unitAmountWithoutVat',
+                'vatPct',
+                'totalVatAmount',
+                'totalAmount',
+            ],
+            'simplified' => [
+                'id',
+                'artNo',
+                'description',
+                'quantity',
+                'unitMeasure',
+                'unitAmountWithoutVat',
+                'vatPct',
+                'totalVatAmount',
+                'totalAmount',
+            ],
+            'minimalistic' => [
+                'artNo',
+                'description',
+                'unitAmountWithoutVat',
+                'quantity',
+            ],
+            'tiny' => [
+                'artNo',
+                'description',
+                'unitAMountWithoutVat',
+            ],
+        ];
+
+        if (!empty($key) && isset($return[$key])) {
+            return $return[$key];
+        }
+
+        if ($throwOnFaultyKey && !isset($return[$key])) {
+            throw new \Exception('No such paymentSpec key scheme', 500);
+        }
+
+        return $return;
+    }
+
+    /**
      * Make sure that the payment spec only contains the data that each payment flow needs.
      *
      * This function has been created for keeping backwards compatibility from older payment spec renderers. EComPHP is
@@ -5111,49 +5185,13 @@ class ResursBank
      * @param int $myFlowOverrider
      *
      * @return array
+     * @throws Exception
      * @since 1.0.4
      * @since 1.1.4
      */
     public function sanitizePaymentSpec($specLines = array(), $myFlowOverrider = RESURS_FLOW_TYPES::NOT_SET)
     {
-        $specRules = array(
-            'checkout' => array(
-                'artNo',
-                'description',
-                'quantity',
-                'unitMeasure',
-                'unitAmountWithoutVat',
-                'vatPct',
-                'type',
-            ),
-            'hosted' => array(
-                'artNo',
-                'description',
-                'quantity',
-                'unitMeasure',
-                'unitAmountWithoutVat',
-                'vatPct',
-                'totalVatAmount',
-                'totalAmount',
-            ),
-            'simplified' => array(
-                'id',
-                'artNo',
-                'description',
-                'quantity',
-                'unitMeasure',
-                'unitAmountWithoutVat',
-                'vatPct',
-                'totalVatAmount',
-                'totalAmount',
-            ),
-            'minimalistic' => array(
-                'artNo',
-                'description',
-                'unitAmountWithoutVat',
-                'quantity',
-            ),
-        );
+        $paymentSpecKeys = $this->getPaymentSpecKeyScheme();
         if (is_array($specLines)) {
             $myFlow = $this->getPreferredPaymentFlowService();
             if ($myFlowOverrider !== RESURS_FLOW_TYPES::NOT_SET) {
@@ -5161,13 +5199,13 @@ class ResursBank
             }
             $mySpecRules = array();
             if ($myFlow == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
-                $mySpecRules = $specRules['simplified'];
+                $mySpecRules = $paymentSpecKeys['simplified'];
             } elseif ($myFlow == RESURS_FLOW_TYPES::HOSTED_FLOW) {
-                $mySpecRules = $specRules['hosted'];
+                $mySpecRules = $paymentSpecKeys['hosted'];
             } elseif ($myFlow == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
-                $mySpecRules = $specRules['checkout'];
+                $mySpecRules = $paymentSpecKeys['checkout'];
             } elseif ($myFlow == RESURS_FLOW_TYPES::MINIMALISTIC) {
-                $mySpecRules = $specRules['minimalistic'];
+                $mySpecRules = $paymentSpecKeys['minimalistic'];
             }
             $hasMeasure = false;
             foreach ($specLines as $specIndex => $specArray) {
@@ -5501,6 +5539,7 @@ class ResursBank
         if (!empty($phone)) {
             $this->Payload['customer']['phone'] = $phone;
         }
+        // The field for cellphone in RCO is called mobile.
         if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             if (!empty($cellphone)) {
                 $this->Payload['customer']['mobile'] = $cellphone;
@@ -6447,6 +6486,7 @@ class ResursBank
      * @param $paymentDiffArtRow
      * @param $authorizeObject
      * @return bool
+     * @since 1.3.22
      */
     private function getIsInAuthorize($paymentDiffArtRow, $authorizeObject) {
         $return = false;
@@ -6462,6 +6502,7 @@ class ResursBank
      * @param $artRow
      * @param $matchList
      * @return array|mixed
+     * @since 1.3.22
      */
     private function getOrderRowMatch($artRow, $matchList)
     {
@@ -6485,12 +6526,92 @@ class ResursBank
     }
 
     /**
-     * @param $row
-     * @return mixed
+     * @param array $keys
+     * @throws Exception
+     * @since 1.3.23
      */
-    private function getPurgedPaymentRow($row, $alsoCleanBy = array()) {
-        $cleanBy = array('totalVatAmount', 'totalAmount', 'quantity', 'id');
-        $cleanBy = array_merge($cleanBy, $alsoCleanBy);
+    public function setPurgeGetPaymentKeys($keys = ['totalVatAmount', 'totalAmount', 'quantity', 'id'])
+    {
+        if (is_array($keys)) {
+            // Touch on changes only
+            if (count($keys)) {
+                $this->getPaymentDefaultPurge = $keys;
+                $this->getPaymentDefaultPurgeSet = true;
+            }
+        } else {
+            throw new \Exception(sprintf("Keys sent to %s must be a function!", __FUNCTION__));
+        }
+    }
+
+    /**
+     * Set keys to keep in purger when using aftershop. Setting keys will reverse the way that
+     * setPurgeGetPaymentKeys work, by remove the requested keys and keep the rest for the purger.
+     *
+     * @param array $keepKeys
+     * @return array Confirmation return.
+     * @throws Exception
+     * @since 1.3.23
+     */
+    public function setGetPaymentMatchKeys($keepKeys = ['title', 'description', 'unitAmountWithoutVat']) {
+        $return = array();
+        if (is_string($keepKeys)) {
+            // If this is a string, make sure that the string belongs to a predefined spec.
+            $useKeys = $this->getPaymentSpecKeyScheme($keepKeys, true);
+        } else {
+            if (is_array($keepKeys) && !count($keepKeys)) {
+                $useKeys = $this->getPaymentSpecKeyScheme('tiny');
+            } else {
+                $useKeys = $keepKeys;
+            }
+        }
+
+        $largest = $this->getPaymentSpecKeyScheme('simplified');
+
+        foreach ($largest as $key) {
+            if (!in_array($key, $useKeys)) {
+                $return[] = $key;
+            }
+        }
+
+        // For memory in aftershop.
+        $this->getPaymentDefaultUnPurge = $useKeys;
+        $this->setPurgeGetPaymentKeys($return);
+        return $this->getPaymentDefaultPurge;
+    }
+
+    /**
+     * Private functions made public.
+     *
+     * @return array
+     * @since 1.3.23
+     */
+    public function getPaymentKeysForPurge() {
+        return $this->getPaymentDefaultPurge;
+    }
+
+    /**
+     * Private functions made public.
+     *
+     * @return array
+     * @since 1.3.23
+     */
+    public function getPaymentKeysUnPurgable() {
+        return $this->getPaymentDefaultUnPurge;
+    }
+
+    /**
+     * @param $row
+     * @param array $alsoCleanBy Also include this on special needs.
+     * @param bool $excludeDefaults
+     * @return mixed
+     * @since 1.3.23
+     */
+    private function getPurgedPaymentRow($row, $alsoCleanBy = array(), $excludeDefaults = false) {
+        if (!$excludeDefaults) {
+            $cleanBy = array_merge($this->getPaymentDefaultPurge, $alsoCleanBy);
+        } else {
+            $cleanBy = $alsoCleanBy;
+        }
 
         foreach ($cleanBy as $key) {
             if (isset($row[$key])) {
@@ -6508,6 +6629,7 @@ class ResursBank
      * @param $paymentDiff
      * @param $paymentType
      * @return mixed
+     * @since 1.3.22
      */
     public function getMergedPaymentDiff($paymentRows, $paymentDiff, $paymentType) {
         // Convert to correct row, if only one.
@@ -6556,6 +6678,7 @@ class ResursBank
      * @param int $renderType RESURS_AFTERSHOP_RENDER_TYPES as unique type or bitmask
      * @return array
      * @throws \Exception
+     * @since First book of moses.
      */
     public function sanitizeAfterShopSpec(
         $paymentIdOrPaymentObjectData = '',
@@ -7225,17 +7348,17 @@ class ResursBank
                 $newAnnulObject = $this->getValidatedAftershopRows($currentPaymentTable, $currentOrderLines, 'annul');
 
                 if (is_array($newCreditObject) && count($newCreditObject)) {
-                    $this->paymentCredit($paymentId, $newCreditObject);
+                    $this->paymentCredit($paymentId, $newCreditObject, $this->skipAfterShopPaymentValidation);
                 }
                 if (is_array($newAnnulObject) && count($newAnnulObject)) {
-                    $this->paymentAnnul($paymentId, $newAnnulObject);
+                    $this->paymentAnnul($paymentId, $newAnnulObject, false, $this->skipAfterShopPaymentValidation);
                 }
             } else {
                 if (is_array($fullAnnulObject) && count($fullAnnulObject)) {
-                    $this->paymentAnnul($paymentId, $fullAnnulObject);
+                    $this->paymentAnnul($paymentId, $fullAnnulObject, $this->skipAfterShopPaymentValidation);
                 }
                 if (is_array($fullCreditObject) && count($fullCreditObject)) {
-                    $this->paymentCredit($paymentId, $fullCreditObject);
+                    $this->paymentCredit($paymentId, $fullCreditObject, $this->skipAfterShopPaymentValidation);
                 }
             }
         } catch (\Exception $cancelException) {
@@ -7283,7 +7406,14 @@ class ResursBank
             $realQuantity = null;
             $realUnitAmount = null;
             $realVatPct = null;
+
+            $realData = [];
             if ($this->skipAfterShopPaymentValidation) {
+                foreach ($this->getPaymentDefaultUnPurge as $field) {
+                    if (isset($orderRow[$field])) {
+                        $realData[$field] = $orderRow[$field];
+                    }
+                }
                 $realQuantity = $orderRow['quantity'];
                 $realUnitAmount = $orderRow['unitAmountWithoutVat'];
                 $realVatPct = $orderRow['vatPct'];
@@ -7291,13 +7421,13 @@ class ResursBank
 
             foreach ($currentPaymentSpecTable as $statusRow) {
                 if ($type === 'credit') {
-                    $quantityMatch = $statusRow['CREDITABLE'];
+                    $quantityMatch = isset($statusRow['CREDITABLE']) ? $statusRow['CREDITABLE'] : 0;
                 } else if ($type === 'annul') {
-                    $quantityMatch = $statusRow['ANNULLABLE'];
+                    $quantityMatch = isset($statusRow['ANNULLABLE']) ? $statusRow['ANNULLABLE'] : 0;
                 } else if ($type === 'debit') {
-                    $quantityMatch = $statusRow['DEBITABLE'];
+                    $quantityMatch = isset($statusRow['DEBITABLE']) ? $statusRow['DEBITABLE'] : 0;
                 } else if ($type === 'authorize') {
-                    $quantityMatch = $statusRow['AUTHORIZE'];
+                    $quantityMatch = isset($statusRow['AUTHORIZE']) ? $statusRow['AUTHORIZE'] : 0;
                 } else {
                     $quantityMatch = 0;
                 }
@@ -7333,12 +7463,18 @@ class ResursBank
                 }
 
                 if ($this->skipAfterShopPaymentValidation) {
+                    if (count($realData)) {
+                        foreach ($realData as $key => $value) {
+                            // Protect a few fields from mistakes that is already considered below in the
+                            // validation parts.
+                            if (!in_array($key, ['artNo', 'description', 'quantity'])) {
+                                $orderRow[$key] = $value;
+                            }
+                        }
+                    }
                     $useQuantity = $realQuantity;
                     $useUnitAmount = $realUnitAmount;
                     $useVatPct = $realVatPct;
-                } else {
-                    $useUnitAmount = $orderRow['unitAmountWithoutVat'];
-                    $useVatPct = $orderRow['vatPct'];
                 }
 
                 // Validation is based on same article, description and price.
@@ -7362,8 +7498,14 @@ class ResursBank
                             'ANNULLABLE',
                             'DEBITABLE',
                             'CREDITABLE',
-                        ]
+                        ],
+                        $this->getPaymentDefaultPurgeSet ? true : false
                     );
+
+                    if (!$this->skipAfterShopPaymentValidation) {
+                        $useUnitAmount = $orderRow['unitAmountWithoutVat'];
+                        $useVatPct = $orderRow['vatPct'];
+                    }
 
                     // Make sure we use the correct getPaymentData.
                     $orderRow['id'] = $id;
@@ -7395,9 +7537,10 @@ class ResursBank
      *
      * @param string $paymentId
      * @param array $customPayloadItemList
-     *
+     * @param bool $skipSpecValidation
      * @return bool
-     * @throws \Exception
+     * @throws Exception
+     * @since Forever.
      */
     public function cancelPayment($paymentId = "", $customPayloadItemList = array(), $skipSpecValidation = false)
     {
