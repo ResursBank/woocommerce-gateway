@@ -3591,7 +3591,8 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $resursFlow Resursbank\RBEcomPHP\ResursBank
          * @return bool
          */
-        private static function getOrderRowsByRefundedItems($order, $resursFlow) {
+        private static function getOrderRowsByRefundedItems($order, $resursFlow)
+        {
             $return = false;
             $discountTotal = $order->get_discount_total();
             if ($discountTotal > 0) {
@@ -3747,10 +3748,24 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'processing':
                     break;
                 case 'completed':
-                    $customFinalize = self::getOrderRowsByRefundedItems($order, $resursFlow);
                     $flowErrorMessage = "";
                     if ($resursFlow->canDebit($payment)) {
                         try {
+                            // Full-Finalize orders with getPayment()-validation if status is
+                            // a "first time handled" order.
+                            // @link https://test.resurs.com/docs/display/ecom/paymentStatus
+                            if (
+                                !$resursFlow->canCredit($payment_id) &&
+                                !$resursFlow->getIsDebited() &&
+                                !$resursFlow->getIsCredited() &&
+                                !$resursFlow->getIsAnnulled()
+                            ) {
+                                // If order is only debitable and not creditable, then
+                                // use the getPayment-validation instead of customizations.
+                                $customFinalize = false;
+                            } else {
+                                $customFinalize = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                            }
                             $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
                             resursEventLogger($payment_id . ': Finalization - Payment Content');
                             resursEventLogger(print_r($payment, true));
