@@ -190,6 +190,7 @@ function woocommerce_gateway_resurs_bank_init()
                 if (!empty($this->login) && !empty($this->password)) {
                     /** @var \Resursbank\RBEcomPHP\ResursBank */
                     $this->flow = initializeResursFlow();
+
                     $setSessionEnable = true;
                     $setSession = isset($_REQUEST['set-no-session']) ? $_REQUEST['set-no-session'] : null;
                     if ($setSession == 1) {
@@ -3852,12 +3853,19 @@ function woocommerce_gateway_resurs_bank_init()
             // Here we use the translated or not translated values for Private and Company radiobuttons
             $resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
             $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+            $errorOnLiveData = false;
             if ($timeDiff >= 3600) {
                 /** @var $theFlow \Resursbank\RBEcomPHP\ResursBank */
                 $theFlow = initializeResursFlow();
-                $methodList = $theFlow->getPaymentMethods([], true);
-                set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
-                set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
+                try {
+                    $methodList = $theFlow->getPaymentMethods([], true);
+                    set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
+                    set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
+                } catch (\Exception $e) {
+                    // Can't save transients if this is down. So try to refetch this list.
+                    $methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
+                    $errorOnLiveData = true;
+                }
             } else {
                 $methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
             }
@@ -3891,6 +3899,12 @@ function woocommerce_gateway_resurs_bank_init()
             }
             if (!$naturalCount && $legalCount) {
                 $viewLegal = "display: none;";
+            }
+
+            if ($errorOnLiveData) {
+                echo '<div style="border: 1px solid #990000; text-align: center; padding: 3px; font-weight: bold; color: #990000;">' .
+                    __('Resurs Bank has connection errors!', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    '</div>';
             }
 
             if ($naturalCount) {
@@ -4100,6 +4114,9 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function admin_enqueue_script($hook)
     {
+        /** @var WP_Post $post */
+        global $post;
+
         $images = plugin_dir_url(__FILE__) . "img/";
         $resursLogo = $images . "resurs-standard.png";
 
@@ -4113,7 +4130,11 @@ function woocommerce_gateway_resurs_bank_init()
         $callbackUriCacheTime = get_transient("resurs_callback_templates_cache_last");
         $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? strftime("%Y-%m-%d, %H:%M", $callbackUriCacheTime) : "";
 
-        //getResursPaymentMethodMeta(,'resursBankMetaPaymentMethodType');
+        if (isset($post) && isset($post->ID)) {
+            //$resursId = wc_get_payment_id_by_order_id($post->ID);
+            $resursMeta = getResursPaymentMethodMeta($post->ID,'resursBankMetaPaymentMethodType');
+
+        }
 
         $adminJs = [
             'resursSpinner' => plugin_dir_url(__FILE__) . 'loader.gif',
@@ -5655,6 +5676,10 @@ function initializeResursFlow(
 
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
     $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
+    $cTimeout = getResursFlag('CURL_TIMEOUT');
+    if ($cTimeout > 0) {
+        $initFlow->setFlag('CURL_TIMEOUT', $cTimeout);
+    }
     $initFlow->setSimplifiedPsp(true);
     $initFlow->setRealClientName('Woo');
 

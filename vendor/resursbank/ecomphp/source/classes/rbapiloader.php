@@ -877,6 +877,7 @@ class ResursBank
                 $inheritExtendedSoapWarnings = $this->CURL->getFlag('SOAPWARNINGS_EXTEND');
             }
         }
+
         if (!$reInitializeCurl) {
             return null;
         }
@@ -905,6 +906,9 @@ class ResursBank
             $this->CURL->setStoreSessionExceptions(true);
             $this->CURL->setAuthentication($this->soapOptions['login'], $this->soapOptions['password']);
             $this->CURL->setUserAgent($this->myUserAgent);
+            if (($cTimeout = $this->getFlag('CURL_TIMEOUT')) > 0) {
+                $this->CURL->setTimeout($cTimeout);
+            }
             $this->NETWORK = new MODULE_NETWORK();
             $this->BIT = $this->NETWORK->BIT;
         }
@@ -1202,6 +1206,10 @@ class ResursBank
      */
     public function setFlag($flagKey = '', $flagValue = null)
     {
+        if (($flagKey === 'CURL_TIMEOUT' || $flagKey === 'NETCURL_TIMEOUT') && intval($flagValue) > 0) {
+            $this->internalFlags[$flagKey] = $flagValue;
+        }
+
         if (is_null($this->CURL)) {
             $this->InitializeServices();
         }

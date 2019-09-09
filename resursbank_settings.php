@@ -1228,9 +1228,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Miscellaneous', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setCheckBox('streamlineBehaviour', $namespace);
                     echo $this->setCheckBox('showPaymentIdInOrderList', $namespace);
-                    echo $this->setSeparator(__('Special test occasions',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                        'configSeparateTitleSmall');
+                    echo $this->setSeparator(
+                        __(
+                            'Dynamic Configurables',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'configSeparateTitleSmall'
+                    );
                     echo $this->setTextBox('devFlags', $namespace, 'onkeyup="devFlagsControl(this)"');
                     echo $this->setCheckBox('demoshopMode', $namespace);
                     echo $this->setSeparator(__('Network', 'resurs-bank-payment-gateway-for-woocommerce'));
