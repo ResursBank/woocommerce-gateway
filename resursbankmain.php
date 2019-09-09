@@ -600,6 +600,11 @@ function woocommerce_gateway_resurs_bank_init()
                                     $errorMessage = __("Configuration has not yet been initiated.",
                                         'resurs-bank-payment-gateway-for-woocommerce');
                                 }
+                            } elseif ($_REQUEST['run'] == 'getRefundCapability') {
+                                $flow = initializeResursFlow();
+                                if (isset($_REQUEST['data']) && isset($_REQUEST['data']['paymentId'])) {
+                                    //$flow->getPayment($_REQUEST['data']['paymentId']);
+                                }
                             } elseif ($_REQUEST['run'] == "getMyCallbacks") {
                                 $responseArray = [
                                     'callbacks' => [],
@@ -4129,11 +4134,15 @@ function woocommerce_gateway_resurs_bank_init()
 
         $callbackUriCacheTime = get_transient("resurs_callback_templates_cache_last");
         $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? strftime("%Y-%m-%d, %H:%M", $callbackUriCacheTime) : "";
+        $resursMethod = false;
+        $resursPayment = '';
 
         if (isset($post) && isset($post->ID)) {
-            //$resursId = wc_get_payment_id_by_order_id($post->ID);
-            $resursMeta = getResursPaymentMethodMeta($post->ID,'resursBankMetaPaymentMethodType');
-
+            $resursMeta = getResursPaymentMethodMeta($post->ID, 'resursBankMetaPaymentMethodType');
+            if (!empty($resursMeta)) {
+                $resursMethod = true;
+                $resursPayment = wc_get_payment_id_by_order_id($post->ID);
+            }
         }
 
         $adminJs = [
@@ -4162,6 +4171,8 @@ function woocommerce_gateway_resurs_bank_init()
             'callbacks_slow' => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.',
                 'resurs-bank-payment-gateway-for-woocommerce')),
             'resursBankTabLogo' => $resursLogo,
+            'resursMethod' => $resursMethod,
+            'resursPaymentId' => $resursPayment
         ];
 
         $addAdminJs = apply_filters('resursAdminJs', null);

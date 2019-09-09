@@ -14,6 +14,15 @@ $RB(document).ready(function ($) {
         });
     }
 
+    if (typeof adminJs["resursMethod"] !== 'undefined' && adminJs["resursMethod"] === "1") {
+        var resursPaymentId = adminJs["resursPaymentId"];
+        runResursAdminCallback(
+            "getRefundCapability",
+            "getResursRefundCapability",
+            {"paymentId": resursPaymentId}
+        );
+    }
+
     // Only run this when the elements are correct
     if (jQuery('#callbackContent').length > 0) {
         if (typeof adminJs["requestForCallbacks"] !== "undefined" && (adminJs["requestForCallbacks"] === false || adminJs["requestForCallbacks"] == "" || null === adminJs["requestForCallbacks"])) {
@@ -623,4 +632,8 @@ function resursRemoveAnnuityElements(notThisElement) {
             }
         }
     });
+}
+
+function getResursRefundCapability(response) {
+    console.dir(response);
 }
