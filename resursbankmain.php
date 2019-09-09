@@ -3,6 +3,7 @@
 require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/v3core.php');
 include('functions_settings.php');
+include('functions_gateway.php');
 
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
@@ -3591,6 +3592,46 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
+         * Make sure Resurs Bank gets correct orderrow when refunding has been involved.
+         * @param $order WC_Order
+         * @param $resursFlow Resursbank\RBEcomPHP\ResursBank
+         * @return bool
+         */
+        private static function getOrderRowsByRefundedItems($order, $resursFlow) {
+            $return = false;
+            $discountTotal = $order->get_discount_total();
+            if ($discountTotal > 0) {
+                $return = true;
+                $orderItems = $order->get_items();
+                /** @var $item WC_Order_Item_Product */
+                foreach ($orderItems as $item) {
+                    $product = new WC_Product($item->get_product_id());
+
+                    $orderItemQuantity = $item->get_quantity();
+                    $refundedQuantity = $order->get_qty_refunded_for_item($item->get_id());
+                    $rowsLeftToHandle = $orderItemQuantity + $refundedQuantity;
+                    $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
+                    $articleId = resurs_get_proper_article_number($product);
+                    $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
+                    $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
+
+                    $resursFlow->addOrderLine(
+                        $articleId,
+                        $product->get_title(),
+                        $itemTotal,
+                        $amountPct,
+                        '',
+                        'ORDER_LINE',
+                        $rowsLeftToHandle
+                    );
+                }
+                resurs_refund_shipping($order, $resursFlow);
+            }
+
+            return $return;
+        }
+
+        /**
          * Called when the status of an order is changed
          *
          * @param  int $order_id The order id
@@ -3608,6 +3649,8 @@ function woocommerce_gateway_resurs_bank_init()
 
             $order = new WC_Order($order_id);
             $payment_method = $order->get_payment_method();
+            /** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
+            $resursFlow = initializeResursFlow();
 
             $payment_id = get_post_meta($order->get_id(), 'paymentId', true);
             if (false === (boolean)preg_match('/resurs_bank/', $payment_method)) {
@@ -3632,8 +3675,6 @@ function woocommerce_gateway_resurs_bank_init()
             $url = add_query_arg('action', 'edit', $url);
             $old_status = get_term_by('slug', sanitize_title($old_status_slug), 'shop_order_status');
 
-            /** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
-            $resursFlow = initializeResursFlow();
             $flowErrorMessage = null;
 
             if ($payment_id) {
@@ -3712,10 +3753,11 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'processing':
                     break;
                 case 'completed':
+                    $customFinalize = self::getOrderRowsByRefundedItems($order, $resursFlow);
                     $flowErrorMessage = "";
                     if ($resursFlow->canDebit($payment)) {
                         try {
-                            $successFinalize = $resursFlow->paymentFinalize($payment_id);
+                            $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
                             resursEventLogger($payment_id . ': Finalization - Payment Content');
                             resursEventLogger(print_r($payment, true));
                             resursEventLogger($payment_id . ': Finalization ' . $successFinalize ? 'OK' : 'NOT OK');
@@ -3771,7 +3813,11 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     if ($currentRunningUser) {
                         try {
-                            $resursFlow->paymentCancel($payment_id);
+                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                            if ($customCancel) {
+                                $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                            }
+                            $resursFlow->paymentCancel($payment_id, null, $customCancel);
                             $order->add_order_note(
                                 __(
                                     'Cancelled status set: Resurs Bank API was called for cancellation',
@@ -3796,7 +3842,11 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'refunded':
                     if ($currentRunningUser) {
                         try {
-                            $resursFlow->paymentCancel($payment_id);
+                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                            if ($customCancel) {
+                                $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                            }
+                            $resursFlow->paymentCancel($payment_id, null, $customCancel);
                             $order->add_order_note
                             (
                                 __(
@@ -4460,8 +4510,10 @@ function woocommerce_gateway_resurs_bank_init()
                         } else {
                             $annuityDuration = getResursOption("resursAnnuityDuration");
                         }
-                        $payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice, $annuityFactors,
-                            $annuityDuration);
+                        $payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice,
+                            annuityFactors,
+                            $annuityDuration
+                        );
                         $currentCountry = getResursOption('country');
                         if ($currentCountry != "FI") {
                             $paymentLimit = 150;
@@ -4552,14 +4604,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                 // Positive decimal
                 $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
-
-                $setSku = $product->get_sku();
-                $articleId = $product->get_id();
-                $optionUseSku = getResursOption("useSku");
-                if ($optionUseSku && !empty($setSku)) {
-                    $articleId = $setSku;
-                }
-
+                $articleId = resurs_get_proper_article_number($product);
                 $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
 
                 // Regenerate the cancellation orderline with positive decimals.
@@ -4580,37 +4625,14 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         $totalDiscount = $order->get_total_discount();
-        $shippingTax = $refundObject->get_shipping_tax();
-        $shippingTotal = $refundObject->get_shipping_total();
-
-        $hasShippingRefund = false;
-        if ($shippingTotal < 0) {
-            $hasShippingRefund = true;
-            $shippingTax = preg_replace('/^-/', '', $shippingTax);
-            $shippingTotal = preg_replace('/^-/', '', $shippingTotal);
-
-            $shipping_tax_pct = (
-            !is_nan(
-                @round(
-                    $shippingTax / $shippingTotal,
-                    2
-                ) * 100
-            ) ? @round($shippingTax / $shippingTotal, 2) * 100 : 0
-            );
-
-            $refundFlow->addOrderLine(
-                '00_frakt',
-                __('Shipping', 'resurs-bank-payment-gateway-for-woocommerce'),
-                preg_replace('/^-/', '', $shippingTotal),
-                $shipping_tax_pct,
-                'st',
-                'SHIPPING_FEE',
-                1
-            );
-        }
-
+        $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);;
 
         try {
+
+            if (floatval($totalDiscount) > 0) {
+                $refundFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+            }
+
             // Refund "normally" when there is no discount.
             // Go for woocommerce settings when discounts are added as the sums has to be manipulated.
             $refundStatus = $refundFlow->paymentCancel(
