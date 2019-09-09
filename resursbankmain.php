@@ -4113,6 +4113,8 @@ function woocommerce_gateway_resurs_bank_init()
         $callbackUriCacheTime = get_transient("resurs_callback_templates_cache_last");
         $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? strftime("%Y-%m-%d, %H:%M", $callbackUriCacheTime) : "";
 
+        //getResursPaymentMethodMeta(,'resursBankMetaPaymentMethodType');
+
         $adminJs = [
             'resursSpinner' => plugin_dir_url(__FILE__) . 'loader.gif',
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'loaderLocal.gif',
