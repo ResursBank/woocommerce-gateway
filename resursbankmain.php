@@ -602,9 +602,20 @@ function woocommerce_gateway_resurs_bank_init()
                                         'resurs-bank-payment-gateway-for-woocommerce');
                                 }
                             } elseif ($_REQUEST['run'] == 'getRefundCapability') {
-                                $flow = initializeResursFlow();
+                                $refundable = '';
                                 if (isset($_REQUEST['data']) && isset($_REQUEST['data']['paymentId'])) {
-                                    //$flow->getPayment($_REQUEST['data']['paymentId']);
+                                    try {
+                                        canResursRefund($_REQUEST['data']['paymentId']);
+                                    } catch (\Exception $e) {
+                                        if ($e->getCode() === 1234) {
+                                            // Only return false at this point if this is a special payment.
+                                            // Some payment methods does not allow refunding and this is stated here only.
+                                            $refundable = 'no';
+                                        }
+                                    }
+                                    $responseArray = [
+                                        'refundable' => $refundable,
+                                    ];
                                 }
                             } elseif ($_REQUEST['run'] == "getMyCallbacks") {
                                 $responseArray = [
@@ -4222,7 +4233,11 @@ function woocommerce_gateway_resurs_bank_init()
                 'resurs-bank-payment-gateway-for-woocommerce')),
             'resursBankTabLogo' => $resursLogo,
             'resursMethod' => $resursMethod,
-            'resursPaymentId' => $resursPayment
+            'resursPaymentId' => $resursPayment,
+            'methodDoesNotSupportRefunding' => __(
+                    'Resurs Bank does not support partial refunding for this payment method!',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+            ),
         ];
 
         $addAdminJs = apply_filters('resursAdminJs', null);
@@ -4674,6 +4689,8 @@ function woocommerce_gateway_resurs_bank_init()
         return $refundStatus;
     }
 
+
+
     /**
      * @param bool $isEditable
      * @param $that WC_Admin_Order
@@ -4684,16 +4701,14 @@ function woocommerce_gateway_resurs_bank_init()
     {
         $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
 
-        $resursFlow = initializeResursFlow();
         try {
-            if ($resursFlow->canDebit($resursOrderId)) {
-                $paymentMethodType = getResursPaymentMethodMeta($resursOrderId, 'resursBankMetaPaymentMethodType');
-                if ($paymentMethodType === 'PAYMENT_PROVIDER') {
-                    return false;
-                }
+            canResursRefund($resursOrderId);
+        } catch (\Exception $e) {
+            if ($e->getCode() === 1234) {
+                // Only return false at this point if this is a special payment.
+                // Some payment methods does not allow refunding and this is stated here only.
+                return false;
             }
-        } catch (Exception $e) {
-            //Silently ignore this
         }
 
         // Go the normal way if this option is disabled.

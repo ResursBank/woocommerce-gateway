@@ -74,7 +74,14 @@ var flowRules = {
 };
 
 function noRefund() {
-    jQuery('.refund-items').hide();
+    var refundButtonReplacement = jQuery(
+        '<div>', {
+            "id": "refundButtonReplacement",
+            "style": "font-weight: bold; color: #000099;"
+        }
+    ).text(adminJs["methodDoesNotSupportRefunding"]
+    );
+    jQuery('.refund-items').replaceWith(refundButtonReplacement);
 }
 
 function adminResursChangeFlowByCountry(o) {
@@ -635,5 +642,9 @@ function resursRemoveAnnuityElements(notThisElement) {
 }
 
 function getResursRefundCapability(response) {
-    console.dir(response);
+    if (typeof response["response"]["getRefundCapabilityResponse"] !== "undefined") {
+        if (response["response"]["getRefundCapabilityResponse"]["refundable"] === "no") {
+            noRefund();
+        }
+    }
 }
