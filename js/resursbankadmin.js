@@ -8,11 +8,19 @@ $RB(document).ready(function ($) {
 
     if ($RB('#nextInvoiceSequence').length > 0) {
         runResursAdminCallback('getNextInvoiceSequence', function (x) {
-            console.dir(x);
             if (typeof x['response'] !== 'undefined') {
                 $RB('#nextInvoiceSequence').html(x['response']['getNextInvoiceSequenceResponse']['nextInvoice']);
             }
         });
+    }
+
+    if (typeof adminJs["resursMethod"] !== 'undefined' && adminJs["resursMethod"] === "1") {
+        var resursPaymentId = adminJs["resursPaymentId"];
+        runResursAdminCallback(
+            "getRefundCapability",
+            "getResursRefundCapability",
+            {"paymentId": resursPaymentId}
+        );
     }
 
     // Only run this when the elements are correct
@@ -64,6 +72,17 @@ var flowRules = {
     "no": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
     "fi": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
 };
+
+function noRefund() {
+    var refundButtonReplacement = jQuery(
+        '<div>', {
+            "id": "refundButtonReplacement",
+            "style": "font-weight: bold; color: #000099;"
+        }
+    ).text(adminJs["methodDoesNotSupportRefunding"]
+    );
+    jQuery('.refund-items').replaceWith(refundButtonReplacement);
+}
 
 function adminResursChangeFlowByCountry(o) {
     var country = o.value.toLowerCase();
@@ -620,4 +639,12 @@ function resursRemoveAnnuityElements(notThisElement) {
             }
         }
     });
+}
+
+function getResursRefundCapability(response) {
+    if (typeof response["response"]["getRefundCapabilityResponse"] !== "undefined") {
+        if (response["response"]["getRefundCapabilityResponse"]["refundable"] === "no") {
+            noRefund();
+        }
+    }
 }

@@ -62,7 +62,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', '1.3.23');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190904');
+    define('ECOMPHP_MODIFY_DATE', '20190909');
 }
 
 /**
@@ -230,6 +230,7 @@ class ResursBank
     /**
      * Flags up that client name has been set by user/developer/integrator
      * @var bool
+     * @since 1.3.23
      */
     private $userSetClientName = false;
 
@@ -884,6 +885,7 @@ class ResursBank
                 $inheritExtendedSoapWarnings = $this->CURL->getFlag('SOAPWARNINGS_EXTEND');
             }
         }
+
         if (!$reInitializeCurl) {
             return null;
         }
@@ -912,6 +914,9 @@ class ResursBank
             $this->CURL->setStoreSessionExceptions(true);
             $this->CURL->setAuthentication($this->soapOptions['login'], $this->soapOptions['password']);
             $this->CURL->setUserAgent($this->myUserAgent);
+            if (($cTimeout = $this->getFlag('CURL_TIMEOUT')) > 0) {
+                $this->CURL->setTimeout($cTimeout);
+            }
             $this->NETWORK = new MODULE_NETWORK();
             $this->BIT = $this->NETWORK->BIT;
         }
@@ -1209,6 +1214,10 @@ class ResursBank
      */
     public function setFlag($flagKey = '', $flagValue = null)
     {
+        if (($flagKey === 'CURL_TIMEOUT' || $flagKey === 'NETCURL_TIMEOUT') && intval($flagValue) > 0) {
+            $this->internalFlags[$flagKey] = $flagValue;
+        }
+
         if (is_null($this->CURL)) {
             $this->InitializeServices();
         }
@@ -3963,6 +3972,23 @@ class ResursBank
     }
 
     /**
+     * @param $clientName
+     * @since 1.3.23
+     */
+    public function setRealClientName($clientName) {
+        $this->userSetClientName = true;
+        $this->realClientName = $clientName;
+    }
+
+    /**
+     * @return string
+     * @since 1.3.23
+     */
+    public function getRealClientName() {
+        return $this->realClientName;
+    }
+
+    /**
      * Convert version number to decimals
      *
      * @return string
@@ -3978,23 +4004,6 @@ class ResursBank
         }
 
         return $decVersion;
-    }
-
-    /**
-     * @param $clientName
-     * @since 1.3.23
-     */
-    public function setRealClientName($clientName) {
-        $this->userSetClientName = true;
-        $this->realClientName = $clientName;
-    }
-
-    /**
-     * @return string
-     * @since 1.3.23
-     */
-    public function getRealClientName() {
-        return $this->realClientName;
     }
 
     /**
@@ -4558,8 +4567,6 @@ class ResursBank
         $error = array();
         $myFlow = $this->getPreferredPaymentFlowService();
 
-        //$this->addMetaDataHash($payment_id_or_method);
-
         // Using this function to validate that card data info is properly set up
         // during the deprecation state in >= 1.0.2/1.1.1
         if ($myFlow == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
@@ -4909,25 +4916,20 @@ class ResursBank
                 if (isset($this->Payload['paymentData'])) {
                     unset($this->Payload['paymentData']);
                 }
-                if (!$this->isFlag('KEEP_RCO_BILLING')) {
-                    if (isset($this->Payload['customer']['address'])) {
-                        unset($this->Payload['customer']['address']);
-                    }
-                } else {
-                    // By not removing fields on this kind of exeption means that we need to protect the customer object.
+
+                // By not removing fields on this kind of exeption means that we need to protect the customer object.
+                if (isset($this->Payload['customer']['address'])) {
                     $this->checkoutCustomerFieldSupport = true;
                 }
-                if (!$this->isFlag('KEEP_RCO_DELIVERY')) {
-                    if (isset($this->Payload['customer']['deliveryAddress'])) {
-                        unset($this->Payload['customer']['deliveryAddress']);
-                    }
-                } else {
-                    // By not removing fields on this kind of exeption means that we need to protect the customer object.
+
+                if (isset($this->Payload['customer']['deliveryAddress'])) {
                     $this->checkoutCustomerFieldSupport = true;
                 }
+
                 if ($this->checkoutCustomerFieldSupport === false && isset($this->Payload['customer'])) {
                     unset($this->Payload['customer']);
                 }
+
                 // Making sure sloppy developers uses shopUrl properly.
                 if (!isset($this->Payload['shopUrl'])) {
                     if ($this->validateCheckoutShopUrl) {
@@ -6242,6 +6244,7 @@ class ResursBank
      * @param bool $getAsTable
      * @return array
      * @throws \Exception
+     * @since Ever.
      * @deprecated 1.3.21 Use getPaymentDiffByStatus instead!
      */
     public function getPaymentSpecByStatus($paymentIdOrPaymentObject, $getAsTable = false)
@@ -7375,6 +7378,7 @@ class ResursBank
      *
      * @param $duplicateState
      * @throws Exception
+     * @since 1.3.22
      */
     private function checkUnsafePaymentObject ($duplicateState) {
         if ($duplicateState > 2) {

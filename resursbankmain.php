@@ -191,6 +191,7 @@ function woocommerce_gateway_resurs_bank_init()
                 if (!empty($this->login) && !empty($this->password)) {
                     /** @var \Resursbank\RBEcomPHP\ResursBank */
                     $this->flow = initializeResursFlow();
+
                     $setSessionEnable = true;
                     $setSession = isset($_REQUEST['set-no-session']) ? $_REQUEST['set-no-session'] : null;
                     if ($setSession == 1) {
@@ -599,6 +600,22 @@ function woocommerce_gateway_resurs_bank_init()
                                 } else {
                                     $errorMessage = __("Configuration has not yet been initiated.",
                                         'resurs-bank-payment-gateway-for-woocommerce');
+                                }
+                            } elseif ($_REQUEST['run'] == 'getRefundCapability') {
+                                $refundable = '';
+                                if (isset($_REQUEST['data']) && isset($_REQUEST['data']['paymentId'])) {
+                                    try {
+                                        canResursRefund($_REQUEST['data']['paymentId']);
+                                    } catch (\Exception $e) {
+                                        if ($e->getCode() === 1234) {
+                                            // Only return false at this point if this is a special payment.
+                                            // Some payment methods does not allow refunding and this is stated here only.
+                                            $refundable = 'no';
+                                        }
+                                    }
+                                    $responseArray = [
+                                        'refundable' => $refundable,
+                                    ];
                                 }
                             } elseif ($_REQUEST['run'] == "getMyCallbacks") {
                                 $responseArray = [
@@ -3917,12 +3934,19 @@ function woocommerce_gateway_resurs_bank_init()
             // Here we use the translated or not translated values for Private and Company radiobuttons
             $resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
             $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+            $errorOnLiveData = false;
             if ($timeDiff >= 3600) {
                 /** @var $theFlow \Resursbank\RBEcomPHP\ResursBank */
                 $theFlow = initializeResursFlow();
-                $methodList = $theFlow->getPaymentMethods([], true);
-                set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
-                set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
+                try {
+                    $methodList = $theFlow->getPaymentMethods([], true);
+                    set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
+                    set_transient("resursTemporaryPaymentMethods", serialize($methodList), 3600);
+                } catch (\Exception $e) {
+                    // Can't save transients if this is down. So try to refetch this list.
+                    $methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
+                    $errorOnLiveData = true;
+                }
             } else {
                 $methodList = unserialize(get_transient("resursTemporaryPaymentMethods"));
             }
@@ -3956,6 +3980,12 @@ function woocommerce_gateway_resurs_bank_init()
             }
             if (!$naturalCount && $legalCount) {
                 $viewLegal = "display: none;";
+            }
+
+            if ($errorOnLiveData) {
+                echo '<div style="border: 1px solid #990000; text-align: center; padding: 3px; font-weight: bold; color: #990000;">' .
+                    __('Resurs Bank has connection errors!', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    '</div>';
             }
 
             if ($naturalCount) {
@@ -4165,6 +4195,9 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function admin_enqueue_script($hook)
     {
+        /** @var WP_Post $post */
+        global $post;
+
         $images = plugin_dir_url(__FILE__) . "img/";
         $resursLogo = $images . "resurs-standard.png";
 
@@ -4177,6 +4210,16 @@ function woocommerce_gateway_resurs_bank_init()
 
         $callbackUriCacheTime = get_transient("resurs_callback_templates_cache_last");
         $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? strftime("%Y-%m-%d, %H:%M", $callbackUriCacheTime) : "";
+        $resursMethod = false;
+        $resursPayment = '';
+
+        if (isset($post) && isset($post->ID)) {
+            $resursMeta = getResursPaymentMethodMeta($post->ID, 'resursBankMetaPaymentMethodType');
+            if (!empty($resursMeta)) {
+                $resursMethod = true;
+                $resursPayment = wc_get_payment_id_by_order_id($post->ID);
+            }
+        }
 
         $adminJs = [
             'resursSpinner' => plugin_dir_url(__FILE__) . 'loader.gif',
@@ -4204,6 +4247,12 @@ function woocommerce_gateway_resurs_bank_init()
             'callbacks_slow' => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.',
                 'resurs-bank-payment-gateway-for-woocommerce')),
             'resursBankTabLogo' => $resursLogo,
+            'resursMethod' => $resursMethod,
+            'resursPaymentId' => $resursPayment,
+            'methodDoesNotSupportRefunding' => __(
+                    'Resurs Bank does not support partial refunding for this payment method!',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+            ),
         ];
 
         $addAdminJs = apply_filters('resursAdminJs', null);
@@ -4655,6 +4704,8 @@ function woocommerce_gateway_resurs_bank_init()
         return $refundStatus;
     }
 
+
+
     /**
      * @param bool $isEditable
      * @param $that WC_Admin_Order
@@ -4663,12 +4714,22 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function resurs_order_is_editable($isEditable, $that)
     {
+        $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
+
+        try {
+            canResursRefund($resursOrderId);
+        } catch (\Exception $e) {
+            if ($e->getCode() === 1234) {
+                // Only return false at this point if this is a special payment.
+                // Some payment methods does not allow refunding and this is stated here only.
+                return false;
+            }
+        }
+
         // Go the normal way if this option is disabled.
         if (!getResursOption('resursOrdersEditable')) {
             return $isEditable;
         }
-
-        $resursOrderId = wc_get_payment_id_by_order_id($that->get_id());
 
         if (!empty($resursOrderId)) {
             return true;
@@ -4952,6 +5013,12 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 $methodInfoMeta = getResursPaymentMethodMeta($orderId);
                 if (empty($methodInfoMeta)) {
                     setResursPaymentMethodMeta($orderId, $resursPaymentInfo->paymentMethodId);
+                }
+                $methodInfoType = getResursPaymentMethodMeta($orderId, 'resursBankMetaPaymentMethodType');
+                if (empty($methodInfoType)) {
+                    $flow = initializeResursFlow();
+                    $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
+                    setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodType', $methodInfo->type);
                 }
             }
 
@@ -5672,6 +5739,10 @@ function initializeResursFlow(
 
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
     $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
+    $cTimeout = getResursFlag('CURL_TIMEOUT');
+    if ($cTimeout > 0) {
+        $initFlow->setFlag('CURL_TIMEOUT', $cTimeout);
+    }
     $initFlow->setSimplifiedPsp(true);
     $initFlow->setRealClientName('Woo');
 
@@ -6277,8 +6348,10 @@ function getResursUpdatePaymentReferenceResult($id)
 /**
  * @param $id
  * @param string $methodName
+ * @param string $key
+ * @param string $value
  */
-function setResursPaymentMethodMeta($id, $methodName = '')
+function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMetaPaymentMethod', $value = '')
 {
     if ($id > 0) {
         $paymentMethodName = isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : '';
@@ -6296,15 +6369,29 @@ function setResursPaymentMethodMeta($id, $methodName = '')
 
 /**
  * @param $id
+ * @param $key
+ * @param $value
+ */
+function setResursOrderMetaData($id, $key, $value) {
+    update_post_meta(
+        $id,
+        $key,
+        $value
+    );
+}
+
+/**
+ * @param $id
+ * @param string $key
  * @return string
  */
-function getResursPaymentMethodMeta($id)
+function getResursPaymentMethodMeta($id, $key = 'resursBankMetaPaymentMethod')
 {
-    $metaMethodTest = get_post_meta($id, 'resursBankMetaPaymentMethod');
+    $metaMethodTest = get_post_meta($id, $key);
     if (is_array($metaMethodTest)) {
-        $fetchStoredMethod = array_pop($metaMethodTest);
-        if (!empty($fetchStoredMethod)) {
-            return (string)$fetchStoredMethod;
+        $returnValue = array_pop($metaMethodTest);
+        if (!empty($returnValue)) {
+            return (string)$returnValue;
         }
     }
     return '';

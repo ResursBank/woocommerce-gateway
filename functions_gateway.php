@@ -66,21 +66,40 @@ if (!function_exists('setResursNoAutoCancellation')) {
      *
      * @param $order
      * @return string|void
+     * @since 2.2.21
      */
     function setResursNoAutoCancellation($order)
     {
         $flowErrorMessage = __(
-            'Cancelling orders in automation mode prohibited',
+            'Cancelling orders in automation mode prohibited (i.e. stock reservation expires, etc).',
             'resurs-bank-payment-gateway-for-woocommerce'
         );
 
         $order->add_order_note(
             __(
-                'Automated cancellation detected (reserved orderstock timeout may cause this). Someone has to be logged in to cancel orders from Resurs Bank.',
+                'Automated cancellation detected (reserved orderstock timeout may cause this). Someone has to be logged in to cancel orders for Resurs Bank.',
                 'resurs-bank-payment-gateway-for-woocommerce'
             )
         );
 
         return $flowErrorMessage;
+    }
+}
+
+if (!function_exists('canResursRefund')) {
+    /**
+     * @param $resursOrderId
+     * @throws \Exception Throws exception if not refundable.
+     * @since 2.2.21
+     */
+    function canResursRefund($resursOrderId)
+    {
+        $resursFlow = initializeResursFlow();
+        if ($resursFlow->canDebit($resursOrderId)) {
+            $paymentMethodType = getResursPaymentMethodMeta($resursOrderId, 'resursBankMetaPaymentMethodType');
+            if ($paymentMethodType === 'PAYMENT_PROVIDER') {
+                throw new \Exception('Not refundable', 1234);
+            }
+        }
     }
 }
