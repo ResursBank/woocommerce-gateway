@@ -62,7 +62,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', '1.3.22');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190827');
+    define('ECOMPHP_MODIFY_DATE', '20190903');
 }
 
 /**
@@ -206,31 +206,9 @@ class ResursBank
     /**
      * Flags up that client name has been set by user/developer/integrator
      * @var bool
+     * @since 1.3.23
      */
     private $userSetClientName = false;
-
-    /**
-     * $metaDataHashEnabled When enabled, ECom uses Resurs metadata to add a sha1-encoded hash string,
-     * based on parts of the payload to secure the data transport (unfinished)
-     * @var bool
-     */
-    private $metaDataHashEnabled = false;
-    /**
-     * $metaDataHashEncrypted When enabled, ECom will try to pack and encrypt metadata strings instead of
-     * hashing it (unfinished)
-     * @var bool
-     */
-    private $metaDataHashEncrypted = false;
-    /**
-     * Encryption AES IV
-     * @var string
-     */
-    private $metaDataIv;
-    /**
-     * Encryption AES Key
-     * @var null
-     */
-    private $metaDataKey;
 
     /**
      * @var array Last stored getPayment()
@@ -3964,6 +3942,23 @@ class ResursBank
     }
 
     /**
+     * @param $clientName
+     * @since 1.3.23
+     */
+    public function setRealClientName($clientName) {
+        $this->userSetClientName = true;
+        $this->realClientName = $clientName;
+    }
+
+    /**
+     * @return string
+     * @since 1.3.23
+     */
+    public function getRealClientName() {
+        return $this->realClientName;
+    }
+
+    /**
      * Convert version number to decimals
      *
      * @return string
@@ -3979,23 +3974,6 @@ class ResursBank
         }
 
         return $decVersion;
-    }
-
-    /**
-     * @param $clientName
-     * @since 1.3.23
-     */
-    public function setRealClientName($clientName) {
-        $this->userSetClientName = true;
-        $this->realClientName = $clientName;
-    }
-
-    /**
-     * @return string
-     * @since 1.3.23
-     */
-    public function getRealClientName() {
-        return $this->realClientName;
     }
 
     /**
@@ -4558,8 +4536,6 @@ class ResursBank
         $error = array();
         $myFlow = $this->getPreferredPaymentFlowService();
 
-        //$this->addMetaDataHash($payment_id_or_method);
-
         // Using this function to validate that card data info is properly set up
         // during the deprecation state in >= 1.0.2/1.1.1
         if ($myFlow == RESURS_FLOW_TYPES::SIMPLIFIED_FLOW) {
@@ -4909,22 +4885,15 @@ class ResursBank
                 if (isset($this->Payload['paymentData'])) {
                     unset($this->Payload['paymentData']);
                 }
-                if (!$this->isFlag('KEEP_RCO_BILLING')) {
-                    if (isset($this->Payload['customer']['address'])) {
-                        unset($this->Payload['customer']['address']);
-                    }
-                } else {
-                    // By not removing fields on this kind of exeption means that we need to protect the customer object.
+
+                // By not removing fields on this kind of exeption means that we need to protect the customer object.
+                if (isset($this->Payload['customer']['address'])) {
                     $this->checkoutCustomerFieldSupport = true;
                 }
-                if (!$this->isFlag('KEEP_RCO_DELIVERY')) {
-                    if (isset($this->Payload['customer']['deliveryAddress'])) {
-                        unset($this->Payload['customer']['deliveryAddress']);
-                    }
-                } else {
-                    // By not removing fields on this kind of exeption means that we need to protect the customer object.
+                if (isset($this->Payload['customer']['deliveryAddress'])) {
                     $this->checkoutCustomerFieldSupport = true;
                 }
+
                 if ($this->checkoutCustomerFieldSupport === false && isset($this->Payload['customer'])) {
                     unset($this->Payload['customer']);
                 }
@@ -5509,6 +5478,7 @@ class ResursBank
         if (!empty($phone)) {
             $this->Payload['customer']['phone'] = $phone;
         }
+        // The field for cellphone in RCO is called mobile.
         if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             if (!empty($cellphone)) {
                 $this->Payload['customer']['mobile'] = $cellphone;
@@ -6211,6 +6181,7 @@ class ResursBank
      * @param bool $getAsTable
      * @return array
      * @throws \Exception
+     * @since I have no idea
      * @deprecated 1.3.21 Use getPaymentDiffByStatus instead!
      */
     public function getPaymentSpecByStatus($paymentIdOrPaymentObject, $getAsTable = false)
@@ -6455,6 +6426,7 @@ class ResursBank
      * @param $paymentDiffArtRow
      * @param $authorizeObject
      * @return bool
+     * @since 1.3.22
      */
     private function getIsInAuthorize($paymentDiffArtRow, $authorizeObject) {
         $return = false;
@@ -6470,6 +6442,7 @@ class ResursBank
      * @param $artRow
      * @param $matchList
      * @return array|mixed
+     * @since 1.3.22
      */
     private function getOrderRowMatch($artRow, $matchList)
     {
@@ -6495,6 +6468,7 @@ class ResursBank
     /**
      * @param $row
      * @return mixed
+     * @since 1.3.22
      */
     private function getPurgedPaymentRow($row, $alsoCleanBy = array()) {
         $cleanBy = array('totalVatAmount', 'totalAmount', 'quantity', 'id');
@@ -6516,6 +6490,7 @@ class ResursBank
      * @param $paymentDiff
      * @param $paymentType
      * @return mixed
+     * @since 1.3.22
      */
     public function getMergedPaymentDiff($paymentRows, $paymentDiff, $paymentType) {
         // Convert to correct row, if only one.
@@ -6564,6 +6539,7 @@ class ResursBank
      * @param int $renderType RESURS_AFTERSHOP_RENDER_TYPES as unique type or bitmask
      * @return array
      * @throws \Exception
+     * @since First book of moses
      */
     public function sanitizeAfterShopSpec(
         $paymentIdOrPaymentObjectData = '',
@@ -7260,6 +7236,7 @@ class ResursBank
      *
      * @param $duplicateState
      * @throws Exception
+     * @since 1.3.22
      */
     private function checkUnsafePaymentObject ($duplicateState) {
         if ($duplicateState > 2) {
@@ -7299,13 +7276,13 @@ class ResursBank
 
             foreach ($currentPaymentSpecTable as $statusRow) {
                 if ($type === 'credit') {
-                    $quantityMatch = $statusRow['CREDITABLE'];
+                    $quantityMatch = isset($statusRow['CREDITABLE']) ? $statusRow['CREDITABLE'] : 0;
                 } else if ($type === 'annul') {
-                    $quantityMatch = $statusRow['ANNULLABLE'];
+                    $quantityMatch = isset($statusRow['ANNULLABLE']) ? $statusRow['ANNULLABLE'] : 0;
                 } else if ($type === 'debit') {
-                    $quantityMatch = $statusRow['DEBITABLE'];
+                    $quantityMatch = isset($statusRow['DEBITABLE']) ? $statusRow['DEBITABLE'] : 0;
                 } else if ($type === 'authorize') {
-                    $quantityMatch = $statusRow['AUTHORIZE'];
+                    $quantityMatch = isset($statusRow['AUTHORIZE']) ? $statusRow['AUTHORIZE'] : 0;
                 } else {
                     $quantityMatch = 0;
                 }
@@ -7344,9 +7321,6 @@ class ResursBank
                     $useQuantity = $realQuantity;
                     $useUnitAmount = $realUnitAmount;
                     $useVatPct = $realVatPct;
-                } else {
-                    $useUnitAmount = $orderRow['unitAmountWithoutVat'];
-                    $useVatPct = $orderRow['vatPct'];
                 }
 
                 // Validation is based on same article, description and price.
@@ -7372,6 +7346,11 @@ class ResursBank
                             'CREDITABLE',
                         ]
                     );
+
+                    if (!$this->skipAfterShopPaymentValidation) {
+                        $useUnitAmount = $orderRow['unitAmountWithoutVat'];
+                        $useVatPct = $orderRow['vatPct'];
+                    }
 
                     // Make sure we use the correct getPaymentData.
                     $orderRow['id'] = $id;
@@ -7406,6 +7385,7 @@ class ResursBank
      *
      * @return bool
      * @throws \Exception
+     * @since Forever
      */
     public function cancelPayment($paymentId = "", $customPayloadItemList = array(), $skipSpecValidation = false)
     {
