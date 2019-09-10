@@ -3768,9 +3768,11 @@ function woocommerce_gateway_resurs_bank_init()
                     $flowErrorMessage = "";
                     if ($resursFlow->canDebit($payment)) {
                         try {
-                            // Full-Finalize orders with getPayment()-validation if status is
-                            // a "first time handled" order.
-                            // @link https://test.resurs.com/docs/display/ecom/paymentStatus
+                            /**
+                             * Full-Finalize orders with getPayment()-validation if status is
+                             * a "first time handled" order.
+                             * @link https://test.resurs.com/docs/display/ecom/paymentStatus
+                             */
                             if (
                                 !$resursFlow->canCredit($payment_id) &&
                                 !$resursFlow->getIsDebited() &&
