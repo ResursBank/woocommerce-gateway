@@ -24,10 +24,11 @@ if (!function_exists('resurs_refund_shipping')) {
     /**
      * @param $orderData
      * @param $resursFlow
+     * @param bool $dryRun Run through shipping procedure without adding orderlines in ecom on dryRun=true
      * @return bool
      * @since 2.2.21
      */
-    function resurs_refund_shipping($orderData, $resursFlow)
+    function resurs_refund_shipping($orderData, $resursFlow, $dryRun = false)
     {
         $return = false;
         $shippingTax = $orderData->get_shipping_tax();
@@ -50,15 +51,17 @@ if (!function_exists('resurs_refund_shipping')) {
             ) ? @round($shippingTax / $shippingTotal, 2) * 100 : 0
             );
 
-            $resursFlow->addOrderLine(
-                '00_frakt',
-                __('Shipping', 'resurs-bank-payment-gateway-for-woocommerce'),
-                preg_replace('/^-/', '', $shippingTotal),
-                $shipping_tax_pct,
-                'st',
-                'SHIPPING_FEE',
-                1
-            );
+            if (!$dryRun) {
+                $resursFlow->addOrderLine(
+                    '00_frakt',
+                    __('Shipping', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    preg_replace('/^-/', '', $shippingTotal),
+                    $shipping_tax_pct,
+                    'st',
+                    'SHIPPING_FEE',
+                    1
+                );
+            }
         }
 
         return $return;
