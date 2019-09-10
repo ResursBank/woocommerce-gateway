@@ -32,10 +32,11 @@ if (!function_exists('resurs_refund_shipping')) {
         $return = false;
         $shippingTax = $orderData->get_shipping_tax();
         $shippingTotal = $orderData->get_shipping_total();
+
+        $shippingTax = preg_replace('/^-/', '', $shippingTax);
+        $shippingTotal = preg_replace('/^-/', '', $shippingTotal);
         if ($shippingTotal > 0) {
             $return = true;
-            $shippingTax = preg_replace('/^-/', '', $shippingTax);
-            $shippingTotal = preg_replace('/^-/', '', $shippingTotal);
 
             $shipping_tax_pct = (
             !is_nan(

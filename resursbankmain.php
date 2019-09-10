@@ -4626,6 +4626,7 @@ function woocommerce_gateway_resurs_bank_init()
         /** @var $refundFlow Resursbank\RBEcomPHP\ResursBank */
         $refundFlow = initializeResursFlow();
         $refundFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
+
         if (is_array($refundItems) && count($refundItems)) {
             /** @var WC_Order_Item_Product $item */
             foreach ($refundItems as $item) {
@@ -4660,7 +4661,6 @@ function woocommerce_gateway_resurs_bank_init()
         $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);;
 
         try {
-
             if (floatval($totalDiscount) > 0) {
                 $refundFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
             }
