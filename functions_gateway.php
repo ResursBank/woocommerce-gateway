@@ -33,6 +33,9 @@ if (!function_exists('resurs_refund_shipping')) {
         $shippingTax = $orderData->get_shipping_tax();
         $shippingTotal = $orderData->get_shipping_total();
 
+        // Resurs Bank does not like negative values when adding orderrows, so
+        // we make them positive. When partially refunding and shipping is left out
+        // those values will be 0 anyway.
         $shippingTax = preg_replace('/^-/', '', $shippingTax);
         $shippingTotal = preg_replace('/^-/', '', $shippingTotal);
         if ($shippingTotal > 0) {
