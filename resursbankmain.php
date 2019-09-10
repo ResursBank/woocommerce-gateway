@@ -3791,9 +3791,9 @@ function woocommerce_gateway_resurs_bank_init()
                              */
                             if (
                                 !$resursFlow->canCredit($payment_id) &&
-                                !$resursFlow->getIsDebited() &&
-                                !$resursFlow->getIsCredited() &&
-                                !$resursFlow->getIsAnnulled()
+                                !$resursFlow->getIsDebited($payment_id) &&
+                                !$resursFlow->getIsCredited($payment_id) &&
+                                !$resursFlow->getIsAnnulled($payment_id)
                             ) {
                                 // If order is only debitable and not creditable, then
                                 // use the getPayment-validation instead of customizations.
