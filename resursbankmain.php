@@ -3637,8 +3637,8 @@ function woocommerce_gateway_resurs_bank_init()
                         $rowsLeftToHandle
                     );
                 }
-                resurs_refund_shipping($order, $resursFlow);
             }
+            resurs_refund_shipping($order, $resursFlow);
 
             return $return;
         }
