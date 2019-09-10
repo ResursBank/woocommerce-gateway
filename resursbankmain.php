@@ -4252,8 +4252,8 @@ function woocommerce_gateway_resurs_bank_init()
             'resursMethod' => $resursMethod,
             'resursPaymentId' => $resursPayment,
             'methodDoesNotSupportRefunding' => __(
-                    'Resurs Bank does not support partial refunding for this payment method!',
-                    'resurs-bank-payment-gateway-for-woocommerce'
+                'Resurs Bank does not support partial refunding for this payment method!',
+                'resurs-bank-payment-gateway-for-woocommerce'
             ),
         ];
 
@@ -4705,7 +4705,6 @@ function woocommerce_gateway_resurs_bank_init()
 
         return $refundStatus;
     }
-
 
 
     /**
@@ -6374,7 +6373,8 @@ function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMet
  * @param $key
  * @param $value
  */
-function setResursOrderMetaData($id, $key, $value) {
+function setResursOrderMetaData($id, $key, $value)
+{
     update_post_meta(
         $id,
         $key,

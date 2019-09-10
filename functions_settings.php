@@ -283,7 +283,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => home_url("/") . "wp-content/plugins/resurs-bank-payment-gateway-for-woocommerce/css/costofpurchase.css",
                 ],
-                'handleNatConnections' => array(
+                'handleNatConnections' => [
                     'title' => __('Handle NAT connections', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
@@ -291,8 +291,8 @@ if (!function_exists('getResursWooFormFields')) {
                         'Defines if the plugin should perform a simple check against proxies on customer ip addresses (Not recommended to activate since it opens up for exploits, but if you have many connecting customers that seem to be on NATed networks, this may help a bit)',
                         'resurs-bank-payment-gateway-for-woocommerce'),
                     'desc_tip' => false,
-                ),
-                'resursOrdersEditable' => array(
+                ],
+                'resursOrdersEditable' => [
                     'title' => __('Allow editing of orders in progress', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
@@ -301,7 +301,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => false,
-                ),
+                ],
                 'getAddress' => [
                     'title' => __('getAddressBox Enabled', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __('If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active.',

@@ -20,7 +20,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     public function __construct()
     {
-        $this->resetOmniCustomerFields = array();
+        $this->resetOmniCustomerFields = [];
         $this->id = "resurs_bank_omnicheckout";
         $this->method_title = "Resurs Bank Omnicheckout";
         $this->description = "Resurs Bank Omnicheckout";
@@ -46,27 +46,27 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $this->description = $this->get_option('description');
 
         if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(
+            add_action('woocommerce_update_options_payment_gateways_' . $this->id, [
                 $this,
-                'process_admin_options'
-            ));
+                'process_admin_options',
+            ]);
         } else {
-            add_action('woocommerce_update_options_payment_gateways', array($this, 'process_admin_options'));
+            add_action('woocommerce_update_options_payment_gateways', [$this, 'process_admin_options']);
         }
 
         // OmniCheckout
-        add_filter('woocommerce_checkout_fields', array($this, 'resurs_omnicheckout_fields'));
-        add_action('woocommerce_after_checkout_form', array($this, 'resurs_omnicheckout_form_variable'));
+        add_filter('woocommerce_checkout_fields', [$this, 'resurs_omnicheckout_fields']);
+        add_action('woocommerce_after_checkout_form', [$this, 'resurs_omnicheckout_form_variable']);
 
         if ($this->isResursOmni()) {
             if ($this->iFrameLocation == "afterCheckoutForm") {
-                add_action('woocommerce_after_checkout_form', array($this, 'resurs_omnicheckout_form_location'));
+                add_action('woocommerce_after_checkout_form', [$this, 'resurs_omnicheckout_form_location']);
             }
             if ($this->iFrameLocation == "beforeReview") {
-                add_action('woocommerce_checkout_before_order_review', array(
+                add_action('woocommerce_checkout_before_order_review', [
                     $this,
-                    'resurs_omnicheckout_form_location'
-                ));
+                    'resurs_omnicheckout_form_location',
+                ]);
             }
         }
     }
@@ -75,10 +75,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      * Create fields for an omniwrapper, which can be used to reload the checkout
      * on "critical" changes when swithcing between payment methods
      */
-    public function resurs_omnicheckout_form_variable() {
-        echo '<div class="omniActionsWrapper" id="omniActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">'.
+    public function resurs_omnicheckout_form_variable()
+    {
+        echo '<div class="omniActionsWrapper" id="omniActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">' .
             '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">' .
-            __('Please wait while the checkout is reloading', 'resurs-bank-payment-gateway-for-woocommerce').
+            __('Please wait while the checkout is reloading', 'resurs-bank-payment-gateway-for-woocommerce') .
             '</div></div>';
         echo '<div id="omniActions" class="omniActions" style="display: none;"></div>';
     }
@@ -242,7 +243,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      * @param $key
      * @return string
      */
-    private function getDataFromCustomerObject($billingObject, $key) {
+    private function getDataFromCustomerObject($billingObject, $key)
+    {
         $return = '';
         if (isset($billingObject[$key])) {
             $return = $billingObject[$key];
@@ -259,9 +261,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         global $woocommerce;
         $specLines = self::get_payment_spec($woocommerce->cart, true);
         $getUrls = $this->createReturnUrls();
-        $bookDataOmni = array(
+        $bookDataOmni = [
             'orderLines' => $specLines,
-        );
+        ];
 
         // If user is logged in, fetch data and send to RCO.
         // Note: Cookies may override this feature.
@@ -279,10 +281,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             );
             $this->flow->setDeliveryAddress(
                 $this->getDataFromCustomerObject(
-                        $loggedInBilling,
+                    $loggedInBilling,
                     'first_name'
                 ) . ' ' . $this->getDataFromCustomerObject(
-                        $loggedInBilling, 'last_name'
+                    $loggedInBilling, 'last_name'
                 ),
                 $this->getDataFromCustomerObject($loggedInBilling, 'first_name'),
                 $this->getDataFromCustomerObject($loggedInBilling, 'last_name'),
@@ -316,14 +318,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     private function createReturnUrls()
     {
-        $returnArray = array();
+        $returnArray = [];
         try {
             $omniBack = $this->createResursOmniSuccessUrl(true);
             $omniSuccess = $this->createResursOmniSuccessUrl();
-            $returnArray = array(
+            $returnArray = [
                 'successUrl' => $omniSuccess,
-                'backUrl' => $omniBack
-            );
+                'backUrl' => $omniBack,
+            ];
         } catch (Exception $e) {
 
         }
@@ -404,10 +406,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             if (!defined('OMNICHECKOUT_PROCESSPAYMENT')) {
                 if (!$keepFieldsHidden) {
                     if (isset($fields['billing'])) {
-                        $fields['billing'] = array();
+                        $fields['billing'] = [];
                     }
                     if (isset($fields['shipping'])) {
-                        $fields['shipping'] = array();
+                        $fields['shipping'] = [];
                     }
                 }
                 // For omni, to handle shipping, we need to remove all fields, including the "create account"-part
@@ -417,7 +419,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 ///
                 $cleanOmniCustomerFields = ($this->get_option('cleanOmniCustomerFields') == "true" ? 1 : 0);
                 if ($cleanOmniCustomerFields && !$keepFieldsHidden) {
-                    $fields = array();
+                    $fields = [];
                 }
             } else {
                 // Available configuration switch for future releases: secureFieldsNotNull (WOO-225)
@@ -428,7 +430,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 // reach customers while parts of the orders might be handled as successful. By passing back something else
                 // than emptiness (null?), we might be able to save something.
                 if (!is_array($fields)) {
-                    $fields = array();
+                    $fields = [];
                 }
             }
 
@@ -513,11 +515,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected static function get_spec_lines($cart)
     {
-        $spec_lines = array();
+        $spec_lines = [];
         foreach ($cart as $item) {
             $data = $item['data'];
             $_tax = new WC_Tax();//looking for appropriate vat for specific product
-            $rates = array();
+            $rates = [];
             $taxClass = $data->get_tax_class();
             $rates = @array_shift($_tax->get_rates($taxClass));
             if (isset($rates['rate'])) {
@@ -535,7 +537,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             if ($optionUseSku && !empty($setSku)) {
                 $bookArtId = $setSku;
             }
-            $spec_lines[] = array(
+            $spec_lines[] = [
                 'id' => $bookArtId,
                 'artNo' => $bookArtId,
                 'description' => (empty($postTitle) ? __('Article description missing',
@@ -547,7 +549,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 'totalVatAmount' => ($priceExTax * ($vatPct / 100)),
                 'totalAmount' => (($priceExTax * $item['quantity']) + ($totalVatAmount * $item['quantity'])),
                 'type' => 'ORDER_LINE',
-            );
+            ];
         }
         return $spec_lines;
     }
@@ -577,7 +579,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping, 2) * 100) ? @round($shipping_tax / $shipping,
                 2) * 100 : 0);
 
-        $spec_lines[] = array(
+        $spec_lines[] = [
             'id' => 'frakt',
             'artNo' => '00_frakt',
             'description' => __('Shipping', 'resurs-bank-payment-gateway-for-woocommerce'),
@@ -588,7 +590,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             'totalVatAmount' => $shipping_tax,
             'totalAmount' => $shipping_total,
             'type' => 'SHIPPING_FEE',
-        );
+        ];
         $payment_method = $woocommerce->session->chosen_payment_method;
         $payment_options = get_option('woocommerce_' . $payment_method . '_settings');
         $payment_fee = getResursOption('price', 'woocommerce_' . $payment_method . '_settings');
@@ -623,7 +625,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $rate = 0;
                 }
                 if (!empty($fee->id) && ($fee->amount > 0 || $fee->amount < 0)) {
-                    $spec_lines[] = array(
+                    $spec_lines[] = [
                         'id' => $fee->id,
                         'artNo' => $fee->id,
                         'description' => $fee->name,
@@ -634,7 +636,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                         'totalVatAmount' => $fee->tax,
                         'totalAmount' => $fee->amount + $fee->tax,
                         'type' => 'ORDER_LINE',
-                    );
+                    ];
                 }
             }
         }
@@ -654,9 +656,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $couponCode = ($coupon->get_code());
                     $couponDescription = $post->post_excerpt;
                     if (empty($couponDescription)) {
-                        $couponDescription = $couponCode . '_' . __('coupon', 'resurs-bank-payment-gateway-for-woocommerce');
+                        $couponDescription = $couponCode . '_' . __('coupon',
+                                'resurs-bank-payment-gateway-for-woocommerce');
                     }
-                    $spec_lines[] = array(
+                    $spec_lines[] = [
                         'id' => $couponId,
                         'artNo' => $couponCode . '_' . 'kupong',
                         'description' => $couponDescription,
@@ -667,17 +670,17 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                         'totalVatAmount' => 0,
                         'totalAmount' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
                         'type' => 'DISCOUNT',
-                    );
+                    ];
                 }
             }
         }
         $ourPaymentSpecCalc = self::calculateSpecLineAmount($spec_lines);
         if (!$specLinesOnly) {
-            $payment_spec = array(
+            $payment_spec = [
                 'specLines' => $spec_lines,
                 'totalAmount' => $ourPaymentSpecCalc['totalAmount'],
                 'totalVatAmount' => $ourPaymentSpecCalc['totalVatAmount'],
-            );
+            ];
         } else {
             return $spec_lines;
         }
@@ -690,15 +693,15 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      *
      * @return array
      */
-    protected static function calculateSpecLineAmount($specLine = array())
+    protected static function calculateSpecLineAmount($specLine = [])
     {
         /*
          * Defaults
          */
-        $setPaymentSpec = array(
+        $setPaymentSpec = [
             'totalAmount' => 0,
-            'totalVatAmount' => 0
-        );
+            'totalVatAmount' => 0,
+        ];
         if (is_array($specLine) && count($specLine)) {
             foreach ($specLine as $row) {
                 $setPaymentSpec['totalAmount'] += $row['totalAmount'];

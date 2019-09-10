@@ -16,9 +16,10 @@ define('RB_WOO_VERSION', '2.2.21');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resus-bank-payment-gateway-for-woocommerce');
 
-$resurs_obsolete_coexistence_disable= false;
+$resurs_obsolete_coexistence_disable = false;
 
-function activateResursGatewayScripts() {
+function activateResursGatewayScripts()
+{
     global $resurs_obsolete_coexistence_disable;
     //add_action('plugins_loaded', 'woocommerce_gateway_resurs_bank_init');
     require_once('resursbankmain.php');
