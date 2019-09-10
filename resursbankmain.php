@@ -4643,6 +4643,13 @@ function woocommerce_gateway_resurs_bank_init()
         $refundFlow = initializeResursFlow();
         $refundFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
 
+        $matchGetPaymentKeys = (array)apply_filters('resurs_match_getpayment_keys', []);
+        if (is_array($matchGetPaymentKeys) && count($matchGetPaymentKeys)) {
+            //$refundFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+            $refundFlow->setGetPaymentMatchKeys($matchGetPaymentKeys);
+        }
+        $refundPriceAlwaysOverride = (bool)apply_filters('resurs_refund_price_override', false);
+
         if (is_array($refundItems) && count($refundItems)) {
             /** @var WC_Order_Item_Product $item */
             foreach ($refundItems as $item) {
@@ -4686,7 +4693,7 @@ function woocommerce_gateway_resurs_bank_init()
             $refundStatus = $refundFlow->paymentCancel(
                 $resursOrderId,
                 null,
-                floatval($totalDiscount) > 0 || $hasShippingRefund ? true : false
+                floatval($totalDiscount) > 0 || $hasShippingRefund || $refundPriceAlwaysOverride ? true : false
             );
         } catch (\Exception $e) {
             $errors = true;
