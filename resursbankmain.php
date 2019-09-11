@@ -3617,7 +3617,6 @@ function woocommerce_gateway_resurs_bank_init()
             $return = false;
             $discountTotal = $order->get_discount_total();
             if ($discountTotal > 0) {
-                $return = true;
                 $orderItems = $order->get_items();
                 /** @var $item WC_Order_Item_Product */
                 foreach ($orderItems as $item) {
@@ -3630,16 +3629,18 @@ function woocommerce_gateway_resurs_bank_init()
                     $articleId = resurs_get_proper_article_number($product);
                     $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
                     $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
-
-                    $resursFlow->addOrderLine(
-                        $articleId,
-                        $product->get_title(),
-                        $itemTotal,
-                        $amountPct,
-                        '',
-                        'ORDER_LINE',
-                        $rowsLeftToHandle
-                    );
+                    if ($itemTotal > 0) {
+                        $return = true;
+                        $resursFlow->addOrderLine(
+                            $articleId,
+                            $product->get_title(),
+                            $itemTotal,
+                            $amountPct,
+                            '',
+                            'ORDER_LINE',
+                            $rowsLeftToHandle
+                        );
+                    }
                 }
             }
 
