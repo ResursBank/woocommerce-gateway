@@ -74,6 +74,7 @@ var flowRules = {
 };
 
 function noRefund() {
+    console.log("Not fundable order notice replaced refund-button.");
     var refundButtonReplacement = jQuery(
         '<div>', {
             "id": "refundButtonReplacement",
@@ -644,6 +645,7 @@ function resursRemoveAnnuityElements(notThisElement) {
 function getResursRefundCapability(response) {
     if (typeof response["response"]["getRefundCapabilityResponse"] !== "undefined") {
         if (response["response"]["getRefundCapabilityResponse"]["refundable"] === "no") {
+            console.log("Current order is not refundable due to method.");
             noRefund();
         }
     }

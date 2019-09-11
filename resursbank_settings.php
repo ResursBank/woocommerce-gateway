@@ -565,6 +565,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $hasSsl = false;
         }
 
+        $pluginIsGit = false;
+        if (file_exists(__DIR__ . '/.git') && !defined('RESURS_BANK_PAYMENT_GATEWAY_FOR_WOOCOMMERCE_HAS_GIT')) {
+            $pluginIsGit = true;
+        }
+
         $pluginInfo = $this->setSeparator(__('Plugin information', 'resurs-bank-payment-gateway-for-woocommerce'));
         $topCss = 'style="vertical-align: top !important;" valign="top"';
         //$topCursor  = 'style="vertical-align: top !important;cursor:pointer;" valign="top"';
@@ -582,6 +587,47 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '> NETCURL-v' . $this->getDefined('NETCURL_RELEASE') . ' / MODULE_CURL-v' . $this->getDefined('NETCURL_CURL_RELEASE') . ' / MODULE_SOAP-v' . $this->getDefined('NETCURL_SIMPLESOAP_RELEASE') . '<br>
             <div id="rwocurltag" style="display:none;"></div>
         </td></tr>';
+
+        if ($pluginIsGit) {
+            $pluginInfo .= $this->getGitInfo($topCss);
+        }
+
+        return $pluginInfo;
+    }
+
+    /**
+     * Active developer view.
+     *
+     * @param $topCss
+     * @return string
+     */
+    function getGitInfo($topCss) {
+        $pluginInfo = "";
+        try {
+            $gitbin = (string)getResursFlag('GIT_BIN');
+            if (empty($gitbin) || !file_exists($gitbin)) {
+                $pluginInfo .= '<tr><td ' . $topCss . '>gitinfo</td><td ' . $topCss . '>' .
+                    __(
+                        'The plugin is part of a git repo. Status is unknown; need proper /path/to/git to activate feature.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '</td></tr>';
+            } else {
+                if (file_exists($gitbin)) {
+                    $gitbin .= ' --git-dir=' . __DIR__ . '/.git';
+                    @exec($gitbin . " rev-parse HEAD 2>&1", $shortRev);
+                    @exec($gitbin . " rev-parse --abbrev-ref HEAD 2>&1", $abbrev);
+                    if (is_array($shortRev)) {
+                        $pluginInfo .= '<tr><td ' . $topCss . '>gitinfo</td><td ' . $topCss . '>' .
+                            array_pop($abbrev) . '<br>' .
+                            array_pop($shortRev) .
+                            '</td></tr>';
+
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // As silent as possible.
+        }
 
         return $pluginInfo;
     }
