@@ -614,7 +614,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             } else {
                 if (file_exists($gitbin)) {
                     $gitbin .= ' --git-dir=' . __DIR__ . '/.git';
-                    @exec($gitbin . " rev-parse HEAD 2>&1", $shortRev);
+                    @exec($gitbin . " rev-parse --short HEAD 2>&1", $shortRev);
                     @exec($gitbin . " rev-parse --abbrev-ref HEAD 2>&1", $abbrev);
                     if (is_array($shortRev)) {
                         $pluginInfo .= '<tr><td ' . $topCss . '>gitinfo</td><td ' . $topCss . '>' .
