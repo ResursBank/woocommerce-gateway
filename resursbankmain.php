@@ -2720,6 +2720,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $order->set_address($wooDeliveryAddress, 'shipping');
                                 update_post_meta($orderId, 'paymentId', $requestedPaymentId);
                                 update_post_meta($orderId, 'omniPaymentMethod', $omniPaymentMethod);
+
                                 $hasInternalErrors = false;
                                 $internalErrorMessage = null;
                                 $updatePaymentReferenceStatus = $this->updatePaymentReference(
@@ -4216,10 +4217,16 @@ function woocommerce_gateway_resurs_bank_init()
         $resursPayment = '';
 
         if (isset($post) && isset($post->ID)) {
+            $methodInfoMeta = getResursPaymentMethodMeta($post->ID);
             $resursMeta = getResursPaymentMethodMeta($post->ID, 'resursBankMetaPaymentMethodType');
             if (!empty($resursMeta)) {
                 $resursMethod = true;
                 $resursPayment = wc_get_payment_id_by_order_id($post->ID);
+            } else {
+                $flow = initializeResursFlow();
+                $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
+                $resursMeta = isset($methodInfo->type)?$methodInfo->type:'';
+                setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodType', $resursMeta);
             }
         }
 
@@ -4480,8 +4487,8 @@ function woocommerce_gateway_resurs_bank_init()
         }
         if ($column == 'resurs_payment_method') {
             $omniMethod = get_post_meta($post->ID, 'omniPaymentMethod');
-            // Overrides the omniPaymentMethod that is only there for backward compatibility
 
+            // Overrides the omniPaymentMethod that is only there for backward compatibility
             $newMethodInfo = getResursPaymentMethodMeta($post->ID);
             if (!empty($newMethodInfo)) {
                 echo $newMethodInfo;
@@ -6358,6 +6365,21 @@ function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMet
         $paymentMethodName = isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : '';
         if (empty($paymentMethodName) && !empty($methodName)) {
             $paymentMethodName = $methodName;
+        }
+
+        try {
+            $flow = initializeResursFlow();
+            // We also want to set the payment method type at payment levels.
+            $method = $flow->getPaymentMethodSpecific($paymentMethodName);
+            if (isset($method->type) && !empty($method->type)) {
+                update_post_meta(
+                    $id,
+                    'resursBankMetaPaymentMethodType',
+                    $method->type
+                );
+            }
+        } catch (\Exception $e) {
+            // Silently ignore API calls if they don't work at this moment.
         }
 
         update_post_meta(
