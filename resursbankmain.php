@@ -3604,17 +3604,20 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
-         * Make sure Resurs Bank gets correct orderrow when refunding has been involved.
+         * Prepare and set up custom order rows with Resurs Bank IF there is any discount on the
+         * order. Making sure shipping are handled correctly as shipping goes separately into
+         * WC orders.
+         *
          * @param $order WC_Order
          * @param $resursFlow Resursbank\RBEcomPHP\ResursBank
-         * @return bool
+         * @param bool $isFullOrderHandle Set to true if this is a "handle full order instead of partial" order.
+         * @return bool Returns true if this method indicates refunds with discount.
          */
-        private static function getOrderRowsByRefundedItems($order, $resursFlow)
+        private static function getOrderRowsByRefundedDiscountItems($order, $resursFlow, $isFullOrderHandle = false)
         {
             $return = false;
             $discountTotal = $order->get_discount_total();
             if ($discountTotal > 0) {
-                $return = true;
                 $orderItems = $order->get_items();
                 /** @var $item WC_Order_Item_Product */
                 foreach ($orderItems as $item) {
@@ -3625,20 +3628,39 @@ function woocommerce_gateway_resurs_bank_init()
                     $rowsLeftToHandle = $orderItemQuantity + $refundedQuantity;
                     $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
                     $articleId = resurs_get_proper_article_number($product);
-                    $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
-                    $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
+                    $amountPct = !is_nan(
+                        @round($item->get_total_tax() / $item->get_total(), 2) * 100
+                    ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
 
-                    $resursFlow->addOrderLine(
-                        $articleId,
-                        $product->get_title(),
-                        $itemTotal,
-                        $amountPct,
-                        '',
-                        'ORDER_LINE',
-                        $rowsLeftToHandle
-                    );
+                    $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
+                    if ($itemTotal > 0) {
+                        $return = true;
+                        $resursFlow->addOrderLine(
+                            $articleId,
+                            $product->get_title(),
+                            $itemTotal,
+                            $amountPct,
+                            '',
+                            'ORDER_LINE',
+                            $rowsLeftToHandle
+                        );
+                    }
                 }
-                resurs_refund_shipping($order, $resursFlow);
+            }
+
+            /**
+             * Test existing shipping lines in a dry run test. Orderrows should only
+             * be added into the order if the discount is missing and the process is not a full
+             * cancellation of the order as shipping might troll orders.
+             */
+            $hasShippingTest = resurs_refund_shipping($order, $resursFlow, true);
+
+            if ($hasShippingTest) {
+                if (!$isFullOrderHandle) {
+                    $return = resurs_refund_shipping($order, $resursFlow);
+                } else if ($return) {
+                    resurs_refund_shipping($order, $resursFlow);
+                }
             }
 
             return $return;
@@ -3776,15 +3798,15 @@ function woocommerce_gateway_resurs_bank_init()
                              */
                             if (
                                 !$resursFlow->canCredit($payment_id) &&
-                                !$resursFlow->getIsDebited() &&
-                                !$resursFlow->getIsCredited() &&
-                                !$resursFlow->getIsAnnulled()
+                                !$resursFlow->getIsDebited($payment_id) &&
+                                !$resursFlow->getIsCredited($payment_id) &&
+                                !$resursFlow->getIsAnnulled($payment_id)
                             ) {
                                 // If order is only debitable and not creditable, then
                                 // use the getPayment-validation instead of customizations.
                                 $customFinalize = false;
                             } else {
-                                $customFinalize = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                                $customFinalize = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             }
                             $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
                             resursEventLogger($payment_id . ': Finalization - Payment Content');
@@ -3842,7 +3864,7 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     if ($currentRunningUser) {
                         try {
-                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                            $customCancel = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             if ($customCancel) {
                                 $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
                             }
@@ -3871,7 +3893,7 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'refunded':
                     if ($currentRunningUser) {
                         try {
-                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow);
+                            $customCancel = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             if ($customCancel) {
                                 $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
                             }
@@ -4633,11 +4655,22 @@ function woocommerce_gateway_resurs_bank_init()
         /** @var $refundFlow Resursbank\RBEcomPHP\ResursBank */
         $refundFlow = initializeResursFlow();
         $refundFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
+
+        $matchGetPaymentKeys = (array)apply_filters('resurs_match_getpayment_keys', []);
+        if (is_array($matchGetPaymentKeys) && count($matchGetPaymentKeys)) {
+            //$refundFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+            $refundFlow->setGetPaymentMatchKeys($matchGetPaymentKeys);
+        }
+        $refundPriceAlwaysOverride = (bool)apply_filters('resurs_refund_price_override', false);
+
         if (is_array($refundItems) && count($refundItems)) {
             /** @var WC_Order_Item_Product $item */
             foreach ($refundItems as $item) {
                 // Calculate the tax out of the current values.
-                $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
+                $amountPct = !is_nan(
+                    @round($item->get_total_tax() / $item->get_total(), 2) * 100
+                ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
+
                 /** @var WC_Product $product */
                 $product = $item->get_product();
 
@@ -4664,10 +4697,9 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         $totalDiscount = $order->get_total_discount();
-        $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);;
+        $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);
 
         try {
-
             if (floatval($totalDiscount) > 0) {
                 $refundFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
             }
@@ -4677,7 +4709,7 @@ function woocommerce_gateway_resurs_bank_init()
             $refundStatus = $refundFlow->paymentCancel(
                 $resursOrderId,
                 null,
-                floatval($totalDiscount) > 0 || $hasShippingRefund ? true : false
+                floatval($totalDiscount) > 0 || $hasShippingRefund || $refundPriceAlwaysOverride ? true : false
             );
         } catch (\Exception $e) {
             $errors = true;

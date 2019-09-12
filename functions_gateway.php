@@ -24,18 +24,23 @@ if (!function_exists('resurs_refund_shipping')) {
     /**
      * @param $orderData
      * @param $resursFlow
+     * @param bool $dryRun Run through shipping procedure without adding orderlines in ecom on dryRun=true
      * @return bool
      * @since 2.2.21
      */
-    function resurs_refund_shipping($orderData, $resursFlow)
+    function resurs_refund_shipping($orderData, $resursFlow, $dryRun = false)
     {
         $return = false;
         $shippingTax = $orderData->get_shipping_tax();
         $shippingTotal = $orderData->get_shipping_total();
+
+        // Resurs Bank does not like negative values when adding orderrows, so
+        // we make them positive. When partially refunding and shipping is left out
+        // those values will be 0 anyway.
+        $shippingTax = preg_replace('/^-/', '', $shippingTax);
+        $shippingTotal = preg_replace('/^-/', '', $shippingTotal);
         if ($shippingTotal > 0) {
             $return = true;
-            $shippingTax = preg_replace('/^-/', '', $shippingTax);
-            $shippingTotal = preg_replace('/^-/', '', $shippingTotal);
 
             $shipping_tax_pct = (
             !is_nan(
@@ -46,20 +51,23 @@ if (!function_exists('resurs_refund_shipping')) {
             ) ? @round($shippingTax / $shippingTotal, 2) * 100 : 0
             );
 
-            $resursFlow->addOrderLine(
-                '00_frakt',
-                __('Shipping', 'resurs-bank-payment-gateway-for-woocommerce'),
-                preg_replace('/^-/', '', $shippingTotal),
-                $shipping_tax_pct,
-                'st',
-                'SHIPPING_FEE',
-                1
-            );
+            if (!$dryRun) {
+                $resursFlow->addOrderLine(
+                    '00_frakt',
+                    __('Shipping', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    preg_replace('/^-/', '', $shippingTotal),
+                    $shipping_tax_pct,
+                    'st',
+                    'SHIPPING_FEE',
+                    1
+                );
+            }
         }
 
         return $return;
     }
 }
+
 if (!function_exists('setResursNoAutoCancellation')) {
     /**
      * Prevent cancelation on automation.
