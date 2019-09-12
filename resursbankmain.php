@@ -4259,7 +4259,7 @@ function woocommerce_gateway_resurs_bank_init()
             'resursMethod' => $resursMethod,
             'resursPaymentId' => $resursPayment,
             'methodDoesNotSupportRefunding' => __(
-                'Resurs Bank does not support partial refunding for this payment method!',
+                'Resurs Bank does not support partial annulling for this payment method!',
                 'resurs-bank-payment-gateway-for-woocommerce'
             ),
         ];
