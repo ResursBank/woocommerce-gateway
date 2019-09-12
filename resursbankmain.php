@@ -3628,7 +3628,10 @@ function woocommerce_gateway_resurs_bank_init()
                     $rowsLeftToHandle = $orderItemQuantity + $refundedQuantity;
                     $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
                     $articleId = resurs_get_proper_article_number($product);
-                    $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
+                    $amountPct = !is_nan(
+                        @round($item->get_total_tax() / $item->get_total(), 2) * 100
+                    ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
+
                     $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
                     if ($itemTotal > 0) {
                         $return = true;
@@ -4662,7 +4665,10 @@ function woocommerce_gateway_resurs_bank_init()
             /** @var WC_Order_Item_Product $item */
             foreach ($refundItems as $item) {
                 // Calculate the tax out of the current values.
-                $amountPct = @round($item->get_total_tax() / $item->get_total(), 2) * 100;
+                $amountPct = !is_nan(
+                    @round($item->get_total_tax() / $item->get_total(), 2) * 100
+                ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
+
                 /** @var WC_Product $product */
                 $product = $item->get_product();
 
