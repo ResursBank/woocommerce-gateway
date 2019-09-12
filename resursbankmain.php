@@ -3610,10 +3610,10 @@ function woocommerce_gateway_resurs_bank_init()
          *
          * @param $order WC_Order
          * @param $resursFlow Resursbank\RBEcomPHP\ResursBank
-         * @param bool $isFullOrderHandle
-         * @return bool
+         * @param bool $isFullOrderHandle Set to true if this is a "handle full order instead of partial" order.
+         * @return bool Returns true if this method indicates refunds with discount.
          */
-        private static function getOrderRowsByRefundedItems($order, $resursFlow, $isFullOrderHandle = false)
+        private static function getOrderRowsByRefundedDiscountItems($order, $resursFlow, $isFullOrderHandle = false)
         {
             $return = false;
             $discountTotal = $order->get_discount_total();
@@ -3655,9 +3655,11 @@ function woocommerce_gateway_resurs_bank_init()
              */
             $hasShippingTest = resurs_refund_shipping($order, $resursFlow, true);
 
-            if ($hasShippingTest && !$return) {
+            if ($hasShippingTest) {
                 if (!$isFullOrderHandle) {
                     $return = resurs_refund_shipping($order, $resursFlow);
+                } else if ($return) {
+                    resurs_refund_shipping($order, $resursFlow);
                 }
             }
 
@@ -3804,7 +3806,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 // use the getPayment-validation instead of customizations.
                                 $customFinalize = false;
                             } else {
-                                $customFinalize = self::getOrderRowsByRefundedItems($order, $resursFlow, true);
+                                $customFinalize = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             }
                             $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
                             resursEventLogger($payment_id . ': Finalization - Payment Content');
@@ -3862,7 +3864,7 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     if ($currentRunningUser) {
                         try {
-                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow, true);
+                            $customCancel = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             if ($customCancel) {
                                 $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
                             }
@@ -3891,7 +3893,7 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'refunded':
                     if ($currentRunningUser) {
                         try {
-                            $customCancel = self::getOrderRowsByRefundedItems($order, $resursFlow, true);
+                            $customCancel = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             if ($customCancel) {
                                 $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
                             }
@@ -4695,7 +4697,7 @@ function woocommerce_gateway_resurs_bank_init()
         $errorCode = null;
 
         $totalDiscount = $order->get_total_discount();
-        $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);;
+        $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);
 
         try {
             if (floatval($totalDiscount) > 0) {

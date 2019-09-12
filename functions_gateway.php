@@ -67,6 +67,7 @@ if (!function_exists('resurs_refund_shipping')) {
         return $return;
     }
 }
+
 if (!function_exists('setResursNoAutoCancellation')) {
     /**
      * Prevent cancelation on automation.
