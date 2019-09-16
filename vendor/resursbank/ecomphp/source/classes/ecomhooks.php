@@ -3,7 +3,7 @@
 global $ecomEvents;
 
 if (!is_array($ecomEvents)) {
-    $ecomEvents = array();
+    $ecomEvents = [];
 }
 
 if (!function_exists('ecom_event_register')) {
@@ -19,10 +19,10 @@ if (!function_exists('ecom_event_register')) {
         global $ecomEvents;
 
         if (!isset($ecomEvents[$eventName])) {
-            $ecomEvents[$eventName] = array();
+            $ecomEvents[$eventName] = [];
         }
         if (!isset($ecomEvents[$eventName][$priority])) {
-            $ecomEvents[$eventName][$priority] = array();
+            $ecomEvents[$eventName][$priority] = [];
         }
 
         $ecomEvents[$eventName][$priority][] = $callback;
@@ -46,7 +46,7 @@ if (!function_exists('ecom_event_register')) {
      */
     function ecom_event_reset()
     {
-        $ecomEvents = array();
+        $ecomEvents = [];
     }
 }
 
