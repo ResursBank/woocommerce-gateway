@@ -89,15 +89,19 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
 
 = 2.2.21 =
 
-
-= 2.2.20 =
-
-    * Micro fix for cost of purchase (part payment on single product row)
-
-= 2.2.19 =
-
-    * Micro fix for order comments.
-
+    * [WOO-402] - Digest-based callback failures
+    * [WOO-408] - Switch userid to username in the aftershop username handler
+    * [WOO-415] - Disable partial annulment-capabilities for external payment methods in the woo-order-admin
+    * [WOO-417] - Disable automatically annulled payments (stock reservations etc)
+    * [WOO-418] - Allow clientname of ecom to be changed in different actions (like aftershop)
+    * [WOO-419] - Redeploy ECom1.3[23] for public tag
+    * [WOO-420] - Update releasenotes (readme.txt) for the Woocom-release-
+    * [WOO-399] - Handle partial credits/annulments
+    * [WOO-404] - Aftershop became slower than usual.
+    * [WOO-406] - Change header replies (HTTPXXX 40X Permission denied, etc)
+    * [WOO-409] - RCO laddas inte i IE
+    * [WOO-410] - 2-way annullments are not fully functional.
+    * [WOO-413] - Miscalculation issues during partial annullments/credits when using discounts
 
 == Upgrade Notice ==
 
