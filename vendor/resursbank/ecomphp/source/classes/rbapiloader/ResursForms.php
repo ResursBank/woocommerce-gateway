@@ -35,13 +35,13 @@ class RESURS_DEPRECATED_FLOW
      */
     public function setFormTemplateRules($customerType, $methodType, $fieldArray)
     {
-        $this->formTemplateRuleArray = array(
-            $customerType => array(
-                'fields' => array(
-                    $methodType => $fieldArray
-                )
-            )
-        );
+        $this->formTemplateRuleArray = [
+            $customerType => [
+                'fields' => [
+                    $methodType => $fieldArray,
+                ],
+            ],
+        ];
 
         return $this->formTemplateRuleArray;
     }
@@ -54,132 +54,132 @@ class RESURS_DEPRECATED_FLOW
      */
     public function getFormTemplateRules()
     {
-        $formTemplateRules = array(
-            'NATURAL' => array(
-                'fields' => array(
-                    'INVOICE' => array(
+        $formTemplateRules = [
+            'NATURAL' => [
+                'fields' => [
+                    'INVOICE' => [
                         'applicant-government-id',
                         'applicant-telephone-number',
                         'applicant-mobile-number',
-                        'applicant-email-address'
-                    ),
-                    'CARD' => array(
+                        'applicant-email-address',
+                    ],
+                    'CARD' => [
                         'applicant-government-id',
-                        'card-number'
-                    ),
-                    'PAYMENT_PROVIDER' => array(
-                        'applicant-government-id',
-                        'applicant-telephone-number',
-                        'applicant-mobile-number',
-                        'applicant-email-address'
-                    ),
-                    'REVOLVING_CREDIT' => array(
+                        'card-number',
+                    ],
+                    'PAYMENT_PROVIDER' => [
                         'applicant-government-id',
                         'applicant-telephone-number',
                         'applicant-mobile-number',
-                        'applicant-email-address'
-                    ),
-                    'PART_PAYMENT' => array(
+                        'applicant-email-address',
+                    ],
+                    'REVOLVING_CREDIT' => [
                         'applicant-government-id',
                         'applicant-telephone-number',
                         'applicant-mobile-number',
-                        'applicant-email-address'
-                    )
-                )
-            ),
-            'LEGAL' => array(
-                'fields' => array(
-                    'INVOICE' => array(
+                        'applicant-email-address',
+                    ],
+                    'PART_PAYMENT' => [
+                        'applicant-government-id',
+                        'applicant-telephone-number',
+                        'applicant-mobile-number',
+                        'applicant-email-address',
+                    ],
+                ],
+            ],
+            'LEGAL' => [
+                'fields' => [
+                    'INVOICE' => [
                         'applicant-government-id',
                         'applicant-telephone-number',
                         'applicant-mobile-number',
                         'applicant-email-address',
                         'applicant-full-name',
                         'contact-government-id',
-                    ),
-                    'PAYMENT_PROVIDER' => array(
+                    ],
+                    'PAYMENT_PROVIDER' => [
                         'applicant-government-id',
                         'applicant-telephone-number',
                         'applicant-mobile-number',
                         'applicant-email-address',
                         'applicant-full-name',
                         'contact-government-id',
-                    ),
-                )
-            ),
-            'display' => array(
+                    ],
+                ],
+            ],
+            'display' => [
                 'applicant-government-id',
                 'card-number',
                 'applicant-full-name',
                 'contact-government-id',
-            ),
-            'regexp' => array(
-                'SE' => array(
-                    'NATURAL' => array(
+            ],
+            'regexp' => [
+                'SE' => [
+                    'NATURAL' => [
                         'applicant-government-id' => '^(18\d{2}|19\d{2}|20\d{2}|\d{2})(0[1-9]|1[0-2])([0][1-9]|[1-2][0-9]|3[0-1])(\-|\+)?([\d]{4})$',
                         'applicant-telephone-number' => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
                         'applicant-mobile-number' => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    ),
-                    'LEGAL' => array(
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                    'LEGAL' => [
                         'applicant-government-id' => '^(16\d{2}|18\d{2}|19\d{2}|20\d{2}|\d{2})(\d{2})(\d{2})(\-|\+)?([\d]{4})$',
                         'applicant-telephone-number' => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
                         'applicant-mobile-number' => '^(0|\+46|0046)[ |-]?(200|20|70|73|76|74|[1-9][0-9]{0,2})([ |-]?[0-9]){5,8}$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    )
-                ),
-                'DK' => array(
-                    'NATURAL' => array(
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                ],
+                'DK' => [
+                    'NATURAL' => [
                         'applicant-government-id' => '^((3[0-1])|([1-2][0-9])|(0[1-9]))((1[0-2])|(0[1-9]))(\d{2})(\-)?([\d]{4})$',
                         'applicant-telephone-number' => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-mobile-number' => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    ),
-                    'LEGAL' => array(
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                    'LEGAL' => [
                         'applicant-government-id' => null,
                         'applicant-telephone-number' => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-mobile-number' => '^(\+45|0045|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    )
-                ),
-                'NO' => array(
-                    'NATURAL' => array(
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                ],
+                'NO' => [
+                    'NATURAL' => [
                         'applicant-government-id' => '^([0][1-9]|[1-2][0-9]|3[0-1])(0[1-9]|1[0-2])(\d{2})(\-)?([\d]{5})$',
                         'applicant-telephone-number' => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-mobile-number' => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    ),
-                    'LEGAL' => array(
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                    'LEGAL' => [
                         'applicant-government-id' => '^([89]([ |-]?[0-9]){8})$',
                         'applicant-telephone-number' => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-mobile-number' => '^(\+47|0047|)?[ |-]?[2-9]([ |-]?[0-9]){7,7}$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    )
-                ),
-                'FI' => array(
-                    'NATURAL' => array(
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                ],
+                'FI' => [
+                    'NATURAL' => [
                         'applicant-government-id' => '^([\d]{6})[\+\-A]([\d]{3})([0123456789ABCDEFHJKLMNPRSTUVWXY])$',
                         'applicant-telephone-number' => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
                         'applicant-mobile-number' => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    ),
-                    'LEGAL' => array(
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                    'LEGAL' => [
                         'applicant-government-id' => '^((\d{7})(\-)?\d)$',
                         'applicant-telephone-number' => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
                         'applicant-mobile-number' => '^((\+358|00358|0)[-| ]?(1[1-9]|[2-9]|[1][0][1-9]|201|2021|[2][0][2][4-9]|[2][0][3-8]|29|[3][0][1-9]|71|73|[7][5][0][0][3-9]|[7][5][3][0][3-9]|[7][5][3][2][3-9]|[7][5][7][5][3-9]|[7][5][9][8][3-9]|[5][0][0-9]{0,2}|[4][0-9]{1,3})([-| ]?[0-9]){3,10})?$',
                         'applicant-email-address' => '^[A-Za-z0-9!#%&\'*+/=?^_`~-]+(\.[A-Za-z0-9!#%&\'*+/=?^_`~-]+)*@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$',
-                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$'
-                    )
-                ),
-            )
-        );
+                        'card-number' => '^([1-9][0-9]{3}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4}[ ]{0,1}[0-9]{4})$',
+                    ],
+                ],
+            ],
+        ];
         if (isset($this->formTemplateRuleArray) && is_array($this->formTemplateRuleArray) && count($this->formTemplateRuleArray)) {
             foreach ($this->formTemplateRuleArray as $cType => $cArray) {
                 $formTemplateRules[$cType] = $cArray;
@@ -309,7 +309,7 @@ class RESURS_DEPRECATED_FLOW
         /** @noinspection PhpDeprecationInspection */
         $templateRules = $this->getFormTemplateRules();
         //$returnedRules     = array();
-        $returnedRuleArray = array();
+        $returnedRuleArray = [];
         /* If the client is requesting a getPaymentMethod-object we'll try to handle that information instead (but not if it is empty) */
         if (is_object($paymentMethodName) || is_array($paymentMethodName)) {
             if (is_object($paymentMethodName)) {
@@ -356,11 +356,11 @@ class RESURS_DEPRECATED_FLOW
                 $returnedRuleArray = $templateRules[strtoupper($customerType)]['fields'][strtoupper($specificType)];
             }
         }
-        $returnedRules = array(
+        $returnedRules = [
             'fields' => $returnedRuleArray,
             'display' => $templateRules['display'],
-            'regexp' => $templateRules['regexp']
-        );
+            'regexp' => $templateRules['regexp'],
+        ];
         $this->templateFieldsByMethodResponse = $returnedRules;
 
         return $returnedRules;
