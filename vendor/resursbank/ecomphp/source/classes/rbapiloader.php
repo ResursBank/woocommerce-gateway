@@ -7470,20 +7470,14 @@ class ResursBank
             foreach ($currentPaymentSpecTable as $statusRow) {
                 if ($type === 'credit') {
                     $quantityMatch = isset($statusRow['CREDITABLE']) ? $statusRow['CREDITABLE'] : 0;
+                } elseif ($type === 'annul') {
+                    $quantityMatch = isset($statusRow['ANNULLABLE']) ? $statusRow['ANNULLABLE'] : 0;
+                } elseif ($type === 'debit') {
+                    $quantityMatch = isset($statusRow['DEBITABLE']) ? $statusRow['DEBITABLE'] : 0;
+                } elseif ($type === 'authorize') {
+                    $quantityMatch = isset($statusRow['AUTHORIZE']) ? $statusRow['AUTHORIZE'] : 0;
                 } else {
-                    if ($type === 'annul') {
-                        $quantityMatch = isset($statusRow['ANNULLABLE']) ? $statusRow['ANNULLABLE'] : 0;
-                    } else {
-                        if ($type === 'debit') {
-                            $quantityMatch = isset($statusRow['DEBITABLE']) ? $statusRow['DEBITABLE'] : 0;
-                        } else {
-                            if ($type === 'authorize') {
-                                $quantityMatch = isset($statusRow['AUTHORIZE']) ? $statusRow['AUTHORIZE'] : 0;
-                            } else {
-                                $quantityMatch = 0;
-                            }
-                        }
-                    }
+                    $quantityMatch = 0;
                 }
 
                 if (!$quantityMatch) {
