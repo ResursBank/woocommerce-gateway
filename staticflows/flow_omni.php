@@ -22,8 +22,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     {
         $this->resetOmniCustomerFields = [];
         $this->id = "resurs_bank_omnicheckout";
-        $this->method_title = "Resurs Bank Omnicheckout";
-        $this->description = "Resurs Bank Omnicheckout";
+        $this->method_title = "Resurs Bank Checkout";
+        $this->description = "Resurs Bank Checkout";
+
+        $this->method_description = __(
+            'Resurs Bank Gateway for WooCommerce - Resurs Checkout Enabled.',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        );
+
         $this->has_fields = true;
         $this->iFrameLocation = $this->get_option('iFrameLocation');
         if (empty($this->iFrameLocation)) {
