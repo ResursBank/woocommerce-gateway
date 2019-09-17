@@ -126,15 +126,21 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'flowtype' => [
-                    'title' => __('Flow type', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __('Checkout type', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'select',
                     'options' => [
-                        'resurs_bank_omnicheckout' => __('Resurs Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)',
-                            'resurs-bank-payment-gateway-for-woocommerce'),
-                        'simplifiedshopflow' => __('Simplified Shop Flow: Payments goes through Resurs Bank API (Default)',
-                            'resurs-bank-payment-gateway-for-woocommerce'),
-                        'resurs_bank_hosted' => __('Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment',
-                            'resurs-bank-payment-gateway-for-woocommerce'),
+                        'resurs_bank_omnicheckout' => __(
+                            'Onepage iFrame based checkout provided by Resurs Bank.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'simplifiedshopflow' => __(
+                            'Payment gateway are embedded within the current theme.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'resurs_bank_hosted' => __(
+                            'Customers are redirected to a Resurs Bank payment webpage to finalize payment.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
                     ],
                     'default' => 'resurs_bank_omnicheckout',
                     'description' => __('What kind of shop flow you want to use',
