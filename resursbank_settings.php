@@ -64,7 +64,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $sections['resurs_bank_omnicheckout'] = __('Resurs Checkout',
                 'resurs-bank-payment-gateway-for-woocommerce');
         } else {
-            $sections['shopflow'] = __('Shop flow settings ', 'resurs-bank-payment-gateway-for-woocommerce');
+            $sections['shopflow'] = __('Kassatyp ', 'resurs-bank-payment-gateway-for-woocommerce');
         }
         $sections['advanced'] = __('Advanced settings', 'resurs-bank-payment-gateway-for-woocommerce');
 
