@@ -64,7 +64,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $sections['resurs_bank_omnicheckout'] = __('Resurs Checkout',
                 'resurs-bank-payment-gateway-for-woocommerce');
         } else {
-            $sections['shopflow'] = __('Shop flow settings ', 'resurs-bank-payment-gateway-for-woocommerce');
+            $sections['shopflow'] = __('Checkout type', 'resurs-bank-payment-gateway-for-woocommerce');
         }
         $sections['advanced'] = __('Advanced settings', 'resurs-bank-payment-gateway-for-woocommerce');
 
@@ -677,18 +677,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $isResursSave = true;
             wp_safe_redirect($url);
         }
-        $longSimplified = __(
-            'Simplified Shop Flow: Payments goes through Resurs Bank API (Default)',
-            'resurs-bank-payment-gateway-for-woocommerce'
-        );
-        $longHosted = __(
-            'Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment',
-            'resurs-bank-payment-gateway-for-woocommerce'
-        );
-        $longOmni = __(
-            'Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)',
-            'resurs-bank-payment-gateway-for-woocommerce'
-        );
 
         $methodDescription = "";
         $paymentMethodsError = null;
