@@ -4578,7 +4578,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $annuityDuration = getResursOption("resursAnnuityDuration");
                         }
                         $payFrom = $flow->getAnnuityPriceByDuration($annuityFactorPrice,
-                            annuityFactors,
+                            $annuityFactors,
                             $annuityDuration
                         );
                         $currentCountry = getResursOption('country');

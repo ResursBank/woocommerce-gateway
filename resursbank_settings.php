@@ -67,6 +67,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $sections['shopflow'] = __('Checkout type', 'resurs-bank-payment-gateway-for-woocommerce');
         }
         $sections['advanced'] = __('Advanced settings', 'resurs-bank-payment-gateway-for-woocommerce');
+        $sections['shortcodes'] = __('Shortcodes', 'resurs-bank-payment-gateway-for-woocommerce');
 
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
@@ -409,10 +410,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 if (is_array($savedValue) && in_array($optionValue, $savedValue)) {
                     $matchingSavedValue = true;
                 } else {
-                    if (is_array($savedValue) && count($savedValue) === 1) {
+                    if (is_array($savedValue) && count($savedValue) == 1) {
                         $savedValue = array_pop($savedValue);
                     }
-                    if (is_string($savedValue) && $optionKey === $savedValue) {
+                    if (is_string($savedValue) && $optionKey == $savedValue) {
                         $matchingSavedValue = true;
                     }
                 }
@@ -818,6 +819,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             } elseif (preg_match("/^resurs_bank_nr_/i", $section)) {
                 echo '<h1>' . __('Resurs Bank Configuration',
                         'resurs-bank-payment-gateway-for-woocommerce') . ' - ' . $methodDescription . ' (' . $theMethod . ')</h1>';
+            } elseif ($section == "shortcodes") {
+                echo '<h1>' . __('Resurs Bank Configuration - Shortcodes',
+                        'resurs-bank-payment-gateway-for-woocommerce') . '</h1>';
             } else {
                 echo '<h1>' . __('Resurs Bank payment gateway configuration',
                         'resurs-bank-payment-gateway-for-woocommerce') . '</h1>
@@ -1227,6 +1231,21 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('omniFrameNotReloading', $namespace);
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
                     echo $this->setCheckBox('resursCheckoutMultipleMethods', $namespace);
+                } elseif ($section == "shortcodes") {
+                    echo $this->setSeparator(__('Part payment widget settings', 'resurs-bank-payment-gateway-for-woocommerce'));
+                    $pagelist = get_pages();
+                    $widgetPages = [
+                            '0' => __('None (default)', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    ];
+                    /** @var WP_Post $pages */
+                    foreach ($pagelist as $page) {
+                        $widgetPages[$page->ID] = $page->post_title;
+                    }
+                    echo $this->setDropDown(
+                        'partPayWidgetPage',
+                        $namespace,
+                        $widgetPages
+                    );
                 } elseif ($section == "advanced") {
                     echo $this->setSeparator(__('URL Settings', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setTextBox('customCallbackUri', $namespace);

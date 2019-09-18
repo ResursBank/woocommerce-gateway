@@ -54,21 +54,18 @@ if (!function_exists('getResursWooFormFields')) {
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         if (empty($section)) {
             $formSectionName = "defaults";
+        } elseif ($section == "shopflow") {
+            $formSectionName = "defaults";
+        } elseif ($section == "shortcodes") {
+            $formSectionName = "defaults";
+        } elseif ($section == "advanced") {
+            $formSectionName = "defaults";
+        } elseif (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
+            $formSectionName = "paymentmethods";
         } else {
-            if ($section == "shopflow") {
-                $formSectionName = "defaults";
-            } else {
-                if ($section == "advanced") {
-                    $formSectionName = "defaults";
-                } else {
-                    if (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-                        $formSectionName = "paymentmethods";
-                    } else {
-                        $formSectionName = $section;
-                    }
-                }
-            }
+            $formSectionName = $section;
         }
+
         if ($hasForcedSection && !empty($forcedSection)) {
             $formSectionName = $forcedSection;
         }
@@ -94,7 +91,7 @@ if (!function_exists('getResursWooFormFields')) {
             $rate_name = ucwords($rate_name);
             $rate_select[$rate->tax_rate_class] = $rate_name;
         }
-        if ($formSectionName == "defaults") {
+        if ($formSectionName === "defaults") {
             $returnArray = [
                 'enabled' => [
                     'title' => __('Enable/Disable', 'woocommerce'),
@@ -516,6 +513,17 @@ if (!function_exists('getResursWooFormFields')) {
                         ),
                     ],
                     'default' => ['SWISH' => 'SWISH'],
+                    'desc_tip' => true,
+                ],
+                'partPayWidgetPage' => [
+                    'title' => __('Widget for custom part pay views', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'If you choose a page here, this page will be primary set for a customized part payment widget.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'select',
+                    'options' => [],
+                    'default' => [''],
                     'desc_tip' => true,
                 ],
             ];
