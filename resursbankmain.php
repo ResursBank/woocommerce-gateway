@@ -4825,7 +4825,7 @@ function woocommerce_gateway_resurs_bank_init()
     add_filter('manage_edit-shop_order_columns', 'resurs_order_column_header');
     add_action('manage_shop_order_posts_custom_column', 'resurs_order_column_info');
 
-    add_filter('plugin_action_links', 'plugin_page_resurs_bank_for_woocommerce_settings', 10,2);
+    add_filter('plugin_action_links', 'plugin_page_resurs_bank_for_woocommerce_settings', 10, 2);
 }
 
 /**
@@ -4834,8 +4834,8 @@ function woocommerce_gateway_resurs_bank_init()
  * @return array
  */
 function plugin_page_resurs_bank_for_woocommerce_settings($links, $file) {
-    $basename = plugin_basename(__FILE__);
-    if ($file === $basename) {
+    $basename = trim(plugin_basename(__FILE__));
+    if ($basename == $file || $file === 'resurs-bank-payment-gateway-for-woocommerce/resursbankgateway.php') {
         $links[] = sprintf('<a href="admin.php?page=wc-settings&tab=tab_resursbank">%s</a>',
             __(
                 'Settings'
