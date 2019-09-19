@@ -601,7 +601,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      * @param $topCss
      * @return string
      */
-    function getGitInfo($topCss) {
+    function getGitInfo($topCss)
+    {
         $pluginInfo = "";
         try {
             $gitbin = (string)getResursFlag('GIT_BIN');
@@ -877,21 +878,32 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '
 
                     </div>
+                    <div id="callbackHealth">
                     <b>' . __('Callback health', 'resurs-bank-payment-gateway-for-woocommerce') . '</b><br>
                     <table cellpadding="0" cellpadding="0" style="margin-bottom: 5px;" width="100%">
                     <tr>
-                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test run',
-                            'resurs-bank-payment-gateway-for-woocommerce') . '</td>
-                        <td style="padding: 0px;" id="lastCbRun" width="80%" valign="top">' . ($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
-                            $callSent) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')) . '</td>
+                        <td style="padding: 0px;" width="20%" valign="top">' . __(
+                            'Last test run',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</td>
+                        <td style="padding: 0px;" id="lastCbRun" width="80%" valign="top">' . (
+                        $callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
+                            $callSent) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')
+                        ) . '</td>
                     </tr>
                     <tr>
-                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test received',
-                            'resurs-bank-payment-gateway-for-woocommerce') . '</td>
-                        <td style="padding: 0px;" id="lastCbRec" width="80%" valign="top">' . ($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
-                            $callRecv) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')) . '</td>
+                        <td style="padding: 0px;" width="20%" valign="top">' . __(
+                            'Responses/ast successful test date+time',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</td>
+                        <td style="padding: 0px; vertical-align: top;" id="lastCbRec" width="80%" valign="top">' . (
+                        $callRecv > 0 ? strftime(
+                            '%Y-%m-%d (%H:%M:%S)',
+                            $callRecv) : ''
+                        ) . '</td>
                     </tr>
                     </table>
+                    </div>
                     <br>
                     
                     </td>
