@@ -3770,10 +3770,8 @@ function woocommerce_gateway_resurs_bank_init()
             if ($hasShippingTest) {
                 if (!$isFullOrderHandle) {
                     $return = resurs_refund_shipping($order, $resursFlow);
-                } else {
-                    if ($return) {
-                        resurs_refund_shipping($order, $resursFlow);
-                    }
+                } elseif ($return) {
+                    resurs_refund_shipping($order, $resursFlow);
                 }
             }
 
@@ -4946,9 +4944,10 @@ function woocommerce_gateway_resurs_bank_init()
  */
 function plugin_page_resurs_bank_for_woocommerce_settings($links, $file)
 {
-    $basename = plugin_basename(__FILE__);
-    if ($file === $basename) {
-        $links[] = sprintf('<a href="admin.php?page=wc-settings&tab=tab_resursbank">%s</a>',
+    $basename = trim(plugin_basename(__FILE__));
+    if ($basename == $file || $file === 'resurs-bank-payment-gateway-for-woocommerce/resursbankgateway.php') {
+        $links[] = sprintf(
+            '<a href="admin.php?page=wc-settings&tab=tab_resursbank">%s</a>',
             __(
                 'Settings'
             ));
