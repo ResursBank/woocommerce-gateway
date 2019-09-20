@@ -601,7 +601,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      * @param $topCss
      * @return string
      */
-    function getGitInfo($topCss) {
+    function getGitInfo($topCss)
+    {
         $pluginInfo = "";
         try {
             $gitbin = (string)getResursFlag('GIT_BIN');
@@ -877,21 +878,41 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '
 
                     </div>
-                    <b>' . __('Callback health', 'resurs-bank-payment-gateway-for-woocommerce') . '</b><br>
-                    <table cellpadding="0" cellpadding="0" style="margin-bottom: 5px;" width="100%">
+                    <div id="callbackHealth">
+                    <table cellpadding="0" cellpadding="0" style="margin-bottom: 10px;padding:0px; !important" width="100%">
                     <tr>
-                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test run',
-                            'resurs-bank-payment-gateway-for-woocommerce') . '</td>
-                        <td style="padding: 0px;" id="lastCbRun" width="80%" valign="top">' . ($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
-                            $callSent) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')) . '</td>
+                    <td colspan="2" style="font-weight: bold; border-top:1px dashed gray;padding:0px !important;">
+                    ' . __('Callback health', 'resurs-bank-payment-gateway-for-woocommerce') . '
+                    </td>
                     </tr>
-                    <tr>
-                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test received',
-                            'resurs-bank-payment-gateway-for-woocommerce') . '</td>
-                        <td style="padding: 0px;" id="lastCbRec" width="80%" valign="top">' . ($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
-                            $callRecv) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')) . '</td>
+                    <tr style="vertical-align: top; padding:0px;" valign="top">
+                        <td class="lastCbTableStyling" valign="top" width="20%">' . __(
+                            'Last test run',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</td>
+                        <td class="lastCbTableStyling" valign="top" id="lastCbRun" width="80%">' . (
+                        $callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
+                            $callSent) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')
+                        ) . '</td>
+                    </tr>
+                    <tr style="vertical-align: top;padding: 0px; padding-bottom: 10px !important; margin-bottom: 5px; !important;" valign="top">
+                        <td class="lastCbTableStyling" style="border-bottom: 1px dashed gray; margin-bottom: 5px; padding-bottom: 10px;" valign="top" width="20%">' . __(
+                            'Responses/last successful test date+time',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</td>
+                        <td class="lastCbTableStyling" style="border-bottom: 1px dashed gray; margin-bottom: 5px; padding-bottom: 10px;" valign="top" id="lastCbRec" width="80%">' . (
+                        $callRecv > 0 ? strftime(
+                            '%Y-%m-%d (%H:%M:%S)',
+                            $callRecv) : ''
+                        ) . '</td>
+                    </tr>
+                    <!-- Prepared for extra tests if there are any filter based requests. -->
+                    <tr id="externalCbTestBox" style="display: none;">
+                    <td id="externalCbTitle">&nbsp;</td>
+                    <td id="externalCbInfo">&nbsp;</td>
                     </tr>
                     </table>
+                    </div>
                     <br>
                     
                     </td>

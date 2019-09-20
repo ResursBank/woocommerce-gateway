@@ -436,7 +436,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
             $event_type = $request['event-type'];
 
-            if ($event_type == "TEST") {
+            if ($event_type == 'TEST') {
                 set_transient('resurs_callbacks_received', time());
                 set_transient('resurs_callbacks_content', $_REQUEST);
                 header('HTTP/1.0 204 CallbackWithoutDigestTriggerOK');
@@ -709,15 +709,118 @@ function woocommerce_gateway_resurs_bank_init()
                                 } catch (Exception $e) {
                                     $responseArray['nextInvoice'] = $e->getMessage() . ' [' . $e->getCode() . ']';
                                 }
+                            } elseif ($_REQUEST['run'] == 'resursTriggerTest') {
+                                set_transient('resurs_callbacks_sent', time());
+                                set_transient('resurs_callbacks_received', 0);
+                                $triggeredTest = $this->flow->triggerCallback();
+                                $responseArray['errorstring'] = '';
+                                $responseArray['testTriggerActive'] = $triggeredTest;
+                                $responseArray['testTriggerTimestamp'] = strftime(
+                                    '%Y-%m-%d (%H:%M:%S)',
+                                    time()
+                                );
+                                $boxColor = 'labelBoot labelBoot-warning';
+
+                                $responseArray['html'] = sprintf('<div class="labelBoot %s" style="margin-bottom:5px; margin-top: 5px; font-size:14px;">
+                                        %s</div>
+                                        ',
+                                    $boxColor,
+                                    __(
+                                        'Waiting for callback',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
+
+                                $responseArray['html'] = apply_filters(
+                                    'resurs_trigger_test_callback',
+                                    $responseArray['html']
+                                );
+
                             } elseif ($_REQUEST['run'] == 'getLastCallbackTimestamp') {
+                                // Timestamp of when callback received this platform
                                 $lastRecv = get_transient('resurs_callbacks_received');
-                                $myBool = true;
-                                $responseArray['element'] = "lastCbRec";
                                 if ($lastRecv > 0) {
-                                    $responseArray['html'] = '<div style="margin-bottom:5px; margin-top: 5px;"><span id="receivedCallbackConfirm" class="labelBoot labelBoot-success">' . __('Test callback received',
-                                            'resurs-bank-payment-gateway-for-woocommerce') . '</span></div>';
-                                } else {
-                                    $responseArray['html'] = __('Never', 'resurs-bank-payment-gateway-for-woocommerce');
+                                    // Content of what the callback received.
+                                    $cbContent = get_transient('resurs_callbacks_content');
+
+                                    // Timestamp used on callback registration.
+                                    $transLastTs = get_transient('resurs_bank_callback_ts');
+
+                                    $myBool = true;
+                                    $responseArray['element'] = "lastCbRec";
+
+                                    $translation = [
+                                        'ok' => __(
+                                            'OK',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        ),
+                                        'firstcall' => __(
+                                            'Waiting...',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        ),
+                                        'waiting' => __(
+                                            'Waiting...',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        ),
+                                        'notYetReceived' => __(
+                                            'Not yet received',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        ),
+                                    ];
+                                    $lastTimeText = __(
+                                        'Last received test trigger: ',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    );
+                                    $never = false;
+                                    $responseText = $translation['notYetReceived'];
+                                    if ($lastRecv > 0) {
+                                        $ts = strftime('%Y-%m-%d, %H:%M:%S', $lastRecv);
+                                    } else {
+                                        $never = true;
+                                        $ts = __(
+                                            'Never or not yet.',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        );
+                                    }
+
+                                    $boxColor = 'labelBoot-success';
+                                    $responseArray['notimers'] = false;
+
+                                    $responseArray['proceed'] = false;
+                                    if (isset($cbContent['ts'])) {
+                                        if (empty($transLastTs)) {
+                                            $boxColor = 'labelBoot-warning';
+                                            $responseText = $translation['firstcall'];
+                                        } elseif ($transLastTs !== $cbContent['ts']) {
+                                            $responseText = $translation['notYetReceived'];
+                                            $boxColor = 'labelBoot-danger';
+                                        } else {
+                                            if ($never) {
+                                                $responseArray['proceed'] = true;
+                                                $responseText = $translation['notYetReceived'];
+                                                $boxColor = 'labelBoot-danger';
+                                            } else {
+                                                $boxColor = 'labelBoot-success';
+                                                $responseText = $translation['ok'];
+                                                $responseArray['notimers'] = true;
+                                            }
+                                        }
+                                    }
+
+                                    $responseArray['html'] = sprintf('<div style="margin-bottom:5px; margin-top: 5px; font-size:14px;">
+                                        <span id="receivedCallbackConfirm" class="labelBoot %s" style="font-size: 14px !important;">
+                                        %s (%s %s)
+                                        </span></div>',
+                                        $boxColor,
+                                        $responseText,
+                                        $lastTimeText,
+                                        $ts
+                                    );
+
+                                    $responseArray['html'] = apply_filters(
+                                        'resurs_trigger_test_callback_timestamp',
+                                        $responseArray['html']
+                                    );
                                 }
                             } elseif ($_REQUEST['run'] == 'cleanRbSettings') {
                                 $numDel = $wpdb->query("DELETE FROM " . $wpdb->options . " WHERE option_name LIKE '%resurs%bank%'");
@@ -725,9 +828,9 @@ function woocommerce_gateway_resurs_bank_init()
                                 $responseArray['element'] = "process_cleanResursSettings";
                                 if ($numDel > 0) {
                                     $myBool = true;
-                                    $responseArray['html'] = "OK";
+                                    $responseArray['html'] = 'OK';
                                 } else {
-                                    $responseArray['html'] = "";
+                                    $responseArray['html'] = '';
                                 }
                             } elseif ($_REQUEST['run'] == 'cleanRbCache') {
                                 try {
@@ -736,8 +839,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                                 }
                                 $myBool = true;
-                                $responseArray['html'] = "OK";
-                                $responseArray['element'] = "process_cleanResursMethods";
+                                $responseArray['html'] = 'OK';
+                                $responseArray['element'] = 'process_cleanResursMethods';
                             } elseif ($_REQUEST['run'] == 'cleanRbMethods') {
                                 $numDel = 0;
                                 $numConfirm = 0;
@@ -761,10 +864,10 @@ function woocommerce_gateway_resurs_bank_init()
                                     }
                                 }
                                 $responseArray['deleteFiles'] = 0;
-                                $responseArray['element'] = "process_cleanResursMethods";
+                                $responseArray['element'] = 'process_cleanResursMethods';
                                 if ($numConfirm != $numDel) {
                                     $responseArray['deleteFiles'] = $numDel;
-                                    $responseArray['html'] = "OK";
+                                    $responseArray['html'] = 'OK';
                                     $myBool = true;
                                 } else {
                                     $responseArray['html'] = "";
@@ -1422,6 +1525,8 @@ function woocommerce_gateway_resurs_bank_init()
                 $testTemplate = home_url('/');
                 $useTemplate = $testTemplate;
                 $customCallbackUri = resursOption("customCallbackUri");
+                $registeredTs = strftime("%y%m%d%H%M", time());
+                setResursOption('resurs_callback_registered_ts', $registeredTs);
                 if (!empty($customCallbackUri) && $testTemplate != $customCallbackUri) {
                     $useTemplate = $customCallbackUri;
                 }
@@ -1437,7 +1542,8 @@ function woocommerce_gateway_resurs_bank_init()
                     $uriTemplate .= '&digest={digest}';
                 }
                 $uriTemplate .= '&env=' . getServerEnv();
-                $uriTemplate .= '&ts=' . strftime("%y%m%d%H%M", time());
+                $uriTemplate .= '&ts=' . $registeredTs;
+                set_transient('resurs_bank_callback_ts', $registeredTs);
                 $xDebugTest = getResursFlag('XDEBUG_SESSION_START');
                 if (!empty($xDebugTest)) {
                     $uriTemplate .= "&XDEBUG_SESSION_START=" . $xDebugTest;
@@ -3664,7 +3770,7 @@ function woocommerce_gateway_resurs_bank_init()
             if ($hasShippingTest) {
                 if (!$isFullOrderHandle) {
                     $return = resurs_refund_shipping($order, $resursFlow);
-                } else if ($return) {
+                } elseif ($return) {
                     resurs_refund_shipping($order, $resursFlow);
                 }
             }
@@ -4253,7 +4359,7 @@ function woocommerce_gateway_resurs_bank_init()
             } else {
                 $flow = initializeResursFlow();
                 $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
-                $resursMeta = isset($methodInfo->type)?$methodInfo->type:'';
+                $resursMeta = isset($methodInfo->type) ? $methodInfo->type : '';
                 setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodType', $resursMeta);
             }
         }
@@ -4268,6 +4374,7 @@ function woocommerce_gateway_resurs_bank_init()
             'callbacks_registered' => __('callbacks has been registered',
                 'resurs-bank-payment-gateway-for-woocommerce'),
             'update_callbacks' => __('Update callbacks again', 'resurs-bank-payment-gateway-for-woocommerce'),
+            'update_test' => __('Trigger test callback', 'resurs-bank-payment-gateway-for-woocommerce'),
             'useZeroToReset' => __('To remove the fee properly, set the value to 0',
                 'resurs-bank-payment-gateway-for-woocommerce'),
             'notAllowedValue' => __('The entered value is not allowed here',
@@ -4281,8 +4388,10 @@ function woocommerce_gateway_resurs_bank_init()
             'newFeeHasBeenSet' => __('Fee has been updated', 'resurs-bank-payment-gateway-for-woocommerce'),
             'callbacks_pending' => __('Waiting for callback', 'resurs-bank-payment-gateway-for-woocommerce'),
             'callbacks_not_received' => __('Callback not yet received', 'resurs-bank-payment-gateway-for-woocommerce'),
-            'callbacks_slow' => nl2br(__('It seems that your site has not received any callbacks yet.\nEither your site are unreachable, or the callback tester is for the moment slow.',
-                'resurs-bank-payment-gateway-for-woocommerce')),
+            'callbacks_slow' => __(
+                "It seems that your site has not received any callbacks yet. Either your site are unreachable, or the callback tester is for the moment slow.",
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
             'resursBankTabLogo' => $resursLogo,
             'resursMethod' => $resursMethod,
             'resursPaymentId' => $resursPayment,
@@ -4833,10 +4942,12 @@ function woocommerce_gateway_resurs_bank_init()
  * @param $file
  * @return array
  */
-function plugin_page_resurs_bank_for_woocommerce_settings($links, $file) {
+function plugin_page_resurs_bank_for_woocommerce_settings($links, $file)
+{
     $basename = trim(plugin_basename(__FILE__));
     if ($basename == $file || $file === 'resurs-bank-payment-gateway-for-woocommerce/resursbankgateway.php') {
-        $links[] = sprintf('<a href="admin.php?page=wc-settings&tab=tab_resursbank">%s</a>',
+        $links[] = sprintf(
+            '<a href="admin.php?page=wc-settings&tab=tab_resursbank">%s</a>',
             __(
                 'Settings'
             ));
