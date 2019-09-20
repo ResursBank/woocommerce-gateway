@@ -719,9 +719,9 @@ function woocommerce_gateway_resurs_bank_init()
                                     '%Y-%m-%d (%H:%M:%S)',
                                     time()
                                 );
-                                $boxColor = 'labelBoot-warning';
+                                $boxColor = 'labelBoot labelBoot-warning';
 
-                                $responseArray['html'] = sprintf('<div class="labelBoot %s" style="margin-bottom:5px; margin-top: 5px;">
+                                $responseArray['html'] = sprintf('<div class="labelBoot %s" style="margin-bottom:5px; margin-top: 5px; font-size:14px;">
                                         %s</div>
                                         ',
                                     $boxColor,
@@ -729,6 +729,11 @@ function woocommerce_gateway_resurs_bank_init()
                                         'Waiting for callback',
                                         'resurs-bank-payment-gateway-for-woocommerce'
                                     )
+                                );
+
+                                $responseArray['html'] = apply_filters(
+                                    'resurs_trigger_test_callback',
+                                    $responseArray['html']
                                 );
 
                             } elseif ($_REQUEST['run'] == 'getLastCallbackTimestamp') {
@@ -779,6 +784,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     }
 
                                     $boxColor = 'labelBoot-success';
+                                    $responseArray['notimers'] = false;
 
                                     $responseArray['proceed'] = false;
                                     if (isset($cbContent['ts'])) {
@@ -796,18 +802,24 @@ function woocommerce_gateway_resurs_bank_init()
                                             } else {
                                                 $boxColor = 'labelBoot-success';
                                                 $responseText = $translation['ok'];
+                                                $responseArray['notimers'] = true;
                                             }
                                         }
                                     }
 
-                                    $responseArray['html'] = sprintf('<div style="margin-bottom:5px; margin-top: 5px;">
-                                        <span id="receivedCallbackConfirm" class="labelBoot %s">
+                                    $responseArray['html'] = sprintf('<div style="margin-bottom:5px; margin-top: 5px; font-size:14px;">
+                                        <span id="receivedCallbackConfirm" class="labelBoot %s" style="font-size: 14px !important;">
                                         %s (%s %s)
                                         </span></div>',
                                         $boxColor,
                                         $responseText,
                                         $lastTimeText,
                                         $ts
+                                    );
+
+                                    $responseArray['html'] = apply_filters(
+                                        'resurs_trigger_test_callback_timestamp',
+                                        $responseArray['html']
                                     );
                                 }
                             } elseif ($_REQUEST['run'] == 'cleanRbSettings') {
@@ -816,9 +828,9 @@ function woocommerce_gateway_resurs_bank_init()
                                 $responseArray['element'] = "process_cleanResursSettings";
                                 if ($numDel > 0) {
                                     $myBool = true;
-                                    $responseArray['html'] = "OK";
+                                    $responseArray['html'] = 'OK';
                                 } else {
-                                    $responseArray['html'] = "";
+                                    $responseArray['html'] = '';
                                 }
                             } elseif ($_REQUEST['run'] == 'cleanRbCache') {
                                 try {
@@ -827,8 +839,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                                 }
                                 $myBool = true;
-                                $responseArray['html'] = "OK";
-                                $responseArray['element'] = "process_cleanResursMethods";
+                                $responseArray['html'] = 'OK';
+                                $responseArray['element'] = 'process_cleanResursMethods';
                             } elseif ($_REQUEST['run'] == 'cleanRbMethods') {
                                 $numDel = 0;
                                 $numConfirm = 0;
@@ -852,10 +864,10 @@ function woocommerce_gateway_resurs_bank_init()
                                     }
                                 }
                                 $responseArray['deleteFiles'] = 0;
-                                $responseArray['element'] = "process_cleanResursMethods";
+                                $responseArray['element'] = 'process_cleanResursMethods';
                                 if ($numConfirm != $numDel) {
                                     $responseArray['deleteFiles'] = $numDel;
-                                    $responseArray['html'] = "OK";
+                                    $responseArray['html'] = 'OK';
                                     $myBool = true;
                                 } else {
                                     $responseArray['html'] = "";

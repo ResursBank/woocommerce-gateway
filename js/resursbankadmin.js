@@ -426,13 +426,21 @@ var runningCbTest = null;
 var lastRecvContent = "";
 
 /**
- * Separare button click for testcallbacks.
+ * Separate button click for testcallbacks.
  */
 function doUpdateResursTest() {
-    $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
+    if (null != runningCbTest) {
+        window.clearInterval(runningCbTest);
+    }
+
+    $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
     runResursAdminCallback('resursTriggerTest', 'resursTriggerTestResponse');
 }
 
+/**
+ * Handle responses from separate trigger tests.
+ * @param triggerTestData
+ */
 function resursTriggerTestResponse(triggerTestData) {
     if (typeof triggerTestData !== 'undefined' && typeof triggerTestData['response']) {
         var inData = triggerTestData['response']['resursTriggerTestResponse'];
@@ -450,7 +458,7 @@ function resursTriggerTestResponse(triggerTestData) {
 function doUpdateResursCallbacks() {
     startResursCallbacks = Math.round(new Date() / 1000);
     if ($RB('#receivedCallbackConfirm').length > 0) {
-        $RB('#lastCbRec').html('<div class="labelBoot labelBoot-warning">' + adminJs["callbacks_pending"] + '</div>');
+        $RB('#lastCbRec').html('<div class="labelBoot labelBoot-warning" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
         $RB('#receivedCallbackConfirm').remove();
     }
     noCallbacksReceived();
@@ -498,13 +506,13 @@ function noCallbacksReceived() {
     } else {
         if (resursCallbacksTimeDiff < timeBeforeSlowCallbacks) {
             if (lastRecvContent == curRecvContent) {
-                $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
+                $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
             }
         } else {
             $RB('#lastCbRec').html('<div style="margin-bottom: 10px;">' +
-                '<div class="labelBoot labelBoot-danger" style="font: 14px;">' + adminJs["callbacks_not_received"] + '</div>' +
+                '<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_not_received"] + '</div>' +
                 '</div>' +
-                '<div class="labelBoot labelBoot-warning" style="font-size: 14px;">' + adminJs["callbacks_slow"] + '</div>'
+                '<div class="labelBoot labelBoot-warning" style="font-size: 14px  !important;;">' + adminJs["callbacks_slow"] + '</div>'
             );
         }
     }
