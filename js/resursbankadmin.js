@@ -442,16 +442,14 @@ function doUpdateResursTest() {
  * @param triggerTestData
  */
 function resursTriggerTestResponse(triggerTestData) {
-    if (typeof triggerTestData !== 'undefined' && typeof triggerTestData['response']) {
-        var inData = triggerTestData['response']['resursTriggerTestResponse'];
-        if (inData['testTriggerActive']) {
-            $RB('#lastCbRec').html(inData['html']);
-            startResursCallbacks = Math.round(new Date() / 1000);
-            noCallbacksReceived();
-            runningCbTest = window.setInterval("noCallbacksReceived()", 1000);
-            checkLastCallback();
-            setInterval('checkLastCallback()', 2000);
-        }
+    var inData = triggerTestData['response']['resursTriggerTestResponse'];
+    if (inData['testTriggerActive']) {
+        $RB('#lastCbRec').html(inData['html']);
+        startResursCallbacks = Math.round(new Date() / 1000);
+        noCallbacksReceived();
+        runningCbTest = window.setInterval("noCallbacksReceived()", 1000);
+        checkLastCallback();
+        setInterval('checkLastCallback()', 2000);
     }
 }
 
