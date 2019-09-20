@@ -719,7 +719,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     '%Y-%m-%d (%H:%M:%S)',
                                     time()
                                 );
-                                $boxColor = 'labelBoot labelBoot-warning';
+                                $boxColor = 'labelBoot labelBoot-danger';
 
                                 $responseArray['html'] = sprintf('<div class="labelBoot %s" style="margin-bottom:5px; margin-top: 5px; font-size:14px;">
                                         %s</div>
