@@ -130,15 +130,15 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'select',
                     'options' => [
                         'resurs_bank_omnicheckout' => __(
-                            'Onepage iFrame based checkout provided by Resurs Bank.',
+                            'Resurs Bank Checkout (RCO).',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'simplifiedshopflow' => __(
-                            'Payment gateway are embedded within the current theme.',
+                            'Resurs Bank payment gateway (Simplified Flow API).',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'resurs_bank_hosted' => __(
-                            'Customers are redirected to a Resurs Bank payment webpage to finalize payment.',
+                            'Resurs Bank Hosted Checkout (Hosted flow).',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                     ],
