@@ -4641,10 +4641,12 @@ function woocommerce_gateway_resurs_bank_init()
 
     function resurs_annuity_factors()
     {
-        /** @var $product WC_Product_Simple */
         global $product;
+
+        /** @var $product WC_Product_Simple */
         $displayAnnuity = "";
         if (is_object($product)) {
+            $customWidgetSetting = getResursOption('partPayWidgetPage');
 
             /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
             $flow = initializeResursFlow();
@@ -4704,11 +4706,6 @@ function woocommerce_gateway_resurs_bank_init()
                             $payFromAnnuity = wc_price($payFrom);
                             $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
                             $onclick = 'window.open(\'' . $costOfPurchase . '\')';
-                            $displayAnnuity .= '<div class="resursPartPaymentInfo">';
-                            if (isResursTest()) {
-                                $displayAnnuity .= '<div style="font-size: 11px !important; font-color:#990000 !important; font-style: italic; padding:0px !important; margin: 0px !important;">' . __('Test enabled: In production, this information is shown when the minimum amount is above',
-                                        'resurs-bank-payment-gateway-for-woocommerce') . " <b>" . $realPaymentLimit . "</b></div>";
-                            }
 
                             // https://test.resurs.com/docs/pages/viewpage.action?pageId=7208965#Hooks/filtersv2.2-Filter:Partpaymentwidgetstring
                             $defaultAnnuityString = sprintf(__(
@@ -4724,13 +4721,53 @@ function woocommerce_gateway_resurs_bank_init()
                             if (!empty($customAnnuityString)) {
                                 $useAnnuityString = $customAnnuityString;
                             }
-                            $displayAnnuity .= '<span>' . $useAnnuityString . '</span> | ';
 
-                            $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' .
-                                __(
-                                    'Info', 'resurs-bank-payment-gateway-for-woocommerce'
-                                ) . '</span>';
-                            $displayAnnuity .= '</div>';
+                            if ($customWidgetSetting > 0) {
+                                /** @var WP_Post $customWidgetPost */
+                                $customWidgetPost = get_post($customWidgetSetting);
+
+                                $tags = array(
+                                    '/\[costOfPurchase\]/i',
+                                    '/\[payFromAnnuity\]/i',
+                                    '/\[defaultAnnuityString\]/i',
+                                    '/\[paymentLimit\]/i',
+                                    '/\[annuityFactors\]/i',
+                                    '/\[annuityDuration\]/i',
+                                    '/\[payFrom\]/i',
+                                );
+                                $replaceWith = [
+                                    $costOfPurchase,
+                                    $payFromAnnuity,
+                                    $defaultAnnuityString,
+                                    $paymentLimit,
+                                    print_r($annuityFactors, true),
+                                    $annuityDuration,
+                                    $payFrom,
+                                ];
+
+                                $postContent = preg_replace(
+                                        $tags,
+                                        $replaceWith,
+                                        $customWidgetPost->post_content
+                                );
+
+                                $displayAnnuity = sprintf(
+                                        '<div class="resursPartPaymentInfo">%s</div>',
+                                        $postContent
+                                );
+                            } else {
+                                $displayAnnuity .= '<div class="resursPartPaymentInfo">';
+                                if (isResursTest()) {
+                                    $displayAnnuity .= '<div style="font-size: 11px !important; font-color:#990000 !important; font-style: italic; padding:0px !important; margin: 0px !important;">' . __('Test enabled: In production, this information is shown when the minimum amount is above',
+                                            'resurs-bank-payment-gateway-for-woocommerce') . " <b>" . $realPaymentLimit . "</b></div>";
+                                }
+                                $displayAnnuity .= '<span>' . $useAnnuityString . '</span> | ';
+                                $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' .
+                                    __(
+                                        'Info', 'resurs-bank-payment-gateway-for-woocommerce'
+                                    ) . '</span>';
+                                $displayAnnuity .= '</div>';
+                            }
                         }
                     }
                 } catch (\Exception $annuityException) {

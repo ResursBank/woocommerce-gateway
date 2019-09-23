@@ -525,10 +525,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'options' => [],
                     'default' => [''],
                     'desc_tip' => true,
+                    'fieldtype' => 'string'
                 ],
             ];
         } elseif ($formSectionName == "paymentmethods") {
-            //$icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon', $this->plugin_url() . '/img/' . $icon_name . '.png');
             $icon = "";
             $returnArray = [
                 'enabled' => [

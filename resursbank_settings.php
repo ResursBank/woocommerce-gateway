@@ -1267,6 +1267,34 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         $namespace,
                         $widgetPages
                     );
+
+                    $shortCodeCollection = array(
+                        '[payFromAnnuity]' => __('Final price to pay including the currency.', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        '[payFrom]' => __('Final price excluding the currency.', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        '[paymentLimit]' => __('The minimum price configured from where annuities are shown (Note: When running in test, this is always set to 1 for debugging).', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        '[annuityDuration]' => __('Chosen annuity period.', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        '[costOfPurchase]' => __('URL to which the cost example are shown.', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        '[defaultAnnuityString]' => __('The default text that is usually shown when annuity factors are available.', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        '[annuityFactors]' => __('Printable version of available annuity factors (for debugging).', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    );
+
+                    $shortCodeDescriptions = '<table style="padding:0px;" width="50%" cellpadding="0" cellspacing="0">';
+                    foreach ($shortCodeCollection as $tag => $description) {
+                        $shortCodeDescriptions .= sprintf('<tr><td style="font-weight: bold;" valign="top">%s</td><td>%s</td></tr>', $tag, $description);
+                    }
+                    $shortCodeDescriptions .= '</table>';
+
+                    echo sprintf('
+                    <tr>
+                    <td style="font-size:16px;">&nbsp;</td>
+                    <td><b>%s</b><br>%s</td>
+                    </tr>
+                    ', __(
+                        'Available shortcodes for above view',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                        $shortCodeDescriptions
+                    );
                 } elseif ($section == "advanced") {
                     echo $this->setSeparator(__('URL Settings', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
