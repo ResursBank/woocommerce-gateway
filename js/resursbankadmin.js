@@ -3,9 +3,13 @@
  */
 
 var $RB = jQuery.noConflict();
+var startResursCallbacks = 0;
+var runningCbTestFirst = null;
+var runningCbTestSecond = null;
+var lastCallbackCheckInterval = null;
+var lastRecvContent = "";
 
 $RB(document).ready(function ($) {
-
     if ($RB('#nextInvoiceSequence').length > 0) {
         runResursAdminCallback('getNextInvoiceSequence', function (x) {
             if (typeof x['response'] !== 'undefined') {
@@ -421,18 +425,26 @@ function showResursCallbackArray(cbArrayResponse) {
     }
 }
 
-var startResursCallbacks = 0;
-var runningCbTest = null;
-var lastRecvContent = "";
+function clearAllCbIntervals() {
+    if (null !== runningCbTestFirst) {
+        console.log("Clear cbtest-1");
+        window.clearInterval(runningCbTestFirst);
+    }
+    if (null !== runningCbTestSecond) {
+        console.log("Clear cbtest-2");
+        window.clearInterval(runningCbTestSecond);
+    }
+    if (null !== lastCallbackCheckInterval) {
+        console.log("Clear lastCbTest");
+        window.clearInterval(lastCallbackCheckInterval);
+    }
+}
 
 /**
  * Separate button click for testcallbacks.
  */
 function doUpdateResursTest() {
-    if (null != runningCbTest) {
-        window.clearInterval(runningCbTest);
-    }
-
+    clearAllCbIntervals();
     $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
     runResursAdminCallback('resursTriggerTest', 'resursTriggerTestResponse');
 }
@@ -447,20 +459,19 @@ function resursTriggerTestResponse(triggerTestData) {
         $RB('#lastCbRec').html(inData['html']);
         startResursCallbacks = Math.round(new Date() / 1000);
         noCallbacksReceived();
-        runningCbTest = window.setInterval("noCallbacksReceived()", 1000);
-        checkLastCallback();
-        setInterval('checkLastCallback()', 2000);
+        runningCbTestSecond = window.setInterval("noCallbacksReceived()", 1000);
+        lastCallbackCheckInterval = window.setInterval('checkLastCallback()', 3000);
     }
 }
 
 function doUpdateResursCallbacks() {
     startResursCallbacks = Math.round(new Date() / 1000);
     if ($RB('#receivedCallbackConfirm').length > 0) {
-        $RB('#lastCbRec').html('<div class="labelBoot labelBoot-warning" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
+        $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
         $RB('#receivedCallbackConfirm').remove();
     }
     noCallbacksReceived();
-    runningCbTest = window.setInterval("noCallbacksReceived()", 1000);
+    runningCbTestFirst = window.setInterval("noCallbacksReceived()", 1000);
     lastRecvContent = $RB('#lastCbRec').html();
     $RB('#callbackContent').html('<img src="' + adminJs.resursSpinner + '" border="0">');
     runResursAdminCallback("setMyCallbacks", "updateResursCallbacksResult");
@@ -499,8 +510,7 @@ function noCallbacksReceived() {
     var resursCallbacksTimeDiff = stopResursCallbacks - startResursCallbacks;
     var curRecvContent = $RB('#lastCbRec').html();
     if ($RB('#receivedCallbackConfirm').length > 0) {
-        console.log("Halting timer...");
-        window.clearInterval(runningCbTest);
+        clearAllCbIntervals();
     } else {
         if (resursCallbacksTimeDiff < timeBeforeSlowCallbacks) {
             if (lastRecvContent == curRecvContent) {
@@ -522,7 +532,7 @@ function updateResursCallbacksResult(resultResponse) {
         var callbackCount = "";
         if (typeof successCheck["testTriggerTimestamp"] !== "undefined") {
             $RB('#lastCbRun').html(successCheck["testTriggerTimestamp"]);
-            setInterval('checkLastCallback()', 2000);
+            lastCallbackCheckInterval = setInterval('checkLastCallback()', 2000);
         }
         if (successCheck["errorstring"] != "") {
             callbackCount = successCheck["registeredCallbacks"];
