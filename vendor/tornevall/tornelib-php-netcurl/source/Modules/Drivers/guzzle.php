@@ -22,7 +22,7 @@
 
 namespace TorneLIB;
 
-if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\NETCURL_DRIVER_GUZZLEHTTP' ) ) {
+if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\NETCURL_DRIVER_GUZZLEHTTP', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
 	/**
 	 * Class NETCURL_DRIVER_GUZZLEHTTP Network communications driver detection
      *
@@ -103,13 +103,13 @@ if ( ! class_exists( 'NETCURL_DRIVER_GUZZLEHTTP' ) && ! class_exists( 'TorneLIB\
 
 		private function initializeClass() {
 			if ( $this->DRIVER_ID == NETCURL_NETWORK_DRIVERS::DRIVER_GUZZLEHTTP ) {
-				if ( class_exists( 'GuzzleHttp\Client' ) ) {
+				if ( class_exists( 'GuzzleHttp\Client', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
                     /** @noinspection PhpUndefinedClassInspection */
                     /** @noinspection PhpUndefinedNamespaceInspection */
                     $this->DRIVER = new \GuzzleHttp\Client;
 				}
 			} else if ( $this->DRIVER_ID === NETCURL_NETWORK_DRIVERS::DRIVER_GUZZLEHTTP_STREAM ) {
-				if ( class_exists( 'GuzzleHttp\Handler\StreamHandler' ) ) {
+				if ( class_exists( 'GuzzleHttp\Handler\StreamHandler', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
                     /** @noinspection PhpUndefinedClassInspection */
                     /** @noinspection PhpUndefinedNamespaceInspection */
                     /** @var \GuzzleHttp\Handler\StreamHandler $streamHandler */

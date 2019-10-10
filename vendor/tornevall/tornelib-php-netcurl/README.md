@@ -5,7 +5,9 @@
 
 ## Compatibility span (Supported PHP versions)
 
-This library should be compatible with at least PHP 5.3 up to PHP 7.2. However, running this module in older versions of PHP makes it more unreliable as PHP is continuosly developed. There are no guarantees that the module is fully functional from obsolete releases (like PHP 5.3 and most of the PHP 5.x-series is).
+This library should be compatible with at least PHP 5.3 up to PHP 7.3 (RC3).
+
+Running this module in older versions of PHP makes it more unreliable as PHP is continuosly developed. There are no guarantees that the module is fully functional from obsolete releases (like PHP 5.3 and most of the PHP 5.x-series is).
 
 ### Requirements and dependencies
 

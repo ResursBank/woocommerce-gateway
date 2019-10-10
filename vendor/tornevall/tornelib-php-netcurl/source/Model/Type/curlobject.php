@@ -24,7 +24,7 @@
 
 namespace TorneLIB;
 
-if ( ! class_exists( 'NETCURL_HTTP_OBJECT' ) && ! class_exists( 'TorneLIB\NETCURL_HTTP_OBJECT' ) ) {
+if ( ! class_exists( 'NETCURL_HTTP_OBJECT', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\NETCURL_HTTP_OBJECT', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
 	/**
 	 * Class NETCURL_CURLOBJECT
 	 *
@@ -75,7 +75,7 @@ if ( ! class_exists( 'NETCURL_HTTP_OBJECT' ) && ! class_exists( 'TorneLIB\NETCUR
 
 	}
 }
-if ( ! class_exists( 'TORNELIB_CURLOBJECT' ) && ! class_exists( 'TorneLIB\TORNELIB_CURLOBJECT' ) ) {
+if ( ! class_exists( 'TORNELIB_CURLOBJECT', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\TORNELIB_CURLOBJECT', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
 	/**
 	 * Class TORNELIB_CURLOBJECT
 	 *
