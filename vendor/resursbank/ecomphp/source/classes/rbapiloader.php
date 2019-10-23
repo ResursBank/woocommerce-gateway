@@ -8,7 +8,7 @@
  * @author  Resurs Bank Ecommerce
  *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.23
+ * @version 1.3.24
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -59,10 +59,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.23');
+    define('ECOMPHP_VERSION', '1.3.24');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20190909');
+    define('ECOMPHP_MODIFY_DATE', '20191008');
 }
 
 /**
@@ -2036,7 +2036,7 @@ class ResursBank
      *
      * @param int $callbackType
      * @param bool $isMultiple Consider callback type bitrange when true, where the value 255 is all callbacks at once
-     *
+     * @param bool $forceSoap
      * @return array|bool
      * @throws \Exception
      * @since 1.0.1
@@ -2044,7 +2044,8 @@ class ResursBank
      */
     public function unregisterEventCallback(
         $callbackType = RESURS_CALLBACK_TYPES::NOT_SET,
-        $isMultiple = false
+        $isMultiple = false,
+        $forceSoap = false
     ) {
         if ($isMultiple) {
             $this->BIT = new MODULE_NETBITS();
@@ -2071,12 +2072,17 @@ class ResursBank
         $unregisteredCallbacks = [];
         foreach ($callbackTypes as $callbackType) {
             if (!empty($callbackType)) {
-                if ($this->registerCallbacksViaRest && $callbackType != 'UPDATE') {
+                if ($this->registerCallbacksViaRest && $callbackType != 'UPDATE' && !$forceSoap) {
                     $this->InitializeServices();
                     $serviceUrl = $this->getCheckoutUrl() . "/callbacks";
                     $renderCallbackUrl = $serviceUrl . "/" . $callbackType;
-                    $curlResponse = $this->CURL->doDelete($renderCallbackUrl);
-                    $curlCode = $this->CURL->getCode($curlResponse);
+                    try {
+                        $curlResponse = $this->CURL->doDelete($renderCallbackUrl);
+                        $curlCode = $this->CURL->getCode($curlResponse);
+                    } catch (\Exception $e) {
+                        // If this one suddenly starts throwing exceptions.
+                        $curlCode = $e->getCode();
+                    }
                     if ($curlCode >= 200 && $curlCode <= 250) {
                         if (!$isMultiple) {
                             return true;
@@ -2086,13 +2092,16 @@ class ResursBank
                     }
                 } else {
                     $this->InitializeServices();
-                    // Not using postService here, since we're
-                    /** @noinspection PhpUndefinedMethodInspection */
-                    $curlResponse = $this->CURL->doGet(
-                        $this->getServiceUrl('unregisterEventCallback'))->unregisterEventCallback(
-                        ['eventType' => $callbackType]
-                    );
-                    $curlCode = $this->CURL->getCode($curlResponse);
+                    try {
+                        $curlResponse = $this->CURL->doGet(
+                            $this->getServiceUrl('unregisterEventCallback'))->unregisterEventCallback(
+                            ['eventType' => $callbackType]
+                        );
+                        $curlCode = $this->CURL->getCode($curlResponse);
+                    } catch (\Exception $e) {
+                        // If this one suddenly starts throwing exceptions.
+                        $curlCode = $e->getCode();
+                    }
                     if ($curlCode >= 200 && $curlCode <= 250) {
                         if (!$isMultiple) {
                             return true;
@@ -2103,7 +2112,6 @@ class ResursBank
                 }
             }
         }
-
         if (!$isMultiple) {
             return false;
         } else {
@@ -5211,20 +5219,17 @@ class ResursBank
             } elseif ($myFlow == RESURS_FLOW_TYPES::MINIMALISTIC) {
                 $mySpecRules = $paymentSpecKeys['minimalistic'];
             }
-            $hasMeasure = false;
             foreach ($specLines as $specIndex => $specArray) {
                 foreach ($specArray as $key => $value) {
-                    if (strtolower($key) === 'unitmeasure' && empty($value)) {
-                        $hasMeasure = true;
-                        $specArray[$key] = $this->defaultUnitMeasure;
-                    }
                     if (!in_array(strtolower($key), array_map("strtolower", $mySpecRules))) {
                         unset($specArray[$key]);
                     }
                 }
-                // Add unit measure if missing
-                if (!$hasMeasure && $myFlow !== RESURS_FLOW_TYPES::MINIMALISTIC) {
-                    $specArray['unitMeasure'] = $this->defaultUnitMeasure;
+                if ($myFlow !== RESURS_FLOW_TYPES::MINIMALISTIC) {
+                    // Reaching this point, realizing the value IS really there and should not be overwritten...
+                    if (!isset($specArray['unitMeasure']) || empty($specArray['unitMeasure'])) {
+                        $specArray['unitMeasure'] = $this->defaultUnitMeasure;
+                    }
                 }
                 $specLines[$specIndex] = $specArray;
             }
