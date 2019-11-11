@@ -3923,19 +3923,50 @@ function woocommerce_gateway_resurs_bank_init()
                                 $customFinalize = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             }
                             $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
-                            resursEventLogger($payment_id . ': Finalization - Payment Content');
+                            resursEventLogger(
+                                sprintf('%s: Finalization - Payment Content', $payment_id)
+                            );
                             resursEventLogger(print_r($payment, true));
-                            resursEventLogger($payment_id . ': Finalization ' . $successFinalize ? 'OK' : 'NOT OK');
+                            resursEventLogger(
+                                sprintf(
+                                    '%s: Finalization %s',
+                                    $payment_id,
+                                    ($successFinalize ? 'OK' : 'NOT OK')
+                                )
+                            );
                             wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
                         } catch (Exception $e) {
                             // Checking code 29 is not necessary since this is automated in EComPHP
-                            $flowErrorMessage = "[" . __('Error',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . " " . $e->getCode() . "] " . $e->getMessage();
+                            $flowErrorMessage = sprintf(
+                                __(
+                                    '[Error %s] %s', 'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $e->getCode(),
+                                $e->getMessage()
+                            );
 
                             $order->update_status($old_status_slug);
-                            resursEventLogger($payment_id . ': FinalizationException ' . $e->getCode() . ' - ' . $e->getMessage() . '. Old status (' . $old_status_slug . ') restored.');
-                            $order->add_order_note(__('Finalization failed',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . ": " . $flowErrorMessage);
+                            resursEventLogger(
+                                sprintf(
+                                    __(
+                                        '%s: FinalizationException: %s - %s. Old status (%s) restored',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $payment_id,
+                                    $e->getCode(),
+                                    $e->getMessage(),
+                                    $old_status_slug
+                                )
+                            );
+                            $order->add_order_note(
+                                sprintf(
+                                    __(
+                                        'Finalization failed: %s',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                ),
+                                $flowErrorMessage
+                            );
                         }
                     } else {
                         // Generate a notice if the order has been debited from for example payment admin.
@@ -3943,20 +3974,35 @@ function woocommerce_gateway_resurs_bank_init()
                         if ($resursFlow->getIsDebited()) {
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                                 resursEventLogger($payment_id . ': InstantFinalization/IsDebited detected.');
-                                $order->add_order_note(__('This order is now marked completed as a result of the payment method behaviour (automatic finalization).',
-                                    'resurs-bank-payment-gateway-for-woocommerce'));
+                                $order->add_order_note(
+                                    __(
+                                        'This order is now marked completed as a result of the payment method behaviour (automatic finalization).',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
                             } else {
                                 resursEventLogger($payment_id . ': Already finalized.');
-                                $order->add_order_note(__('This order has already been finalized externally',
-                                    'resurs-bank-payment-gateway-for-woocommerce'));
+                                $order->add_order_note(
+                                    __(
+                                        'This order has already been finalized externally',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
                             }
                         } else {
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                                 resursEventLogger($payment_id . ': InstantFinalization/DebitedNotDetected detected for.');
-                                $orderNote = __('The payment method for this order indicates that the payment has been automatically finalized.',
-                                    'resurs-bank-payment-gateway-for-woocommerce');
+                                $orderNote = __(
+                                    'The payment method for this order indicates that the payment has been automatically finalized.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                );
                             } else {
-                                resursEventLogger($payment_id . ': Can not finalize due to the current remote order status.');
+                                resursEventLogger(
+                                    sprintf(
+                                        '%s: Can not finalize due to the current remote order status.',
+                                        $payment_id
+                                    )
+                                );
                             }
                             if (!empty($orderNote)) {
                                 $order->add_order_note($orderNote);
