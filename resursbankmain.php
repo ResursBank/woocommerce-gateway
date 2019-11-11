@@ -3888,6 +3888,8 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
             }
 
+            $throwStatusError = null;
+
             $currentRunningUser = getResursWordpressUser();
             $currentRunningUsername = getResursWordpressUser('user_login');
             $resursFlow->setLoggedInUser($currentRunningUsername);
@@ -3929,6 +3931,7 @@ function woocommerce_gateway_resurs_bank_init()
                             // Checking code 29 is not necessary since this is automated in EComPHP
                             $flowErrorMessage = "[" . __('Error',
                                     'resurs-bank-payment-gateway-for-woocommerce') . " " . $e->getCode() . "] " . $e->getMessage();
+
                             $order->update_status($old_status_slug);
                             resursEventLogger($payment_id . ': FinalizationException ' . $e->getCode() . ' - ' . $e->getMessage() . '. Old status (' . $old_status_slug . ') restored.');
                             $order->add_order_note(__('Finalization failed',
@@ -3954,8 +3957,6 @@ function woocommerce_gateway_resurs_bank_init()
                                     'resurs-bank-payment-gateway-for-woocommerce');
                             } else {
                                 resursEventLogger($payment_id . ': Can not finalize due to the current remote order status.');
-                                // Generate error message if the order is something else than debited and debitable
-                                //$orderNote = __('This order is in a state at Resurs Bank where it can not be finalized', 'resurs-bank-payment-gateway-for-woocommerce');
                             }
                             if (!empty($orderNote)) {
                                 $order->add_order_note($orderNote);
@@ -3968,6 +3969,8 @@ function woocommerce_gateway_resurs_bank_init()
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
+                        $order->update_status($old_status_slug);
+                        throw new \Exception($flowErrorMessage);
                     }
                     wp_safe_redirect($url);
                     break;
@@ -3999,8 +4002,10 @@ function woocommerce_gateway_resurs_bank_init()
                             'message' => $flowErrorMessage,
                         ];
                         wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
-                        wp_safe_redirect($url);
+                        $order->update_status($old_status_slug);
+                        throw new \Exception($flowErrorMessage);
                     }
+                    wp_safe_redirect($url);
                     break;
                 case 'refunded':
                     if ($currentRunningUser) {
@@ -4029,8 +4034,10 @@ function woocommerce_gateway_resurs_bank_init()
                             'message' => $flowErrorMessage,
                         ];
                         wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
-                        wp_safe_redirect($url);
+                        $order->update_status($old_status_slug);
+                        throw new \Exception($flowErrorMessage);
                     }
+                    wp_safe_redirect($url);
                     break;
                 default:
                     break;
