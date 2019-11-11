@@ -1,19 +1,16 @@
 <?php
 
 /**
- * Resurs Bank Passthrough API - A pretty silent ShopFlowSimplifier for Resurs Bank.
- * Compatible with simplifiedFlow, hostedFlow and Resurs Checkout.
+ * Resurs Bank API Wrapper - A silent flow normalizer for Resurs Bank.
  *
  * @package RBEcomPHP
- * @author  Resurs Bank Ecommerce
- *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
+ * @author  Resurs Bank Ecommerce <ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.24
+ * @version 1.3.25
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
  * @license Apache License
- * @noinspection PhpUsageOfSilenceOperatorInspection
  */
 
 namespace Resursbank\RBEcomPHP;
@@ -59,18 +56,20 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.24');
+    define('ECOMPHP_VERSION', '1.3.25');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
     define('ECOMPHP_MODIFY_DATE', '20191008');
 }
 
 /**
- * Class ResursBank
- *
  * By default Test environment are set. To switch over to production, you explicitly need to tell EComPHP to do
  * this. This a security setup so testings won't be sent into production by mistake.
- *
+ */
+
+
+/**
+ * Class ResursBank
  * @package Resursbank\RBEcomPHP
  */
 class ResursBank
@@ -1016,12 +1015,8 @@ class ResursBank
     public function setCurlHandle($newCurlHandle)
     {
         $this->InitializeServices();
-        if ($this->debug) {
-            $this->CURL = $newCurlHandle;
-            $this->CURL_USER_DEFINED = $newCurlHandle;
-        } else {
-            throw new \ResursException("Can't return handle. The module is in wrong state (non-debug mode)", 403);
-        }
+        $this->CURL = $newCurlHandle;
+        $this->CURL_USER_DEFINED = $newCurlHandle;
     }
 
     /**

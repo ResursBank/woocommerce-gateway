@@ -930,7 +930,7 @@ msgstr "Inställningar för kortkoder"
 
 #: resursbank_settings.php:827
 msgid "Resurs Bank payment gateway configuration"
-msgstr "Resus Bank payment gateway configuration"
+msgstr "Resurs Bank payment gateway configuration"
 
 #: resursbank_settings.php:837
 msgid "Plugin and checkout"
