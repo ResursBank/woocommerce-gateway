@@ -3820,7 +3820,7 @@ function woocommerce_gateway_resurs_bank_init()
             $url = admin_url('post.php');
             $url = add_query_arg('post', $order_id, $url);
             $url = add_query_arg('action', 'edit', $url);
-            $old_status = get_term_by('slug', sanitize_title($old_status_slug), 'shop_order_status');
+            //$old_status = get_term_by('slug', sanitize_title($old_status_slug), 'shop_order_status');
 
             $flowErrorMessage = null;
 
@@ -3867,7 +3867,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'message' => 'Denna order är annulerad och går därmed ej att ändra status på',
                         ];
 
-                        wp_set_object_terms($order_id, [$old_status->slug], 'shop_order_status', false);
+                        wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         wp_safe_redirect($url);
                         exit;
                     }
@@ -3879,7 +3879,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'message' => 'Denna order är krediterad och går därmed ej att ändra status på',
                         ];
 
-                        wp_set_object_terms($order_id, [$old_status->slug], 'shop_order_status', false);
+                        wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         wp_safe_redirect($url);
                         exit;
                     }
@@ -3934,7 +3934,6 @@ function woocommerce_gateway_resurs_bank_init()
                                     ($successFinalize ? 'OK' : 'NOT OK')
                                 )
                             );
-                            wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
                         } catch (Exception $e) {
                             // Checking code 29 is not necessary since this is automated in EComPHP
                             $flowErrorMessage = sprintf(
@@ -3945,7 +3944,10 @@ function woocommerce_gateway_resurs_bank_init()
                                 $e->getMessage()
                             );
 
-                            $order->update_status($old_status_slug);
+                            // Moved to the last part of the finalization check.
+                            //$order->update_status($old_status_slug);
+                            //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
+
                             resursEventLogger(
                                 sprintf(
                                     __(
@@ -3991,7 +3993,7 @@ function woocommerce_gateway_resurs_bank_init()
                             }
                         } else {
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
-                                resursEventLogger($payment_id . ': InstantFinalization/DebitedNotDetected detected for.');
+                                //resursEventLogger($payment_id . ': InstantFinalization/DebitedNotDetected detected for.');
                                 $orderNote = __(
                                     'The payment method for this order indicates that the payment has been automatically finalized.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
@@ -4015,6 +4017,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
+                        //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         $order->update_status($old_status_slug);
                         throw new \Exception($flowErrorMessage);
                     }
@@ -4047,7 +4050,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
-                        wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
+                        //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         $order->update_status($old_status_slug);
                         throw new \Exception($flowErrorMessage);
                     }
@@ -4079,7 +4082,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
-                        wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
+                        //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         $order->update_status($old_status_slug);
                         throw new \Exception($flowErrorMessage);
                     }
