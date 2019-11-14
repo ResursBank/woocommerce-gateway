@@ -3862,6 +3862,7 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'cancelled':
                     if (in_array('IS_ANNULLED', $status)) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => 'Denna order är annulerad och går därmed ej att ändra status på',
@@ -3874,6 +3875,7 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'refunded':
                     if (in_array('IS_CREDITED', $status)) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => 'Denna order är krediterad och går därmed ej att ändra status på',
@@ -3938,15 +3940,12 @@ function woocommerce_gateway_resurs_bank_init()
                             // Checking code 29 is not necessary since this is automated in EComPHP
                             $flowErrorMessage = sprintf(
                                 __(
-                                    '[Error %s] %s', 'resurs-bank-payment-gateway-for-woocommerce'
+                                    '[Error %s] %s',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
                                 ),
                                 $e->getCode(),
                                 $e->getMessage()
                             );
-
-                            // Moved to the last part of the finalization check.
-                            //$order->update_status($old_status_slug);
-                            //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
 
                             resursEventLogger(
                                 sprintf(
@@ -3960,15 +3959,15 @@ function woocommerce_gateway_resurs_bank_init()
                                     $old_status_slug
                                 )
                             );
-                            $order->add_order_note(
+/*                            $order->add_order_note(
                                 sprintf(
                                     __(
                                         'Finalization failed: %s',
                                         'resurs-bank-payment-gateway-for-woocommerce'
-                                    )
-                                ),
-                                $flowErrorMessage
-                            );
+                                    ),
+                                    $flowErrorMessage
+                                )
+                            );*/
                         }
                     } else {
                         // Generate a notice if the order has been debited from for example payment admin.
@@ -4013,12 +4012,17 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                     }
                     if (!empty($flowErrorMessage)) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
-                        //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
-                        $order->update_status($old_status_slug);
+                        $order->update_status(
+                            $old_status_slug, __(
+                                '[Resurs Bank] Reset to prior status.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
                         throw new \Exception($flowErrorMessage);
                     }
                     wp_safe_redirect($url);
@@ -4046,6 +4050,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => $flowErrorMessage,
@@ -4078,6 +4083,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => $flowErrorMessage,
@@ -4556,7 +4562,12 @@ function woocommerce_gateway_resurs_bank_init()
     function resurs_bank_admin_notice()
     {
         global $resursGlobalNotice, $resursSelfSession;
-        if (isset($_SESSION['resurs_bank_admin_notice']) || $resursGlobalNotice === true) {
+
+        if (isset($_REQUEST['hasSessionMessage'])) {
+            getResursRequireSession();
+        }
+
+        if (isset($_SESSION) || $resursGlobalNotice === true) {
             if (is_array($_SESSION)) {
                 if (!count($_SESSION) && count($resursSelfSession)) {
                     $_SESSION = $resursSelfSession;
@@ -4565,7 +4576,9 @@ function woocommerce_gateway_resurs_bank_init()
                 $notice .= '<p>' . $_SESSION['resurs_bank_admin_notice']['message'] . '</p>';
                 $notice .= '</div>';
                 echo $notice;
-                unset($_SESSION['resurs_bank_admin_notice']);
+                if (isset($_SESSION['resurs_bank_admin_notice'])) {
+                    unset($_SESSION['resurs_bank_admin_notice']);
+                }
             }
         }
     }
@@ -6679,6 +6692,12 @@ function getResursPaymentMethodMeta($id, $key = 'resursBankMetaPaymentMethod')
         }
     }
     return '';
+}
+
+function getResursRequireSession() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
 }
 
 isResursSimulation();
