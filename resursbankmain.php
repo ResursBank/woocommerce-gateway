@@ -3940,7 +3940,7 @@ function woocommerce_gateway_resurs_bank_init()
                             // Checking code 29 is not necessary since this is automated in EComPHP
                             $flowErrorMessage = sprintf(
                                 __(
-                                    '[Error %s] %s',
+                                    '[Error %s] Finalization Failure: %s',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 ),
                                 $e->getCode(),
@@ -3959,7 +3959,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     $old_status_slug
                                 )
                             );
-/*                            $order->add_order_note(
+                            /*$order->add_order_note(
                                 sprintf(
                                     __(
                                         'Finalization failed: %s',

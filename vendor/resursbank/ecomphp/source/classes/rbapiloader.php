@@ -7407,7 +7407,12 @@ class ResursBank
                 }
             }
         } catch (\Exception $cancelException) {
-            return false;
+            // Last catched exception will be thrown back to the plugin/developer.
+            throw new \ResursException(
+                $cancelException->getMessage(),
+                $cancelException->getCode(),
+                $cancelException
+            );
         }
         $this->resetPayload();
 
