@@ -3865,7 +3865,10 @@ function woocommerce_gateway_resurs_bank_init()
                         getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
-                            'message' => 'Denna order är annulerad och går därmed ej att ändra status på',
+                            'message' => __(
+                                'This order is already annulled and cannot be changed.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
                         ];
 
                         wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
@@ -3878,7 +3881,10 @@ function woocommerce_gateway_resurs_bank_init()
                         getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
-                            'message' => 'Denna order är krediterad och går därmed ej att ändra status på',
+                            'message' => __(
+                                    'This order is already credited and cannot be changed.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                            ),
                         ];
 
                         wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
@@ -3940,7 +3946,7 @@ function woocommerce_gateway_resurs_bank_init()
                             // Checking code 29 is not necessary since this is automated in EComPHP
                             $flowErrorMessage = sprintf(
                                 __(
-                                    '[Error %s] Finalization Failure: %s',
+                                    '[Error %s] Finalization Failure: %s.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 ),
                                 $e->getCode(),
@@ -3950,7 +3956,7 @@ function woocommerce_gateway_resurs_bank_init()
                             resursEventLogger(
                                 sprintf(
                                     __(
-                                        '%s: FinalizationException: %s - %s. Old status (%s) restored',
+                                        '%s: FinalizationException: %s - %s. Old status (%s) restored.',
                                         'resurs-bank-payment-gateway-for-woocommerce'
                                     ),
                                     $payment_id,
@@ -3976,7 +3982,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 resursEventLogger($payment_id . ': Already finalized.');
                                 $order->add_order_note(
                                     __(
-                                        'This order has already been finalized externally',
+                                        'This order has already been finalized externally.',
                                         'resurs-bank-payment-gateway-for-woocommerce'
                                     )
                                 );
@@ -4030,14 +4036,14 @@ function woocommerce_gateway_resurs_bank_init()
                             $resursFlow->paymentCancel($payment_id, null, $customCancel);
                             $order->add_order_note(
                                 __(
-                                    'Cancelled status set: Resurs Bank API was called for cancellation',
+                                    'Cancelled status set: Resurs Bank API was called for cancellation.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 )
                             );
                         } catch (Exception $e) {
                             $flowErrorMessage = sprintf(
                                 __(
-                                    '[Error %s] Cancellation Failure: %s',
+                                    '[Error %s] Cancellation Failure: %s.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 ),
                                 $e->getCode(),
@@ -4069,14 +4075,14 @@ function woocommerce_gateway_resurs_bank_init()
                             $order->add_order_note
                             (
                                 __(
-                                    'Refunded status set: Resurs Bank API was called for cancellation',
+                                    'Refunded status set: Resurs Bank API was called for cancellation.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 )
                             );
                         } catch (Exception $e) {
                             $flowErrorMessage = sprintf(
                                 __(
-                                    '[Error %s] Refund Failure: %s',
+                                    '[Error %s] Refund Failure: %s.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 ),
                                 $e->getCode(),
