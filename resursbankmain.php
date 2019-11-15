@@ -3959,15 +3959,6 @@ function woocommerce_gateway_resurs_bank_init()
                                     $old_status_slug
                                 )
                             );
-                            /*$order->add_order_note(
-                                sprintf(
-                                    __(
-                                        'Finalization failed: %s',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    ),
-                                    $flowErrorMessage
-                                )
-                            );*/
                         }
                     } else {
                         // Generate a notice if the order has been debited from for example payment admin.
@@ -4044,8 +4035,14 @@ function woocommerce_gateway_resurs_bank_init()
                                 )
                             );
                         } catch (Exception $e) {
-                            $flowErrorMessage = $e->getMessage();
-                        }
+                            $flowErrorMessage = sprintf(
+                                __(
+                                    '[Error %s] Cancellation Failure: %s',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $e->getCode(),
+                                $e->getMessage()
+                            );                        }
                     } else {
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
@@ -4077,8 +4074,14 @@ function woocommerce_gateway_resurs_bank_init()
                                 )
                             );
                         } catch (Exception $e) {
-                            $flowErrorMessage = $e->getMessage();
-                        }
+                            $flowErrorMessage = sprintf(
+                                __(
+                                    '[Error %s] Refund Failure: %s',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $e->getCode(),
+                                $e->getMessage()
+                            );                        }
                     } else {
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
