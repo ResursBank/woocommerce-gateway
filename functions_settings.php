@@ -525,7 +525,7 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'type' => 'select',
                     'options' => [],
-                    'default' => [''],
+                    'default' => 0,
                     'desc_tip' => true,
                     'fieldtype' => 'string'
                 ],
