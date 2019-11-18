@@ -4646,7 +4646,7 @@ function woocommerce_gateway_resurs_bank_init()
         /** @var $product WC_Product_Simple */
         $displayAnnuity = "";
         if (is_object($product)) {
-            $customWidgetSetting = getResursOption('partPayWidgetPage');
+            $customWidgetSetting = intval(getResursOption('partPayWidgetPage'));
 
             /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
             $flow = initializeResursFlow();
