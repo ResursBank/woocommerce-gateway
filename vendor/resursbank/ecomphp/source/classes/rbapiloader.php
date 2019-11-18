@@ -3,10 +3,11 @@
 /**
  * Resurs Bank API Wrapper - A silent flow normalizer for Resurs Bank.
  *
- * @package RBEcomPHP
- * @author  Resurs Bank Ecommerce <ecommerce.support@resurs.se>
+ * @package Resursbank
+ * @author  Resurs Bank <support@resurs.se>
+ * @author  Tomas Tornevall <tomas.tornevall@resurs.se>
  * @branch  1.3
- * @version 1.3.25
+ * @version 1.3.26
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -56,17 +57,16 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.25');
+    define('ECOMPHP_VERSION', '1.3.26');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20191008');
+    define('ECOMPHP_MODIFY_DATE', '20191118');
 }
 
 /**
  * By default Test environment are set. To switch over to production, you explicitly need to tell EComPHP to do
  * this. This a security setup so testings won't be sent into production by mistake.
  */
-
 
 /**
  * Class ResursBank
@@ -7108,7 +7108,7 @@ class ResursBank
             if ($this->isFrozen($cachedPayment)) {
                 // Throw it like Resurs Bank one step earlier. Since we do a getPayment
                 // before the finalization we do not have make an extra call if payment status
-                // is frozen.
+                // is forzen.
                 throw new \ResursException(
                     'EComPHP can not finalize frozen payments',
                     \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE
@@ -7133,6 +7133,7 @@ class ResursBank
 
                 return $this->paymentFinalize($paymentId, $customPayloadItemList, true);
             }
+
             throw new \ResursException(
                 $finalizationException->getMessage(),
                 $finalizationException->getCode(),
