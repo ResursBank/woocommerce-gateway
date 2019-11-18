@@ -3820,7 +3820,7 @@ function woocommerce_gateway_resurs_bank_init()
             $url = admin_url('post.php');
             $url = add_query_arg('post', $order_id, $url);
             $url = add_query_arg('action', 'edit', $url);
-            $old_status = get_term_by('slug', sanitize_title($old_status_slug), 'shop_order_status');
+            //$old_status = get_term_by('slug', sanitize_title($old_status_slug), 'shop_order_status');
 
             $flowErrorMessage = null;
 
@@ -3862,24 +3862,32 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'cancelled':
                     if (in_array('IS_ANNULLED', $status)) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
-                            'message' => 'Denna order är annulerad och går därmed ej att ändra status på',
+                            'message' => __(
+                                'This order is already annulled and cannot be changed.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
                         ];
 
-                        wp_set_object_terms($order_id, [$old_status->slug], 'shop_order_status', false);
+                        wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         wp_safe_redirect($url);
                         exit;
                     }
                     break;
                 case 'refunded':
                     if (in_array('IS_CREDITED', $status)) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
-                            'message' => 'Denna order är krediterad och går därmed ej att ändra status på',
+                            'message' => __(
+                                    'This order is already credited and cannot be changed.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                            ),
                         ];
 
-                        wp_set_object_terms($order_id, [$old_status->slug], 'shop_order_status', false);
+                        wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         wp_safe_redirect($url);
                         exit;
                     }
@@ -3887,6 +3895,8 @@ function woocommerce_gateway_resurs_bank_init()
                 default:
                     break;
             }
+
+            $throwStatusError = null;
 
             $currentRunningUser = getResursWordpressUser();
             $currentRunningUsername = getResursWordpressUser('user_login');
@@ -3921,18 +3931,40 @@ function woocommerce_gateway_resurs_bank_init()
                                 $customFinalize = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
                             }
                             $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
-                            resursEventLogger($payment_id . ': Finalization - Payment Content');
+                            resursEventLogger(
+                                sprintf('%s: Finalization - Payment Content', $payment_id)
+                            );
                             resursEventLogger(print_r($payment, true));
-                            resursEventLogger($payment_id . ': Finalization ' . $successFinalize ? 'OK' : 'NOT OK');
-                            wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
+                            resursEventLogger(
+                                sprintf(
+                                    '%s: Finalization %s',
+                                    $payment_id,
+                                    ($successFinalize ? 'OK' : 'NOT OK')
+                                )
+                            );
                         } catch (Exception $e) {
                             // Checking code 29 is not necessary since this is automated in EComPHP
-                            $flowErrorMessage = "[" . __('Error',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . " " . $e->getCode() . "] " . $e->getMessage();
-                            $order->update_status($old_status_slug);
-                            resursEventLogger($payment_id . ': FinalizationException ' . $e->getCode() . ' - ' . $e->getMessage() . '. Old status (' . $old_status_slug . ') restored.');
-                            $order->add_order_note(__('Finalization failed',
-                                    'resurs-bank-payment-gateway-for-woocommerce') . ": " . $flowErrorMessage);
+                            $flowErrorMessage = sprintf(
+                                __(
+                                    '[Error %s] Finalization Failure: %s.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $e->getCode(),
+                                $e->getMessage()
+                            );
+
+                            resursEventLogger(
+                                sprintf(
+                                    __(
+                                        '%s: FinalizationException: %s - %s. Old status (%s) restored.',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $payment_id,
+                                    $e->getCode(),
+                                    $e->getMessage(),
+                                    $old_status_slug
+                                )
+                            );
                         }
                     } else {
                         // Generate a notice if the order has been debited from for example payment admin.
@@ -3940,22 +3972,35 @@ function woocommerce_gateway_resurs_bank_init()
                         if ($resursFlow->getIsDebited()) {
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                                 resursEventLogger($payment_id . ': InstantFinalization/IsDebited detected.');
-                                $order->add_order_note(__('This order is now marked completed as a result of the payment method behaviour (automatic finalization).',
-                                    'resurs-bank-payment-gateway-for-woocommerce'));
+                                $order->add_order_note(
+                                    __(
+                                        'This order is now marked completed as a result of the payment method behaviour (automatic finalization).',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
                             } else {
                                 resursEventLogger($payment_id . ': Already finalized.');
-                                $order->add_order_note(__('This order has already been finalized externally',
-                                    'resurs-bank-payment-gateway-for-woocommerce'));
+                                $order->add_order_note(
+                                    __(
+                                        'This order has already been finalized externally.',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
                             }
                         } else {
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
-                                resursEventLogger($payment_id . ': InstantFinalization/DebitedNotDetected detected for.');
-                                $orderNote = __('The payment method for this order indicates that the payment has been automatically finalized.',
-                                    'resurs-bank-payment-gateway-for-woocommerce');
+                                //resursEventLogger($payment_id . ': InstantFinalization/DebitedNotDetected detected for.');
+                                $orderNote = __(
+                                    'The payment method for this order indicates that the payment has been automatically finalized.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                );
                             } else {
-                                resursEventLogger($payment_id . ': Can not finalize due to the current remote order status.');
-                                // Generate error message if the order is something else than debited and debitable
-                                //$orderNote = __('This order is in a state at Resurs Bank where it can not be finalized', 'resurs-bank-payment-gateway-for-woocommerce');
+                                resursEventLogger(
+                                    sprintf(
+                                        '%s: Can not finalize due to the current remote order status.',
+                                        $payment_id
+                                    )
+                                );
                             }
                             if (!empty($orderNote)) {
                                 $order->add_order_note($orderNote);
@@ -3964,10 +4009,18 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                     }
                     if (!empty($flowErrorMessage)) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
+                        $order->update_status(
+                            $old_status_slug, __(
+                                '[Resurs Bank] Reset to prior status.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
+                        throw new \Exception($flowErrorMessage);
                     }
                     wp_safe_redirect($url);
                     break;
@@ -3983,24 +4036,33 @@ function woocommerce_gateway_resurs_bank_init()
                             $resursFlow->paymentCancel($payment_id, null, $customCancel);
                             $order->add_order_note(
                                 __(
-                                    'Cancelled status set: Resurs Bank API was called for cancellation',
+                                    'Cancelled status set: Resurs Bank API was called for cancellation.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 )
                             );
                         } catch (Exception $e) {
-                            $flowErrorMessage = $e->getMessage();
-                        }
+                            $flowErrorMessage = sprintf(
+                                __(
+                                    '[Error %s] Cancellation Failure: %s.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $e->getCode(),
+                                $e->getMessage()
+                            );                        }
                     } else {
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
-                        wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
-                        wp_safe_redirect($url);
+                        //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
+                        $order->update_status($old_status_slug);
+                        throw new \Exception($flowErrorMessage);
                     }
+                    wp_safe_redirect($url);
                     break;
                 case 'refunded':
                     if ($currentRunningUser) {
@@ -4013,24 +4075,33 @@ function woocommerce_gateway_resurs_bank_init()
                             $order->add_order_note
                             (
                                 __(
-                                    'Refunded status set: Resurs Bank API was called for cancellation',
+                                    'Refunded status set: Resurs Bank API was called for cancellation.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 )
                             );
                         } catch (Exception $e) {
-                            $flowErrorMessage = $e->getMessage();
-                        }
+                            $flowErrorMessage = sprintf(
+                                __(
+                                    '[Error %s] Refund Failure: %s.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $e->getCode(),
+                                $e->getMessage()
+                            );                        }
                     } else {
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
+                        getResursRequireSession();
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => $flowErrorMessage,
                         ];
-                        wp_set_object_terms($order_id, [$old_status_slug], 'shop_order_status', false);
-                        wp_safe_redirect($url);
+                        //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
+                        $order->update_status($old_status_slug);
+                        throw new \Exception($flowErrorMessage);
                     }
+                    wp_safe_redirect($url);
                     break;
                 default:
                     break;
@@ -4500,7 +4571,12 @@ function woocommerce_gateway_resurs_bank_init()
     function resurs_bank_admin_notice()
     {
         global $resursGlobalNotice, $resursSelfSession;
-        if (isset($_SESSION['resurs_bank_admin_notice']) || $resursGlobalNotice === true) {
+
+        if (isset($_REQUEST['hasSessionMessage'])) {
+            getResursRequireSession();
+        }
+
+        if (isset($_SESSION) || $resursGlobalNotice === true) {
             if (is_array($_SESSION)) {
                 if (!count($_SESSION) && count($resursSelfSession)) {
                     $_SESSION = $resursSelfSession;
@@ -4509,7 +4585,9 @@ function woocommerce_gateway_resurs_bank_init()
                 $notice .= '<p>' . $_SESSION['resurs_bank_admin_notice']['message'] . '</p>';
                 $notice .= '</div>';
                 echo $notice;
-                unset($_SESSION['resurs_bank_admin_notice']);
+                if (isset($_SESSION['resurs_bank_admin_notice'])) {
+                    unset($_SESSION['resurs_bank_admin_notice']);
+                }
             }
         }
     }
@@ -6623,6 +6701,12 @@ function getResursPaymentMethodMeta($id, $key = 'resursBankMetaPaymentMethod')
         }
     }
     return '';
+}
+
+function getResursRequireSession() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
 }
 
 isResursSimulation();

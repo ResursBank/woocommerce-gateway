@@ -7108,7 +7108,7 @@ class ResursBank
             if ($this->isFrozen($cachedPayment)) {
                 // Throw it like Resurs Bank one step earlier. Since we do a getPayment
                 // before the finalization we do not have make an extra call if payment status
-                // is forzen.
+                // is frozen.
                 throw new \ResursException(
                     'EComPHP can not finalize frozen payments',
                     \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE
@@ -7407,7 +7407,12 @@ class ResursBank
                 }
             }
         } catch (\Exception $cancelException) {
-            return false;
+            // Last catched exception will be thrown back to the plugin/developer.
+            throw new \ResursException(
+                $cancelException->getMessage(),
+                $cancelException->getCode(),
+                $cancelException
+            );
         }
         $this->resetPayload();
 

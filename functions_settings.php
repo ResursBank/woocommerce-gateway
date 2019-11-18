@@ -105,8 +105,10 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
-                    'description' => __('This function tries to use the internal post id as orderid instead of the references created by the plugin ',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'This function tries to use the internal post id as orderid instead of the references created by the plugin.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                 ],
                 'country' => [
                     'title' => __('Country', 'resurs-bank-payment-gateway-for-woocommerce'),
