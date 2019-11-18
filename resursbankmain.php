@@ -4723,15 +4723,16 @@ function woocommerce_gateway_resurs_bank_init()
 
         /** @var $product WC_Product_Simple */
         $displayAnnuity = "";
-        if (is_object($product)) {
+        $annuityMethod = trim(getResursOption("resursAnnuityMethod"));
+        if (is_object($product) && !empty($annuityMethod)) {
+            /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+            $flow = initializeResursFlow();
+
             $customWidgetSetting = intval(getResursOption('partPayWidgetPage'));
             if ($customWidgetSetting <= 1) {
                 $customWidgetSetting = 0;
             }
 
-            /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
-            $flow = initializeResursFlow();
-            $annuityMethod = trim(getResursOption("resursAnnuityMethod"));
             $annuityFactorsOverride = null;
             $annuityDurationOverride = null;
 
