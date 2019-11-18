@@ -3,13 +3,9 @@
  */
 
 var $RB = jQuery.noConflict();
-var startResursCallbacks = 0;
-var runningCbTestFirst = null;
-var runningCbTestSecond = null;
-var lastCallbackCheckInterval = null;
-var lastRecvContent = "";
 
 $RB(document).ready(function ($) {
+
     if ($RB('#nextInvoiceSequence').length > 0) {
         runResursAdminCallback('getNextInvoiceSequence', function (x) {
             if (typeof x['response'] !== 'undefined') {
@@ -383,6 +379,11 @@ function showResursCallbackArray(cbArrayResponse) {
                         callbackContent += '<div>' + cbStatus + '</div>';
                         callbackContent += '</td>';
 
+                        // For future use
+                        /*callbackContent += '<td width="10%"><select class="rbCallbackStaticSelectBox">' +
+                            '<option value="completed">Completed</option>' +
+                            '</select></td>';*/
+
                         callbackContent += '<td width="80%" class="rbCallbackTableStatic rbCallbackStaticRight rbCallbackTableFont" ' + (isCached ? ' style="font-style:italic !important;"' : "") + ' width="75%">';
                         callbackContent += '<div style="cursor:pointer;" onclick="setCbString(this, \'' + cbObj + '\')">' + cbObjString + '</div>';
                         callbackContent += '</td>';
@@ -392,10 +393,9 @@ function showResursCallbackArray(cbArrayResponse) {
                         callbackContent += '</tr>';
                     }
                 });
-                callbackContent += '</table><br>';
-                callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '">';
-                callbackContent += '<input type="button" onclick="doUpdateResursTest()" value="' + adminJs["update_test"] + '">';
-                callbackContent += '<br>';
+                callbackContent += '</table>' +
+                    "<br>";
+                callbackContent += '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
 
                 if (typeof adminJs['afterUpdateResursCallbacks'] !== 'undefined') {
                     callbackContent += adminJs['afterUpdateResursCallbacks'];
@@ -403,6 +403,9 @@ function showResursCallbackArray(cbArrayResponse) {
 
                 $RB('#callbackContent').html(callbackContent);
             } else {
+                // Affects what?
+                //$RB('#callbackContent').html('<b><i>' + adminJs["noCallbacksSet"] + '</i></b>');
+                //if (adminJs["requestForCallbacks"] == "1") {}
                 callbackContent = '<input type="button" onclick="doUpdateResursCallbacks()" value="' + adminJs["update_callbacks"] + '"><br>';
                 if (typeof adminJs['afterUpdateResursCallbacks'] !== 'undefined') {
                     callbackContent += adminJs['afterUpdateResursCallbacks'];
@@ -425,53 +428,19 @@ function showResursCallbackArray(cbArrayResponse) {
     }
 }
 
-function clearAllCbIntervals() {
-    if (null !== runningCbTestFirst) {
-        console.log("Clear cbtest-1");
-        window.clearInterval(runningCbTestFirst);
-    }
-    if (null !== runningCbTestSecond) {
-        console.log("Clear cbtest-2");
-        window.clearInterval(runningCbTestSecond);
-    }
-    if (null !== lastCallbackCheckInterval) {
-        console.log("Clear lastCbTest");
-        window.clearInterval(lastCallbackCheckInterval);
-    }
-}
-
-/**
- * Separate button click for testcallbacks.
- */
-function doUpdateResursTest() {
-    clearAllCbIntervals();
-    $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
-    runResursAdminCallback('resursTriggerTest', 'resursTriggerTestResponse');
-}
-
-/**
- * Handle responses from separate trigger tests.
- * @param triggerTestData
- */
-function resursTriggerTestResponse(triggerTestData) {
-    var inData = triggerTestData['response']['resursTriggerTestResponse'];
-    if (inData['testTriggerActive']) {
-        $RB('#lastCbRec').html(inData['html']);
-        startResursCallbacks = Math.round(new Date() / 1000);
-        noCallbacksReceived();
-        runningCbTestSecond = window.setInterval("noCallbacksReceived()", 1000);
-        lastCallbackCheckInterval = window.setInterval('checkLastCallback()', 3000);
-    }
-}
+var startResursCallbacks = 0;
+var callbacksNotReceivedCheck = false;
+var runningCbTest = null;
+var lastRecvContent = "";
 
 function doUpdateResursCallbacks() {
     startResursCallbacks = Math.round(new Date() / 1000);
     if ($RB('#receivedCallbackConfirm').length > 0) {
-        $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
+        $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
         $RB('#receivedCallbackConfirm').remove();
     }
     noCallbacksReceived();
-    runningCbTestFirst = window.setInterval("noCallbacksReceived()", 1000);
+    runningCbTest = window.setInterval("noCallbacksReceived()", 1000);
     lastRecvContent = $RB('#lastCbRec').html();
     $RB('#callbackContent').html('<img src="' + adminJs.resursSpinner + '" border="0">');
     runResursAdminCallback("setMyCallbacks", "updateResursCallbacksResult");
@@ -510,18 +479,15 @@ function noCallbacksReceived() {
     var resursCallbacksTimeDiff = stopResursCallbacks - startResursCallbacks;
     var curRecvContent = $RB('#lastCbRec').html();
     if ($RB('#receivedCallbackConfirm').length > 0) {
-        clearAllCbIntervals();
+        window.clearInterval(runningCbTest);
     } else {
         if (resursCallbacksTimeDiff < timeBeforeSlowCallbacks) {
             if (lastRecvContent == curRecvContent) {
-                $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_pending"] + '</div>');
+                $RB('#lastCbRec').html('<div class="labelBoot labelBoot-danger">' + adminJs["callbacks_pending"] + '</div>');
             }
         } else {
-            $RB('#lastCbRec').html('<div style="margin-bottom: 10px;">' +
-                '<div class="labelBoot labelBoot-danger" style="font-size: 14px !important;">' + adminJs["callbacks_not_received"] + '</div>' +
-                '</div>' +
-                '<div class="labelBoot labelBoot-warning" style="font-size: 14px  !important;;">' + adminJs["callbacks_slow"] + '</div>'
-            );
+            $RB('#lastCbRec').html('<div style="margin-bottom: 10px;"><span class="labelBoot labelBoot-danger">' + adminJs["callbacks_not_received"] + '</span></div>' +
+                adminJs["callbacks_slow"]);
         }
     }
 }
@@ -532,7 +498,7 @@ function updateResursCallbacksResult(resultResponse) {
         var callbackCount = "";
         if (typeof successCheck["testTriggerTimestamp"] !== "undefined") {
             $RB('#lastCbRun').html(successCheck["testTriggerTimestamp"]);
-            lastCallbackCheckInterval = setInterval('checkLastCallback()', 2000);
+            setInterval('checkLastCallback()', 2000);
         }
         if (successCheck["errorstring"] != "") {
             callbackCount = successCheck["registeredCallbacks"];
@@ -545,8 +511,7 @@ function updateResursCallbacksResult(resultResponse) {
     } else {
         if (typeof resultResponse["response"] !== "undefined") {
             var successCheck = typeof resultResponse["response"]["setMyCallbacksResponse"] !== "undefined" ? resultResponse["response"]["setMyCallbacksResponse"] : null;
-            // Running test trigger separately may cause unexpected responses here.
-            if (null !== successCheck && typeof successCheck !== 'undefined' && typeof successCheck["errorstring"] !== "undefined" && successCheck["errorstring"] != "") {
+            if (typeof successCheck["errorstring"] !== "undefined" && successCheck["errorstring"] != "") {
                 $RB('#callbackContent').html("<pre style='color: #990000;'>" + successCheck["errorstring"] + "</pre>");
             }
         } else {

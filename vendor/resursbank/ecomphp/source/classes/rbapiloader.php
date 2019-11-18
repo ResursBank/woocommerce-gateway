@@ -1,16 +1,19 @@
 <?php
 
 /**
- * Resurs Bank API Wrapper - A silent flow normalizer for Resurs Bank.
+ * Resurs Bank Passthrough API - A pretty silent ShopFlowSimplifier for Resurs Bank.
+ * Compatible with simplifiedFlow, hostedFlow and Resurs Checkout.
  *
  * @package RBEcomPHP
- * @author  Resurs Bank Ecommerce <ecommerce.support@resurs.se>
+ * @author  Resurs Bank Ecommerce
+ *          /home/thorne/dev/Resurs/ecomphp/1.1/source/classes/rbapiloader.php<ecommerce.support@resurs.se>
  * @branch  1.3
- * @version 1.3.25
+ * @version 1.3.23
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
  * @license Apache License
+ * @noinspection PhpUsageOfSilenceOperatorInspection
  */
 
 namespace Resursbank\RBEcomPHP;
@@ -56,20 +59,18 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.25');
+    define('ECOMPHP_VERSION', '1.3.23');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20191008');
+    define('ECOMPHP_MODIFY_DATE', '20190909');
 }
-
-/**
- * By default Test environment are set. To switch over to production, you explicitly need to tell EComPHP to do
- * this. This a security setup so testings won't be sent into production by mistake.
- */
-
 
 /**
  * Class ResursBank
+ *
+ * By default Test environment are set. To switch over to production, you explicitly need to tell EComPHP to do
+ * this. This a security setup so testings won't be sent into production by mistake.
+ *
  * @package Resursbank\RBEcomPHP
  */
 class ResursBank
@@ -1015,8 +1016,12 @@ class ResursBank
     public function setCurlHandle($newCurlHandle)
     {
         $this->InitializeServices();
-        $this->CURL = $newCurlHandle;
-        $this->CURL_USER_DEFINED = $newCurlHandle;
+        if ($this->debug) {
+            $this->CURL = $newCurlHandle;
+            $this->CURL_USER_DEFINED = $newCurlHandle;
+        } else {
+            throw new \ResursException("Can't return handle. The module is in wrong state (non-debug mode)", 403);
+        }
     }
 
     /**
@@ -2031,7 +2036,7 @@ class ResursBank
      *
      * @param int $callbackType
      * @param bool $isMultiple Consider callback type bitrange when true, where the value 255 is all callbacks at once
-     * @param bool $forceSoap
+     *
      * @return array|bool
      * @throws \Exception
      * @since 1.0.1
@@ -2039,8 +2044,7 @@ class ResursBank
      */
     public function unregisterEventCallback(
         $callbackType = RESURS_CALLBACK_TYPES::NOT_SET,
-        $isMultiple = false,
-        $forceSoap = false
+        $isMultiple = false
     ) {
         if ($isMultiple) {
             $this->BIT = new MODULE_NETBITS();
@@ -2067,17 +2071,12 @@ class ResursBank
         $unregisteredCallbacks = [];
         foreach ($callbackTypes as $callbackType) {
             if (!empty($callbackType)) {
-                if ($this->registerCallbacksViaRest && $callbackType != 'UPDATE' && !$forceSoap) {
+                if ($this->registerCallbacksViaRest && $callbackType != 'UPDATE') {
                     $this->InitializeServices();
                     $serviceUrl = $this->getCheckoutUrl() . "/callbacks";
                     $renderCallbackUrl = $serviceUrl . "/" . $callbackType;
-                    try {
-                        $curlResponse = $this->CURL->doDelete($renderCallbackUrl);
-                        $curlCode = $this->CURL->getCode($curlResponse);
-                    } catch (\Exception $e) {
-                        // If this one suddenly starts throwing exceptions.
-                        $curlCode = $e->getCode();
-                    }
+                    $curlResponse = $this->CURL->doDelete($renderCallbackUrl);
+                    $curlCode = $this->CURL->getCode($curlResponse);
                     if ($curlCode >= 200 && $curlCode <= 250) {
                         if (!$isMultiple) {
                             return true;
@@ -2087,16 +2086,13 @@ class ResursBank
                     }
                 } else {
                     $this->InitializeServices();
-                    try {
-                        $curlResponse = $this->CURL->doGet(
-                            $this->getServiceUrl('unregisterEventCallback'))->unregisterEventCallback(
-                            ['eventType' => $callbackType]
-                        );
-                        $curlCode = $this->CURL->getCode($curlResponse);
-                    } catch (\Exception $e) {
-                        // If this one suddenly starts throwing exceptions.
-                        $curlCode = $e->getCode();
-                    }
+                    // Not using postService here, since we're
+                    /** @noinspection PhpUndefinedMethodInspection */
+                    $curlResponse = $this->CURL->doGet(
+                        $this->getServiceUrl('unregisterEventCallback'))->unregisterEventCallback(
+                        ['eventType' => $callbackType]
+                    );
+                    $curlCode = $this->CURL->getCode($curlResponse);
                     if ($curlCode >= 200 && $curlCode <= 250) {
                         if (!$isMultiple) {
                             return true;
@@ -2107,6 +2103,7 @@ class ResursBank
                 }
             }
         }
+
         if (!$isMultiple) {
             return false;
         } else {
@@ -5214,17 +5211,20 @@ class ResursBank
             } elseif ($myFlow == RESURS_FLOW_TYPES::MINIMALISTIC) {
                 $mySpecRules = $paymentSpecKeys['minimalistic'];
             }
+            $hasMeasure = false;
             foreach ($specLines as $specIndex => $specArray) {
                 foreach ($specArray as $key => $value) {
+                    if (strtolower($key) === 'unitmeasure' && empty($value)) {
+                        $hasMeasure = true;
+                        $specArray[$key] = $this->defaultUnitMeasure;
+                    }
                     if (!in_array(strtolower($key), array_map("strtolower", $mySpecRules))) {
                         unset($specArray[$key]);
                     }
                 }
-                if ($myFlow !== RESURS_FLOW_TYPES::MINIMALISTIC) {
-                    // Reaching this point, realizing the value IS really there and should not be overwritten...
-                    if (!isset($specArray['unitMeasure']) || empty($specArray['unitMeasure'])) {
-                        $specArray['unitMeasure'] = $this->defaultUnitMeasure;
-                    }
+                // Add unit measure if missing
+                if (!$hasMeasure && $myFlow !== RESURS_FLOW_TYPES::MINIMALISTIC) {
+                    $specArray['unitMeasure'] = $this->defaultUnitMeasure;
                 }
                 $specLines[$specIndex] = $specArray;
             }
@@ -7108,7 +7108,7 @@ class ResursBank
             if ($this->isFrozen($cachedPayment)) {
                 // Throw it like Resurs Bank one step earlier. Since we do a getPayment
                 // before the finalization we do not have make an extra call if payment status
-                // is frozen.
+                // is forzen.
                 throw new \ResursException(
                     'EComPHP can not finalize frozen payments',
                     \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE
@@ -7407,12 +7407,7 @@ class ResursBank
                 }
             }
         } catch (\Exception $cancelException) {
-            // Last catched exception will be thrown back to the plugin/developer.
-            throw new \ResursException(
-                $cancelException->getMessage(),
-                $cancelException->getCode(),
-                $cancelException
-            );
+            return false;
         }
         $this->resetPayload();
 

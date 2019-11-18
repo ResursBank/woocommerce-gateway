@@ -24,7 +24,7 @@
 
 namespace TorneLIB;
 
-if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
+if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS' ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS' ) ) {
 	/**
 	 * Class NETCURL_EXCEPTIONS
 	 *
@@ -81,7 +81,7 @@ if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOA
 	}
 }
 
-if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
+if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS' ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS' ) ) {
 	/**
 	 * Class TORNELIB_NETCURL_EXCEPTIONS
 	 *

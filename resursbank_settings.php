@@ -64,10 +64,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $sections['resurs_bank_omnicheckout'] = __('Resurs Checkout',
                 'resurs-bank-payment-gateway-for-woocommerce');
         } else {
-            $sections['shopflow'] = __('Checkout type', 'resurs-bank-payment-gateway-for-woocommerce');
+            $sections['shopflow'] = __('Shop flow settings ', 'resurs-bank-payment-gateway-for-woocommerce');
         }
         $sections['advanced'] = __('Advanced settings', 'resurs-bank-payment-gateway-for-woocommerce');
-        $sections['shortcodes'] = __('Shortcodes', 'resurs-bank-payment-gateway-for-woocommerce');
 
         return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
     }
@@ -410,10 +409,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 if (is_array($savedValue) && in_array($optionValue, $savedValue)) {
                     $matchingSavedValue = true;
                 } else {
-                    if (is_array($savedValue) && count($savedValue) == 1) {
+                    if (is_array($savedValue) && count($savedValue) === 1) {
                         $savedValue = array_pop($savedValue);
                     }
-                    if (is_string($savedValue) && $optionKey == $savedValue) {
+                    if (is_string($savedValue) && $optionKey === $savedValue) {
                         $matchingSavedValue = true;
                     }
                 }
@@ -602,8 +601,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      * @param $topCss
      * @return string
      */
-    function getGitInfo($topCss)
-    {
+    function getGitInfo($topCss) {
         $pluginInfo = "";
         try {
             $gitbin = (string)getResursFlag('GIT_BIN');
@@ -679,6 +677,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $isResursSave = true;
             wp_safe_redirect($url);
         }
+        $longSimplified = __(
+            'Simplified Shop Flow: Payments goes through Resurs Bank API (Default)',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        );
+        $longHosted = __(
+            'Hosted Shop Flow: Customers are redirected to Resurs Bank to finalize payment',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        );
+        $longOmni = __(
+            'Omni Checkout: Fully integrated payment solutions based on iframes (as much as possible including initial customer data are handled by Resurs Bank without leaving the checkout page)',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        );
 
         $methodDescription = "";
         $paymentMethodsError = null;
@@ -820,9 +830,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             } elseif (preg_match("/^resurs_bank_nr_/i", $section)) {
                 echo '<h1>' . __('Resurs Bank Configuration',
                         'resurs-bank-payment-gateway-for-woocommerce') . ' - ' . $methodDescription . ' (' . $theMethod . ')</h1>';
-            } elseif ($section == "shortcodes") {
-                echo '<h1>' . __('Resurs Bank Configuration - Shortcodes',
-                        'resurs-bank-payment-gateway-for-woocommerce') . '</h1>';
             } else {
                 echo '<h1>' . __('Resurs Bank payment gateway configuration',
                         'resurs-bank-payment-gateway-for-woocommerce') . '</h1>
@@ -882,41 +889,21 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '
 
                     </div>
-                    <div id="callbackHealth">
-                    <table cellpadding="0" cellpadding="0" style="margin-bottom: 10px;padding:0px; !important" width="100%">
+                    <b>' . __('Callback health', 'resurs-bank-payment-gateway-for-woocommerce') . '</b><br>
+                    <table cellpadding="0" cellpadding="0" style="margin-bottom: 5px;" width="100%">
                     <tr>
-                    <td colspan="2" style="font-weight: bold; border-top:1px dashed gray;padding:0px !important;">
-                    ' . __('Callback health', 'resurs-bank-payment-gateway-for-woocommerce') . '
-                    </td>
+                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test run',
+                            'resurs-bank-payment-gateway-for-woocommerce') . '</td>
+                        <td style="padding: 0px;" id="lastCbRun" width="80%" valign="top">' . ($callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
+                            $callSent) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')) . '</td>
                     </tr>
-                    <tr style="vertical-align: top; padding:0px;" valign="top">
-                        <td class="lastCbTableStyling" valign="top" width="20%">' . __(
-                            'Last test run',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</td>
-                        <td class="lastCbTableStyling" valign="top" id="lastCbRun" width="80%">' . (
-                        $callSent > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
-                            $callSent) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')
-                        ) . '</td>
-                    </tr>
-                    <tr style="vertical-align: top;padding: 0px; padding-bottom: 10px !important; margin-bottom: 5px; !important;" valign="top">
-                        <td class="lastCbTableStyling" style="border-bottom: 1px dashed gray; margin-bottom: 5px; padding-bottom: 10px;" valign="top" width="20%">' . __(
-                            'Responses/last successful test date+time',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</td>
-                        <td class="lastCbTableStyling" style="border-bottom: 1px dashed gray; margin-bottom: 5px; padding-bottom: 10px;" valign="top" id="lastCbRec" width="80%">' . (
-                        $callRecv > 0 ? strftime(
-                            '%Y-%m-%d (%H:%M:%S)',
-                            $callRecv) : ''
-                        ) . '</td>
-                    </tr>
-                    <!-- Prepared for extra tests if there are any filter based requests. -->
-                    <tr id="externalCbTestBox" style="display: none;">
-                    <td id="externalCbTitle">&nbsp;</td>
-                    <td id="externalCbInfo">&nbsp;</td>
+                    <tr>
+                        <td style="padding: 0px;" width="20%" valign="top">' . __('Last test received',
+                            'resurs-bank-payment-gateway-for-woocommerce') . '</td>
+                        <td style="padding: 0px;" id="lastCbRec" width="80%" valign="top">' . ($callRecv > 0 ? strftime('%Y-%m-%d (%H:%M:%S)',
+                            $callRecv) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')) . '</td>
                     </tr>
                     </table>
-                    </div>
                     <br>
                     
                     </td>
@@ -1252,49 +1239,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('omniFrameNotReloading', $namespace);
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
                     echo $this->setCheckBox('resursCheckoutMultipleMethods', $namespace);
-                } elseif ($section == "shortcodes") {
-                    echo $this->setSeparator(__('Part payment widget settings', 'resurs-bank-payment-gateway-for-woocommerce'));
-                    $pagelist = get_pages();
-                    $widgetPages = [
-                            '0' => __('None (default)', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    ];
-                    /** @var WP_Post $pages */
-                    foreach ($pagelist as $page) {
-                        $widgetPages[$page->ID] = $page->post_title;
-                    }
-                    echo $this->setDropDown(
-                        'partPayWidgetPage',
-                        $namespace,
-                        $widgetPages
-                    );
-
-                    $shortCodeCollection = array(
-                        '[payFromAnnuity]' => __('Final price to pay including the currency.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[payFrom]' => __('Final price excluding the currency.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[paymentLimit]' => __('The minimum price configured from where annuities are shown (Note: When running in test, this is always set to 1 for debugging).', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[annuityDuration]' => __('Chosen annuity period.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[costOfPurchase]' => __('URL to which the cost example are shown.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[defaultAnnuityString]' => __('The default text that is usually shown when annuity factors are available.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[annuityFactors]' => __('Printable version of available annuity factors (for debugging).', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    );
-
-                    $shortCodeDescriptions = '<table style="padding:0px;" width="50%" cellpadding="0" cellspacing="0">';
-                    foreach ($shortCodeCollection as $tag => $description) {
-                        $shortCodeDescriptions .= sprintf('<tr><td style="font-weight: bold;" valign="top">%s</td><td>%s</td></tr>', $tag, $description);
-                    }
-                    $shortCodeDescriptions .= '</table>';
-
-                    echo sprintf('
-                    <tr>
-                    <td style="font-size:16px;">&nbsp;</td>
-                    <td><b>%s</b><br>%s</td>
-                    </tr>
-                    ', __(
-                        'Available shortcodes for above view',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                        $shortCodeDescriptions
-                    );
                 } elseif ($section == "advanced") {
                     echo $this->setSeparator(__('URL Settings', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setTextBox('customCallbackUri', $namespace);

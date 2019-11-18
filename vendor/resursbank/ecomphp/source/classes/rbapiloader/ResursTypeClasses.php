@@ -74,8 +74,7 @@ abstract class RESURS_CHECKOUT_CALL_TYPES
 }
 
 /**
- * Class RESURS_CALLBACK_TYPES Bitmask based types so that more than one type can be chosen in one call.
- * Callback type "not set" is not compatible in bitmask mode.
+ * Class RESURS_CALLBACK_TYPES Bitmask based types so that more than one type can be chosen in one call
  *
  * @since 1.0.26
  * @since 1.1.26

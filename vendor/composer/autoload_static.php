@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit49f14241ebd68dc377f5e6f0757a8a75
+class ComposerStaticInit19ec34a5f6f43e5d44320e734a4c7e43
 {
     public static $files = array (
         'a2ffb7dc7e05ad2dc2ed262a34ab8f48' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/tornevall_crypto.php',
@@ -28,11 +28,8 @@ class ComposerStaticInit49f14241ebd68dc377f5e6f0757a8a75
         '826a8c409b244ab44ed0d29f361de31e' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/resolvers.php',
         '39fa5b0cfd59d90b59fc509582c5491d' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/responses.php',
         '4a7a2444f2d491c7d8161d1dc7d59ca1' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/network.php',
-        'c7d2989c2bcba97fb1b0e7f0140ff213' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/network_dep.php',
         '2ec79023d995178b0fb9ece85f227b80' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/curl.php',
-        '486f8a6be2cc00fb63502110572da111' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/curl_dep.php',
         'fdd125965a2f74a934f756f47ef5f84f' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/soap.php',
-        '03e02b117b8ae280876a0e4357418c2f' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/soap_dep.php',
         '90d189b1df317b83da222c214c8e0dc4' => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/ecomhooks.php',
         'e6cb3e061b463a34be4630aa7d1ecca2' => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/rbapiloader.php',
     );
@@ -67,8 +64,8 @@ class ComposerStaticInit49f14241ebd68dc377f5e6f0757a8a75
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit49f14241ebd68dc377f5e6f0757a8a75::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit49f14241ebd68dc377f5e6f0757a8a75::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit19ec34a5f6f43e5d44320e734a4c7e43::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit19ec34a5f6f43e5d44320e734a4c7e43::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

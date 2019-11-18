@@ -1,17 +1,17 @@
 [
     {
         "name": "resursbank/ecomphp",
-        "version": "1.3.24",
-        "version_normalized": "1.3.24.0",
+        "version": "1.3.23",
+        "version_normalized": "1.3.23.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "285c7f7f41b05c4d63ce666affdec2bf4fb03113"
+            "reference": "5c0ca6ab1628de634fd437ebe5fec43d66b09fec"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/285c7f7f41b05c4d63ce666affdec2bf4fb03113.zip",
-            "reference": "285c7f7f41b05c4d63ce666affdec2bf4fb03113",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/5c0ca6ab1628de634fd437ebe5fec43d66b09fec.zip",
+            "reference": "5c0ca6ab1628de634fd437ebe5fec43d66b09fec",
             "shasum": ""
         },
         "require": {
@@ -21,7 +21,7 @@
             "tornevall/tornelib-php-crypto": "^6.0",
             "tornevall/tornelib-php-netcurl": "^6.0"
         },
-        "time": "2019-10-09T07:32:37+00:00",
+        "time": "2019-09-16T11:14:48+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -86,18 +86,18 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.0.24",
-        "version_normalized": "6.0.24.0",
+        "version": "6.0.23",
+        "version_normalized": "6.0.23.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git",
-            "reference": "8c4f468308dba170f28b132dadf8d96a9fdb29a4"
+            "reference": "b9f6ef63501c75f5eddde8f1bb81a3ab1db42c0c"
         },
         "require": {
             "php": ">=5.3",
             "tornevall/tornelib-php-crypto": "^6.0"
         },
-        "time": "2019-10-15T11:27:33+00:00",
+        "time": "2018-06-21T06:49:57+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -121,11 +121,8 @@
                 "source/Model/Type/resolvers.php",
                 "source/Model/Type/responses.php",
                 "source/Modules/network.php",
-                "source/Modules/network_dep.php",
                 "source/Modules/curl.php",
-                "source/Modules/curl_dep.php",
-                "source/Modules/soap.php",
-                "source/Modules/soap_dep.php"
+                "source/Modules/soap.php"
             ],
             "psr-4": {
                 "TorneLIB\\": "source"
