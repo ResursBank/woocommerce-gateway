@@ -4575,9 +4575,12 @@ function woocommerce_gateway_resurs_bank_init()
         if (isset($_REQUEST['hasSessionMessage'])) {
             getResursRequireSession();
         }
+        if (!is_array($resursSelfSession)) {
+            $resursSelfSession = [];
+        }
 
         if (isset($_SESSION) || $resursGlobalNotice === true) {
-            if (is_array($_SESSION)) {
+            if (is_array($_SESSION) && isset($_SESSION['resurs_bank_admin_notice'])) {
                 if (!count($_SESSION) && count($resursSelfSession)) {
                     $_SESSION = $resursSelfSession;
                 }
