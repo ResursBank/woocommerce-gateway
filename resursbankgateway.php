@@ -21,12 +21,41 @@ $resurs_obsolete_coexistence_disable = false;
 function activateResursGatewayScripts()
 {
     global $resurs_obsolete_coexistence_disable;
-    //add_action('plugins_loaded', 'woocommerce_gateway_resurs_bank_init');
-    require_once('resursbankmain.php');
-    if (!$resurs_obsolete_coexistence_disable) {
-        add_action('admin_notices', 'resurs_bank_admin_notice');
-        woocommerce_gateway_resurs_bank_init();
+    if (!preventResursRuns()) {
+        require_once('resursbankmain.php');
+        if (!$resurs_obsolete_coexistence_disable) {
+            add_action('admin_notices', 'resurs_bank_admin_notice');
+            woocommerce_gateway_resurs_bank_init();
+        }
     }
 }
 
+function preventResursRuns()
+{
+    $allowed = true;
+    if (is_admin()) {
+        // edit-theme-plugin-file
+        $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
+        $allowed = apply_filters('prevent_resurs_run_on', $allowed, $action);
+    }
+    return $allowed;
+}
+
+function preventResursRunRequest($allow, $action)
+{
+    $preventOn = [
+        'edit-theme-plugin-file'
+    ];
+    foreach ($preventOn as $key) {
+        if ($action === $key) {
+            $allow = false;
+            break;
+        }
+    }
+
+    return $allow;
+}
+
+add_filter('prevent_resurs_run_on', 'preventResursRunRequest', 10, 2);
+add_filter('prevent_resurs_run_on', 'preventResursRunRequestA', 10, 2);
 add_action('plugins_loaded', 'activateResursGatewayScripts');

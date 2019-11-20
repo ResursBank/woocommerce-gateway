@@ -29,10 +29,6 @@ function woocommerce_gateway_resurs_bank_init()
         return;
     }
 
-    if (is_admin()) {
-        return;
-    }
-
     // (Very) Simplified locale and country enforcer. Do not use unless necessary, since it may break something.
     if (isset($_GET['forcelanguage']) && isset($_SERVER['HTTP_REFERER'])) {
         $languages = [
