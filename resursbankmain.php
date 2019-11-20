@@ -5471,6 +5471,10 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             }
             if (is_object($continueView)) {
                 foreach ($continueView as $key => $value) {
+                    // ECom data cache.
+                    if ($key === 'cached') {
+                        $value .= ' (' . strftime('%Y-%m-%d %H:%M:%S', $value) . ')';
+                    }
                     if (!is_array($value) && !is_object($value)) {
                         $renderedResursData .= '
                             <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' . ucfirst($key) . ':</span>
@@ -5569,9 +5573,7 @@ function ThirdPartyHooks($type = '', $content = '', $addonData = [])
         $sendHookContent['frozen'] = isset($content->frozen) ? $content->frozen : '';
         $sendHookContent['status'] = isset($content->status) ? $content->status : '';
         $sendHookContent['booked'] = isset($content->booked) ? strtotime($content->booked) : '';
-        if (isset($content->cached)) {
-            $sendHookContent['cached'] = isset($content->cached) ? strtotime($content->cached) : '';
-        }
+        $sendHookContent['cached'] = isset($content->cached) ? $content->cached : '';
         $sendHookContent['finalized'] = isset($content->finalized) ? strtotime($content->finalized) : '';
         $sendHookContent['iscallback'] = isset($content->iscallback) ? $content->iscallback : '';
     }
