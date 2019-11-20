@@ -29,6 +29,10 @@ function woocommerce_gateway_resurs_bank_init()
         return;
     }
 
+    if (is_admin()) {
+        return;
+    }
+
     // (Very) Simplified locale and country enforcer. Do not use unless necessary, since it may break something.
     if (isset($_GET['forcelanguage']) && isset($_SERVER['HTTP_REFERER'])) {
         $languages = [
@@ -4494,6 +4498,9 @@ function woocommerce_gateway_resurs_bank_init()
             return;
         }
         if (version_compare(PHP_VERSION, '5.4.0', '<')) {
+            if (!isset($_SESSION['resurs_bank_admin_notice'])) {
+                $_SESSION['resurs_bank_admin_notice'] = [];
+            }
             $_SESSION['resurs_bank_admin_notice']['message'] = __('The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or older. You should consider upgrading to 5.4 or higher.',
                 'resurs-bank-payment-gateway-for-woocommerce');
             $_SESSION['resurs_bank_admin_notice']['type'] = 'resurswoo_phpversion_deprecated';
@@ -4562,36 +4569,6 @@ function woocommerce_gateway_resurs_bank_init()
     {
         if (isset($_REQUEST['woocommerce_resurs-bank_refreshPaymentMethods']) || isset($_REQUEST['second_update_status']) || isset($_REQUEST['save']) || isset($_SESSION)) {
             ob_start();
-        }
-    }
-
-    /**
-     * Used to output a notice to the admin interface
-     */
-    function resurs_bank_admin_notice()
-    {
-        global $resursGlobalNotice, $resursSelfSession;
-
-        if (isset($_REQUEST['hasSessionMessage'])) {
-            getResursRequireSession();
-        }
-        if (!is_array($resursSelfSession)) {
-            $resursSelfSession = [];
-        }
-
-        if (isset($_SESSION) || $resursGlobalNotice === true) {
-            if (is_array($_SESSION) && isset($_SESSION['resurs_bank_admin_notice'])) {
-                if (!count($_SESSION) && count($resursSelfSession)) {
-                    $_SESSION = $resursSelfSession;
-                }
-                $notice = '<div class=' . $_SESSION['resurs_bank_admin_notice']['type'] . '>';
-                $notice .= '<p>' . $_SESSION['resurs_bank_admin_notice']['message'] . '</p>';
-                $notice .= '</div>';
-                echo $notice;
-                if (isset($_SESSION['resurs_bank_admin_notice'])) {
-                    unset($_SESSION['resurs_bank_admin_notice']);
-                }
-            }
         }
     }
 
@@ -5041,7 +5018,9 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('wp_logout', 'end_session');
     add_action('wp_login', 'end_session');
     add_action('init', 'app_output_buffer', 2);
-    add_action('admin_notices', 'resurs_bank_admin_notice');
+    if (function_exists('resurs_bank_admin_notice')) {
+        add_action('admin_notices', 'resurs_bank_admin_notice');
+    }
 
     add_action('woocommerce_before_checkout_shipping_form', 'test_before_shipping');
     add_action('woocommerce_admin_order_data_after_order_details', 'resurs_order_data_info_after_order');
