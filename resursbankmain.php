@@ -5569,6 +5569,9 @@ function ThirdPartyHooks($type = '', $content = '', $addonData = [])
         $sendHookContent['frozen'] = isset($content->frozen) ? $content->frozen : '';
         $sendHookContent['status'] = isset($content->status) ? $content->status : '';
         $sendHookContent['booked'] = isset($content->booked) ? strtotime($content->booked) : '';
+        if (isset($content->cached)) {
+            $sendHookContent['cached'] = isset($content->cached) ? strtotime($content->cached) : '';
+        }
         $sendHookContent['finalized'] = isset($content->finalized) ? strtotime($content->finalized) : '';
         $sendHookContent['iscallback'] = isset($content->iscallback) ? $content->iscallback : '';
     }
