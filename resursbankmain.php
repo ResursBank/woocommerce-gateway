@@ -2,8 +2,8 @@
 
 require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/v3core.php');
-include('functions_settings.php');
-include('functions_gateway.php');
+require_once('functions_settings.php');
+require_once('functions_gateway.php');
 
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
@@ -4494,6 +4494,9 @@ function woocommerce_gateway_resurs_bank_init()
             return;
         }
         if (version_compare(PHP_VERSION, '5.4.0', '<')) {
+            if (!isset($_SESSION['resurs_bank_admin_notice'])) {
+                $_SESSION['resurs_bank_admin_notice'] = [];
+            }
             $_SESSION['resurs_bank_admin_notice']['message'] = __('The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or older. You should consider upgrading to 5.4 or higher.',
                 'resurs-bank-payment-gateway-for-woocommerce');
             $_SESSION['resurs_bank_admin_notice']['type'] = 'resurswoo_phpversion_deprecated';
@@ -4562,36 +4565,6 @@ function woocommerce_gateway_resurs_bank_init()
     {
         if (isset($_REQUEST['woocommerce_resurs-bank_refreshPaymentMethods']) || isset($_REQUEST['second_update_status']) || isset($_REQUEST['save']) || isset($_SESSION)) {
             ob_start();
-        }
-    }
-
-    /**
-     * Used to output a notice to the admin interface
-     */
-    function resurs_bank_admin_notice()
-    {
-        global $resursGlobalNotice, $resursSelfSession;
-
-        if (isset($_REQUEST['hasSessionMessage'])) {
-            getResursRequireSession();
-        }
-        if (!is_array($resursSelfSession)) {
-            $resursSelfSession = [];
-        }
-
-        if (isset($_SESSION) || $resursGlobalNotice === true) {
-            if (is_array($_SESSION) && isset($_SESSION['resurs_bank_admin_notice'])) {
-                if (!count($_SESSION) && count($resursSelfSession)) {
-                    $_SESSION = $resursSelfSession;
-                }
-                $notice = '<div class=' . $_SESSION['resurs_bank_admin_notice']['type'] . '>';
-                $notice .= '<p>' . $_SESSION['resurs_bank_admin_notice']['message'] . '</p>';
-                $notice .= '</div>';
-                echo $notice;
-                if (isset($_SESSION['resurs_bank_admin_notice'])) {
-                    unset($_SESSION['resurs_bank_admin_notice']);
-                }
-            }
         }
     }
 
@@ -5041,7 +5014,9 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('wp_logout', 'end_session');
     add_action('wp_login', 'end_session');
     add_action('init', 'app_output_buffer', 2);
-    add_action('admin_notices', 'resurs_bank_admin_notice');
+    if (function_exists('resurs_bank_admin_notice')) {
+        add_action('admin_notices', 'resurs_bank_admin_notice');
+    }
 
     add_action('woocommerce_before_checkout_shipping_form', 'test_before_shipping');
     add_action('woocommerce_admin_order_data_after_order_details', 'resurs_order_data_info_after_order');
@@ -5811,158 +5786,6 @@ function getResursFlag($flagKey = null)
     return false;
 }
 
-/**
- * Get specific options from the Resurs configuration set
- *
- * @param string $key
- * @param string $namespace
- *
- * @return bool
- */
-function resursOption($key = "", $namespace = "woocommerce_resurs-bank_settings")
-{
-    /*
-     * MarGul change
-     * If it's demoshop it will take the config from sessions instead of db
-     */
-    if (isResursDemo()) {
-        // Override database setting with the theme (demoshops) flowtype SESSION setting if it's set.
-        if ($key == "flowtype") {
-            if (!empty($_SESSION['rb_checkout_flow'])) {
-                $accepted = ['simplifiedshopflow', 'resurs_bank_hosted', 'resurs_bank_omnicheckout'];
-                if (in_array(strtolower($_SESSION['rb_checkout_flow']), $accepted)) {
-                    return $_SESSION['rb_checkout_flow'];
-                }
-            }
-        }
-
-        // Override database setting with the theme (demoshops) country SESSION setting if it's set.
-        if ($key == "country") {
-            if (!empty($_SESSION['rb_country'])) {
-                $accepted = ['se', 'dk', 'no', 'fi'];
-                if (in_array(strtolower($_SESSION['rb_country']), $accepted)) {
-                    return strtoupper($_SESSION['rb_country']);
-                }
-            }
-        }
-
-        if ($key == 'login') {
-            if (!empty($_SESSION['rb_country_data'])) {
-                return $_SESSION['rb_country_data']['account']['login'];
-            }
-        }
-
-        if ($key == 'password') {
-            if (!empty($_SESSION['rb_country_data'])) {
-                return $_SESSION['rb_country_data']['account']['password'];
-            }
-        }
-    }
-
-    $getOptionsNamespace = get_option($namespace);
-    // Going back to support PHP 5.3 instead of 5.4+
-    if (isset($getOptionsNamespace[$key])) {
-        $response = $getOptionsNamespace[$key];
-    } else {
-        // No value set
-        $response = null;
-
-        $notsetGetDefaultValue = resursFormFieldArray($namespace);
-        if (isset($notsetGetDefaultValue[$key]) && isset($notsetGetDefaultValue[$key]['default'])) {
-            $response = $notsetGetDefaultValue[$key]['default'];
-        }
-    }
-
-    if (empty($response)) {
-        $response = get_option($key);
-    }
-    if ($response === "true") {
-        return true;
-    }
-    if ($response === "false") {
-        return false;
-    }
-    if ($response === "yes") {
-        return true;
-    }
-    if ($response === "no") {
-        return false;
-    }
-
-    $filteredResponse = apply_filters('resurs_option', $response, $key);
-    if (!is_null($filteredResponse) && $response !== $filteredResponse) {
-        $response = $filteredResponse;
-    }
-
-    return $response;
-}
-
-/**
- * Returns true or false depending if the key exists in the resursOption-array
- *
- * @param string $key
- *
- * @return bool
- */
-function issetResursOption($key = "", $namespace = 'woocommerce_resurs-bank_settings')
-{
-    $response = get_option($namespace);
-    if (isset($response[$key])) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/**
- * @param string $key
- * @param string $namespace
- *
- * @return bool
- */
-function getResursOption($key = "", $namespace = "woocommerce_resurs-bank_settings")
-{
-    return resursOption($key, $namespace);
-}
-
-/**
- * Function used to figure out whether values are set or not
- *
- * @param string $key
- *
- * @return bool
- */
-function hasResursOptionValue($key = "", $namespace = 'woocommerce_resurs-bank_settings')
-{
-    $optionValues = get_option($namespace);
-    if (isset($optionValues[$key])) {
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * Set a new value in resursoptions
- *
- * @param string $key
- * @param string $value
- * @param string $configurationSpace
- *
- * @return bool
- */
-function setResursOption($key = "", $value = "", $configurationSpace = "woocommerce_resurs-bank_settings")
-{
-    $allOptions = get_option($configurationSpace);
-    if (!empty($key)) {
-        $allOptions[$key] = $value;
-        update_option($configurationSpace, $allOptions);
-
-        return true;
-    }
-
-    return false;
-}
 
 if (!function_exists('r_wc_get_order_id_by_order_item_id')) {
     /**
@@ -6485,31 +6308,6 @@ function resurs_gateway_activation()
 
 if (is_admin()) {
     register_activation_hook(__FILE__, 'resurs_gateway_activation');
-}
-
-/**
- * Returns true if demoshop-mode is enabled.
- *
- * @return bool
- */
-function isResursDemo()
-{
-    $resursSettings = get_option('woocommerce_resurs-bank_settings');
-    $demoshopMode = isset($resursSettings['demoshopMode']) ? $resursSettings['demoshopMode'] : false;
-    if ($demoshopMode === "true") {
-        return true;
-    }
-    if ($demoshopMode === "yes") {
-        return true;
-    }
-    if ($demoshopMode === "false") {
-        return false;
-    }
-    if ($demoshopMode === "no") {
-        return false;
-    }
-
-    return false;
 }
 
 /**

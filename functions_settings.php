@@ -100,6 +100,15 @@ if (!function_exists('getResursWooFormFields')) {
                     'description' => __('This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.',
                         'resurs-bank-payment-gateway-for-woocommerce'),
                 ],
+                'preventGlobalInterference' => [
+                    'title' => __('Prevent performance interferences in wp-admin', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => __('Enabled', 'woocommerce'),
+                    'description' => __(
+                        'If you experience very high pressure from the plugin when it is enabled, this setting tries to prevent its own precense on pages where it normally should not interfere with the platform.<br><b>This setting is experimental!</b>',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                ],
                 'postidreference' => [
                     'title' => __('Use woocommerce order ids (postid) as references',
                         'resurs-bank-payment-gateway-for-woocommerce'),

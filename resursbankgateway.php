@@ -16,17 +16,22 @@ define('RB_WOO_VERSION', '2.2.24');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resurs-bank-payment-gateway-for-woocommerce');
 
+require_once(__DIR__ . '/functions_settings.php');
+require_once(__DIR__ . '/functions_vitals.php');
+
 $resurs_obsolete_coexistence_disable = false;
 
 function activateResursGatewayScripts()
 {
     global $resurs_obsolete_coexistence_disable;
-    //add_action('plugins_loaded', 'woocommerce_gateway_resurs_bank_init');
-    require_once('resursbankmain.php');
-    if (!$resurs_obsolete_coexistence_disable) {
-        add_action('admin_notices', 'resurs_bank_admin_notice');
-        woocommerce_gateway_resurs_bank_init();
+    if (allowPluginToRun()) {
+        require_once('resursbankmain.php');
+        if (!$resurs_obsolete_coexistence_disable) {
+            add_action('admin_notices', 'resurs_bank_admin_notice');
+            woocommerce_gateway_resurs_bank_init();
+        }
     }
 }
 
+add_filter('allow_resurs_run', 'allowResursRun', 10, 2);
 add_action('plugins_loaded', 'activateResursGatewayScripts');

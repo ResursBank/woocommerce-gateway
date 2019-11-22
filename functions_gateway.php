@@ -111,3 +111,35 @@ if (!function_exists('canResursRefund')) {
         }
     }
 }
+
+if (!function_exists('resurs_bank_admin_notice')) {
+    /**
+     * Used to output a notice to the admin interface
+     */
+    function resurs_bank_admin_notice()
+    {
+        global $resursGlobalNotice, $resursSelfSession;
+
+        if (isset($_REQUEST['hasSessionMessage'])) {
+            getResursRequireSession();
+        }
+        if (!is_array($resursSelfSession)) {
+            $resursSelfSession = [];
+        }
+
+        if (isset($_SESSION) || $resursGlobalNotice === true) {
+            if (is_array($_SESSION) && isset($_SESSION['resurs_bank_admin_notice'])) {
+                if (!count($_SESSION) && count($resursSelfSession)) {
+                    $_SESSION = $resursSelfSession;
+                }
+                $notice = '<div class=' . $_SESSION['resurs_bank_admin_notice']['type'] . '>';
+                $notice .= '<p>' . $_SESSION['resurs_bank_admin_notice']['message'] . '</p>';
+                $notice .= '</div>';
+                echo $notice;
+                if (isset($_SESSION['resurs_bank_admin_notice'])) {
+                    unset($_SESSION['resurs_bank_admin_notice']);
+                }
+            }
+        }
+    }
+}
