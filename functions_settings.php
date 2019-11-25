@@ -97,8 +97,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
-                    'description' => __('This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                 ],
                 'preventGlobalInterference' => [
                     'title' => __('Prevent performance interferences in wp-admin', 'woocommerce'),
@@ -110,8 +112,10 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                 ],
                 'postidreference' => [
-                    'title' => __('Use woocommerce order ids (postid) as references',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Use woocommerce order ids (postid) as references',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(
@@ -129,8 +133,10 @@ if (!function_exists('getResursWooFormFields')) {
                         'NO' => __('Norway', 'woocommerce'),
                     ],
                     'default' => 'SE',
-                    'description' => __('The country for which the payment services should be used',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'The country for which the payment services should be used',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'flowtype' => [
@@ -159,23 +165,29 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => 'Resurs Bank',
-                    'description' => __('This controls the payment method title, which the user sees during checkout.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'This controls the payment method title, which the user sees during checkout.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'description' => [
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => '',
-                    'description' => __('This controls the payment method description which the user sees during checkout.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'This controls the payment method description which the user sees during checkout.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'login' => [
                     'title' => __('Web services username', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'text',
-                    'description' => __('Web services username, received from Resurs Bank',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Web services username, received from Resurs Bank',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'default' => '',
                     'desc_tip' => true,
                 ],
@@ -183,19 +195,25 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Web services password', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'password',
                     'default' => '',
-                    'description' => __('Web services password, received from Resurs Bank',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Web services password, received from Resurs Bank',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'baseLiveURL' => [
-                    'title' => __('BaseURL Webservices Live-Environment',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'BaseURL Webservices Live-Environment',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => 'https://ecommerce.resurs.com/ws/V4/',
                 ],
                 'baseTestURL' => [
-                    'title' => __('BaseURL Webservices Test-Environment',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'BaseURL Webservices Test-Environment',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => 'https://test.resurs.com/ecommerce-test/ws/V4/',
                 ],
@@ -207,14 +225,21 @@ if (!function_exists('getResursWooFormFields')) {
                         'test' => __('Test', 'resurs-bank-payment-gateway-for-woocommerce'),
                     ],
                     'default' => 'test',
-                    'description' => __('Set which server environment you are working with (Test/production)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Set which server environment you are working with (Test/production)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                 ],
                 // Replacement URL for callbacks if different from default homeurl settings
                 'customCallbackUri' => [
-                    'title' => __('Custom callback URL', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('If your callback URL has another URL than the defaults, you may enter the URL here. Default value is your site-URL. If this value is empty, the URL will be automatically generated.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Custom callback URL',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'If your callback URL has another URL than the defaults, you may enter the URL here. Default value is your site-URL. If this value is empty, the URL will be automatically generated.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => '',
                 ],
@@ -228,17 +253,23 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Tax', 'woocommerce'),
                     'type' => 'select',
                     'options' => $rate_select,
-                    'description' => __('The tax rate that will be added to the payment methods',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'The tax rate that will be added to the payment methods',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'reduceOrderStock' => [
-                    'title' => __('During payment process, also handle order by reducing order stock',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'During payment process, also handle order by reducing order stock',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('Defines whether the plugin should wait for the fraud control when booking payments, or not',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Defines whether the plugin should wait for the fraud control when booking payments, or not',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'disableAftershopFunctions' => [
@@ -246,8 +277,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'label' => __('Disable aftershop capabilities', 'woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('Defines whether the plugin should use aftershop functions or not. Adds the ability to disable aftershop completely if you want to implement your own aftershop flow. Default: Aftershop capabilities are enabled.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Defines whether the plugin should use aftershop functions or not. Adds the ability to disable aftershop completely if you want to implement your own aftershop flow. Default: Aftershop capabilities are enabled.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'waitForFraudControl' => [
@@ -255,8 +288,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
-                    'description' => __('Defines whether the plugin should wait for the fraud control when booking payments, or not',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Defines whether the plugin should wait for the fraud control when booking payments, or not',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'annulIfFrozen' => [
@@ -264,36 +299,52 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
-                    'description' => __('Defines if a payment should be annulled immediately if Resurs Bank returns a FROZEN state',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Defines if a payment should be annulled immediately if Resurs Bank returns a FROZEN state',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
-                    'info' => __('If you don\'t want to wait for manual handling of orders that has been FROZEN during the payment, this feature enables the ability to immediately annul failing payments in the system. If this feature is enabled, you also need to have waitForFraudControl enabled. This behaviour is commonly used by shops that sells tickets and alike.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'info' => __(
+                        'If you don\'t want to wait for manual handling of orders that has been FROZEN during the payment, this feature enables the ability to immediately annul failing payments in the system. If this feature is enabled, you also need to have waitForFraudControl enabled. This behaviour is commonly used by shops that sells tickets and alike.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                 ],
                 'finalizeIfBooked' => [
                     'title' => 'finalizeIfBooked',
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
-                    'description' => __('Defines if a payment should be debited immediately on a booked payment (Not available for Resurs Checkout)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Defines if a payment should be debited immediately on a booked payment (Not available for Resurs Checkout)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
-                    'info' => __('You can only activate this feature if you have goods that can be delivered immediately, like electronic tickets and downloads',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'info' => __(
+                        'You can only activate this feature if you have goods that can be delivered immediately, like electronic tickets and downloads',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                 ],
                 'adminRestoreGatewaysWhenMissing' => [
-                    'title' => __('Restoring Payment Method gateway files',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('If a payment gateway file (in the includes folder) is missing, they will be restored automatically if they disappear (e.g. when upgrading the plugin). Checking this box limits automatic restorations, so they only gets activates when administrators are logged in',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Restoring Payment Method gateway files',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'If a payment gateway file (in the includes folder) is missing, they will be restored automatically if they disappear (e.g. when upgrading the plugin). Checking this box limits automatic restorations, so they only gets activates when administrators are logged in',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'label' => __('Only administrators may restore gateway files'),
                 ],
                 'costOfPurchaseCss' => [
-                    'title' => __('URL to custom CSS for costOfPurchase',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Define your custom CSS for the cost of purchase example (if empty, a default file will be used)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'URL to custom CSS for costOfPurchase',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Define your custom CSS for the cost of purchase example (if empty, a default file will be used)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => home_url("/") . "wp-content/plugins/resurs-bank-payment-gateway-for-woocommerce/css/costofpurchase.css",
                 ],
@@ -318,8 +369,10 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'getAddress' => [
                     'title' => __('getAddressBox Enabled', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'options' => [
                         'true' => 'true',
@@ -329,10 +382,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'true',
                 ],
                 'streamlineBehaviour' => [
-                    'title' => __('Streamlined customer field behaviour',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Fields that are required to complete an order from Resurs Bank, are hidden when active, since the fields required for Resurs Bank are inherited from WooCommerce fields by default.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Streamlined customer field behaviour',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Fields that are required to complete an order from Resurs Bank, are hidden when active, since the fields required for Resurs Bank are inherited from WooCommerce fields by default.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'options' => [
                         'true' => 'true',
@@ -342,10 +399,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'true',
                 ],
                 'showPaymentIdInOrderList' => [
-                    'title' => __('Show Resurs Bank payment ids in order view',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Do you need to show order references in the order list view? This makes it happen!',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Show Resurs Bank payment ids in order view',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Do you need to show order references in the order list view? This makes it happen!',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'options' => [
                         'true' => 'true',
@@ -356,8 +417,10 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'demoshopMode' => [
                     'title' => __('Demoshopläge', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Define if this shop is a demo store or not, which opens for more functionality (This option also forces the use of test environment)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Define if this shop is a demo store or not, which opens for more functionality (This option also forces the use of test environment)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'options' => [
                         'true' => 'true',
@@ -367,10 +430,14 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'false',
                 ],
                 'getAddressUseProduction' => [
-                    'title' => __('Make getAddress fetch live data while in test mode',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('If enabled, live data will be available on getAddress-requests while in demo shop. Credentials for production - and enabling of demoshop mode - are required! Feature does not work for Omni Checkout.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Make getAddress fetch live data while in test mode',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'If enabled, live data will be available on getAddress-requests while in demo shop. Credentials for production - and enabling of demoshop mode - are required! Feature does not work for Omni Checkout.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'options' => [
                         'true' => 'true',
@@ -380,71 +447,106 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'false',
                 ],
                 'ga_login' => [
-                    'title' => __('Web services username (getAddress/Production)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Web services username (getAddress/Production)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
-                    'description' => __('Resurs Bank web services username (getaddress/Production)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Resurs Bank web services username (getaddress/Production)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'default' => '',
                     'desc_tip' => true,
                 ],
                 'ga_password' => [
-                    'title' => __('Web services password (getAddress/Production)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Web services password (getAddress/Production)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'password',
                     'default' => '',
-                    'description' => __('Resurs Bank web services password (getAddress/Production)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Resurs Bank web services password (getAddress/Production)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'randomizeJsLoaders' => [
-                    'title' => __('Prevent caching of included javascripts',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Enable this feature, if resursbank.js tend to cache older versions even after the codebase are updated',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Prevent caching of included javascripts',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Enable this feature, if resursbank.js tend to cache older versions even after the codebase are updated',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
                 ],
                 'devResursSimulation' => [
-                    'title' => __('Resurs developer mode for simulations',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Enable this feature and things may go wrong (this is automatically disabled in production)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Resurs developer mode for simulations',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Enable this feature and things may go wrong (this is automatically disabled in production)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
                 ],
                 'includeEmptyTaxClasses' => [
-                    'title' => __('Include empty tax classes in admin config',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Include empty tax classes in admin config',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'label' => __('Enabled', 'woocommerce'),
-                    'description' => __('If your needs requires all tax classes selectable in this administration panel, enable this option to reach them',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'If your needs requires all tax classes selectable in this administration panel, enable this option to reach them',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
                 ],
                 'devSimulateSuccessUrl' => [
-                    'title' => __('SuccessUrl-simulation', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('If you are in simulation mode, you can enter your own successurl here, for which Resurs Checkout is sending you to, during a purchase',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'SuccessUrl-simulation',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'If you are in simulation mode, you can enter your own successurl here, for which Resurs Checkout is sending you to, during a purchase',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => 'https://google.com/?test+landingpage',
                 ],
                 'devFlags' => [
-                    'title' => __('Special flags', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Set up flags here (comma separated) to test, reveal or activate parts of the plugin that is normally not available.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Special flags',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Set up flags here (comma separated) to test, reveal or activate parts of the plugin that is normally not available.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => '',
                 ],
                 'callbackUpdateInterval' => [
                     'title' => __('Callback update interval', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. This function has to be enabled above, to have any effect. Interval is set in days.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. This function has to be enabled above, to have any effect. Interval is set in days.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => '7',
                 ],
                 'callbackUpdateAutomation' => [
-                    'title' => __('Enable automatic callback updates', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Enable automatic callback updates',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'description' => __(
                             'Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time',
                             'resurs-bank-payment-gateway-for-woocommerce'
@@ -458,19 +560,25 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'logResursEvents' => [
                     'title' => __('Log Resurs Bank events', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Log events like callbacks, status updates on received callbacks, etc',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Log events like callbacks, status updates on received callbacks, etc',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'label' => __('Enable/Disable', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'default' => 'false',
                 ],
                 'showResursCheckoutStandardFieldsTest' => [
-                    'title' => __('Keep standard customer fields open for Resurs Checkout in test',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Keep standard customer fields open for Resurs Checkout in test',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('Resurs Checkout Feature: If your plugin is running in test mode, you might want to study the behaviour of the standard customer form fields when communicating with the iframe',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Resurs Checkout Feature: If your plugin is running in test mode, you might want to study the behaviour of the standard customer form fields when communicating with the iframe',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'resursCurrentAnnuityFactors' => [
@@ -486,18 +594,26 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'https://google.com/?test+landingpage',
                 ],
                 'resursAnnuityMethod' => [
-                    'title' => __('Current chosen payment method for annuity factors',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Current chosen payment method for annuity factors',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Current chosen payment method for annuity factors',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Current chosen payment method for annuity factors',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => 'https://google.com/?test+landingpage',
                 ],
                 'autoDebitStatus' => [
-                    'title' => __('Order status on instant finalizations',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __('Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed by direct debiting which finalizes orders before they are shipped. To prevent this, you can set up a specific status for such payment methods when Resurs callback event FINALIZATION occurs',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Order status on instant finalizations',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed by direct debiting which finalizes orders before they are shipped. To prevent this, you can set up a specific status for such payment methods when Resurs callback event FINALIZATION occurs',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'select',
                     'options' => [
                         'default' => __('Use default (Completed)', 'resurs-bank-payment-gateway-for-woocommerce'),
@@ -511,7 +627,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'autoDebitMethods' => [
-                    'title' => __('Instant debitable payment methods', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Instant debitable payment methods',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'description' => __(
                         'Payment methods that are considered instantly debitable during a payment process. If you choose the top alternative the plugin will choose for you if the correct default method (swish) are available.',
                         'resurs-bank-payment-gateway-for-woocommerce'
@@ -527,7 +646,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'partPayWidgetPage' => [
-                    'title' => __('Widget for custom part pay views', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Widget for custom part pay views',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'description' => __(
                         'If you choose a page here, this page will be primary set for a customized part payment widget.',
                         'resurs-bank-payment-gateway-for-woocommerce'
@@ -536,7 +658,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'options' => [],
                     'default' => 0,
                     'desc_tip' => true,
-                    'fieldtype' => 'string'
+                    'fieldtype' => 'string',
                 ],
             ];
         } elseif ($formSectionName == "paymentmethods") {
@@ -551,19 +673,28 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => '',
-                    'description' => __('If you are leaving this field empty, the default title will be used in the checkout',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'If you are leaving this field empty, the default title will be used in the checkout',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'icon' => [
-                    'title' => __('Custom payment method icon', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Custom payment method icon',
+                        'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'text',
                     'default' => $icon,
-                    'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                 ],
                 'enableMethodIcon' => [
-                    'title' => __('Enable/Disable payment method icon', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Enable/Disable payment method icon',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'label' => 'Enable displaying of logotype at payment method choice',
                 ],
@@ -571,21 +702,27 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => '',
-                    'description' => __('This controls the payment method description which the user sees during checkout.',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'This controls the payment method description which the user sees during checkout.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'price' => [
                     'title' => 'Avgift',
                     'type' => 'number',
                     'default' => 0,
-                    'description' => __('Payment fee for this payment method',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Payment fee for this payment method',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => false,
                 ],
                 'priceDescription' => [
-                    'title' => __('Description of this payment method fee',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Description of this payment method fee',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'textarea',
                     'default' => '',
                 ],
@@ -601,108 +738,140 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'default' => 'Resurs Checkout',
-                    'description' => __('This controls the title of Resurs Checkout as a payment method in the checkout',
-                        'WC_Payment_Gateway'),
+                    'description' => __(
+                        'This controls the title of Resurs Checkout as a payment method in the checkout',
+                        'WC_Payment_Gateway'
+                    ),
                     'desc_tip' => true,
                 ],
                 'description' => [
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => 'Betala med Resurs Checkout',
-                    'description' => __('This controls the payment method description which the user sees during checkout.',
-                        'WC_Payment_Gateway'),
+                    'description' => __(
+                        'This controls the payment method description which the user sees during checkout.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'iframeShape' => [
                     'title' => __('Change the (CSS)-shape of the iframe', 'woocommerce'),
                     'type' => 'text',
                     'default' => '',
-                    'description' => __('This controls the shape of the iframe CSS (meaning you may use CSS code here to change the background and shape of the iframe)',
-                        'WC_Payment_Gateway'),
+                    'description' => __(
+                        'This controls the shape of the iframe CSS (meaning you may use CSS code here to change the background and shape of the iframe)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'iFrameLocation' => [
-                    'title' => __('iFrame location', 'WC_Payment_Gateway'),
+                    'title' => __('iFrame location', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'select',
                     'options' => [
-                        'afterCheckoutForm' => __('After checkout form (Default)', 'WC_Payment_Gateway'),
-                        'beforeReview' => __('Before order review', 'WC_Payment_Gateway'),
+                        'afterCheckoutForm' => __(
+                            'After checkout form (Default)',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'beforeReview' => __(
+                            'Before order review',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
                     ],
                     'default' => 'afterCheckoutForm',
-                    'description' => __('Sets up where the iframe for Resurs Checkout should appear. The first versions of this plugin automatically rendered the checkout in the payment method list. Do not do this as things might break.',
-                        'WC_Payment_Gateway'),
+                    'description' => __(
+                        'Sets up where the iframe for Resurs Checkout should appear. The first versions of this plugin automatically rendered the checkout in the payment method list. Do not do this as things might break.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'removeGatewayListOnOmni' => [
-                    'title' => __('No methods on Checkout (Experimental)', 'WC_Payment_Gateway'),
+                    'title' => __(
+                        'No methods on Checkout (Experimental)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('Remove payment methods list if Resurs Checkout is the only gateway',
-                        'WC_Payment_Gateway'),
+                    'description' => __(
+                        'Remove payment methods list if Resurs Checkout is the only gateway',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => false,
                 ],
                 'omniFrameNotReloading' => [
-                    'title' => __('Reload checkout on cart changes', 'WC_Payment_Gateway'),
+                    'title' => __(
+                        'Reload checkout on cart changes',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
                         'If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe',
-                        'WC_Payment_Gateway'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => false,
                 ],
                 'cleanOmniCustomerFields' => [
-                    'title' => __('Remove all default customer fields when loading Omni Checkout iframe',
-                        'WC_Payment_Gateway'),
+                    'title' => __(
+                        'Remove all default customer fields when loading Omni Checkout iframe',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
                         'Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected.',
-                        'WC_Payment_Gateway'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
                 ],
                 'useStandardFieldsForShipping' => [
                     'title' => __(
                         'Use standard customer fields to update shipping methods when postal code changes (Experimental)',
-                        'WC_Payment_Gateway'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function.',
-                        'WC_Payment_Gateway'),
+                    'description' => __(
+                        'Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'secureFieldsNotNull' => [
-                    'title' => __('Checkout form fields must not be empty', 'WC_Payment_Gateway'),
+                    'title' => __(
+                        'Checkout form fields must not be empty',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'default' => 'false',
-                    'description' => __('This setting secures that this plugin is returning an array, if WooCommerce for some passes over completely empty data (null) during the checkout process'),
+                    'description' => __(
+                        'This setting secures that this plugin is returning an array, if WooCommerce for some passes over completely empty data (null) during the checkout process',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'showResursCheckoutStandardFieldsTest' => [
                     'title' => __(
                         'Keep standard customer fields open for Resurs Checkout in test',
-                        'WC_Payment_Gateway'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
                         'If your plugin is running in test, enable this settings, to not hide the standard form fields',
-                        'WC_Payment_Gateway'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
                 ],
                 'resursCheckoutMultipleMethods' => [
                     'title' => __(
                         'Bypass problems with multiple payment methods (experimental)',
-                        'WC_Payment_Gateway'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
                         'Resurs Checkout is normally not compatible with other payments as the checkout fields are handled differently when an iframe is active. This setting enables an experimental way to bypass such problems by make a reload each time a switch to or from the Resurs Checkout is being made.',
-                        'WC_Payment_Gateway'
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
                 ],
@@ -712,7 +881,7 @@ if (!function_exists('getResursWooFormFields')) {
             // this will be continuosly readded to the above configuration.
             if (!isset($returnArray['iFrameLocation']['options']['inMethods']) && getHadMisplacedIframeLocation()) {
                 $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list (Deprecated, not recommended to use)',
-                    'WC_Payment_Gateway');
+                    'resurs-bank-payment-gateway-for-woocommerce');
             }
 
         }
@@ -903,7 +1072,7 @@ if (is_admin()) {
 		            if (\$total > 0) {
 			            if (\$total >= \$this->maxLimit || \$total <= \$this->minLimit)
 			            {
-			                \$isDemo = ' <span class="resursPaymentDemoRestrictionView" title="'.__('In demo mode, this payment method is shown regardless of the total payment amount and the payment method limits', 'WC_Payment_Gateway').'">['.__('Restricted', 'WC_Payment_Gateway').']</span>';
+			                \$isDemo = ' <span class="resursPaymentDemoRestrictionView" title="'.__('In demo mode, this payment method is shown regardless of the total payment amount and the payment method limits', 'resurs-bank-payment-gateway-for-woocommerce').'">['.__('Restricted', 'resurs-bank-payment-gateway-for-woocommerce').']</span>';
 			                \$this->description .= \$isDemo;
 			                \$this->title .= \$isDemo;
 			            }
@@ -957,14 +1126,14 @@ if (is_admin()) {
                             'title'       => 'Title',
                             'type'        => 'text',
                             'default'     => 'Resurs Bank {$method_name}',
-                            'description' => __( 'This controls the payment method title which the user sees during checkout.', 'WC_Payment_Gateway' ),
+                            'description' => __( 'This controls the payment method title which the user sees during checkout.', 'resurs-bank-payment-gateway-for-woocommerce' ),
                             'desc_tip'    => true,
                         ),
                     'icon' => array(
-                            'title'   => __('Custom payment method icon', 'WC_Payment_Gateway'),
+                            'title'   => __('Custom payment method icon', 'resurs-bank-payment-gateway-for-woocommerce'),
                             'type'    => 'text',
                             'default' => \$this->icon,
-                            'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.', 'WC_Payment_Gateway'),
+                            'description' => __('Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage.', 'resurs-bank-payment-gateway-for-woocommerce'),
                         ),
                     'enableMethodIcon' => array(
                             'title' => __('Enable/Disable payment method icon', 'woocommerce'),
@@ -975,18 +1144,18 @@ if (is_admin()) {
                             'title'       => 'Description',
                             'type'        => 'textarea',
                             'default'     => 'Betala med Resurs Bank {$method_name}',
-                            'description' => __( 'This controls the payment method description which the user sees during checkout.', 'WC_Payment_Gateway' ),
+                            'description' => __( 'This controls the payment method description which the user sees during checkout.', 'resurs-bank-payment-gateway-for-woocommerce' ),
                             'desc_tip'    => true,
                         ),
                     'price' => array(
                             'title'       => 'Avgift',
                             'type'        => 'number',
                             'default'     => 0,
-                            'description' => __('Payment fee for this payment method', 'WC_Payment_Gateway'),
+                            'description' => __('Payment fee for this payment method', 'resurs-bank-payment-gateway-for-woocommerce'),
                             'desc_tip'    => false,
                         ),
                     'priceDescription' => array(
-                            'title'   => __('Description of this payment method fee', 'WC_Payment_Gateway'),
+                            'title'   => __('Description of this payment method fee', 'resurs-bank-payment-gateway-for-woocommerce'),
                             'type'    => 'textarea',
                             'default' => '',
                         ),
@@ -1227,11 +1396,11 @@ EOT;
                 <thead>
                 <tr>
                     <th class="sort"></th>
-                    <th class="name"><?php echo __('Method', 'WC_Payment_Gateway') ?></th>
-                    <th class="title"><?php echo __('Title', 'WC_Payment_Gateway') ?></th>
-                    <th class="id"><?php echo __('ID', 'WC_Payment_Gateway') ?></th>
-                    <th class="status"><?php echo __('Status', 'WC_Payment_Gateway') ?></th>
-                    <th class="process"><?php echo __('Process', 'WC_Payment_Gateway') ?></th>
+                    <th class="name"><?php echo __('Method', 'resurs-bank-payment-gateway-for-woocommerce') ?></th>
+                    <th class="title"><?php echo __('Title', 'resurs-bank-payment-gateway-for-woocommerce') ?></th>
+                    <th class="id"><?php echo __('ID', 'resurs-bank-payment-gateway-for-woocommerce') ?></th>
+                    <th class="status"><?php echo __('Status', 'resurs-bank-payment-gateway-for-woocommerce') ?></th>
+                    <th class="process"><?php echo __('Process', 'resurs-bank-payment-gateway-for-woocommerce') ?></th>
                 </tr>
                 </thead>
                 <tbody>
