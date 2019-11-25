@@ -527,7 +527,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'description' => __(
-                        'Set up flags here (comma separated) to test, reveal or activate parts of the plugin that is normally not available.',
+                        'Set up flags here (comma separated) to test, reveal or activate parts of the plugin that is normally not available. To set up variables with comma separated content, try use | or another characters instead.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'text',
@@ -755,11 +755,21 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'iframeShape' => [
-                    'title' => __('Change the (CSS)-shape of the iframe', 'woocommerce'),
+                    'title' => __('Change the (CSS)-shape of the iframe', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'text',
                     'default' => '',
                     'description' => __(
                         'This controls the shape of the iframe CSS (meaning you may use CSS code here to change the background and shape of the iframe)',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'desc_tip' => true,
+                ],
+                'iframeTestUrl' => [
+                    'title' => __('Internal Test URL for special accounts', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'type' => 'text',
+                    'default' => '',
+                    'description' => __(
+                        'If there is an URL here, it will be enforced when special accounts are used.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
