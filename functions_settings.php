@@ -838,7 +838,7 @@ if (is_admin()) {
                             \$realTimePaymentMethod = \$this->flow->getPaymentMethodSpecific(\$this->id_short);
                             set_transient("resursTemporaryMethodTime_" . \$this->id_short, time());
                             set_transient("resursTemporaryMethod_" . \$this->id_short, serialize(\$realTimePaymentMethod));
-                            \$this->title = \$realTimePaymentMethod->description;
+                            \$this->title = isset(\$realTimePaymentMethod->description) ? \$realTimePaymentMethod->description : '';
                         } else {
                             \$realTimePaymentMethod = unserialize(get_transient("resursTemporaryMethod_" . \$this->id_short));
                         }
