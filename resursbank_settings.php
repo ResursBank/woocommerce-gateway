@@ -1247,7 +1247,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setDropDown('iFrameLocation', $namespace);
                     echo $this->setTextBox('iframeShape', $namespace);
                     echo $this->setTextBox('iframeTestUrl', $namespace);
-                    echo $this->setCheckBox('alwaysPte', $namespace);
+                    // Setting only visible on special hostnames.
+                    if (isset($_SERVER['HTTP_HOST']) && preg_match('/\.cte\.loc|\.pte\.loc/i', $_SERVER['HTTP_HOST'])) {
+                        echo $this->setCheckBox('alwaysPte', $namespace);
+                    }
                     // This is reserved for future use, so we won't touch this for now
                     //echo $this->setCheckBox( 'useStandardFieldsForShipping', $namespace );
                     echo $this->setSeparator(__('Advanced', 'resurs-bank-payment-gateway-for-woocommerce'));
@@ -1255,10 +1258,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
                     echo $this->setCheckBox('resursCheckoutMultipleMethods', $namespace);
                 } elseif ($section == "shortcodes") {
-                    echo $this->setSeparator(__('Part payment widget settings', 'resurs-bank-payment-gateway-for-woocommerce'));
+                    echo $this->setSeparator(
+                        __('Part payment widget settings',
+                            'resurs-bank-payment-gateway-for-woocommerce')
+                    );
                     $pagelist = get_pages();
                     $widgetPages = [
-                            '0' => __('None (default)', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        '0' => __('None (default)', 'resurs-bank-payment-gateway-for-woocommerce'),
                     ];
                     /** @var WP_Post $pages */
                     foreach ($pagelist as $page) {
@@ -1270,19 +1276,44 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         $widgetPages
                     );
 
-                    $shortCodeCollection = array(
-                        '[payFromAnnuity]' => __('Final price to pay including the currency.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[payFrom]' => __('Final price excluding the currency.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[paymentLimit]' => __('The minimum price configured from where annuities are shown (Note: When running in test, this is always set to 1 for debugging).', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[annuityDuration]' => __('Chosen annuity period.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[costOfPurchase]' => __('URL to which the cost example are shown.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[defaultAnnuityString]' => __('The default text that is usually shown when annuity factors are available.', 'resurs-bank-payment-gateway-for-woocommerce'),
-                        '[annuityFactors]' => __('Printable version of available annuity factors (for debugging).', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    );
+                    $shortCodeCollection = [
+                        '[payFromAnnuity]' => __(
+                            'Final price to pay including the currency.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        '[payFrom]' => __(
+                            'Final price excluding the currency.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        '[paymentLimit]' => __(
+                            'The minimum price configured from where annuities are shown (Note: When running in test, this is always set to 1 for debugging).',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        '[annuityDuration]' => __(
+                            'Chosen annuity period.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        '[costOfPurchase]' => __(
+                            'URL to which the cost example are shown.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        '[defaultAnnuityString]' => __(
+                            'The default text that is usually shown when annuity factors are available.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        '[annuityFactors]' => __(
+                            'Printable version of available annuity factors (for debugging).',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                    ];
 
                     $shortCodeDescriptions = '<table style="padding:0px;" width="50%" cellpadding="0" cellspacing="0">';
                     foreach ($shortCodeCollection as $tag => $description) {
-                        $shortCodeDescriptions .= sprintf('<tr><td style="font-weight: bold;" valign="top">%s</td><td>%s</td></tr>', $tag, $description);
+                        $shortCodeDescriptions .= sprintf(
+                            '<tr><td style="font-weight: bold;" valign="top">%s</td><td>%s</td></tr>',
+                            $tag,
+                            $description
+                        );
                     }
                     $shortCodeDescriptions .= '</table>';
 

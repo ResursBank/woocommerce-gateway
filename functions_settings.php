@@ -773,7 +773,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => '',
                     'description' => __(
-                        'If there is an URL here, it will be enforced when special accounts are used.',
+                        'If there is an URL here, it will be enforced when special accounts are used. The URL should point at the service where you send all your inital POST-data',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
@@ -783,7 +783,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(
-                        'Special feature.',
+                        'Special feature. Only visible when in correct domain.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
