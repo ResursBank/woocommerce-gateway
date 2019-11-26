@@ -5846,9 +5846,7 @@ function getResursInternalRcoUrl($username, $flow)
     $specialAccounts = [
         'checkoutwebse',
     ];
-
     $specialAccounts = apply_filters('resurs_pte_account', $specialAccounts);
-
     $pteUsers = getResursFlag('PTEUSERS');
     if (!empty($pteUsers)) {
         $pteUsersArray = preg_split('/,|\|/', $pteUsers);
@@ -5859,6 +5857,11 @@ function getResursInternalRcoUrl($username, $flow)
                 }
             }
         }
+    }
+
+    $alwaysPte = (bool)getResursOption('alwaysPte', 'woocommerce_resurs_bank_omnicheckout_settings');
+    if ($alwaysPte && isset($_SERVER['HTTP_HOST']) && preg_match('/\.cte\.loc|\.pte\.loc/i', $_SERVER['HTTP_HOST'])) {
+        $specialAccounts[] = $username;
     }
 
     if (!empty($iframeTestUrl)) {

@@ -1247,6 +1247,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setDropDown('iFrameLocation', $namespace);
                     echo $this->setTextBox('iframeShape', $namespace);
                     echo $this->setTextBox('iframeTestUrl', $namespace);
+                    echo $this->setCheckBox('alwaysPte', $namespace);
                     // This is reserved for future use, so we won't touch this for now
                     //echo $this->setCheckBox( 'useStandardFieldsForShipping', $namespace );
                     echo $this->setSeparator(__('Advanced', 'resurs-bank-payment-gateway-for-woocommerce'));

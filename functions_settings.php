@@ -755,7 +755,8 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'iframeShape' => [
-                    'title' => __('Change the (CSS)-shape of the iframe', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __('Change the (CSS)-shape of the iframe',
+                        'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'text',
                     'default' => '',
                     'description' => __(
@@ -765,7 +766,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'iframeTestUrl' => [
-                    'title' => __('Internal Test URL for special accounts', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Internal Test URL for special accounts',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => '',
                     'description' => __(
@@ -773,6 +777,15 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
+                ],
+                'alwaysPte' => [
+                    'title' => __('Permanent PTE', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => __('Enabled', 'woocommerce'),
+                    'description' => __(
+                        'Special feature.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                 ],
                 'iFrameLocation' => [
                     'title' => __('iFrame location', 'resurs-bank-payment-gateway-for-woocommerce'),
