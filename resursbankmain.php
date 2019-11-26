@@ -3868,7 +3868,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'message' => __(
                                 'This order is already annulled and cannot be changed.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
-                            )
+                            ),
                         ];
 
                         wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
@@ -3882,8 +3882,8 @@ function woocommerce_gateway_resurs_bank_init()
                         $_SESSION['resurs_bank_admin_notice'] = [
                             'type' => 'error',
                             'message' => __(
-                                    'This order is already credited and cannot be changed.',
-                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                'This order is already credited and cannot be changed.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
                             ),
                         ];
 
@@ -4048,7 +4048,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 ),
                                 $e->getCode(),
                                 $e->getMessage()
-                            );                        }
+                            );
+                        }
                     } else {
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
@@ -4087,7 +4088,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 ),
                                 $e->getCode(),
                                 $e->getMessage()
-                            );                        }
+                            );
+                        }
                     } else {
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
@@ -4784,7 +4786,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 /** @var WP_Post $customWidgetPost */
                                 $customWidgetPost = get_post($customWidgetSetting);
 
-                                $tags = array(
+                                $tags = [
                                     '/\[costOfPurchase\]/i',
                                     '/\[payFromAnnuity\]/i',
                                     '/\[defaultAnnuityString\]/i',
@@ -4792,7 +4794,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     '/\[annuityFactors\]/i',
                                     '/\[annuityDuration\]/i',
                                     '/\[payFrom\]/i',
-                                );
+                                ];
                                 $replaceWith = [
                                     $costOfPurchase,
                                     $payFromAnnuity,
@@ -4804,14 +4806,14 @@ function woocommerce_gateway_resurs_bank_init()
                                 ];
 
                                 $postContent = preg_replace(
-                                        $tags,
-                                        $replaceWith,
-                                        $customWidgetPost->post_content
+                                    $tags,
+                                    $replaceWith,
+                                    $customWidgetPost->post_content
                                 );
 
                                 $displayAnnuity = sprintf(
-                                        '<div class="resursPartPaymentInfo">%s</div>',
-                                        $postContent
+                                    '<div class="resursPartPaymentInfo">%s</div>',
+                                    $postContent
                                 );
                             } else {
                                 $displayAnnuity .= '<div class="resursPartPaymentInfo">';
@@ -5834,6 +5836,41 @@ if (!function_exists('r_wc_get_order_item_type_by_item_id')) {
 }
 
 /**
+ * @param $username
+ * @param $flow \Resursbank\RBEcomPHP\ResursBank
+ * @return mixed
+ */
+function getResursInternalRcoUrl($username, $flow)
+{
+    $iframeTestUrl = getResursOption('iframeTestUrl', 'woocommerce_resurs_bank_omnicheckout_settings');
+    $specialAccounts = [
+        'checkoutwebse',
+    ];
+
+    $specialAccounts = apply_filters('resurs_pte_account', $specialAccounts);
+
+    $pteUsers = getResursFlag('PTEUSERS');
+    if (!empty($pteUsers)) {
+        $pteUsersArray = preg_split('/,|\|/', $pteUsers);
+        if (is_array($pteUsersArray)) {
+            foreach ($pteUsersArray as $pteUser) {
+                if (!empty($pteUser)) {
+                    $specialAccounts[] = $pteUser;
+                }
+            }
+        }
+    }
+
+    if (!empty($iframeTestUrl)) {
+        if (in_array(strtolower($username), array_map('strtolower', $specialAccounts))) {
+            $flow->setEnvRcoUrl($iframeTestUrl);
+        }
+    }
+
+    return $flow;
+}
+
+/**
  * Initialize EComPHP, the key of almost everything in this plugin
  *
  * @param string $overrideUser
@@ -5864,6 +5901,7 @@ function initializeResursFlow(
 
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
     $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
+    getResursInternalRcoUrl($username, $initFlow);
     $cTimeout = getResursFlag('CURL_TIMEOUT');
     if ($cTimeout > 0) {
         $initFlow->setFlag('CURL_TIMEOUT', $cTimeout);
@@ -6513,7 +6551,8 @@ function getResursPaymentMethodMeta($id, $key = 'resursBankMetaPaymentMethod')
     return '';
 }
 
-function getResursRequireSession() {
+function getResursRequireSession()
+{
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }

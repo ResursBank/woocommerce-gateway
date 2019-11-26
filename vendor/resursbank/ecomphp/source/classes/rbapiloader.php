@@ -445,25 +445,31 @@ class ResursBank
      *
      * @var string
      */
-    private $env_omni_test = "https://omnitest.resurs.com";
+    private $environmentRcoStandardTest = "https://omnitest.resurs.com";
+
+    /**
+     * @var string The next generation checkout URL. Internal only.
+     */
+    private $rcoNgUrl = "http://omnicheckout-webservicefrontend.pte.loc";
+
     /**
      * Default production URL for Resurs Checkout
      *
      * @var string
      */
-    private $env_omni_prod = "https://checkout.resurs.com";
+    private $environmentRcoStandardProduction = "https://checkout.resurs.com";
     /**
      * Default test URL for Resurs Checkout POS
      *
      * @var string
      */
-    private $env_omni_pos_test = "https://postest.resurs.com";
+    private $environmentRcoPosTest = "https://postest.resurs.com";
     /**
      * Default production URL for Resurs Checkout POS
      *
      * @var string
      */
-    private $env_omni_pos_prod = "https://poscheckout.resurs.com";
+    private $environmentRcoPosProuction = "https://poscheckout.resurs.com";
     /**
      * Defines if environment will point at Resurs Checkout POS or not and in that case return the URL for the POS.
      * Set up with setPos() and retrieve the state with getPos()
@@ -471,6 +477,10 @@ class ResursBank
      * @var bool
      */
     private $env_omni_pos = false;
+    /**
+     * @var string
+     */
+    private $environmentRcoOverrideUrl;
     /**
      * Country of choice
      *
@@ -1030,10 +1040,16 @@ class ResursBank
                 $this->CURL = new MODULE_CURL();
             }
             $this->CURL->setChain(false);
+            if ($this->getSslSecurityDisabled()) {
+                $this->CURL->setSslVerify(false, false);
+            }
+
             if ($inheritExtendedSoapWarnings) {
                 $this->CURL->setFlag('SOAPWARNINGS_EXTEND', true);
             }
             $this->CURL->setFlag('SOAPCHAIN', false);
+
+            $this->CURL->getSslVerify();
             $this->CURL->setStoreSessionExceptions(true);
             $this->CURL->setAuthentication($this->soapOptions['login'], $this->soapOptions['password']);
             $this->CURL->setUserAgent($this->myUserAgent);
@@ -1174,12 +1190,35 @@ class ResursBank
     }
 
     /**
+     * Set overriding url for RCO (mostly used for test).
+     *
+     * @param string $environmentUrl
+     * @since 1.3.27
+     */
+    public function setEnvRcoUrl($environmentUrl = '')
+    {
+        $this->environmentRcoOverrideUrl = $environmentUrl;
+    }
+
+    /**
+     * Return URL info for which is used for the moment in RCO.
+     *
+     * @return string
+     * @since 1.3.27
+     */
+    public function getEnvRcoUrl()
+    {
+        return $this->environmentRcoOverrideUrl;
+    }
+
+    /**
      * Put SSL Validation into relaxed mode (Test and debug only) - this disables SSL certificate validation off
      *
      * @throws \Exception
      * @since 1.0.23
      * @since 1.1.23
      * @since 1.2.0
+     * @deprecated Do not use this weird method.
      */
     public function setSslValidation()
     {
@@ -1192,6 +1231,28 @@ class ResursBank
                 403
             );
         }
+    }
+
+    /**
+     * Enables strict SSL validation or put in "relaxed mode".
+     *
+     * @param bool $enable
+     * @throws Exception
+     * @since 1.3.27
+     */
+    public function setSslSecurityDisabled($disableSecurity = true)
+    {
+        $this->InitializeServices();
+        $this->curlSslValidationDisable = $disableSecurity;
+    }
+
+    /**
+     * @return bool
+     * @since 1.3.27
+     */
+    public function getSslSecurityDisabled()
+    {
+        return $this->curlSslValidationDisable;
     }
 
     /**
@@ -1574,14 +1635,14 @@ class ResursBank
         } elseif ($FlowType == RESURS_FLOW_TYPES::HOSTED_FLOW) {
             $this->env_hosted_test = $newUrl;
         } elseif ($FlowType == RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
-            $this->env_omni_test = $newUrl;
+            $this->environmentRcoStandardTest = $newUrl;
         } else {
             /*
              * If this developer wasn't sure of what to change, we'd change all.
              */
             $this->env_test = $newUrl;
             $this->env_hosted_test = $newUrl;
-            $this->env_omni_test = $newUrl;
+            $this->environmentRcoStandardTest = $newUrl;
         }
 
         return $newUrl;
@@ -6076,38 +6137,51 @@ class ResursBank
     }
 
     /**
-     * Retrieve the correct omnicheckout url depending chosen environment
+     * Retrieve the correct omnicheckout url depending chosen environment.
      *
-     * @param int $EnvironmentRequest
+     * @param int $requestedEnvironment
      * @param bool $getCurrentIfSet Always return "current" if it has been set first
-     *
      * @return string
      * @since 1.0.1
      * @since 1.1.1
+     * @todo Make this method less ugly.
      */
-    public function getCheckoutUrl($EnvironmentRequest = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST, $getCurrentIfSet = true)
+    public function getCheckoutUrl($requestedEnvironment = RESURS_ENVIRONMENTS::TEST, $getCurrentIfSet = true)
     {
-        // If current_environment is set, override incoming variable
-        if ($getCurrentIfSet && $this->current_environment_updated) {
-            if ($this->current_environment == RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION) {
-                if ($this->getPos()) {
-                    return $this->env_omni_pos_prod;
-                }
+        // Total overrider. Regardless of prepared environment. Use with caution.
+        if (!empty($this->environmentRcoOverrideUrl)) {
+            return $this->environmentRcoOverrideUrl;
+        }
 
-                return $this->env_omni_prod;
+        if ($getCurrentIfSet && $this->current_environment_updated) {
+            if ($this->current_environment == RESURS_ENVIRONMENTS::PRODUCTION) {
+                if ($this->getPos()) {
+                    return $this->environmentRcoPosProuction;
+                }
+                return $this->environmentRcoStandardProduction;
             } else {
                 if ($this->getPos()) {
-                    return $this->env_omni_pos_test;
+                    return $this->environmentRcoPosTest;
                 }
-
-                return $this->env_omni_test;
+                return $this->environmentRcoStandardTest;
             }
         }
-        if ($EnvironmentRequest == RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION) {
-            return $this->env_omni_prod;
-        } else {
-            return $this->env_omni_test;
+
+        return $this->getUrlRcoStandard($requestedEnvironment);
+    }
+
+    /**
+     * @param $requestedEnvironment
+     * @return string
+     * @since 1.3.27
+     */
+    private function getUrlRcoStandard($requestedEnvironment)
+    {
+        if ($requestedEnvironment == RESURS_ENVIRONMENTS::PRODUCTION) {
+            return $this->environmentRcoStandardProduction;
         }
+
+        return $this->environmentRcoStandardTest;
     }
 
     /**
