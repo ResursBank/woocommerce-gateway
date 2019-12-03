@@ -130,6 +130,16 @@ class ResursBank
     private $wsdlServices = [];
 
     /**
+     * @var int $getPaymentRequests Debugging only.
+     */
+    private $getPaymentRequests = 0;
+
+    /**
+     * @var int $getCachedPaymentRequests Debugging only.
+     */
+    private $getPaymentCachedRequests = 0;
+
+    /**
      * @var array $paymentMethodsCache
      */
     private $paymentMethodsCache = ['params' => [], 'methods' => []];
@@ -823,6 +833,7 @@ class ResursBank
         $this->setUserAgent();
         $this->E_DEPRECATED = new RESURS_DEPRECATED_FLOW();
     }
+
 
     /**
      * Pre-ShopUrl if not defined.
@@ -3217,6 +3228,20 @@ class ResursBank
     }
 
     /**
+     * @return int
+     */
+    public function getGetPaymentRequests() {
+        return $this->getPaymentRequests;
+    }
+
+    /**
+     * @return int
+     */
+    public function getGetCachedPaymentRequests() {
+        return $this->getPaymentCachedRequests;
+    }
+
+    /**
      * getPayment - Retrieves detailed information about a payment
      *
      * As of 1.3.13, SOAP has higher priority than REST. This might be a breaking change, since
@@ -3241,12 +3266,14 @@ class ResursBank
      */
     public function getPayment($paymentId = '', $requestCached = true)
     {
+        $this->getPaymentRequests ++;
         $this->InitializeServices();
         $rested = false;
 
         if ($requestCached && isset($this->lastPaymentStored[$paymentId]->cached)) {
             $lastRequest = time() - $this->lastPaymentStored[$paymentId]->cached;
             if ($lastRequest <= $this->lastGetPaymentMaxCacheTime) {
+                $this->getPaymentCachedRequests++;
                 return $this->lastPaymentStored[$paymentId];
             }
         }
