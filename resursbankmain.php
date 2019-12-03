@@ -5240,8 +5240,10 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
 
             $currentWcStatus = $order->get_status();
             $notIn = ["completed", "cancelled", "refunded"];
-            if (!$rb->canDebit($resursPaymentInfo) && $rb->getIsDebited($resursPaymentInfo) && !in_array($currentWcStatus,
-                    $notIn)) {
+            if (!$rb->canDebit($resursPaymentInfo) &&
+                $rb->getIsDebited($resursPaymentInfo) &&
+                !in_array($currentWcStatus, $notIn)
+            ) {
                 if ($rb->getInstantFinalizationStatus($resursPaymentInfo) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                     resurs_no_debit_debited(true);
                 } else {
