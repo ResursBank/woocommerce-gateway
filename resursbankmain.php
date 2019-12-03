@@ -2215,8 +2215,10 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if ($paymentMethodInformation->type == "PAYMENT_PROVIDER" && !$supportProviderMethods) {
-                wc_add_notice(__('The payment method is not available for the selected payment flow',
-                    'resurs-bank-payment-gateway-for-woocommerce'), 'error');
+                wc_add_notice(
+                    __('The payment method is not available for the selected payment flow',
+                        'resurs-bank-payment-gateway-for-woocommerce'), 'error'
+                );
 
                 return;
             } else {
@@ -5890,7 +5892,7 @@ function initializeResursFlow(
     $overridePassword = "",
     $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET
 ) {
-    global $current_user;
+    global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance;
     $username = resursOption("login");
     $password = resursOption("password");
     $useEnvironment = getServerEnv();
@@ -5904,8 +5906,38 @@ function initializeResursFlow(
         $password = $overridePassword;
     }
 
+    $resursInstanceCount++;
+    if ($hasResursFlow) {
+        //if ((bool)getResursFlag('ONE_INSTANCE')) {
+        if (is_admin()) {
+            if ((bool)getResursFlag('REUSE_ADMIN_ECOM')) {
+                return $resursSavedInstance;
+            }
+        } else {
+            if ((bool)getResursFlag('REUSE_STORE_ECOM')) {
+                return $resursSavedInstance;
+            }
+        }
+        if (getResursFlag('ONE_INSTANCE_ONSCREEN')) {
+            // Enable below code to scream on screen.
+            $noticeMessage = __(
+                sprintf(
+                    'There are more than one (%s) instances of EComPHP active in this session. Keep the numbers down to win performance.',
+                    $resursInstanceCount
+                ),
+                'resurs-bank-payment-gateway-for-woocommerce'
+            );
+            echo '<div>' . $noticeMessage . '</div>';
+        }
+        //}
+    }
+
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
     $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
+    $ecomCacheTime = getResursFlag('ECOM_CACHE_TIME');
+    if (!empty($ecomCacheTime) && is_numeric($ecomCacheTime) && $ecomCacheTime > 1) {
+        $initFlow->setApiCacheTime($ecomCacheTime);
+    }
     getResursInternalRcoUrl($username, $initFlow);
     $cTimeout = getResursFlag('CURL_TIMEOUT');
     if ($cTimeout > 0) {
@@ -5977,6 +6009,8 @@ function initializeResursFlow(
         $initFlow->setDefaultUnitMeasure("kpl");
     }
 
+    $hasResursFlow = true;
+    $resursSavedInstance = $initFlow;
     return $initFlow;
 }
 

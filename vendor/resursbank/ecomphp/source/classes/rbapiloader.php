@@ -834,7 +834,6 @@ class ResursBank
         $this->E_DEPRECATED = new RESURS_DEPRECATED_FLOW();
     }
 
-
     /**
      * Pre-ShopUrl if not defined.
      *
