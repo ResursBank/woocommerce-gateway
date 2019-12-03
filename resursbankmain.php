@@ -5908,28 +5908,7 @@ function initializeResursFlow(
 
     $resursInstanceCount++;
     if ($hasResursFlow) {
-        //if ((bool)getResursFlag('ONE_INSTANCE')) {
-        if (is_admin()) {
-            if ((bool)getResursFlag('REUSE_ADMIN_ECOM')) {
-                return $resursSavedInstance;
-            }
-        } else {
-            if ((bool)getResursFlag('REUSE_STORE_ECOM')) {
-                return $resursSavedInstance;
-            }
-        }
-        if (getResursFlag('ONE_INSTANCE_ONSCREEN')) {
-            // Enable below code to scream on screen.
-            $noticeMessage = __(
-                sprintf(
-                    'There are more than one (%s) instances of EComPHP active in this session. Keep the numbers down to win performance.',
-                    $resursInstanceCount
-                ),
-                'resurs-bank-payment-gateway-for-woocommerce'
-            );
-            echo '<div>' . $noticeMessage . '</div>';
-        }
-        //}
+        return $resursSavedInstance;
     }
 
     /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
