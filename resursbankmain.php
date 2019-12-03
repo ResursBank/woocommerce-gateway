@@ -5907,7 +5907,7 @@ function initializeResursFlow(
     }
 
     $resursInstanceCount++;
-    if ($hasResursFlow) {
+    if ($hasResursFlow && !empty($resursSavedInstance)) {
         return $resursSavedInstance;
     }
 
