@@ -23,18 +23,21 @@
 namespace TorneLIB;
 
 if (!defined('TORNELIB_IO_RELEASE')) {
-    define('TORNELIB_IO_RELEASE', '6.0.16');
+    define('TORNELIB_IO_RELEASE', '6.0.17');
 }
 if (!defined('TORNELIB_IO_MODIFY')) {
-    define('TORNELIB_IO_MODIFY', '20190402');
+    define('TORNELIB_IO_MODIFY', '20190827');
 }
 if (!defined('TORNELIB_IO_CLIENTNAME')) {
     define('TORNELIB_IO_CLIENTNAME', 'MODULE_IO');
 }
-if (!defined('IO_SKIP_AUTOLOAD')) {
-    define('IO_CLASS_EXISTS_AUTOLOAD', true);
-} else {
-    define('IO_CLASS_EXISTS_AUTOLOAD', false);
+// Make sure we don't kill anything by defining predefined data.
+if (!defined('IO_CLASS_EXISTS_AUTOLOAD')) {
+    if (!defined('IO_SKIP_AUTOLOAD')) {
+        define('IO_CLASS_EXISTS_AUTOLOAD', true);
+    } else {
+        define('IO_CLASS_EXISTS_AUTOLOAD', false);
+    }
 }
 if (defined('TORNELIB_IO_REQUIRE')) {
     if (!defined('TORNELIB_IO_REQUIRE_OPERATOR')) {

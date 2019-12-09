@@ -6,12 +6,12 @@
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "bcd11fcf286ba21e5a4c6784d6c4dd635a8ab242"
+            "reference": "bf46d84a8aeffef9e0d8504531b9df105a4105b9"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/bcd11fcf286ba21e5a4c6784d6c4dd635a8ab242.zip",
-            "reference": "bcd11fcf286ba21e5a4c6784d6c4dd635a8ab242",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/bf46d84a8aeffef9e0d8504531b9df105a4105b9.zip",
+            "reference": "bf46d84a8aeffef9e0d8504531b9df105a4105b9",
             "shasum": ""
         },
         "require": {
@@ -21,7 +21,7 @@
             "tornevall/tornelib-php-crypto": "^6.0",
             "tornevall/tornelib-php-netcurl": "6.0.*"
         },
-        "time": "2019-11-22T09:28:15+00:00",
+        "time": "2019-12-05T12:47:29+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -48,17 +48,17 @@
     },
     {
         "name": "tornevall/tornelib-php-crypto",
-        "version": "6.0.21",
-        "version_normalized": "6.0.21.0",
+        "version": "6.0.22",
+        "version_normalized": "6.0.22.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-crypto.git",
-            "reference": "0185e1cacd20b379f21be93bca26b0eeff742e97"
+            "reference": "3c63afac01e34d75e1a3d175d50e22106546323a"
         },
         "require": {
             "php": ">=5.3"
         },
-        "time": "2019-04-02T07:36:04+00:00",
+        "time": "2019-12-07T22:19:21+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

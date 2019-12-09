@@ -57,10 +57,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.26');
+    define('ECOMPHP_VERSION', '1.3.27');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20191118');
+    define('ECOMPHP_MODIFY_DATE', '20191204');
 }
 
 /**
@@ -131,11 +131,13 @@ class ResursBank
 
     /**
      * @var int $getPaymentRequests Debugging only.
+     * @since 1.3.26
      */
     private $getPaymentRequests = 0;
 
     /**
      * @var int $getCachedPaymentRequests Debugging only.
+     * @since 1.3.26
      */
     private $getPaymentCachedRequests = 0;
 
@@ -1059,7 +1061,6 @@ class ResursBank
             }
             $this->CURL->setFlag('SOAPCHAIN', false);
 
-            $this->CURL->getSslVerify();
             $this->CURL->setStoreSessionExceptions(true);
             $this->CURL->setAuthentication($this->soapOptions['login'], $this->soapOptions['password']);
             $this->CURL->setUserAgent($this->myUserAgent);
@@ -1777,7 +1778,14 @@ class ResursBank
                 $numchars[$charListId] = 0;
             }
             $numchars[$charListId]++;
-            $chars[] = $characterListArray[$charListId]{mt_rand(0, (strlen($characterListArray[$charListId]) - 1))};
+            $chars[] = $characterListArray[$charListId][mt_rand(
+                0,
+                (
+                    strlen(
+                        $characterListArray[$charListId]
+                    ) - 1
+                )
+            )];
         }
         shuffle($chars);
         $retp = implode("", $chars);
@@ -3228,6 +3236,7 @@ class ResursBank
 
     /**
      * @return int
+     * @since 1.3.26
      */
     public function getGetPaymentRequests() {
         return $this->getPaymentRequests;
@@ -3235,10 +3244,12 @@ class ResursBank
 
     /**
      * @return int
+     * @since 1.3.26
      */
     public function getGetCachedPaymentRequests() {
         return $this->getPaymentCachedRequests;
     }
+
 
     /**
      * getPayment - Retrieves detailed information about a payment
@@ -3265,10 +3276,10 @@ class ResursBank
      */
     public function getPayment($paymentId = '', $requestCached = true)
     {
-        $this->getPaymentRequests ++;
         $this->InitializeServices();
         $rested = false;
 
+        $this->getPaymentRequests ++;
         if ($requestCached && isset($this->lastPaymentStored[$paymentId]->cached)) {
             $lastRequest = time() - $this->lastPaymentStored[$paymentId]->cached;
             if ($lastRequest <= $this->lastGetPaymentMaxCacheTime) {
@@ -7412,7 +7423,7 @@ class ResursBank
             if ($this->isFrozen($cachedPayment)) {
                 // Throw it like Resurs Bank one step earlier. Since we do a getPayment
                 // before the finalization we do not have make an extra call if payment status
-                // is forzen.
+                // is frozen.
                 throw new \ResursException(
                     'EComPHP can not finalize frozen payments',
                     \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE

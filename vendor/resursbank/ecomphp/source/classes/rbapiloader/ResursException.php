@@ -92,11 +92,6 @@ abstract class RESURS_EXCEPTIONS
     const EXSHOP_PROHIBITED = 7009;
     const CREATEPAYMENT_NO_ID_SET = 7008;
     const CREATEPAYMENT_TOO_FAST = 7009;
-
-    /*
-     * Special treated codes.
-     */
-
 }
 
 /**
