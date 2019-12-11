@@ -22,10 +22,15 @@ $resursGlobalNotice = false;
  */
 function woocommerce_gateway_resurs_bank_init()
 {
+    $enabled = true;
     if (!class_exists('WC_Payment_Gateway')) {
         return;
     }
     if (class_exists('WC_Resurs_Bank')) {
+        return;
+    }
+    $enabled = apply_filters('resurs_bank_init_enabled', $enabled);
+    if (!$enabled) {
         return;
     }
 
