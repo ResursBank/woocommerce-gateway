@@ -739,6 +739,7 @@ class ResursBank
      * @var string
      */
     private $afterShopInvoiceExtRef = "";
+    private $isFirstInvoiceId = false;
 
     /**
      * Default unit measure. "st" or styck for Sweden. If your plugin is not used for Sweden,
@@ -2644,10 +2645,12 @@ class ResursBank
                 $currentInvoiceNumber = $peekSequence->nextInvoiceNumber;
             } else {
                 $firstInvoiceNumber = 1;
+                $this->isFirstInvoiceId = true;
             }
         } catch (\Exception $e) {
             if (is_null($firstInvoiceNumber) && $initInvoice) {
                 $firstInvoiceNumber = 1;
+                $this->isFirstInvoiceId = true;
             }
         }
 
@@ -2723,6 +2726,28 @@ class ResursBank
     }
 
     /**
+     * For test purposes only.
+     *
+     * @return int|null
+     * @throws Exception
+     * @since 1.3.27
+     */
+    private function getTestInvoiceNumber()
+    {
+        $return = null;
+
+        if ($this->isFlag('DELETE_TEST_INVOICE')) {
+            $this->deleteFlag('TEST_INVOICE');
+        }
+        if ($this->isFlag('TEST_INVOICE') && $this->current_environment === RESURS_ENVIRONMENTS::TEST) {
+            $this->setFlag('DELETE_TEST_INVOICE');
+            $return = 1003036;
+        }
+
+        return $return;
+    }
+
+    /**
      * Invoice sequence number rescuer/scanner (This function replaces old sequence numbers if there is a higher value
      * found in the last X payments)
      *
@@ -2757,11 +2782,43 @@ class ResursBank
             $lastHighestInvoice = $this->getHighestValueFromPaymentList($paymentScanList, $lastHighestInvoice);
         }
 
+        // Set invoice id to the highest scanned id automatically.
         $properInvoiceNumber = intval($lastHighestInvoice) + 1;
+
+        // If the peeked number is higher than the scanned, use that number instead.
         if (intval($currentInvoiceTest) > 0 && $currentInvoiceTest > $properInvoiceNumber) {
             $properInvoiceNumber = $currentInvoiceTest;
         }
-        $this->getNextInvoiceNumber(true, $properInvoiceNumber);
+        $currentPeekInvoice = $this->getNextInvoiceNumber(true, $properInvoiceNumber);
+
+        // Make sure this isn't a special test.
+        $testInvoiceNumber = $this->getTestInvoiceNumber();
+        if (!is_null($testInvoiceNumber)) {
+            $properInvoiceNumber = $testInvoiceNumber;
+        }
+
+        // Paranoid mode. This is where we try to increment invoices furthermore on failures.
+        // On demand only; AFTERSHOP_RESCUE_INVOICE must be active, and a prior invoice id must be set.
+        // See below. The afterShopInvoiceId value indicates that there has been one prior scan for invoice
+        // id's which means the first try failed.
+        if (!empty($this->afterShopInvoiceId) &&
+            intval($this->afterShopInvoiceId) > 0 &&
+            $this->isFlag('AFTERSHOP_RESCUE_INVOICE')
+        ) {
+            // Rescue once only.
+            $this->deleteFlag('AFTERSHOP_RESCUE_INVOICE');
+            if ((int)$this->getFlag('AFTERSHOP_RESCUE_INCREMENT') > 0) {
+                $incrementValue = $this->getFlag('AFTERSHOP_RESCUE_INCREMENT');
+                $properInvoiceNumber = $properInvoiceNumber + intval($incrementValue);
+            } else {
+                $properInvoiceNumber++;
+            }
+
+            // Try to replace the prior number with the incremented number.
+            $this->getNextInvoiceNumber(true, $properInvoiceNumber);
+        }
+
+        $this->afterShopInvoiceId = $properInvoiceNumber;
 
         return $properInvoiceNumber;
     }
@@ -3238,7 +3295,8 @@ class ResursBank
      * @return int
      * @since 1.3.26
      */
-    public function getGetPaymentRequests() {
+    public function getGetPaymentRequests()
+    {
         return $this->getPaymentRequests;
     }
 
@@ -3246,7 +3304,8 @@ class ResursBank
      * @return int
      * @since 1.3.26
      */
-    public function getGetCachedPaymentRequests() {
+    public function getGetCachedPaymentRequests()
+    {
         return $this->getPaymentCachedRequests;
     }
 
@@ -3279,7 +3338,7 @@ class ResursBank
         $this->InitializeServices();
         $rested = false;
 
-        $this->getPaymentRequests ++;
+        $this->getPaymentRequests++;
         if ($requestCached && isset($this->lastPaymentStored[$paymentId]->cached)) {
             $lastRequest = time() - $this->lastPaymentStored[$paymentId]->cached;
             if ($lastRequest <= $this->lastGetPaymentMaxCacheTime) {
@@ -3409,7 +3468,7 @@ class ResursBank
     private function getCorrectPaymentContent($paymentArrayOrPaymentId = [])
     {
         if (is_string($paymentArrayOrPaymentId) && !empty($paymentArrayOrPaymentId)) {
-            return $this->getPayment($paymentArrayOrPaymentId);
+            return $this->getPayment($paymentArrayOrPaymentId, false);
         } elseif (is_object($paymentArrayOrPaymentId)) {
             return $paymentArrayOrPaymentId;
         } elseif (is_array($paymentArrayOrPaymentId)) {
@@ -6589,7 +6648,8 @@ class ResursBank
             'ANNUL' => [],
         ];
         if (is_string($paymentIdOrPaymentObject)) {
-            $usePayment = $this->getPayment($paymentIdOrPaymentObject);
+            // Do not cache this moment, as the order statuses may be updated faster than the cache deprecates!
+            $usePayment = $this->getPayment($paymentIdOrPaymentObject, false);
         }
         if (is_object($usePayment) && isset($usePayment->id) && isset($usePayment->paymentDiffs)) {
             $paymentDiff = $usePayment->paymentDiffs;
@@ -6841,8 +6901,10 @@ class ResursBank
                     // When something went wrong with an expected array.
                     continue;
                 }
-                $currentArray = array_intersect($this->getPurgedPaymentRow($artRow),
-                    $this->getPurgedPaymentRow($matchRow));
+                $currentArray = array_intersect(
+                    $this->getPurgedPaymentRow($artRow),
+                    $this->getPurgedPaymentRow($matchRow)
+                );
                 if (count($currentArray) === count($this->getPurgedPaymentRow($artRow))) {
                     $return = $matchRow;
                     break;
@@ -7245,10 +7307,18 @@ class ResursBank
         if ($paymentSpecificType == "INVOICE") {
             $finalAfterShopSpec['orderDate'] = date('Y-m-d', time());
             $finalAfterShopSpec['invoiceDate'] = date('Y-m-d', time());
-            if (empty($this->afterShopInvoiceId)) {
-                $finalAfterShopSpec['invoiceId'] = $this->getNextInvoiceNumber();
-            }
             $extRef = $this->getAfterShopInvoiceExtRef();
+            $invoiceNumber = $this->getNextInvoiceNumber();
+
+            if ($this->isFlag('TEST_INVOICE') && $this->current_environment === RESURS_ENVIRONMENTS::TEST) {
+                // Make us fail intentionally during test. This ID usually exists at our end.
+                $invoiceNumber = 1003036;
+            }
+
+            if ($this->isFlag('AFTERSHOP_STATIC_INVOICE') || $this->isFirstInvoiceId) {
+                $finalAfterShopSpec['invoiceId'] = $invoiceNumber;
+            }
+
             if (!empty($extRef)) {
                 $this->addMetaData($paymentId, 'invoiceExtRef', $extRef);
             }
@@ -7297,21 +7367,21 @@ class ResursBank
         if (count($customPayloadItemList)) {
             // Is $customPayloadItemList correctly formatted?
             switch ($payloadType) {
-                case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_FINALIZE:
+                case RESURS_AFTERSHOP_RENDER_TYPES::FINALIZE:
                     $customPayloadItemListValidated = $this->getValidatedAftershopRows(
                         $specStatusTable,
                         $customPayloadItemList,
                         'debit'
                     );
                     break;
-                case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_ANNUL:
+                case RESURS_AFTERSHOP_RENDER_TYPES::ANNUL:
                     $customPayloadItemListValidated = $this->getValidatedAftershopRows(
                         $specStatusTable,
                         $customPayloadItemList,
                         'annul'
                     );
                     break;
-                case RESURS_AFTERSHOP_RENDER_TYPES::AFTERSHOP_CREDIT:
+                case RESURS_AFTERSHOP_RENDER_TYPES::CREDIT:
                     $customPayloadItemListValidated = $this->getValidatedAftershopRows(
                         $specStatusTable,
                         $customPayloadItemList,
@@ -7439,14 +7509,29 @@ class ResursBank
                 return true;
             }
         } catch (\Exception $finalizationException) {
+            // Possible invoice error codes:
+            // 28 = ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
+            // 29 ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID
             if (
-                $finalizationException->getCode() == 29 &&
-                !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL') &&
-                !$runOnce
+                (
+                    (int)$finalizationException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID ||
+                    (int)$finalizationException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
+                ) &&
+                !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL')
             ) {
-                $this->getNextInvoiceNumberByDebits(5);
+                if (!$runOnce) {
+                    $this->getNextInvoiceNumberByDebits(5);
 
-                return $this->paymentFinalize($paymentId, $customPayloadItemList, true);
+                    return $this->paymentFinalize($paymentId, $customPayloadItemList, true);
+                } else {
+                    // One time failsafe rescue mode.
+                    if ($this->isFlag('AFTERSHOP_RESCUE_INVOICE') && $this->afterShopInvoiceId > 0) {
+                        // Reset after once run.
+                        $this->getNextInvoiceNumberByDebits(5);
+
+                        return $this->paymentFinalize($paymentId, $customPayloadItemList, true);
+                    }
+                }
             }
 
             throw new \ResursException(
@@ -7509,29 +7594,20 @@ class ResursBank
             RESURS_AFTERSHOP_RENDER_TYPES::ANNUL
         );
         $this->aftershopPrepareMetaData($paymentId);
-        try {
-            // We did nothing here since there was no orderlines.
-            if (!isset($afterShopObject['specLines']) ||
-                (
-                    is_array($afterShopObject['specLines']) &&
-                    !count($afterShopObject['specLines'])
-                )
-            ) {
-                return false;
-            }
-            $afterShopResponseCode = $this->postService("annulPayment", $afterShopObject, true);
-            if ($afterShopResponseCode >= 200 && $afterShopResponseCode < 300) {
-                $this->resetPayload();
+        // We did nothing here since there was no orderlines.
+        if (!isset($afterShopObject['specLines']) ||
+            (
+                is_array($afterShopObject['specLines']) &&
+                !count($afterShopObject['specLines'])
+            )
+        ) {
+            return false;
+        }
+        $afterShopResponseCode = $this->postService("annulPayment", $afterShopObject, true);
+        if ($afterShopResponseCode >= 200 && $afterShopResponseCode < 300) {
+            $this->resetPayload();
 
-                return true;
-            }
-        } catch (\Exception $annulException) {
-            if ($annulException->getCode() == 29 && !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL') && !$runOnce) {
-                $this->getNextInvoiceNumberByDebits(5);
-
-                return $this->paymentAnnul($paymentId, $customPayloadItemList, true);
-            }
-            throw new \ResursException($annulException->getMessage(), $annulException->getCode(), $annulException);
+            return true;
         }
 
         return false;
@@ -7606,15 +7682,36 @@ class ResursBank
                 return true;
             }
         } catch (\Exception $creditException) {
+            // Possible invoice error codes:
+            // 28 = ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
+            // 29 ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID
             if (
-                $creditException->getCode() == 29 &&
-                !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL') && !$runOnce
+                (
+                    (int)$creditException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID ||
+                    (int)$creditException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
+                ) &&
+                !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL')
             ) {
-                $this->getNextInvoiceNumberByDebits(5);
+                if (!$runOnce) {
+                    $this->getNextInvoiceNumberByDebits(5);
 
-                return $this->paymentCredit($paymentId, $customPayloadItemList, true);
+                    return $this->paymentCredit($paymentId, $customPayloadItemList, true);
+                } else {
+                    // One time failsafe rescue mode.
+                    if ($this->isFlag('AFTERSHOP_RESCUE_INVOICE') && $this->afterShopInvoiceId > 0) {
+                        // Reset after once run.
+                        $this->getNextInvoiceNumberByDebits(5);
+
+                        return $this->paymentCredit($paymentId, $customPayloadItemList, true);
+                    }
+                }
             }
-            throw new \ResursException($creditException->getMessage(), $creditException->getCode(), $creditException);
+
+            throw new \ResursException(
+                $creditException->getMessage(),
+                $creditException->getCode(),
+                $creditException
+            );
         }
 
         return false;
@@ -8053,7 +8150,7 @@ class ResursBank
     ) {
 
         if (is_string($paymentIdOrPaymentObject)) {
-            $paymentData = $this->getPayment($paymentIdOrPaymentObject);
+            $paymentData = $this->getPayment($paymentIdOrPaymentObject, false);
         } elseif (is_object($paymentIdOrPaymentObject)) {
             $paymentData = $paymentIdOrPaymentObject;
         } else {

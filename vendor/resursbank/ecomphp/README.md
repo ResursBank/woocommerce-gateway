@@ -26,9 +26,13 @@ For Ubuntu, you can quickly fetch those with apt-get like below, if your system 
 There might be a slight chance that you also need openssl or similar, as our services runs on https-only (normally openssl are delivered automatically, but sometimes they do not - apt-get install openssl might work in those cases if you have access to the server).
 
 
-# PHP 7.3
+# PHP versions verified
 
-Verified with PHP 7.3.1
+### December 9, 2019
+
+    Pipelines/Bamboo Verified : 5.6 - 7.4
+                       Legacy : 5.4 - 5.5
+                   Unverified : 5.3 and lower.
 
 
 ## What this library do and do not
