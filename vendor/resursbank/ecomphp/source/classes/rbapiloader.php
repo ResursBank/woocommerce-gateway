@@ -739,6 +739,7 @@ class ResursBank
      * @var string
      */
     private $afterShopInvoiceExtRef = "";
+    private $isFirstInvoiceId = false;
 
     /**
      * Default unit measure. "st" or styck for Sweden. If your plugin is not used for Sweden,
@@ -2644,10 +2645,12 @@ class ResursBank
                 $currentInvoiceNumber = $peekSequence->nextInvoiceNumber;
             } else {
                 $firstInvoiceNumber = 1;
+                $this->isFirstInvoiceId = true;
             }
         } catch (\Exception $e) {
             if (is_null($firstInvoiceNumber) && $initInvoice) {
                 $firstInvoiceNumber = 1;
+                $this->isFirstInvoiceId = true;
             }
         }
 
@@ -7312,9 +7315,10 @@ class ResursBank
                 $invoiceNumber = 1003036;
             }
 
-            if ($this->isFlag('AFTERSHOP_STATIC_INVOICE')) {
+            if ($this->isFlag('AFTERSHOP_STATIC_INVOICE') || $this->isFirstInvoiceId) {
                 $finalAfterShopSpec['invoiceId'] = $invoiceNumber;
             }
+
             if (!empty($extRef)) {
                 $this->addMetaData($paymentId, 'invoiceExtRef', $extRef);
             }
