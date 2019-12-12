@@ -4583,30 +4583,21 @@ function woocommerce_gateway_resurs_bank_init()
     {
     }
 
-    // If the filter is active in parts of admin, we should warn that the below part is disabled.
-    // Remember: current_user_can('administrator')
-    $simplifiedEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
-    $omniEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
-
-    if ($simplifiedEnabled) {
-        // If glob returns null (error) nothing should run
-        $incGlob = glob(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . '*.php');
-        if (is_array($incGlob)) {
-            foreach ($incGlob as $filename) {
-                if (!in_array($filename, get_included_files())) {
-                    include $filename;
-                }
+    // If glob returns null (error) nothing should run
+    $incGlob = glob(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . '*.php');
+    if (is_array($incGlob)) {
+        foreach ($incGlob as $filename) {
+            if (!in_array($filename, get_included_files())) {
+                include $filename;
             }
         }
     }
 
-    if ($omniEnabled) {
-        $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*.php');
-        if (is_array($staticGlob)) {
-            foreach ($staticGlob as $filename) {
-                if (!in_array($filename, get_included_files())) {
-                    include $filename;
-                }
+    $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*.php');
+    if (is_array($staticGlob)) {
+        foreach ($staticGlob as $filename) {
+            if (!in_array($filename, get_included_files())) {
+                include $filename;
             }
         }
     }
@@ -4630,8 +4621,17 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function woocommerce_add_resurs_bank_gateway($methods)
     {
+        // If the filter is active in parts of admin, we should warn that the below part is disabled.
+        // Remember: current_user_can('administrator')
         $simplifiedEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
+
         if (!$simplifiedEnabled) {
+            foreach ($methods as $id => $m) {
+                if (is_string($m) && preg_match("/^resurs_bank_/i", $m)) {
+                    unset($methods[$id]);
+                }
+            }
+
             return $methods;
         }
         $methods[] = 'WC_Resurs_Bank';
