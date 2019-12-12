@@ -766,15 +766,3 @@ if (hasResursOmni()) {
 
     // need filter or action for pre update_order_review
 }
-
-/**
- * @param string $key
- *
- * @return bool|mixed|void
- */
-function omniOption($key = '')
-{
-    $response = getResursOption($key, 'woocommerce_resurs_bank_omnicheckout_settings');
-
-    return $response;
-}

@@ -4506,8 +4506,10 @@ function woocommerce_gateway_resurs_bank_init()
             if (!isset($_SESSION['resurs_bank_admin_notice'])) {
                 $_SESSION['resurs_bank_admin_notice'] = [];
             }
-            $_SESSION['resurs_bank_admin_notice']['message'] = __('The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or older. You should consider upgrading to 5.4 or higher.',
-                'resurs-bank-payment-gateway-for-woocommerce');
+            $_SESSION['resurs_bank_admin_notice']['message'] = __(
+                'The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or older. You should consider upgrading to 5.4 or higher.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            );
             $_SESSION['resurs_bank_admin_notice']['type'] = 'resurswoo_phpversion_deprecated';
         }
 
@@ -4581,20 +4583,30 @@ function woocommerce_gateway_resurs_bank_init()
     {
     }
 
-    // If glob returns null (error) nothing should run
-    $incGlob = glob(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . '*.php');
-    if (is_array($incGlob)) {
-        foreach ($incGlob as $filename) {
-            if (!in_array($filename, get_included_files())) {
-                include $filename;
+    // If the filter is active in parts of admin, we should warn that the below part is disabled.
+    // Remember: current_user_can('administrator')
+    $simplifiedEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
+    $omniEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
+
+    if ($simplifiedEnabled) {
+        // If glob returns null (error) nothing should run
+        $incGlob = glob(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . '*.php');
+        if (is_array($incGlob)) {
+            foreach ($incGlob as $filename) {
+                if (!in_array($filename, get_included_files())) {
+                    include $filename;
+                }
             }
         }
     }
-    $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*.php');
-    if (is_array($staticGlob)) {
-        foreach ($staticGlob as $filename) {
-            if (!in_array($filename, get_included_files())) {
-                include $filename;
+
+    if ($omniEnabled) {
+        $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*.php');
+        if (is_array($staticGlob)) {
+            foreach ($staticGlob as $filename) {
+                if (!in_array($filename, get_included_files())) {
+                    include $filename;
+                }
             }
         }
     }
@@ -4618,6 +4630,10 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function woocommerce_add_resurs_bank_gateway($methods)
     {
+        $simplifiedEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
+        if (!$simplifiedEnabled) {
+            return $methods;
+        }
         $methods[] = 'WC_Resurs_Bank';
         if (is_admin() && is_array($methods)) {
             foreach ($methods as $id => $m) {
