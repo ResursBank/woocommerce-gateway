@@ -4623,7 +4623,7 @@ function woocommerce_gateway_resurs_bank_init()
     {
         // If the filter is active in parts of admin, we should warn that the below part is disabled.
         // Remember: current_user_can('administrator')
-        $simplifiedEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
+        $simplifiedEnabled = apply_filters('resurs_bank_checkout_methods_enabled', true);
 
         if (!$simplifiedEnabled) {
             foreach ($methods as $id => $m) {

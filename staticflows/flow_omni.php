@@ -742,7 +742,9 @@ if (hasResursOmni()) {
     function woocommerce_add_resurs_bank_omnicheckout($methods)
     {
         $optionEnabled = getResursOption('enabled');
-        if (!$optionEnabled) {
+        $methodsEnabled = apply_filters('resurs_bank_checkout_methods_enabled', true);
+
+        if (!$optionEnabled || !$methodsEnabled) {
             return $methods;
         }
         global $woocommerce;
