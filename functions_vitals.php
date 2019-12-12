@@ -237,3 +237,37 @@ function isResursDemo()
 
     return $return;
 }
+
+/**
+ * @param string $key
+ *
+ * @return bool|mixed|void
+ */
+function omniOption($key = '')
+{
+    $response = getResursOption($key, 'woocommerce_resurs_bank_omnicheckout_settings');
+
+    return $response;
+}
+
+/**
+ * Add notification on misconfigured filters.
+ */
+function notify_resurs_admin_parts_disabled()
+{
+    // Payment methods for simplified/hosted/RCO is normally true initially.
+    $simplifiedEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
+    $omniEnabled = apply_filters('resurs_bank_simplified_checkout_methods', true);
+    if ((!$simplifiedEnabled || !$omniEnabled)) {
+        // Warn about remotely disabled methods.
+        echo '<div class="error notice resursAdminPartsDisabled">
+            ' . __(
+                'An external plugin has partially disabled information about payment methods in your Resurs ' .
+                'Bank admin console. If this is correct, ignore this message.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ) .
+            '</div>';
+    }
+}
+
+add_action('admin_notices', 'notify_resurs_admin_parts_disabled');

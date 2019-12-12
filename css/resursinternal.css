@@ -389,3 +389,14 @@ a.labelBoot:focus, a.labelBoot:hover {
     vertical-align: top;
     font-size: 12px;
 }
+
+.resursAdminPartsDisabled {
+    border: 1px solid black;
+    background: #ffffff !important;
+    cursor: pointer;
+    color: #000099 !important;
+    text-align: center;
+    font-size: 14px;
+    align-content: center !important;
+    padding: 5px;
+}
