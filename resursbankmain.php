@@ -4057,9 +4057,17 @@ function woocommerce_gateway_resurs_bank_init()
                                 // use the getPayment-validation instead of customizations.
                                 $customFinalize = false;
                             } else {
-                                $customFinalize = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
+                                $customFinalize = self::getOrderRowsByRefundedDiscountItems(
+                                    $order,
+                                    $resursFlow, true
+                                );
                             }
-                            $successFinalize = $resursFlow->paymentFinalize($payment_id, null, false, $customFinalize);
+                            $successFinalize = $resursFlow->paymentFinalize(
+                                $payment_id,
+                                null,
+                                false,
+                                $customFinalize
+                            );
                             resursEventLogger(
                                 sprintf('%s: Finalization - Payment Content', $payment_id)
                             );
@@ -4158,7 +4166,11 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     if ($currentRunningUser) {
                         try {
-                            $customCancel = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
+                            $customCancel = self::getOrderRowsByRefundedDiscountItems(
+                                $order,
+                                $resursFlow,
+                                true
+                            );
                             if ($customCancel) {
                                 $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
                             }
@@ -4197,7 +4209,11 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'refunded':
                     if ($currentRunningUser) {
                         try {
-                            $customCancel = self::getOrderRowsByRefundedDiscountItems($order, $resursFlow, true);
+                            $customCancel = self::getOrderRowsByRefundedDiscountItems(
+                                $order,
+                                $resursFlow,
+                                true
+                            );
                             if ($customCancel) {
                                 $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
                             }
