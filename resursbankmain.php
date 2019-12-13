@@ -1872,7 +1872,10 @@ function woocommerce_gateway_resurs_bank_init()
             ];
 
             $setLabel = $labels[$fieldName];
-            if (isset($labelsLegal[$fieldName]) && !empty($labelsLegal[$fieldName]) && $customerType != "NATURAL") {
+            if (isset($labelsLegal[$fieldName]) &&
+                !empty($labelsLegal[$fieldName]) &&
+                $customerType != "NATURAL"
+            ) {
                 $setLabel = $labelsLegal[$fieldName];
             }
 
@@ -1894,8 +1897,13 @@ function woocommerce_gateway_resurs_bank_init()
             $fieldGenHtml = null;
             $post_data = isset($_REQUEST['post_data']) ? $this->splitPostData($_REQUEST['post_data']) : [];
             // Get the read more from internal translation if not set
-            $read_more = (!empty($translation) && isset($translation['read_more']) && !empty($translation['read_more'])) ? $translation['read_more'] : __('Read more',
-                'resurs-bank-payment-gateway-for-woocommerce');
+            $read_more = (!empty($translation) &&
+                isset($translation['read_more']) &&
+                !empty($translation['read_more']))
+                ? $translation['read_more'] : __(
+                    'Read more',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                );
 
             $id = $method->id;
             $type = $method->type;
@@ -1916,7 +1924,6 @@ function woocommerce_gateway_resurs_bank_init()
             } else {
                 $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType, $specificType);
             }
-
 
             if ($this->getMinMax($paymentSpec['totalAmount'], $method->minLimit, $method->maxLimit)) {
                 $buttonCssClasses = "btn btn-info active";
