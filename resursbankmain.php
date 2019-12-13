@@ -5023,8 +5023,7 @@ function woocommerce_gateway_resurs_bank_init()
 
     add_filter('woocommerce_get_settings_pages', 'rb_settings_pages');
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway');
-    add_filter('woocommerce_available_payment_gateways',
-        'woocommerce_resurs_bank_available_payment_gateways'); // Had prio 1
+    add_filter('woocommerce_available_payment_gateways', 'woocommerce_resurs_bank_available_payment_gateways');
     add_filter('woocommerce_before_checkout_billing_form', 'add_ssn_checkout_field');
     add_action('woocommerce_order_status_changed', 'WC_Resurs_Bank::order_status_changed', 10, 3);
     add_action('wp_enqueue_scripts', 'enqueue_script', 0);
@@ -5051,8 +5050,6 @@ function woocommerce_gateway_resurs_bank_init()
     add_filter('woocommerce_no_available_payment_methods_message', 'resurs_omnicheckout_payment_gateways_check');
     add_action('woocommerce_single_product_summary', 'resurs_annuity_factors');
 
-    // Deprecate me
-    //if (getResursOption('showPaymentIdInOrderList')) {}
     add_filter('manage_edit-shop_order_columns', 'resurs_order_column_header');
     add_action('manage_shop_order_posts_custom_column', 'resurs_order_column_info');
 
