@@ -4965,7 +4965,6 @@ function woocommerce_gateway_resurs_bank_init()
                     if (empty($annuityFactorsOverride)) {
                         $methodList = $flow->getPaymentMethodSpecific($annuityMethod);
                     }
-
                     if (!is_array($methodList) && !is_object($methodList)) {
                         $methodList = [];
                     }
@@ -5070,8 +5069,10 @@ function woocommerce_gateway_resurs_bank_init()
                 } catch (\Exception $annuityException) {
                     // In the multilingual demoshop there might be exceptions when the session is lost.
                     // Exceptions may also occur there, when the wrong payment method is checked and wrong language is chosen.
-                    $displayAnnuity .= __('Annuity factors can not be displayed for the moment',
-                            'resurs-bank-payment-gateway-for-woocommerce') . ": " . $annuityException->getMessage();
+                    $displayAnnuity .= __(
+                            'Annuity factors can not be displayed for the moment',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . ": " . $annuityException->getMessage();
                 }
             }
         }
