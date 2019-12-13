@@ -4392,8 +4392,13 @@ function woocommerce_gateway_resurs_bank_init()
         $OmniVars = [];
         if (isResursOmni()) {
             $omniRefAge = null;
-            wp_enqueue_script('resursomni', plugin_dir_url(__FILE__) . 'js/omnicheckout.js', [],
-                RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
+            wp_enqueue_script(
+                'resursomni',
+                plugin_dir_url(__FILE__) . 'js/omnicheckout.js',
+                [],
+                RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') &&
+                RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
+            );
             $omniBookUrl = home_url('/');
             $omniBookUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $omniBookUrl);
             $omniBookUrl = add_query_arg('event-type', 'prepare-omni-order', $omniBookUrl);
@@ -4425,11 +4430,17 @@ function woocommerce_gateway_resurs_bank_init()
                 'OmniRefCreated' => isset($omniRefCreated) && !empty($omniRefCreated) ? $omniRefCreated : null,
                 'OmniRefAge' => $omniRefAge,
                 'isResursTest' => isResursTest(),
-                'iframeShape' => getResursOption("iframeShape",
-                    "woocommerce_resurs_bank_omnicheckout_settings"),
-                'useStandardFieldsForShipping' => getResursOption("useStandardFieldsForShipping",
-                    "woocommerce_resurs_bank_omnicheckout_settings"),
-                'showResursCheckoutStandardFieldsTest' => getResursOption("showResursCheckoutStandardFieldsTest"),
+                'iframeShape' => getResursOption(
+                    'iframeShape',
+                    'woocommerce_resurs_bank_omnicheckout_settings'
+                ),
+                'useStandardFieldsForShipping' => getResursOption(
+                    'useStandardFieldsForShipping',
+                    'woocommerce_resurs_bank_omnicheckout_settings'
+                ),
+                'showResursCheckoutStandardFieldsTest' => getResursOption(
+                    'showResursCheckoutStandardFieldsTest'
+                ),
                 'gatewayCount' => (is_array($gateways) ? count($gateways) : 0),
                 'postidreference' => getResursOption("postidreference"),
             ];
@@ -4472,46 +4483,84 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         $resursLanguageLocalization = [
-            'getAddressEnterGovernmentId' => __('Enter social security number',
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'getAddressEnterCompany' => __('Enter corporate government identity',
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'labelGovernmentId' => __('Government id', 'resurs-bank-payment-gateway-for-woocommerce'),
-            'labelCompanyId' => __('Corporate government id', 'resurs-bank-payment-gateway-for-woocommerce'),
+            'getAddressEnterGovernmentId' => __(
+                'Enter social security number',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'getAddressEnterCompany' => __(
+                'Enter corporate government identity',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'labelGovernmentId' => __(
+                'Government id',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'labelCompanyId' => __(
+                'Corporate government id',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
         ];
 
         // Country language overrider - MarGul
         if (isResursDemo() && class_exists('CountryHandler')) {
             $translation = CountryHandler::getDictionary();
             $resursLanguageLocalization = [
-                'getAddressEnterGovernmentId' => __($translation['enter_ssn_num'],
-                    'resurs-bank-payment-gateway-for-woocommerce'),
-                'getAddressEnterCompany' => __($translation['enter_gov_id'],
-                    'resurs-bank-payment-gateway-for-woocommerce'),
-                'labelGovernmentId' => __($translation['gov_id'], 'resurs-bank-payment-gateway-for-woocommerce'),
-                'labelCompanyId' => __($translation['corp_gov_id'], 'resurs-bank-payment-gateway-for-woocommerce'),
+                'getAddressEnterGovernmentId' => __(
+                    $translation['enter_ssn_num'],
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ),
+                'getAddressEnterCompany' => __(
+                    $translation['enter_gov_id'],
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ),
+                'labelGovernmentId' => __(
+                    $translation['gov_id'],
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ),
+                'labelCompanyId' => __(
+                    $translation['corp_gov_id'],
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ),
             ];
         }
 
         $generalJsTranslations = [
-            'deliveryRequiresSigning' => __("Changing delivery address requires signing",
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'ssnElementMissing' => __("I can not show errors since the element is missing",
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'purchaseAjaxInternalFailure' => __("The purchase has failed, due to an internal server error: The shop could not properly update the order.",
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'updatePaymentReferenceFailure' => __("The purchase was processed, but the payment reference failed to update",
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'resursPurchaseNotAccepted' => __("The purchase was rejected by Resurs Bank. Please contact customer services, or try again with another payment method.",
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'theAjaxWasNotAccepted' => __("Something went wrong when we tried to book your order. Please contact customer support for more information.",
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'theAjaxWentWrong' => __("An internal error occured while trying to book the order. Please contact customer support for more information.",
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'theAjaxWentWrongWithThisMessage' => __("An internal error occured while trying to book the order:",
-                    'resurs-bank-payment-gateway-for-woocommerce') . " ",
-            'contactSupport' => __("Please contact customer support for more information.",
-                'resurs-bank-payment-gateway-for-woocommerce'),
+            'deliveryRequiresSigning' => __(
+                'Changing delivery address requires signing',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'ssnElementMissing' => __(
+                'I can not show errors since the element is missing',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'purchaseAjaxInternalFailure' => __(
+                'The purchase has failed, due to an internal server error: The shop could not properly update the order.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'updatePaymentReferenceFailure' => __(
+                'The purchase was processed, but the payment reference failed to update',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'resursPurchaseNotAccepted' => __(
+                'The purchase was rejected by Resurs Bank. Please contact customer services, or try again with another payment method.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'theAjaxWasNotAccepted' => __(
+                'Something went wrong when we tried to book your order. Please contact customer support for more information.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'theAjaxWentWrong' => __(
+                'An internal error occured while trying to book the order. Please contact customer support for more information.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'theAjaxWentWrongWithThisMessage' => __(
+                    'An internal error occured while trying to book the order:',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ) . " ",
+            'contactSupport' => __(
+                'Please contact customer support for more information.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
         ];
 
         $customerTypes = WC_Resurs_Bank::get_address_customertype(true);
@@ -4529,11 +4578,18 @@ function woocommerce_gateway_resurs_bank_init()
             $oneRandomValue = "?randomizeMe=" . rand(1024, 65535);
         }
         $ajaxObject = ['ajax_url' => admin_url('admin-ajax.php')];
-        wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css', [],
-            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
-        wp_enqueue_script('resursbankmain', plugin_dir_url(__FILE__) . 'js/resursbank.js' . $oneRandomValue,
+        wp_enqueue_style(
+            'resursInternal',
+            plugin_dir_url(__FILE__) . 'css/resursinternal.css',
+            [],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
+        );
+        wp_enqueue_script(
+            'resursbankmain',
+            plugin_dir_url(__FILE__) . 'js/resursbank.js' . $oneRandomValue,
             ['jquery'],
-            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
+        );
         wp_localize_script('resursbankmain', 'rb_getaddress_fields', $resursLanguageLocalization);
         wp_localize_script('resursbankmain', 'rb_general_translations', $generalJsTranslations);
         wp_localize_script('resursbankmain', 'ajax_object', $ajaxObject);
@@ -4556,10 +4612,18 @@ function woocommerce_gateway_resurs_bank_init()
         $images = plugin_dir_url(__FILE__) . "img/";
         $resursLogo = $images . "resurs-standard.png";
 
-        wp_enqueue_style('resursInternal', plugin_dir_url(__FILE__) . 'css/resursinternal.css', [],
-            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
-        wp_enqueue_script('resursBankAdminScript', plugin_dir_url(__FILE__) . 'js/resursbankadmin.js', [],
-            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : ""));
+        wp_enqueue_style(
+            'resursInternal',
+            plugin_dir_url(__FILE__) . 'css/resursinternal.css',
+            [],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
+        );
+        wp_enqueue_script(
+            'resursBankAdminScript',
+            plugin_dir_url(__FILE__) . 'js/resursbankadmin.js',
+            [],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
+        );
 
         $requestForCallbacks = callbackUpdateRequest();
 
@@ -4586,22 +4650,34 @@ function woocommerce_gateway_resurs_bank_init()
             'resursSpinner' => plugin_dir_url(__FILE__) . 'loader.gif',
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'loaderLocal.gif',
             'resursFeePen' => plugin_dir_url(__FILE__) . 'img/pen16x.png',
-            'callbackUrisCache' => __('The list of urls below is cached from an earlier response from Resurs Bank',
-                'resurs-bank-payment-gateway-for-woocommerce'),
+            'callbackUrisCache' => __(
+                'The list of urls below is cached from an earlier response from Resurs Bank',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
             'callbackUrisCacheTime' => $lastFetchedCacheTime,
-            'callbacks_registered' => __('callbacks has been registered',
-                'resurs-bank-payment-gateway-for-woocommerce'),
+            'callbacks_registered' => __(
+                'callbacks has been registered',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
             'update_callbacks' => __('Update callbacks again', 'resurs-bank-payment-gateway-for-woocommerce'),
             'update_test' => __('Trigger test callback', 'resurs-bank-payment-gateway-for-woocommerce'),
-            'useZeroToReset' => __('To remove the fee properly, set the value to 0',
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'notAllowedValue' => __('The entered value is not allowed here',
-                'resurs-bank-payment-gateway-for-woocommerce'),
+            'useZeroToReset' => __(
+                'To remove the fee properly, set the value to 0',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'notAllowedValue' => __(
+                'The entered value is not allowed here',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
             'requestForCallbacks' => $requestForCallbacks,
-            'noCallbacksSet' => __('No registered callbacks could be found',
-                'resurs-bank-payment-gateway-for-woocommerce'),
-            'annulCantBeAlone' => __('This setting requires waitForFraudControl to be active',
-                'resurs-bank-payment-gateway-for-woocommerce'),
+            'noCallbacksSet' => __(
+                'No registered callbacks could be found',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'annulCantBeAlone' => __(
+                'This setting requires waitForFraudControl to be active',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
             'couldNotSetNewFee' => __('Unable to set new fee', 'resurs-bank-payment-gateway-for-woocommerce'),
             'newFeeHasBeenSet' => __('Fee has been updated', 'resurs-bank-payment-gateway-for-woocommerce'),
             'callbacks_pending' => __('Waiting for callback', 'resurs-bank-payment-gateway-for-woocommerce'),
