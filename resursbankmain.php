@@ -3815,6 +3815,8 @@ function woocommerce_gateway_resurs_bank_init()
                 ];
             }
 
+            apply_filters('resurs_bank_js_payment_methods', $responseArray);
+
             if ($return) {
                 return $responseArray;
             }
@@ -4570,6 +4572,7 @@ function woocommerce_gateway_resurs_bank_init()
             'customerTypes' => $customerTypes,
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
+            'isUserLoggedIn', is_user_logged_in(),
         ];
 
         $oneRandomValue = null;
