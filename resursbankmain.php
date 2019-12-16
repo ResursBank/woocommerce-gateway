@@ -3815,7 +3815,7 @@ function woocommerce_gateway_resurs_bank_init()
                 ];
             }
 
-            apply_filters('resurs_bank_js_payment_methods', $responseArray);
+            $responseArray = apply_filters('resurs_bank_js_payment_methods', $responseArray);
 
             if ($return) {
                 return $responseArray;

@@ -24,7 +24,6 @@ $RB(document).on('updated_checkout', function () {
 var rbRefUpdated = false;
 
 $RB(document).ready(function ($) {
-
     preSetResursMethods(currentCustomerType.toUpperCase(), resursvars["customerTypes"]);
 
     //$RB('#resurs-checkout-container iframe').css('background-color', '#9900FF');
@@ -199,7 +198,7 @@ $RB(document).ready(function ($) {
                                 resursCheckout.confirmOrder(success);
                             } else {
                                 var contactUs = getResursPhrase("contactSupport");
-                                handleResursCheckoutError(errorString + " ("+errorCode+") " + contactUs);
+                                handleResursCheckoutError(errorString + " (" + errorCode + ") " + contactUs);
                             }
 
                             return false;
@@ -576,25 +575,29 @@ function preSetResursMethods(customerType, returnedObjects) {
         return;
     }
     customerType = customerType.toLowerCase();
-
     if ($RB('#ssnCustomerType' + customerType.toUpperCase() + ':checked').length === 0 && ($RB('#billing_company').length > 0 && $RB('#billing_company').val() == "")) {
-        // The moment when we cannot predict the method of choice, we'll show both methods
+        // The moment when we cannot predict the method of choice, we'll show both methods.
         $RB('li[class*=payment_method_resurs]').each(function () {
             showElm = document.getElementsByClassName(this.className);
             if (showElm.length > 0) {
                 for (var showElmCount = 0; showElmCount < showElm.length; showElmCount++) {
                     if (showElm[showElmCount].tagName.toLowerCase() === "li") {
-                        showElm[showElmCount].style.display = "";
+                        if (resursMethodIsIn(returnedObjects, showElm[showElmCount])) {
+                            showElm[showElmCount].style.display = "";
+                        } else {
+                            showElm[showElmCount].style.display = "none";
+                        }
                     }
                 }
             }
         });
     } else {
-        if (typeof returnedObjects['natural'] !== "undefined" && typeof returnedObjects['legal'] !== "undefined" && typeof returnedObjects[hideCustomerType] !== "undefined") {
+        if (typeof returnedObjects['natural'] !== 'undefined' && typeof returnedObjects['legal'] !== 'undefined' && typeof returnedObjects[hideCustomerType] !== 'undefined') {
             for (var cType = 0; cType < returnedObjects[hideCustomerType].length; cType++) {
                 hideElm = document.getElementsByClassName('payment_method_' + returnedObjects[hideCustomerType][cType]);
                 if (hideElm.length > 0) {
                     for (var hideElmCount = 0; hideElmCount < hideElm.length; hideElmCount++) {
+                        console.dir(hideElm[hideElmCount]);
                         if (hideElm[hideElmCount].tagName.toLowerCase() === "li") {
                             for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length; getChild++) {
                                 if (typeof hideElm[hideElmCount].childNodes[getChild].type !== "undefined" && hideElm[hideElmCount].childNodes[getChild].type === "radio") {
@@ -632,6 +635,28 @@ function preSetResursMethods(customerType, returnedObjects) {
             $RB('#billing_company').prop('readonly', false);
         }
     }
+}
+
+function resursMethodIsIn(methods, currentElm) {
+    var returnValue = true;
+    var foundMethod = false;
+    if (currentElm.className.indexOf('_nr_') > -1) {
+        var getName = 'resurs_bank_nr_' + currentElm.className.substr(currentElm.className.indexOf('_nr_') + 4);
+        if (typeof methods["legal"] !== "undefined") {
+            if ($RB.inArray(getName, methods["legal"]) > -1) {
+                foundMethod = true;
+            }
+        }
+        if (typeof methods["natural"] !== "undefined") {
+            if ($RB.inArray(getName, methods["natural"]) > -1) {
+                foundMethod = true;
+            }
+        }
+        if (!foundMethod) {
+            returnValue = false;
+        }
+    }
+    return returnValue;
 }
 
 function methodChangers(currentSelectionObject) {
