@@ -525,8 +525,6 @@ function getMethodType(customerType) {
 }
 
 function preSetResursMethods(customerType, returnedObjects) {
-    var hideElm;
-    var showElm;
     var hasLegal = false;
     var hasNatural = false;
     var disableGetAddressOptions = "";
@@ -575,54 +573,16 @@ function preSetResursMethods(customerType, returnedObjects) {
         return;
     }
     customerType = customerType.toLowerCase();
-    if ($RB('#ssnCustomerType' + customerType.toUpperCase() + ':checked').length === 0 && ($RB('#billing_company').length > 0 && $RB('#billing_company').val() == "")) {
-        // The moment when we cannot predict the method of choice, we'll show both methods.
-        $RB('li[class*=payment_method_resurs]').each(function () {
-            showElm = document.getElementsByClassName(this.className);
-            if (showElm.length > 0) {
-                for (var showElmCount = 0; showElmCount < showElm.length; showElmCount++) {
-                    if (showElm[showElmCount].tagName.toLowerCase() === "li") {
-                        if (resursMethodIsIn(returnedObjects, showElm[showElmCount])) {
-                            showElm[showElmCount].style.display = "";
-                        } else {
-                            showElm[showElmCount].style.display = "none";
-                        }
-                    }
-                }
-            }
-        });
-    } else {
-        if (typeof returnedObjects['natural'] !== 'undefined' && typeof returnedObjects['legal'] !== 'undefined' && typeof returnedObjects[hideCustomerType] !== 'undefined') {
-            for (var cType = 0; cType < returnedObjects[hideCustomerType].length; cType++) {
-                hideElm = document.getElementsByClassName('payment_method_' + returnedObjects[hideCustomerType][cType]);
-                if (hideElm.length > 0) {
-                    for (var hideElmCount = 0; hideElmCount < hideElm.length; hideElmCount++) {
-                        //console.dir(hideElm[hideElmCount]);
-                        if (hideElm[hideElmCount].tagName.toLowerCase() === "li") {
-                            for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length; getChild++) {
-                                if (typeof hideElm[hideElmCount].childNodes[getChild].type !== "undefined" && hideElm[hideElmCount].childNodes[getChild].type === "radio") {
-                                    // Unselect this radio buttons if found, just to make sure no method are chosen in a moment like this
-                                    if ($RB.inArray(hideElm[hideElmCount].childNodes[getChild].value, returnedObjects[hideCustomerType]) === -1) {
-                                        // Only uncheck a method box if it does not already exists in the new array, when switching over from customerType
-                                        hideElm[hideElmCount].childNodes[getChild].checked = false;
-                                    }
-                                }
-                            }
-                            hideElm[hideElmCount].style.display = "none";
-                        }
-                    }
-                }
-            }
-            for (var cType = 0; cType < returnedObjects[customerType].length; cType++) {
-                showElm = document.getElementsByClassName('payment_method_' + returnedObjects[customerType][cType]);
-                if (showElm.length > 0) {
-                    for (var showElmCount = 0; showElmCount < showElm.length; showElmCount++) {
-                        if (showElm[showElmCount].tagName.toLowerCase() === "li") {
-                            showElm[showElmCount].style.display = "";
-                        }
-                    }
-                }
-            }
+    if (hideCustomerType === "legal" && !getResursMethodList(returnedObjects, "natural", true)) {
+        // Hiding legal methods when there are not legal methods available, makes the radio buttons
+        // not necessary to be shown at all.
+        $RB('#ssnCustomerRadioNATURAL').remove();
+        $RB('#ssnCustomerRadioLEGAL').remove();
+    }
+    if (!getResursMethodList(returnedObjects, hideCustomerType, false)) {
+        // Switch back to a method list that is still allowed to display themselves.
+        if (!getResursMethodList(returnedObjects, customerType.toLowerCase(), false)) {
+            console.log('Someone chose to not display any payment method at all. This might be caused by a filter hook.');
         }
     }
 
@@ -638,24 +598,61 @@ function preSetResursMethods(customerType, returnedObjects) {
 }
 
 /**
+ * Get a proper list of methods and display them on checkout screen depending on NATURAL or LEGAL.
+ *
+ * @param returnedObjects
+ * @param hideCustomerType
+ * @param skipDisplay
+ * @returns {boolean}
+ */
+function getResursMethodList(returnedObjects, hideCustomerType, skipDisplay) {
+    var shown = 0;
+    var hasShown = false;
+
+    $RB('li[class*=payment_method_resurs]').each(function () {
+        var showElm = document.getElementsByClassName(this.className);
+        if (showElm.length > 0) {
+            for (var showElmCount = 0; showElmCount < showElm.length; showElmCount++) {
+                if (showElm[showElmCount].tagName.toLowerCase() === "li") {
+                    if (resursMethodIsIn(returnedObjects, showElm[showElmCount], hideCustomerType)) {
+                        if (!skipDisplay) {
+                            showElm[showElmCount].style.display = "";
+                        }
+                        shown++;
+                    } else {
+                        if (!skipDisplay) {
+                            showElm[showElmCount].style.display = "none";
+                        }
+                    }
+                }
+            }
+        }
+    });
+    if (shown > 0) {
+        hasShown = true;
+    }
+    return hasShown;
+}
+
+/**
  * Return true if the "requested" payment method resides in the array that should be tested.
- * 
+ *
  * @param methods
  * @param currentElm
  * @returns {boolean}
  */
-function resursMethodIsIn(methods, currentElm) {
+function resursMethodIsIn(methods, currentElm, hideCustomerType) {
     var returnValue = true;
     var foundMethod = false;
     if (currentElm.className.indexOf('_nr_') > -1) {
         var getName = 'resurs_bank_nr_' + currentElm.className.substr(currentElm.className.indexOf('_nr_') + 4);
         if (typeof methods["legal"] !== "undefined") {
-            if ($RB.inArray(getName, methods["legal"]) > -1) {
+            if (hideCustomerType !== 'legal' && $RB.inArray(getName, methods["legal"]) > -1) {
                 foundMethod = true;
             }
         }
         if (typeof methods["natural"] !== "undefined") {
-            if ($RB.inArray(getName, methods["natural"]) > -1) {
+            if (hideCustomerType !== 'natural' && $RB.inArray(getName, methods["natural"]) > -1) {
                 foundMethod = true;
             }
         }
