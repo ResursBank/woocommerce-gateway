@@ -597,7 +597,7 @@ function preSetResursMethods(customerType, returnedObjects) {
                 hideElm = document.getElementsByClassName('payment_method_' + returnedObjects[hideCustomerType][cType]);
                 if (hideElm.length > 0) {
                     for (var hideElmCount = 0; hideElmCount < hideElm.length; hideElmCount++) {
-                        console.dir(hideElm[hideElmCount]);
+                        //console.dir(hideElm[hideElmCount]);
                         if (hideElm[hideElmCount].tagName.toLowerCase() === "li") {
                             for (var getChild = 0; getChild < hideElm[hideElmCount].childNodes.length; getChild++) {
                                 if (typeof hideElm[hideElmCount].childNodes[getChild].type !== "undefined" && hideElm[hideElmCount].childNodes[getChild].type === "radio") {
@@ -637,6 +637,13 @@ function preSetResursMethods(customerType, returnedObjects) {
     }
 }
 
+/**
+ * Return true if the "requested" payment method resides in the array that should be tested.
+ * 
+ * @param methods
+ * @param currentElm
+ * @returns {boolean}
+ */
 function resursMethodIsIn(methods, currentElm) {
     var returnValue = true;
     var foundMethod = false;
