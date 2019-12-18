@@ -527,8 +527,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 }
                                 $myResponse['element'] = ["currentResursPaymentMethods", "callbackContent"];
                                 set_transient('resurs_bank_last_callback_setup', 0);
-                                $myResponse['html'] = '<br><div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __('Please reload or save this page to have this list updated',
-                                        'resurs-bank-payment-gateway-for-woocommerce') . '</div><br><br>';
+                                $myResponse['html'] = '<br>' .
+                                    '<div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __(
+                                        'Please reload or save this page to have this list updated',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ) . '</div><br><br>';
                             }
                         }
                     }
@@ -4047,6 +4050,7 @@ function woocommerce_gateway_resurs_bank_init()
                             /**
                              * Full-Finalize orders with getPayment()-validation if status is
                              * a "first time handled" order.
+                             *
                              * @link https://test.resurs.com/docs/display/ecom/paymentStatus
                              */
                             if (
@@ -4271,6 +4275,10 @@ function woocommerce_gateway_resurs_bank_init()
     function add_ssn_checkout_field($checkout)
     {
         if (!getResursOption('enabled')) {
+            return $checkout;
+        }
+
+        if (!apply_filters('resurs_getaddress_enabled', true)) {
             return $checkout;
         }
 
@@ -4572,7 +4580,6 @@ function woocommerce_gateway_resurs_bank_init()
             'customerTypes' => $customerTypes,
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
-            'isUserLoggedIn', is_user_logged_in(),
         ];
 
         $oneRandomValue = null;
@@ -4605,7 +4612,7 @@ function woocommerce_gateway_resurs_bank_init()
      *
      * @param string $hook The current page
      *
-     * @return null        Returns null current page is not correct
+     * @return null Returns null current page is not correct
      */
     function admin_enqueue_script($hook)
     {
@@ -6338,6 +6345,7 @@ function isResursSimulation()
 
 /**
  * Get current customer id
+ *
  * @param WC_Order $order
  * @return int|null
  */
@@ -6465,6 +6473,7 @@ function isResursHosted()
 
 /**
  * Returns list of configured statuses on callbacks
+ *
  * @return array|bool
  */
 function resurs_payment_status_callbacks()
@@ -6675,6 +6684,7 @@ if (!function_exists('getHadMisplacedIframeLocation')) {
     /**
      * Makes sure that you can reselect a deprecated setting for the iframe location
      * when using RCO if it has been selected once in a time
+     *
      * @return bool|mixed|void
      * @since 2.2.13
      */
