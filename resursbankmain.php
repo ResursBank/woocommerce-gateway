@@ -2340,6 +2340,8 @@ function woocommerce_gateway_resurs_bank_init()
 
             $return = [];
 
+            update_post_meta($order_id, 'orderBookStatus', $bookedStatus);
+
             switch ($bookedStatus) {
                 case 'FINALIZED':
                     define('RB_SYNCHRONOUS_MODE', true);
@@ -2393,6 +2395,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'redirect' => $signingUrl,
                         ];
                     }
+                    update_post_meta($order_id, 'orderSignFailed', true);
                     $order->update_status('failed');
                     wc_add_notice(
                         __(
@@ -2415,6 +2418,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                     break;
                 case 'FAILED':
+                    update_post_meta($order_id, 'orderBookFailed', true);
+
                     $order->update_status(
                         'failed',
                         __(
