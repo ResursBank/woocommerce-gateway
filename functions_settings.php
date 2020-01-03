@@ -1041,7 +1041,8 @@ if (is_admin()) {
                     }
                 }
 
-    
+                \$this->customerTypes = isset(\$realTimePaymentMethod->customerType) ? (array)\$realTimePaymentMethod->customerType : [];
+
                 \$this->demoCountry = null;
                 \$this->demoMethods = null;
                 if (\$this->isDemo) {
@@ -1130,7 +1131,13 @@ if (is_admin()) {
                 if (!\$this->overRideIsAvailable) {
                     return false;
                 }
-                \$isEnabled = getResursOption('enabled', 'woocommerce_{$class_name}_settings');
+                \$curEnableState = getResursOption('enabled', 'woocommerce_{$class_name}_settings');
+                \$isEnabled = apply_filters(
+                  'resurs_method_is_enabled',
+                   \$curEnableState,
+                   \$this
+                );
+                
                 if (!\$isEnabled) {
                     return false;
                 }
