@@ -2,7 +2,7 @@
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 5.3.0
+Tested up to: 5.3.2
 Requires PHP: 5.4
 Stable tag: 2.2.25
 License: GPLv2 or later
@@ -23,14 +23,20 @@ As of v2.2.12, we do support SWISH and similar "instant debitable" payment metho
 
 This is a payment gateway for Resurs Bank, that supports three Resurs Bank shopflows. Depending on which flow that's being selected, there are also requirements on different communication drivers, but in short - to get full control over this plugin - it is good to have them all available.
 
+Tested with WooCommerce up to v3.8.2
+
 
 = Compatibility =
 
 The plugin was once written for WooCommerce v2.6 and up but as of today, we've started to change the requirements. It is no longer guaranteed that this plugin is compatible with such old versions. Ever since WooCommerce [discoverd a file deletion vulnerable (click here)](https://blog.ripstech.com/2018/wordpress-design-flaw-leads-to-woocommerce-rce/) our goal is to patch away deprecated functions.
 
- * Compatibility: WooCommerce - at least 3.x and up to 3.5 (it might eventually work with older versions too, however this will remain unconfirmed)
+ * Compatibility: WooCommerce - at least 3.x and up to 3.8.X (it might eventually work with older versions too, however this will remain unconfirmed)
  * Plugin verified with PHP version 5.4 - 7.3
  * Addon scripts verified with PHP 5.3 - 7.3 (EComPHP 1.3.x and NetCURL 6.0.20+)
+
+= Upgrade notice =
+
+When developing the plugin for Woocommerce, we usually follow the versions for WooCommerce and always upgrading when there are new versions out. That said, it is *normally* also safe to upgrade to the latest woocommerce.
 
 
 == Can I upgrade WooCommerce with your plugin installed? ==
