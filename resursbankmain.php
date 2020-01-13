@@ -6095,9 +6095,6 @@ if (!function_exists('r_wc_get_order_item_type_by_item_id')) {
 function getResursInternalRcoUrl($username, $flow)
 {
     $iframeTestUrl = getResursOption('iframeTestUrl', 'woocommerce_resurs_bank_omnicheckout_settings');
-    $specialAccounts = [
-        'checkoutwebse',
-    ];
     $specialAccounts = apply_filters('resurs_pte_account', $specialAccounts);
     $pteUsers = getResursFlag('PTEUSERS');
     if (!empty($pteUsers)) {
