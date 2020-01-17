@@ -3135,9 +3135,7 @@ function woocommerce_gateway_resurs_bank_init()
             $url_arr = parse_url($_SERVER["REQUEST_URI"]);
             $url_arr['query'] = str_replace('amp;', '', $url_arr['query']);
             parse_str($url_arr['query'], $request);
-            $order_id = isset($request['order_id']) &&
-            !empty($request['order_id'])
-                ? $request['order_id'] : null;
+            $order_id = isset($request['order_id']) && !empty($request['order_id']) ? $request['order_id'] : null;
             /** @var $order WC_Order */
             $order = new WC_Order($order_id);
             $getRedirectUrl = $this->get_return_url($order);
@@ -4424,6 +4422,11 @@ function woocommerce_gateway_resurs_bank_init()
             $flow = initializeResursFlow();
             $sEnv = getServerEnv();
             $OmniUrl = $flow->getCheckoutUrl($sEnv);
+            //apply_filters('resurs_get_omni_url', $OmniUrl);
+            $debugOmniUrl = getResursFlag('OMNIURL');
+            if (!empty($debugOmniUrl)) {
+                    $OmniUrl = $debugOmniUrl;
+            }
 
             $isWooSession = false;
             if (isset(WC()->session)) {
@@ -4439,6 +4442,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             $OmniVars = [
                 'RESURSCHECKOUT_IFRAME_URL' => $OmniUrl,
+                'ACCEPT_CHECKOUT_PREFIXES' => getResursFlag('ACCEPT_CHECKOUT_PREFIXES'),
                 'RESURSCHECKOUT' => home_url(),
                 'OmniPreBookUrl' => $omniBookNonce,
                 'OmniRef' => isset($omniRef) && !empty($omniRef) ? $omniRef : null,
