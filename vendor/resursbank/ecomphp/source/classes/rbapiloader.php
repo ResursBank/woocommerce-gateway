@@ -7,7 +7,7 @@
  * @author  Resurs Bank <support@resurs.se>
  * @author  Tomas Tornevall <tomas.tornevall@resurs.se>
  * @branch  1.3
- * @version 1.3.26
+ * @version 1.3.29
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -57,10 +57,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.27');
+    define('ECOMPHP_VERSION', '1.3.29');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20191204');
+    define('ECOMPHP_MODIFY_DATE', '20200121');
 }
 
 /**
@@ -462,7 +462,7 @@ class ResursBank
     /**
      * @var string The next generation checkout URL. Internal only.
      */
-    private $rcoNgUrl = "http://omnicheckout-webservicefrontend.pte.loc";
+    private $rcoNgUrl = "https://web-integration-mock-checkout.integration.resurs.com";
 
     /**
      * Default production URL for Resurs Checkout
@@ -8100,10 +8100,31 @@ class ResursBank
             } else {
                 $return += RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_MANUAL_INSPECTION;
             }
-
         }
 
-        // Return generic
+        if ($this->isFrozen($paymentData)) {
+            $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PENDING;
+        }
+
+        return $this->resetFailBit($return);
+    }
+
+    /**
+     * Is status set but Ecom clains that it could not set it?
+     *
+     * @param $return
+     * @return int
+     * @since 1.3.28
+     */
+    private function resetFailBit($return) {
+        // Occurs when PAYMENT_COMPLETED and finalization status falsely returns with PAYMENT_STATUS_COULD_NOT_BE_SET.
+        if (($return & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) &&
+            $return !== RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET &&
+            $return > 0
+        ) {
+            $return -= RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
+        }
+
         return $return;
     }
 
@@ -8181,10 +8202,12 @@ class ResursBank
                 // callback, so we'll continue checking the order by statuses if this order is not frozen
                 return $preAnalyzePayment;
             case $byCallbackEvent & (RESURS_CALLBACK_TYPES::FINALIZATION):
-                return (
+                $return = (
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_COMPLETED |
                     $this->getInstantFinalizationStatus($paymentData, $paymentMethodObject)
                 );
+
+                return $this->resetFailBit($return);
             case $byCallbackEvent & (RESURS_CALLBACK_TYPES::UNFREEZE):
                 return RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_PROCESSING;
             case $byCallbackEvent & (RESURS_CALLBACK_TYPES::UPDATE):
