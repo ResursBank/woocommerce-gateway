@@ -9,7 +9,7 @@ if (null !== omnivars) {
     var RESURSCHECKOUT_IFRAME_URL = omnivars.RESURSCHECKOUT_IFRAME_URL;
     var ACCEPT_CHECKOUT_PREFIXES = omnivars.ACCEPT_CHECKOUT_PREFIXES;
 }
-RESURSCHECKOUT_IFRAME_URL = "*";
+//RESURSCHECKOUT_IFRAME_URL = "*";
 var customerTypes = null;
 var currentCustomerType = 'NATURAL'; // Default
 
