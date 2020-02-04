@@ -3732,6 +3732,13 @@ function woocommerce_gateway_resurs_bank_init()
             $wooCommerceStyle = realpath(get_stylesheet_directory()) . "/css/woocommerce.css";
             $styles = [];
 
+            $costOfPriceInfoCountries = ['DK'];
+
+            $selectedCountry = getResursOption("country");
+            if (in_array($selectedCountry, $costOfPriceInfoCountries)) {
+
+            }
+
             $costOfPurchaseCss = getResursOption('costOfPurchaseCss');
             if (empty($costOfPurchaseCss)) {
                 if (file_exists($wooCommerceStyle)) {
