@@ -4000,12 +4000,17 @@ class ResursBank
      * @throws Exception
      * @since 1.3.30
      */
-    private function getRenderedPriceInfoTemplates($method, $amount, $fetch = false)
+    private function getRenderedPriceInfoTemplates($method, $amount, $fetch = false, $iframe = false)
     {
         $return = [
             'tabs' => '',
             'block' => '',
         ];
+
+        if (is_string($method) && !empty($method)) {
+            $method = $this->getPaymentMethodSpecific($method);
+        }
+
         if (!isset($method->id)) {
             return $return;
         }
@@ -4013,7 +4018,7 @@ class ResursBank
         $methodUrl = $this->getPriceInformationUrl($amount, $method->id);
         if (!empty($methodUrl)) {
             $priceInfoHtml = '';
-            if ($fetch) {
+            if ($fetch && !$iframe) {
                 $curlRequest = $this->CURL->doGet($methodUrl . $amount);
                 if (!empty($curlRequest)) {
                     $priceInfoHtml = $this->CURL->getBody();
@@ -4036,6 +4041,7 @@ class ResursBank
      * @param string $paymentMethod
      * @param int $amount
      * @param bool $fetch
+     * @param bool $iframe
      * @return string|null
      * @throws Exception
      * @since 1.3.30
@@ -4043,7 +4049,8 @@ class ResursBank
     public function getCostOfPriceInformation(
         $paymentMethod = '',
         $amount = 0,
-        $fetch = false
+        $fetch = false,
+        $iframe = false
     ) {
         $return = '';
         // If the request contains no specified method, an asterisk or an array of methods
@@ -4078,11 +4085,16 @@ class ResursBank
             }
         } else {
             $return = $this->getPriceInformationUrl($amount, $paymentMethod);
+            $infoObject = $this->getRenderedPriceInfoTemplates($paymentMethod, $amount, $fetch, $iframe);
 
             if ($fetch && !empty($return)) {
-                $curlRequest = $this->CURL->doGet($return . $amount);
-                if (!empty($curlRequest)) {
-                    $return = $this->CURL->getBody();
+                if ($iframe) {
+                    $return = $infoObject['block'];
+                } else {
+                    $curlRequest = $this->CURL->doGet($return . $amount);
+                    if (!empty($curlRequest)) {
+                        $return = $this->CURL->getBody();
+                    }
                 }
             }
         }
