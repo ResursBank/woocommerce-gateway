@@ -3732,39 +3732,47 @@ function woocommerce_gateway_resurs_bank_init()
             $wooCommerceStyle = realpath(get_stylesheet_directory()) . "/css/woocommerce.css";
             $styles = [];
 
-            $costOfPurchaseCss = getResursOption('costOfPurchaseCss');
-            if (empty($costOfPurchaseCss)) {
-                if (file_exists($wooCommerceStyle)) {
-                    $styles[] = get_stylesheet_directory_uri() . "/css/woocommerce.css";
+            $costOfPriceInfoCountries = ['DK'];
+            $selectedCountry = getResursOption("country");
+            if (in_array($selectedCountry, $costOfPriceInfoCountries)) {
+                $costOfPurchaseHtml = $flow->getCostOfPriceInformation($flow->getPaymentMethods(), $amount);
+            } else {
+                $costOfPurchaseCss = getResursOption('costOfPurchaseCss');
+                if (empty($costOfPurchaseCss)) {
+                    if (file_exists($wooCommerceStyle)) {
+                        $styles[] = get_stylesheet_directory_uri() . "/css/woocommerce.css";
+                    }
+                    /**
+                     * Try to find out if there is a costofpurchase-file defaulting to our plugin
+                     */
+                    $cssPathFile = dirname(__FILE__) . '/css/costofpurchase.css';
+                    $costOfPurchaseCssDefault = plugin_dir_url(__FILE__) . 'css/costofpurchase.css';
+                    /**
+                     * Make sure it exists and if so, add it to the styles and the viewport.
+                     */
+                    if (file_exists($cssPathFile)) {
+                        $styles[] = plugin_dir_url(__FILE__) . 'css/costofpurchase.css';
+                        $costOfPurchaseCss = $costOfPurchaseCssDefault;
+                    }
                 }
-                /**
-                 * Try to find out if there is a costofpurchase-file defaulting to our plugin
-                 */
-                $cssPathFile = dirname(__FILE__) . '/css/costofpurchase.css';
-                $costOfPurchaseCssDefault = plugin_dir_url(__FILE__) . 'css/costofpurchase.css';
-                /**
-                 * Make sure it exists and if so, add it to the styles and the viewport.
-                 */
-                if (file_exists($cssPathFile)) {
-                    $styles[] = plugin_dir_url(__FILE__) . 'css/costofpurchase.css';
-                    $costOfPurchaseCss = $costOfPurchaseCssDefault;
+
+                try {
+                    $htmlBefore = '<div class="cost-of-purchase-box"><a class="woocommerce button" onclick="window.close()" href="javascript:void(0);">' . __('Close',
+                            'resurs-bank-payment-gateway-for-woocommerce') . '</a>';
+                    $htmlAfter = '</div>';
+
+                    $flow->setCostOfPurcaseHtmlBefore($htmlBefore);
+                    $flow->setCostOfPurcaseHtmlAfter($htmlAfter);
+
+                    /**
+                     * Fix for issue #66520, where the CSS pointer has not been added properly to our default location.
+                     */
+                    $costOfPurchaseHtml = $flow->getCostOfPurchase($method, $amount, true, $costOfPurchaseCss,
+                        "_blank");
+                } catch (Exception $e) {
                 }
             }
 
-            try {
-                $htmlBefore = '<div class="cost-of-purchase-box"><a class="woocommerce button" onclick="window.close()" href="javascript:void(0);">' . __('Close',
-                        'resurs-bank-payment-gateway-for-woocommerce') . '</a>';
-                $htmlAfter = '</div>';
-
-                $flow->setCostOfPurcaseHtmlBefore($htmlBefore);
-                $flow->setCostOfPurcaseHtmlAfter($htmlAfter);
-
-                /**
-                 * Fix for issue #66520, where the CSS pointer has not been added properly to our default location.
-                 */
-                $costOfPurchaseHtml = $flow->getCostOfPurchase($method, $amount, true, $costOfPurchaseCss, "_blank");
-            } catch (Exception $e) {
-            }
             echo $costOfPurchaseHtml;
             die();
         }

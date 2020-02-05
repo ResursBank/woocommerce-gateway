@@ -193,6 +193,8 @@ function allowResursRun($allow, $info)
         'wc-settings',
         'shop_order',
         'edit',
+        'get_cost_ajax',
+        'get_address_customertype',
     ];
 
     // Refunds passing wp-remove-post-lock (ignored).
@@ -201,6 +203,11 @@ function allowResursRun($allow, $info)
         in_array($info['page'], $allowFrom) ||
         in_array($info['post_type'], $allowFrom)
     ) {
+        $allow = true;
+    }
+
+    // Normally accept ajax actions. Discovered that "forgotten actions" could fail during this run.
+    if (!empty($info['action'])) {
         $allow = true;
     }
 
