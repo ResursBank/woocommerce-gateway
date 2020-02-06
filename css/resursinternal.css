@@ -400,3 +400,11 @@ a.labelBoot:focus, a.labelBoot:hover {
     align-content: center !important;
     padding: 5px;
 }
+
+.priceinfoframe {
+    height: 800px !important;
+}
+.priceinfotablink {
+}
+.priceinfotab {
+}
