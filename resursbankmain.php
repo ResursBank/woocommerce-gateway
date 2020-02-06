@@ -3750,8 +3750,10 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $displayContent = sprintf(
-                '<a class="woocommerce button button-cancel" onclick="window.close()" href="javascript:void(0);">%s</a>
+                '
+<div class="cost-of-purchase-box"><a class="woocommerce button button-cancel" onclick="window.close()" href="javascript:void(0);">%s</a>
                     %s
+                    </div>
                     ',
 
                 __('Close', 'resurs-bank-payment-gateway-for-woocommerce'),
