@@ -3748,22 +3748,21 @@ function woocommerce_gateway_resurs_bank_init()
             } else {
                 $costOfPurchaseHtml = $flow->getCostOfPriceInformation($method, $amount, true, true);
             }
+            if (is_array($styles)) {
+                foreach ($styles as $styleHttp) {
+                    $styleSheets .= sprintf('<link rel="stylesheet" media="all" type="text/css" href="%s">',
+                        $styleHttp);
+                }
+            }
 
             $displayContent = sprintf(
                 '
-<a class="woocommerce button button-cancel" onclick="window.close()" href="javascript:void(0);">%s</a>
+                    <a class="woocommerce button button-cancel" onclick="window.close()" href="javascript:void(0);">%s</a>
                     %s
                     ',
-
                 __('Close', 'resurs-bank-payment-gateway-for-woocommerce'),
                 $costOfPurchaseHtml
             );
-
-            if (is_array($styles)) {
-                foreach ($styles as $styleHttp) {
-                    $styleSheets .= sprintf('<link rel="stylesheet" media="all" type="text/css" href="%s">', $styleHttp);
-                }
-            }
 
             echo sprintf(
                 '<html><head>
