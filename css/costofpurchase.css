@@ -17,34 +17,14 @@ body {
     left: 0;
     overflow: auto;
     padding: 20px;
-    position: absolute;
+    /* costofpriceinfo won't need half-screen layouts, we use the whole content frame */
+    /*position: absolute;
     top: 100px;
     left: 50%;
     width: 50%;
     margin: 0 0 0 -25%;
-    z-index: 100;
+    z-index: 100;*/
 }
-
-/*
- * MarGul Change
- * Changed the styling to not be percentage.
- */
-/*
-.cost-of-purchase-box {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    display: inline;
-    overflow: auto;
-    padding: 20px;
-    position: absolute;
-    top: 10px;
-    left: 35px;
-    margin: 20px 0;
-    width: 84%;
-    z-index: 100;
-}
-*/
-
 
 .cost-of-purchase-box p {
     margin: 0 0 1em;
