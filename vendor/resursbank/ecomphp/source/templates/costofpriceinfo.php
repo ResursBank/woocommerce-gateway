@@ -35,7 +35,7 @@
         }
 
         /* Style the tab content */
-        .tabcontent {
+        .priceinfotab {
             display: none;
             padding: 6px 12px;
             border: 1px solid #ccc;
@@ -56,14 +56,14 @@
 
 <script>
     function openPriceInfo(evt, cityName) {
-        var i, tabcontent, tablinks;
+        var i, tabcontent, priceinfotablink;
         tabcontent = document.getElementsByClassName("tabcontent");
         for (i = 0; i < tabcontent.length; i++) {
             tabcontent[i].style.display = "none";
         }
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        priceinfotablink = document.getElementsByClassName("priceinfotablink");
+        for (i = 0; i < priceinfotablink.length; i++) {
+            priceinfotablink[i].className = priceinfotablink[i].className.replace(" active", "");
         }
         document.getElementById(cityName).style.display = "block";
         evt.currentTarget.className += " active";
