@@ -3723,15 +3723,24 @@ function woocommerce_gateway_resurs_bank_init()
         {
             global $styles;
             require_once('resursbankgateway.php');
-            $costOfPurchaseHtml = "";
+
+            /* Styles Section */
+            $styleSheets = "";
+            $styles = [];
+            $wooCommerceStyle = realpath(get_stylesheet_directory()) . "/css/woocommerce.css";
+            if (file_exists($wooCommerceStyle)) {
+                $styles[] = get_stylesheet_directory_uri() . "/css/woocommerce.css";
+            }
+            $costOfPurchaseCss = getResursOption('costOfPurchaseCss');
+            if (!empty($costOfPurchaseCss)) {
+                $styles[] = $costOfPurchaseCss;
+            }
+            $styles[] = plugin_dir_url(__FILE__) . 'css/resursinternal.css';
+
             /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
             $flow = initializeResursFlow();
             $method = $_REQUEST['method'];
             $amount = floatval($_REQUEST['amount']);
-
-            $wooCommerceStyle = realpath(get_stylesheet_directory()) . "/css/woocommerce.css";
-            $styles = [];
-
             $costOfPriceInfoCountries = ['DK'];
             $selectedCountry = getResursOption("country");
             if (in_array($selectedCountry, $costOfPriceInfoCountries)) {
@@ -3740,7 +3749,25 @@ function woocommerce_gateway_resurs_bank_init()
                 $costOfPurchaseHtml = $flow->getCostOfPriceInformation($method, $amount, true, true);
             }
 
-            echo $costOfPurchaseHtml;
+            $displayContent = sprintf(
+                '<div class="cost-of-purchase-box"><a class="woocommerce button" onclick="window.close()" href="javascript:void(0);">%s</a>%s</div>',
+                __('Close', 'resurs-bank-payment-gateway-for-woocommerce'),
+                $costOfPurchaseHtml
+            );
+
+            if (is_array($styles)) {
+                foreach ($styles as $styleHttp) {
+                    $styleSheets .= sprintf('<link rel="stylesheet" media="all" type="text/css" href="%s">', $styleHttp);
+                }
+            }
+
+            echo sprintf(
+                '<html><head>
+                    %s
+                    </head><body>%s</body></html>',
+                $styleSheets,
+                $displayContent
+            );
             die();
         }
 
@@ -4400,7 +4427,7 @@ function woocommerce_gateway_resurs_bank_init()
             //apply_filters('resurs_get_omni_url', $OmniUrl);
             $debugOmniUrl = getResursFlag('OMNIURL');
             if (!empty($debugOmniUrl)) {
-                    $OmniUrl = $debugOmniUrl;
+                $OmniUrl = $debugOmniUrl;
             }
 
             $isWooSession = false;

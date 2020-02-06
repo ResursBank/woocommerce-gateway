@@ -16,7 +16,8 @@
 
 namespace Resursbank\RBEcomPHP;
 
-// This is a global setter but it has to be set before the inclusions.
+// This is a global setter but it has to be set before the inclusions. Why?
+// It's a result of a legacy project that's not adapted to proper PSR standards.
 if (!defined('ECOM_SKIP_AUTOLOAD')) {
     define('ECOM_CLASS_EXISTS_AUTOLOAD', true);
 } else {
