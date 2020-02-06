@@ -21,3 +21,5 @@ migrate.sh
 /vendor/tornevall/tornelib-php-crypto/phpunit.xml
 /vendor/tornevall/tornelib-php-netcurl/composer.json
 logs/resurs.log
+js/omnicheckout.min.js
+js/resursbank.min.js
