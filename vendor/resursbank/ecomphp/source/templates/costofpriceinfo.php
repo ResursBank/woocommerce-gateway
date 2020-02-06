@@ -55,7 +55,7 @@
 <?php echo $priceInfoBlocks ?>
 
 <script>
-    function openPriceInfo(evt, cityName) {
+    function openPriceInfo(evt, methodName) {
         var i, tabcontent, priceinfotablink;
         tabcontent = document.getElementsByClassName("tabcontent");
         for (i = 0; i < tabcontent.length; i++) {
@@ -65,8 +65,19 @@
         for (i = 0; i < priceinfotablink.length; i++) {
             priceinfotablink[i].className = priceinfotablink[i].className.replace(" active", "");
         }
-        document.getElementById(cityName).style.display = "block";
+        document.getElementById(methodName).style.display = "block";
         evt.currentTarget.className += " active";
+    }
+    window.onload = function() {
+        var tabcontent = document.getElementsByClassName("priceinfotab");
+        var currentID;
+        for (var i = 0; i < tabcontent.length; i++) {
+            currentID = tabcontent[i].id;
+            break;
+        }
+        if (currentID !== '') {
+            openPriceInfo(null, currentID);
+        }
     }
 </script>
 
