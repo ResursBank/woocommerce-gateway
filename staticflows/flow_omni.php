@@ -40,8 +40,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $this->omniSuccessUrl = "";
 
         $icon_name = "resurs-standard";
-        $path_to_icon = $this->icon = apply_filters('woocommerce_resurs_bank_checkout_icon',
-            $this->plugin_url() . '/img/' . $icon_name . '.png');
+        $path_to_icon = $this->icon = apply_filters(
+            'woocommerce_resurs_bank_checkout_icon',
+            $this->plugin_url() . '/img/' . $icon_name . '.png'
+        );
         $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
         $has_icon = (string)file_exists($temp_icon);
 
@@ -110,8 +112,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         try {
             $frameDisplay .= '<div class="col2-set" id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
         } catch (Exception $e) {
-            $frameContent = __('We are unable to load Resurs Checkout for the moment. Please try again later.',
-                'resurs-bank-payment-gateway-for-woocommerce');
+            $frameContent = __(
+                'We are unable to load Resurs Checkout for the moment. Please try again later.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            );
             $frameDisplay .= '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $frameContent . "<!-- \n" . $e->getMessage() . " --></div>";
         }
         $resursIframeCount++;
@@ -215,27 +219,38 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected function resurs_omnicheckout_create_frame()
     {
-        $this->flow->setPreferredPaymentService(\Resursbank\RBEcomPHP\ResursMethodTypes::METHOD_CHECKOUT);
+        $this->flow->setPreferredPaymentFlowService(\Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT);
         $bookDataOmni = self::createResursOmniOrder();
         $omniRef = WC()->session->get('omniRef');
         try {
-
             $customerId = getResursWooCustomerId();
             if (!is_null($customerId)) {
                 $this->flow->setMetaData('CustomerId', $customerId);
             }
 
             $flowBook = $this->flow->createPayment($omniRef, $bookDataOmni);
+            //$ifo = $this->flow->getIframeOrigin();
             $flowFrame = is_string($flowBook) ? $flowBook : "";
-            $flowFrame .= '<noscript><b>' . __('Resurs Checkout will not work properly without Javascript functions enabled',
-                    'resurs-bank-payment-gateway-for-woocommerce') . '</b></noscript>';
+            $flowFrame .= '<noscript><b>' .
+                __(
+                    'Resurs Checkout will not work properly without Javascript functions enabled',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                )
+                . '</b></noscript>';
             if (isset($_SESSION['customTestUrl']) && !empty($_SESSION['customTestUrl'])) {
-                $flowFrame .= '<div class="resurs-read-more-box">' . __('Custom test environment URL',
-                        'resurs-bank-payment-gateway-for-woocommerce') . ': <b>' . htmlentities($_SESSION['customTestUrl']) . '</b></div>';
+                $flowFrame .= '<div class="resurs-read-more-box">' .
+                    __(
+                        'Custom test environment URL',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) .
+                    ': <b>' . htmlentities($_SESSION['customTestUrl']) .
+                    '</b></div>';
             }
         } catch (Exception $e) {
-            $errorUnable = __('We are unable to load Resurs Checkout for the moment. Please try again later.',
-                'resurs-bank-payment-gateway-for-woocommerce');
+            $errorUnable = __(
+                'We are unable to load Resurs Checkout for the moment. Please try again later.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            );
             $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $errorUnable . "<!-- \n" . $e->getMessage() . " --></div>";
         }
 
