@@ -5,17 +5,18 @@ Resurs EComPHP Gateway for Resurs Bank shopflows, with functionality enough to g
 As EComPHP is continuously developed, you should take a look at our bitbucket repo to keep this information updated. It can be found at https://bitbucket.org/resursbankplugins/resurs-ecomphp
 
 
-## Regular requirements and dependencies
+## Regular requirements, dependencies and information
 
-* For EComPHP 1.0 (With no namespaces) at least PHP 5.2
-* For EComPHP 1.1 (With namespaces) at least PHP 5.3
-* For EComPHP 1.3 at least PHP 5.3 (Requires composer for dependencies)
-* For EComPHP 2.0 at least PHP 5.3 (Requires composer for dependencies)
-* [OpenSSL](https://www.openssl.org): For reaching Resurs Bank REST/SOAP
-* [curl](https://curl.haxx.se): php-curl with SSL support
-* php-xml and streams (For the SOAP parts)
-* EComPHP uses [NetCURL](https://www.netcurl.org) for calls via both SOAP and REST. The packagist component is located [here](https://www.netcurl.org/packagist)
-* If you plan to ONLY use Resurs Checkout based functions there should be no need for SoapClient. However, there are functions in EComPHP that utilizes the SOAP-based flow before the REST-services (Callback UPDATE, getPaymentMethods, etc)
+* For EComPHP 1.0 (With no namespaces) at least PHP 5.6.
+* For EComPHP 1.1 (With namespaces) at least PHP 5.6.
+* For EComPHP 1.3 at least PHP 5.6 (Use composer!)
+* [OpenSSL](https://www.openssl.org) - or similar. SSL drivers are *required* for communication with Resurs Bank.
+* [curl](https://curl.haxx.se): php-curl with SSL support (Make sure the above SSL requirement is fulfilled!).
+* php-xml and streams (For the SOAP parts).
+* EComPHP uses [NetCURL](https://www.netcurl.org) for "mixed calls" (SOAP vs REST). The packagist component is located [here](https://www.netcurl.org/packagist).
+* If you plan to *ONLY* use Resurs Checkout (checkout only, with no aftershop, callbacks or needs of listing payment methods etc) - there should be no need for SoapClient.
+
+_EComPHP 2.0 is currently revoked._
 
 ### Installing curl, xml, soapclient, etc
 

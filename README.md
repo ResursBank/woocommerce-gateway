@@ -2,10 +2,9 @@
 
 The plugin was once written for WooCommerce v2.6 and up but as of today, we've started to change the requirements. It is no longer guaranteed that this plugin is compatible with such old versions. Ever since WooCommerce [discoverd a file deletion vulnerable (click here)](https://blog.ripstech.com/2018/wordpress-design-flaw-leads-to-woocommerce-rce/) our goal is to patch away deprecated functions.
 
- * Compatibility: WooCommerce 2.6 up to 3.5
- * Plugin verified with PHP version 5.4 - 7.3
+ * Compatibility: WooCommerce 2.6 up to 3.9
+ * Plugin verified with PHP version 5.6 - 7.4
  * Plugin verified with WordPress 5.0 alpha
- * Addon scripts verified with PHP 5.3 - 7.3 (EComPHP 1.3.x and NetCURL 6.0.20+)
 
 ### Can I upgrade WooCommerce with your plugin installed?
 

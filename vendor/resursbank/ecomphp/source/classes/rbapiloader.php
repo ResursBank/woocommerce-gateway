@@ -61,7 +61,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', '1.3.30');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20200123');
+    define('ECOMPHP_MODIFY_DATE', '20200217');
 }
 
 /**
@@ -5245,6 +5245,7 @@ class ResursBank
      * Get full checkout response from RCO.
      *
      * @return string
+     * @since 1.1.30
      */
     public function getFullCheckoutResponse() {
         return $this->fullCheckoutResponse;

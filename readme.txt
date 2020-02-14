@@ -14,10 +14,6 @@ Maintenance release.
 
 == Description ==
 
-= Important Notes =
-
-As of v2.2.12, we do support SWISH and similar "instant debitable" payment methods, where payments tend to be finalized/debited long before shipping has been made. You can read more about it [here](https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12)
-
 
 = About =
 
@@ -30,9 +26,9 @@ Tested with WooCommerce up to v3.8.2
 
 The plugin was once written for WooCommerce v2.6 and up but as of today, we've started to change the requirements. It is no longer guaranteed that this plugin is compatible with such old versions. Ever since WooCommerce [discoverd a file deletion vulnerable (click here)](https://blog.ripstech.com/2018/wordpress-design-flaw-leads-to-woocommerce-rce/) our goal is to patch away deprecated functions.
 
- * Compatibility: WooCommerce - at least 3.x and up to 3.8.X (it might eventually work with older versions too, however this will remain unconfirmed)
- * Plugin verified with PHP version 5.4 - 7.3
- * Addon scripts verified with PHP 5.3 - 7.3 (EComPHP 1.3.x and NetCURL 6.0.20+)
+ * Compatibility: WooCommerce - at least 3.x and up to 3.9.X
+ * Plugin verified with PHP version 5.6 - 7.3
+
 
 = Upgrade notice =
 
@@ -93,23 +89,22 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.21 =
+= 2.2.25 =
 
-    * [WOO-402] - Digest-based callback failures
-    * [WOO-408] - Switch userid to username in the aftershop username handler
-    * [WOO-415] - Disable partial annulment-capabilities for external payment methods in the woo-order-admin
-    * [WOO-417] - Disable automatically annulled payments (stock reservations etc)
-    * [WOO-418] - Allow clientname of ecom to be changed in different actions (like aftershop)
-    * [WOO-419] - Redeploy ECom1.3[23] for public tag
-    * [WOO-420] - Update releasenotes (readme.txt) for the Woocom-release-
-    * [WOO-399] - Handle partial credits/annulments
-    * [WOO-404] - Aftershop became slower than usual.
-    * [WOO-406] - Change header replies (HTTPXXX 40X Permission denied, etc)
-    * [WOO-409] - RCO laddas inte i IE
-    * [WOO-410] - 2-way annullments are not fully functional.
-    * [WOO-413] - Miscalculation issues during partial annullments/credits when using discounts
+    * [WOO-260] - Shortcode för "delbetal från..." WordPress
+    * [WOO-433] - Upgrade to latest ecom to run with cached getPayment(+Methods)-requests
+    * [WOO-436] - Prepare woocommerce to support internal RCO tests.
+    * [WOO-438] - Make sure that instances are as few as possible in wp-admin (getPayment, orderview, etc)
+    * [WOO-439] - FI form translations (contribution)
+    * [WOO-440] - Merge new ecom, based on ECOMPHP-343, into woo for testings
+    * [WOO-453] - Prepare testdpt. for special plugins
+    * [WOO-423] - Last received callbacks mismatch green box issue
+    * [WOO-426] - Aftershop exceptions vs loggning
+    * [WOO-432] - Session and admin notices may break wp-admin update page (PHP 7.3?)
+    * [WOO-434] - Check plugin interferences (update templates, list callbacks form correct tab only, etc)
+    * [WOO-435] - Eventually race conditions makes order stock reduce twice
+    * [WOO-437] - "description of non-object"
 
 == Upgrade Notice ==
 
 Make sure your payment methods are still there after upgrading the plugin.
-
