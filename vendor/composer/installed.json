@@ -6,12 +6,12 @@
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "39038de53eaf24594f8e3d9d16969f9959ddf55e"
+            "reference": "284f1a0541ebe24a620bf27bf1d689c4d12adf68"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/39038de53eaf24594f8e3d9d16969f9959ddf55e.zip",
-            "reference": "39038de53eaf24594f8e3d9d16969f9959ddf55e",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/284f1a0541ebe24a620bf27bf1d689c4d12adf68.zip",
+            "reference": "284f1a0541ebe24a620bf27bf1d689c4d12adf68",
             "shasum": ""
         },
         "require": {
@@ -20,7 +20,7 @@
             "tornevall/tornelib-php-crypto": "6.0.*",
             "tornevall/tornelib-php-netcurl": "6.0.*"
         },
-        "time": "2020-02-19T10:48:34+00:00",
+        "time": "2020-02-19T14:18:00+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
