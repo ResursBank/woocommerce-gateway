@@ -57,7 +57,7 @@
 <script>
     function openPriceInfo(evt, methodName) {
         var i, tabcontent, priceinfotablink;
-        tabcontent = document.getElementsByClassName("tabcontent");
+        tabcontent = document.getElementsByClassName("priceinfotab");
         for (i = 0; i < tabcontent.length; i++) {
             tabcontent[i].style.display = "none";
         }

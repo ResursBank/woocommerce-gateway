@@ -4,6 +4,10 @@ Resurs EComPHP Gateway for Resurs Bank shopflows, with functionality enough to g
 
 As EComPHP is continuously developed, you should take a look at our bitbucket repo to keep this information updated. It can be found at https://bitbucket.org/resursbankplugins/resurs-ecomphp
 
+## phpunit problems with newer php
+
+phpunits might fail aver PHP 7.3 as phpunit uses setUp differently than older versions. We're working on that part.
+
 
 ## Regular requirements, dependencies and information
 
