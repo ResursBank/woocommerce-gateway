@@ -492,11 +492,21 @@ function woocommerce_gateway_resurs_bank_init()
                                     } elseif ($envVal == "production") {
                                         $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
                                     }
-                                    $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv, true);
+                                    $newFlow = initializeResursFlow(
+                                        $testUser,
+                                        $testPass,
+                                        $flowEnv,
+                                        true
+                                    );
                                 } else {
                                     // Default to test (we need the extra params here to set "force new flow" during those tests
                                     // regardless of if the ecom-flow should be reused.
-                                    $newFlow = initializeResursFlow($testUser, $testPass, RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET, true);
+                                    $newFlow = initializeResursFlow(
+                                        $testUser,
+                                        $testPass,
+                                        RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
+                                        true
+                                    );
                                 }
                                 try {
                                     $newPaymentMethodsList = $newFlow->getPaymentMethods([], true);
@@ -6140,7 +6150,6 @@ function getResursInternalRcoUrl($username, $flow)
  * @param string $overridePassword
  * @param int $setEnvironment
  * @param bool $requireNewFlow Do not reuse old ecom-instance on true.
- *
  * @return \Resursbank\RBEcomPHP\ResursBank
  * @throws Exception
  */
@@ -6151,8 +6160,8 @@ function initializeResursFlow(
     $requireNewFlow = false
 ) {
     global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance;
-    $username = resursOption("login");
-    $password = resursOption("password");
+    $username = getResursOption("login");
+    $password = getResursOption("password");
     $useEnvironment = getServerEnv();
     if ($setEnvironment !== RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET) {
         $useEnvironment = $setEnvironment;
