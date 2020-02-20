@@ -492,9 +492,11 @@ function woocommerce_gateway_resurs_bank_init()
                                     } elseif ($envVal == "production") {
                                         $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
                                     }
-                                    $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv);
+                                    $newFlow = initializeResursFlow($testUser, $testPass, $flowEnv, true);
                                 } else {
-                                    $newFlow = initializeResursFlow($testUser, $testPass);
+                                    // Default to test (we need the extra params here to set "force new flow" during those tests
+                                    // regardless of if the ecom-flow should be reused.
+                                    $newFlow = initializeResursFlow($testUser, $testPass, RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET, true);
                                 }
                                 try {
                                     $newPaymentMethodsList = $newFlow->getPaymentMethods([], true);
@@ -6137,6 +6139,7 @@ function getResursInternalRcoUrl($username, $flow)
  * @param string $overrideUser
  * @param string $overridePassword
  * @param int $setEnvironment
+ * @param bool $requireNewFlow Do not reuse old ecom-instance on true.
  *
  * @return \Resursbank\RBEcomPHP\ResursBank
  * @throws Exception
@@ -6144,7 +6147,8 @@ function getResursInternalRcoUrl($username, $flow)
 function initializeResursFlow(
     $overrideUser = "",
     $overridePassword = "",
-    $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET
+    $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
+    $requireNewFlow = false
 ) {
     global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance;
     $username = resursOption("login");
@@ -6158,6 +6162,11 @@ function initializeResursFlow(
     }
     if (!empty($overridePassword)) {
         $password = $overridePassword;
+    }
+
+    // Reset and recreate ecom-instance on demand.
+    if ($requireNewFlow) {
+        $hasResursFlow = false;
     }
 
     $resursInstanceCount++;
