@@ -89,6 +89,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
+= 2.2.26 =
+
+    * [WOO-460] - priceinfo problems
+
 = 2.2.25 =
 
     * [WOO-260] - Shortcode för "delbetal från..." WordPress
