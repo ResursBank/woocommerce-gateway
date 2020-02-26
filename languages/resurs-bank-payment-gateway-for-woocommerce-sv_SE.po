@@ -564,7 +564,7 @@ msgid ""
 "want to study the behaviour of the standard customer form fields when "
 "communicating with the iframe"
 msgstr ""
-"Resurs Checkout-egenskap: Om pluginnet körs i testläge, kan det vara så att  "
+"Resurs Checkout-egenskap: Om pluginet körs i testläge, kan det vara så att  "
 "du vill studera beteendet på kundernas standardformulär, när kommunikationen "
 "görs mot iframen."
 
