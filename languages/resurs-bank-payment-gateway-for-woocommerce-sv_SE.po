@@ -999,7 +999,7 @@ msgid ""
 "as this page has is done loading..."
 msgstr ""
 "Dina callbacks behöver en uppdatering. Pluginet kommer att göra detta åt dig "
-"så fort siddan laddats klart..."
+"så fort sidan laddats klart..."
 
 #: resursbank_settings.php:867
 msgid "Callback URLs registered at Resurs Bank"
