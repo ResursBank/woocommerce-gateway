@@ -254,20 +254,20 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'select',
                     'options' => $rate_select,
                     'description' => __(
-                        'The tax rate that will be added to the payment methods',
+                        'The tax rate that will be added to the payment methods.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
                 ],
                 'reduceOrderStock' => [
                     'title' => __(
-                        'During payment process, also handle order by reducing order stock',
+                        'Handle order stock on payments',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Defines whether the plugin should wait for the fraud control when booking payments, or not',
+                        'During payment process, also handle order by reducing order stock.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,

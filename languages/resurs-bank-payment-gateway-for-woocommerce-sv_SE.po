@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2020-02-28 13:27+0100\n"
-"PO-Revision-Date: 2020-02-28 13:27+0100\n"
+"POT-Creation-Date: 2020-02-28 13:41+0100\n"
+"PO-Revision-Date: 2020-02-28 13:41+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -229,21 +229,17 @@ msgid "Tax"
 msgstr "Moms"
 
 #: functions_settings.php:257
-msgid "The tax rate that will be added to the payment methods"
+msgid "The tax rate that will be added to the payment methods."
 msgstr ""
-"Momssatsen som kommer läggas på avgiften för de olika betalalternativen"
+"Momssatsen som kommer läggas på avgiften för de olika betalalternativen."
 
 #: functions_settings.php:264
-msgid "During payment process, also handle order by reducing order stock"
-msgstr "Hantera även lager, under betalprocessen"
+msgid "Handle order stock on payments"
+msgstr "Hantera lagersaldo vid köp"
 
-#: functions_settings.php:270 functions_settings.php:292
-msgid ""
-"Defines whether the plugin should wait for the fraud control when booking "
-"payments, or not"
-msgstr ""
-"Bestämmer ifall pluginet ska vänta på att bedrägerikontrollen körs vid "
-"bookPayment eller inte"
+#: functions_settings.php:270
+msgid "During payment process, also handle order by reducing order stock."
+msgstr "Hantera även lager, under betalprocessen."
 
 #: functions_settings.php:276
 msgid "Disable Aftershop"
@@ -263,6 +259,14 @@ msgstr ""
 "ger möjligheten att stänga av aftershop helt och hållet ifall man vill "
 "implementera sitt eget aftershop-flöde. Som standard är aftershop-flödet "
 "alltid aktivt."
+
+#: functions_settings.php:292
+msgid ""
+"Defines whether the plugin should wait for the fraud control when booking "
+"payments, or not"
+msgstr ""
+"Bestämmer ifall pluginet ska vänta på att bedrägerikontrollen körs vid "
+"bookPayment eller inte"
 
 #: functions_settings.php:303
 msgid ""
