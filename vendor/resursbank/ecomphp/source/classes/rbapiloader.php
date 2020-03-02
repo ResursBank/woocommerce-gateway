@@ -3425,8 +3425,10 @@ class ResursBank
                 if ($e->getCode() === 404) {
                     throw new \ResursException($e->getMessage(), 3, $e);
                 }
-                // Failover on SSL ceritificate errors (first) as the domain for soap is different than RCO-rest.
                 if (!$this->SOAP_AVAILABLE && $e->getCode() === 51) {
+                    // Failover on SSL ceritificate errors (first) as the domain for soap is different than RCO-rest.
+                    $rested = false;
+                } else {
                     throw $e;
                 }
             }
