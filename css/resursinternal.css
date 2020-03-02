@@ -408,3 +408,11 @@ a.labelBoot:focus, a.labelBoot:hover {
 }
 .priceinfotab {
 }
+
+.resursAnnuityStyle {
+    font-size: 11px !important;
+    font-color: #990000 !important;
+    font-style: italic;
+    padding: 0px !important;
+    margin: 0px !important;
+}

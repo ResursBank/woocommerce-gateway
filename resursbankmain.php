@@ -3756,14 +3756,16 @@ function woocommerce_gateway_resurs_bank_init()
             $costOfPriceInfoCountries = ['DK'];
             $selectedCountry = getResursOption("country");
             if (in_array($selectedCountry, $costOfPriceInfoCountries)) {
-                $costOfPurchaseHtml = $flow->getCostOfPriceInformation($flow->getPaymentMethods(), $amount);
+                $costOfPurchaseHtml = $flow->getCostOfPriceInformation($flow->getPaymentMethods(), $amount, true, true);
             } else {
                 $costOfPurchaseHtml = $flow->getCostOfPriceInformation($method, $amount, false, true);
             }
             if (is_array($styles)) {
                 foreach ($styles as $styleHttp) {
-                    $styleSheets .= sprintf('<link rel="stylesheet" media="all" type="text/css" href="%s">',
-                        $styleHttp);
+                    $styleSheets .= sprintf(
+                        '<link rel="stylesheet" media="all" type="text/css" href="%s">',
+                        $styleHttp
+                    );
                 }
             }
 
@@ -5025,25 +5027,36 @@ function woocommerce_gateway_resurs_bank_init()
                             $annuityDuration
                         );
                         $currentCountry = getResursOption('country');
-                        if ($currentCountry != "FI") {
+                        if ($currentCountry !== 'FI') {
                             $paymentLimit = 150;
                         } else {
                             $paymentLimit = 15;
                         }
-                        $realPaymentLimit = $paymentLimit;
+
                         if (isResursTest()) {
-                            $paymentLimit = 1;
+                            // Clean out lowest limit in test and always show this.
+                            $paymentLimit = 0;
                         }
-                        if ($payFrom >= $paymentLimit) {
+
+                        $realPaymentLimit = $paymentLimit;
+                        if ($payFrom >= $paymentLimit || $payFrom === 0) {
                             $payFromAnnuity = wc_price($payFrom);
                             $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
                             $onclick = 'window.open(\'' . $costOfPurchase . '\')';
 
                             // https://test.resurs.com/docs/pages/viewpage.action?pageId=7208965#Hooks/filtersv2.2-Filter:Partpaymentwidgetstring
-                            $defaultAnnuityString = sprintf(__(
-                                'Part pay from %s per month',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            ), $payFromAnnuity);
+                            $defaultAnnuityString = sprintf(
+                                __(
+                                    'Part pay from %s per month',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ), $payFromAnnuity
+                            );
+                            if (!$payFrom) {
+                                $defaultAnnuityString = '';
+                                $pipeString = '';
+                            } else {
+                                $pipeString = ' | ';
+                            }
                             $useAnnuityString = $defaultAnnuityString;
                             $customAnnuityString = apply_filters(
                                 "resursbank_custom_annuity_string",
@@ -5090,15 +5103,26 @@ function woocommerce_gateway_resurs_bank_init()
                             } else {
                                 $displayAnnuity .= '<div class="resursPartPaymentInfo">';
                                 if (isResursTest()) {
-                                    $displayAnnuity .= '<div style="font-size: 11px !important; font-color:#990000 !important; font-style: italic; padding:0px !important; margin: 0px !important;">' . __('Test enabled: In production, this information is shown when the minimum amount is above',
-                                            'resurs-bank-payment-gateway-for-woocommerce') . " <b>" . $realPaymentLimit . "</b></div>";
+                                    $displayAnnuity .= sprintf(
+                                        '<div class="resursAnnuityStyle">%s</div>',
+                                        sprintf(
+                                            __(
+                                                'Test enabled: In production, this information is shown when the minimum amount is above <b>%s</b>.',
+                                                'resurs-bank-payment-gateway-for-woocommerce'
+                                            ),
+                                            $realPaymentLimit
+                                        )
+                                    );
                                 }
-                                $displayAnnuity .= '<span>' . $useAnnuityString . '</span> | ';
-                                $displayAnnuity .= '<span class="resursPartPayInfoLink" onclick="' . $onclick . '">' .
+                                $displayAnnuity .= sprintf(
+                                    '<span>%s</span>%s<span class="resursPartPayInfoLink" onclick="%s">%s</span></div>',
+                                    $useAnnuityString,
+                                    $pipeString,
+                                    $onclick,
                                     __(
-                                        'Info', 'resurs-bank-payment-gateway-for-woocommerce'
-                                    ) . '</span>';
-                                $displayAnnuity .= '</div>';
+                                        'Read more', 'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
                             }
                         }
                     }
@@ -5758,8 +5782,10 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             }
         }
         $renderedResursData .= '</fieldset>
-                <p class="resurs-read-more" id="resursInfoButton"><a href="#" class="button">' . __('Read more',
-                'resurs-bank-payment-gateway-for-woocommerce') . '</a></p>
+                <p class="resurs-read-more" id="resursInfoButton"><a href="#" class="button">' . __(
+                'Read more',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ) . '</a></p>
                 </div>
                 </div>
                 </div>
