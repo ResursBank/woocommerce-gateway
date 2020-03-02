@@ -3758,7 +3758,7 @@ function woocommerce_gateway_resurs_bank_init()
             if (in_array($selectedCountry, $costOfPriceInfoCountries)) {
                 $costOfPurchaseHtml = $flow->getCostOfPriceInformation($flow->getPaymentMethods(), $amount);
             } else {
-                $costOfPurchaseHtml = $flow->getCostOfPriceInformation($method, $amount, true, true);
+                $costOfPurchaseHtml = $flow->getCostOfPriceInformation($method, $amount);
             }
             if (is_array($styles)) {
                 foreach ($styles as $styleHttp) {
