@@ -61,7 +61,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', '1.3.32');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20200227');
+    define('ECOMPHP_MODIFY_DATE', '20200302');
 }
 
 /**
@@ -3425,7 +3425,12 @@ class ResursBank
                 if ($e->getCode() === 404) {
                     throw new \ResursException($e->getMessage(), 3, $e);
                 }
-                throw $e;
+                if (!$this->SOAP_AVAILABLE && $e->getCode() === 51) {
+                    // Failover on SSL ceritificate errors (first) as the domain for soap is different than RCO-rest.
+                    $rested = false;
+                } else {
+                    throw $e;
+                }
             }
         }
 
@@ -4198,7 +4203,9 @@ class ResursBank
                     }
 
                 } else {
-                    $return = $infoObject['block'];
+                    if ($iframe) {
+                        $return = $infoObject['block'];
+                    }
                 }
             }
         }
