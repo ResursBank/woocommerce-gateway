@@ -485,11 +485,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 $testPass = $setValue;
                                 $flowEnv = getServerEnv();
                                 if (!empty($envVal)) {
-                                    if ($envVal == "test") {
+                                    if ($envVal === 'test') {
                                         $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
-                                    } elseif ($envVal == "live") {
+                                    } elseif ($envVal === 'live') {
                                         $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
-                                    } elseif ($envVal == "production") {
+                                    } elseif ($envVal === 'production') {
                                         $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
                                     }
                                     $newFlow = initializeResursFlow(
@@ -537,11 +537,16 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (!empty($envVal)) {
                                     setResursOption("serverEnv", $envVal);
                                 }
+
+                                setResursOption("resursAnnuityDuration", 0);
+                                setResursOption("resursAnnuityMethod", '');
+                                setResursOption("resursCurrentAnnuityFactors", []);
+
                                 $myResponse['element'] = ["currentResursPaymentMethods", "callbackContent"];
                                 set_transient('resurs_bank_last_callback_setup', 0);
                                 $myResponse['html'] = '<br>' .
                                     '<div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __(
-                                        'Please reload or save this page to have this list updated',
+                                        'Please reload or save this page to have this list updated. Annuity factors has been reset!',
                                         'resurs-bank-payment-gateway-for-woocommerce'
                                     ) . '</div><br><br>';
                             }
@@ -593,8 +598,8 @@ function woocommerce_gateway_resurs_bank_init()
                                             }
                                             $selectorOptions .= '<option value="' . $factor->duration . '">' . $factor->paymentPlanName . '</option>';
                                         }
-                                        setResursOption("resursAnnuityMethod", $arg);
-                                        setResursOption("resursAnnuityDuration", $firstDuration);
+                                        setResursOption('resursAnnuityMethod', $arg);
+                                        setResursOption('resursAnnuityDuration', $firstDuration);
                                     }
                                     $isEnabled = "yes";
                                     $selector = '<select class="resursConfigSelectShort" id="annuitySelector_' . $arg . '" onchange="runResursAdminCallback(\'annuityDuration\', \'' . $arg . '\', this.value)">' . $selectorOptions . '</select>';
@@ -643,7 +648,7 @@ function woocommerce_gateway_resurs_bank_init()
                                         'refundable' => $refundable,
                                     ];
                                 }
-                            } elseif ($_REQUEST['run'] == "getMyCallbacks") {
+                            } elseif ($_REQUEST['run'] === 'getMyCallbacks') {
                                 $responseArray = [
                                     'callbacks' => [],
                                 ];

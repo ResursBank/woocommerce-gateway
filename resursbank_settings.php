@@ -844,6 +844,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setDropDown('country', $namespace, null,
                         "onchange=adminResursChangeFlowByCountry(this)");
                     echo $this->setDropDown('serverEnv', $namespace);
+
                     echo $this->setTextBox('login', $namespace,
                         'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
