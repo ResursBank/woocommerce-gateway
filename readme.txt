@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.3.2
 Requires PHP: 5.4
-Stable tag: 2.2.27
+Stable tag: 2.2.28
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,29 +89,18 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
+= 2.2.28 =
+
+    * [WOO-463] - Static DK prices with paymentlimit 0
+    * [WOO-464] - Description for stock handling is wrong lagerhantering i woocommerce är "lite otydlig".
+    * [WOO-466] - Annuityfactors does not update on credential switch
+    * EComPHP fix for priceinfo.
+
+
 = 2.2.27 =
 
     * [WOO-461] - While testing credentials when updating environment/config cached flow could potentially set the plugin in stuck mode (hotfix)
 
-= 2.2.26 =
-
-    * [WOO-460] - priceinfo problems
-
-= 2.2.25 =
-
-    * [WOO-260] - Shortcode för "delbetal från..." WordPress
-    * [WOO-433] - Upgrade to latest ecom to run with cached getPayment(+Methods)-requests
-    * [WOO-436] - Prepare woocommerce to support internal RCO tests.
-    * [WOO-438] - Make sure that instances are as few as possible in wp-admin (getPayment, orderview, etc)
-    * [WOO-439] - FI form translations (contribution)
-    * [WOO-440] - Merge new ecom, based on ECOMPHP-343, into woo for testings
-    * [WOO-453] - Prepare testdpt. for special plugins
-    * [WOO-423] - Last received callbacks mismatch green box issue
-    * [WOO-426] - Aftershop exceptions vs loggning
-    * [WOO-432] - Session and admin notices may break wp-admin update page (PHP 7.3?)
-    * [WOO-434] - Check plugin interferences (update templates, list callbacks form correct tab only, etc)
-    * [WOO-435] - Eventually race conditions makes order stock reduce twice
-    * [WOO-437] - "description of non-object"
 
 == Upgrade Notice ==
 
