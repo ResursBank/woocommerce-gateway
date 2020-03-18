@@ -31,6 +31,9 @@ $RB(document).ready(function ($) {
             $RB('.purchaseActionsWrapper').show();
         });
     }
+    $(document.body).on('checkout_error', function () {
+        $RB('.purchaseActionsWrapper').hide('medium');
+    });
 
     preSetResursMethods(currentCustomerType.toUpperCase(), resursvars["customerTypes"]);
 
