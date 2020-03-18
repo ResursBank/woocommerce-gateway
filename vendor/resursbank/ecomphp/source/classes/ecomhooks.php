@@ -3,22 +3,50 @@
 global $ecomEvents;
 
 if (!is_array($ecomEvents)) {
-    $ecomEvents = array();
+    $ecomEvents = [];
 }
 
 if (!function_exists('ecom_event_register')) {
+    /**
+     * Simple hook generator.
+     *
+     * @param $eventName
+     * @param null $callback
+     * @param int $priority
+     */
     function ecom_event_register($eventName, $callback = null, $priority = 1)
     {
         global $ecomEvents;
 
         if (!isset($ecomEvents[$eventName])) {
-            $ecomEvents[$eventName] = array();
+            $ecomEvents[$eventName] = [];
         }
         if (!isset($ecomEvents[$eventName][$priority])) {
-            $ecomEvents[$eventName][$priority] = array();
+            $ecomEvents[$eventName][$priority] = [];
         }
 
         $ecomEvents[$eventName][$priority][] = $callback;
+    }
+
+    /**
+     * Simple event-unregisterer.
+     *
+     * @param $eventName
+     */
+    function ecom_event_unregister($eventName)
+    {
+        global $ecomEvents;
+        if (!isset($ecomEvents[$eventName])) {
+            unset($ecomEvents[$eventName]);
+        }
+    }
+
+    /**
+     * Reset to original state.
+     */
+    function ecom_event_reset()
+    {
+        $ecomEvents = [];
     }
 }
 

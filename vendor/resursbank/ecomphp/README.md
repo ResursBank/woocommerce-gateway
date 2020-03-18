@@ -1,21 +1,26 @@
-# EComPHP 1.3 - PHP Library for Resurs Bank ECommerce #
+# EComPHP - Resurs Bank ECommerce Library for PHP #
 
 Resurs EComPHP Gateway for Resurs Bank shopflows, with functionality enough to getting started fast. It communicates with the Simplified Flow API for booking payments, Configuration Service and the After Shop Service API for finalizing, crediting and annulments etc. This full version of the gateway communicates with Hosted Payment Flow and Resurs Checkout (supporting both REST and SOAP). A PHP-reference for EComPHP is located at https://test.resurs.com/autodocs/apigen/ecomphp-1.3-develop/, if you want to take a look at our automatically generated documentation.
 
 As EComPHP is continuously developed, you should take a look at our bitbucket repo to keep this information updated. It can be found at https://bitbucket.org/resursbankplugins/resurs-ecomphp
 
+## phpunit problems with newer php
 
-## Regular requirements and dependencies
+phpunits might fail aver PHP 7.3 as phpunit uses setUp differently than older versions. We're working on that part.
 
-* For EComPHP 1.0 (With no namespaces) at least PHP 5.2
-* For EComPHP 1.1 (With namespaces) at least PHP 5.3
-* For EComPHP 1.3 at least PHP 5.3 (Requires composer for dependencies)
-* For EComPHP 2.0 at least PHP 5.3 (Requires composer for dependencies)
-* [OpenSSL](https://www.openssl.org): For reaching Resurs Bank REST/SOAP
-* [curl](https://curl.haxx.se): php-curl with SSL support
-* php-xml and streams (For the SOAP parts)
-* EComPHP uses [NetCURL](https://www.netcurl.org) for calls via both SOAP and REST. The packagist component is located [here](https://www.netcurl.org/packagist)
-* If you plan to ONLY use Resurs Checkout based functions there should be no need for SoapClient. However, there are functions in EComPHP that utilizes the SOAP-based flow before the REST-services (Callback UPDATE, getPaymentMethods, etc)
+
+## Regular requirements, dependencies and information
+
+* For EComPHP 1.0 (With no namespaces) at least PHP 5.6.
+* For EComPHP 1.1 (With namespaces) at least PHP 5.6.
+* For EComPHP 1.3 at least PHP 5.6 (Use composer!)
+* [OpenSSL](https://www.openssl.org) - or similar. SSL drivers are *required* for communication with Resurs Bank.
+* [curl](https://curl.haxx.se): php-curl with SSL support (Make sure the above SSL requirement is fulfilled!).
+* php-xml and streams (For the SOAP parts).
+* EComPHP uses [NetCURL](https://www.netcurl.org) for "mixed calls" (SOAP vs REST). The packagist component is located [here](https://www.netcurl.org/packagist).
+* If you plan to *ONLY* use Resurs Checkout (checkout only, with no aftershop, callbacks or needs of listing payment methods etc) - there should be no need for SoapClient.
+
+_EComPHP 2.0 is currently revoked._
 
 ### Installing curl, xml, soapclient, etc
 
@@ -26,10 +31,16 @@ For Ubuntu, you can quickly fetch those with apt-get like below, if your system 
 There might be a slight chance that you also need openssl or similar, as our services runs on https-only (normally openssl are delivered automatically, but sometimes they do not - apt-get install openssl might work in those cases if you have access to the server).
 
 
-# PHP 7.3
+# PHP versions verified
 
-Tests are verified with the deprecated suite up to PHP 7.3 (RC3) as of 24 october 2018.
+### December 9, 2019
 
+    Pipelines/Bamboo Verified : 5.6 - 7.4
+                       Legacy : 5.4 - 5.5
+                   Unverified : 5.3 and lower.
+
+Take a look at [this page](https://www.php.net/supported-versions.php) if you're unsure which PHP versions that are still supported by the PHP team.
+As of february 2020, only 7.3 and 7.4 have full support open. 7.2 still do have security patch support, but is on deprecation. All older versions are completely unsupported and should probably get upgrade by you also.
 
 ## What this library do and do not
 
@@ -63,7 +74,7 @@ Then you may go with something like this in your first born code:
     ?>
 
 
-## Deploying (composer)
+## Bundling deployments with composer
 
 Deployment with composer usually only requires an installation. However, if you need to bundle the composer package with all dependencies in a installation package that is not built for using composer you need to set up your package, so that the included extra repos is considered "a part of the package". Such deployment script may look like this:
 

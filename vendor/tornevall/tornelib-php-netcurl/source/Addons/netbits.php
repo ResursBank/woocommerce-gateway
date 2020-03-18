@@ -34,7 +34,7 @@ if ( ! defined( 'NETCURL_NETBITS_MODIFY' ) ) {
 }
 
 // Check if there is a packagist release already loaded, since this network standalone release is deprecated as of 20180320.
-if ( ! class_exists( 'MODULE_NETBITS' ) && ! class_exists( 'TorneLIB\MODULE_NETBITS' ) ) {
+if ( ! class_exists( 'MODULE_NETBITS', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\MODULE_NETBITS', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
 	/**
 	 * Class TorneLIB_NetBits Netbits Library for calculations with bitmasks
 	 *
@@ -58,7 +58,7 @@ if ( ! class_exists( 'MODULE_NETBITS' ) && ! class_exists( 'TorneLIB\MODULE_NETB
 				'BIT_64'  => 64,
 				'BIT_128' => 128
 			);
-			if ( count( $bitStructure ) ) {
+			if ( is_array($bitStructure) && count( $bitStructure ) ) {
 				$this->BIT_SETUP = $this->validateBitStructure( $bitStructure );
 			}
 		}
@@ -204,7 +204,7 @@ if ( ! class_exists( 'MODULE_NETBITS' ) && ! class_exists( 'TorneLIB\MODULE_NETB
 	}
 }
 
-if ( ! class_exists( 'TorneLIB_NetBits' ) && ! class_exists( 'TorneLIB\TorneLIB_NetBits' ) ) {
+if ( ! class_exists( 'TorneLIB_NetBits', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\TorneLIB_NetBits', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
 	/**
 	 * Class TorneLIB_NetBits
 	 *

@@ -16,40 +16,53 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.17
+ * @version 6.0.22
  *
  * Crypto-IO Library. Anything that changes in those folders, will render version increase.
  */
 
 namespace TorneLIB;
 
-if ( ! defined('TORNELIB_CRYPTO_RELEASE')) {
-    define('TORNELIB_CRYPTO_RELEASE', '6.0.19');
+if (!defined('TORNELIB_CRYPTO_RELEASE')) {
+    define('TORNELIB_CRYPTO_RELEASE', '6.0.22');
 }
-if ( ! defined('TORNELIB_CRYPTO_MODIFY')) {
-    define('TORNELIB_CRYPTO_MODIFY', '20180822');
+if (!defined('TORNELIB_CRYPTO_MODIFY')) {
+    define('TORNELIB_CRYPTO_MODIFY', '20191207');
 }
-if ( ! defined('TORNELIB_CRYPTO_CLIENTNAME')) {
+if (!defined('TORNELIB_CRYPTO_CLIENTNAME')) {
     define('TORNELIB_CRYPTO_CLIENTNAME', 'MODULE_CRYPTO');
 }
-if (!defined('CRYPTO_SKIP_AUTOLOAD')) {
-    define('CRYPTO_CLASS_EXISTS_AUTOLOAD', true);
-} else {
-    define('CRYPTO_CLASS_EXISTS_AUTOLOAD', false);
+// Make sure we don't kill anything by defining predefined data.
+if (!defined('CRYPTO_CLASS_EXISTS_AUTOLOAD')) {
+    if (!defined('CRYPTO_SKIP_AUTOLOAD')) {
+        define('CRYPTO_CLASS_EXISTS_AUTOLOAD', true);
+    } else {
+        define('CRYPTO_CLASS_EXISTS_AUTOLOAD', false);
+    }
 }
 if (defined('TORNELIB_CRYPTO_REQUIRE')) {
-    if ( ! defined('TORNELIB_CRYPTO_REQUIRE_OPERATOR')) {
+    if (!defined('TORNELIB_CRYPTO_REQUIRE_OPERATOR')) {
         define('TORNELIB_CRYPTO_REQUIRE_OPERATOR', '==');
     }
-    define('TORNELIB_CRYPTO_ALLOW_AUTOLOAD', version_compare(TORNELIB_CRYPTO_RELEASE, TORNELIB_CRYPTO_REQUIRE,
-        TORNELIB_CRYPTO_REQUIRE_OPERATOR) ? true : false);
+    define(
+        'TORNELIB_CRYPTO_ALLOW_AUTOLOAD',
+        version_compare(
+            TORNELIB_CRYPTO_RELEASE,
+            TORNELIB_CRYPTO_REQUIRE,
+            TORNELIB_CRYPTO_REQUIRE_OPERATOR
+        ) ? true : false
+    );
 } else {
-    if ( ! defined('TORNELIB_CRYPTO_ALLOW_AUTOLOAD')) {
+    if (!defined('TORNELIB_CRYPTO_ALLOW_AUTOLOAD')) {
         define('TORNELIB_CRYPTO_ALLOW_AUTOLOAD', true);
     }
 }
 
-if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && defined('TORNELIB_CRYPTO_ALLOW_AUTOLOAD') && TORNELIB_CRYPTO_ALLOW_AUTOLOAD === true) {
+if (!class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists(
+        'TorneLIB\MODULE_CRYPTO',
+        CRYPTO_CLASS_EXISTS_AUTOLOAD
+    ) && defined('TORNELIB_CRYPTO_ALLOW_AUTOLOAD') && TORNELIB_CRYPTO_ALLOW_AUTOLOAD === true) {
 
     /**
      * Class TorneLIB_Crypto
@@ -78,7 +91,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         /**
          * TorneLIB_Crypto constructor.
          */
-        function __construct()
+        public function __construct()
         {
             $this->setAesIv(md5("TorneLIB Default IV - Please Change this"));
             $this->setAesKey(md5("TorneLIB Default KEY - Please Change this"));
@@ -91,7 +104,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          *
          * @since 6.0.6
          */
-        function setCompressionLevel($compressionLevel = 9)
+        public function setCompressionLevel($compressionLevel = 9)
         {
             $this->COMPRESSION_LEVEL = $compressionLevel;
         }
@@ -136,25 +149,25 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * 5 = Full usage and unrestricted $setMax
          * 6 = Complexity uses full charset of 0-255
          *
-         * @param int  $complexity
-         * @param int  $setMax      Max string length to use
+         * @param int $complexity
+         * @param int $setMax Max string length to use
          * @param bool $webFriendly Set to true works best with the less complex strings as it only removes characters that could be mistaken by another character (O,0,1,l,I etc)
          *
          * @return string
          * @deprecated 6.0.4 Still here for people who needs it
          */
-        function mkpass_deprecated($complexity = 4, $setMax = 8, $webFriendly = false)
+        public function mkpass_deprecated($complexity = 4, $setMax = 8, $webFriendly = false)
         {
-            $returnString       = null;
-            $characterListArray = array(
+            $returnString = null;
+            $characterListArray = [
                 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
                 'abcdefghijklmnopqrstuvwxyz',
                 '0123456789',
-                '!@#$%*?'
-            );
+                '!@#$%*?',
+            ];
             // Set complexity to no limit if type 6 is requested
             if ($complexity == 6) {
-                $characterListArray = array('0' => '');
+                $characterListArray = ['0' => ''];
                 for ($unlim = 0; $unlim <= 255; $unlim++) {
                     $characterListArray[0] .= chr($unlim);
                 }
@@ -179,17 +192,36 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
             if ($setMax > 0) {
                 $max = $setMax;
             }
-            $chars    = array();
-            $numchars = array();
+            $chars = [];
+            $numchars = [];
             //$equalityPart = ceil( $max / count( $characterListArray ) );
             for ($i = 0; $i < $max; $i++) {
                 $charListId = rand(0, count($characterListArray) - 1);
-                if ( ! isset($numchars[$charListId])) {
+                if (!isset($numchars[$charListId])) {
                     $numchars[$charListId] = 0;
                 }
-                $numchars[$charListId]++;
-                $chars[] = $characterListArray[$charListId]{mt_rand(0, (strlen($characterListArray[$charListId]) - 1))};
+
+                if (isset($characterListArray[$charListId][
+                    mt_rand(
+                        0,
+                        (
+                            strlen(
+                                $characterListArray[$charListId]
+                            ) - 1
+                        )
+                    )])) {
+                    $numchars[$charListId]++;
+                    $chars[] = $characterListArray[$charListId][mt_rand(
+                        0,
+                        (
+                            strlen(
+                                $characterListArray[$charListId]
+                            ) - 1
+                        )
+                    )];
+                }
             }
+
             shuffle($chars);
             $returnString = implode("", $chars);
             if ($webFriendly) {
@@ -210,13 +242,13 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          */
         private function getCharacterListArray($type = 'upper')
         {
-            $compiledArray = array(
-                'upper'    => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                'lower'    => 'abcdefghijklmnopqrstuvwxyz',
-                'numeric'  => '0123456789',
+            $compiledArray = [
+                'upper' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                'lower' => 'abcdefghijklmnopqrstuvwxyz',
+                'numeric' => '0123456789',
                 'specials' => '!@#$%*?',
-                'table'    => ''
-            );
+                'table' => '',
+            ];
             for ($i = 0; $i <= 255; $i++) {
                 $compiledArray['table'] .= chr($i);
             }
@@ -252,21 +284,21 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * Returns a random character from a selected character list
          *
          * @param array $type
-         * @param bool  $ambigous
+         * @param bool $ambigous
          *
          * @return mixed|string
          * @since 6.0.4
          */
-        private function getRandomCharacterFromArray($type = array('upper'), $ambigous = false)
+        private function getRandomCharacterFromArray($type = ['upper'], $ambigous = false)
         {
             if (is_string($type)) {
-                $type = array($type);
+                $type = [$type];
             }
-            $getType         = $type[rand(0, count($type) - 1)];
-            $characterArray  = $this->getCharactersFromList($getType);
+            $getType = $type[rand(0, count($type) - 1)];
+            $characterArray = $this->getCharactersFromList($getType);
             $characterLength = count($characterArray) - 1;
             $chosenCharacter = $characterArray[rand(0, $characterLength)];
-            $ambigousList    = array(
+            $ambigousList = [
                 '+',
                 '/',
                 '=',
@@ -276,8 +308,8 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
                 'O',
                 'D',
                 'Q',
-                'R'
-            );
+                'R',
+            ];
             if (in_array($chosenCharacter, $ambigousList)) {
                 $chosenCharacter = $this->getRandomCharacterFromArray($type, $ambigous);
             }
@@ -288,7 +320,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         /**
          * Returns a random character based on complexity selection
          *
-         * @param int  $complexity
+         * @param int $complexity
          * @param bool $ambigous
          *
          * @return mixed|string
@@ -298,22 +330,22 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         {
             switch ($complexity) {
                 case 1:
-                    return $this->getRandomCharacterFromArray(array('upper'), $ambigous);
+                    return $this->getRandomCharacterFromArray(['upper'], $ambigous);
                 case 2:
-                    return $this->getRandomCharacterFromArray(array('upper', 'lower'), $ambigous);
+                    return $this->getRandomCharacterFromArray(['upper', 'lower'], $ambigous);
                 case 3:
-                    return $this->getRandomCharacterFromArray(array('upper', 'lower', 'numeric'), $ambigous);
+                    return $this->getRandomCharacterFromArray(['upper', 'lower', 'numeric'], $ambigous);
                 case 4:
-                    return $this->getRandomCharacterFromArray(array(
+                    return $this->getRandomCharacterFromArray([
                         'upper',
                         'lower',
                         'numeric',
-                        'specials'
-                    ), $ambigous);
+                        'specials',
+                    ], $ambigous);
                 case 5:
-                    return $this->getRandomCharacterFromArray(array('table'));
+                    return $this->getRandomCharacterFromArray(['table']);
                 case 6:
-                    return $this->getRandomCharacterFromArray(array('table'));
+                    return $this->getRandomCharacterFromArray(['table']);
                 default:
                     return $this->getRandomCharacterFromArray('upper', $ambigous);
             }
@@ -322,9 +354,9 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         /**
          * Refactored generator to create a random password or string
          *
-         * @param int  $complexity  1=UPPERCASE, 2=UPPERCASE+lowercase, 3=UPPERCASE+lowercase+numerics, 4=UPPERCASE,lowercase+numerics+specialcharacters, 5/6=Full character set
-         * @param int  $totalLength Length of the string
-         * @param bool $ambigous    Exclude what we see as ambigous characters (this has no effect in complexity > 4)
+         * @param int $complexity 1=UPPERCASE, 2=UPPERCASE+lowercase, 3=UPPERCASE+lowercase+numerics, 4=UPPERCASE,lowercase+numerics+specialcharacters, 5/6=Full character set
+         * @param int $totalLength Length of the string
+         * @param bool $ambigous Exclude what we see as ambigous characters (this has no effect in complexity > 4)
          *
          * @return string
          * @since 6.0.4
@@ -340,8 +372,8 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         }
 
         /**
-         * @param int  $complexity
-         * @param int  $totalLength
+         * @param int $complexity
+         * @param int $totalLength
          * @param bool $ambigous
          *
          * @return string
@@ -364,7 +396,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          */
         public function setAesKey($useKey, $noHash = false)
         {
-            if ( ! $noHash) {
+            if (!$noHash) {
                 $this->ENCRYPT_AES_KEY = md5($useKey);
             } else {
                 $this->ENCRYPT_AES_KEY = $useKey;
@@ -381,7 +413,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          */
         public function setAesIv($useIv, $noHash = false)
         {
-            if ( ! $noHash) {
+            if (!$noHash) {
                 $this->ENCRYPT_AES_IV = md5($useIv);
             } else {
                 $this->ENCRYPT_AES_IV = $useIv;
@@ -439,8 +471,8 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * Encrypt content to RIJNDAEL/AES-encryption (Deprecated from PHP 7.1, removed in PHP 7.2)
          *
          * @param string $decryptedContent
-         * @param bool   $asBase64
-         * @param bool   $forceUtf8
+         * @param bool $asBase64
+         * @param bool $forceUtf8
          *
          * @return string
          * @throws \Exception
@@ -449,14 +481,14 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         public function aesEncrypt($decryptedContent = "", $asBase64 = true, $forceUtf8 = true)
         {
 
-            if ( ! $this->USE_MCRYPT) {
+            if (!$this->USE_MCRYPT) {
                 $this->setSslCipher('AES-256-CBC');
 
                 return $this->getEncryptSsl($decryptedContent, $asBase64, $forceUtf8);
             }
 
             $contentData = $decryptedContent;
-            if ( ! function_exists('mcrypt_encrypt')) {
+            if (!function_exists('mcrypt_encrypt')) {
                 throw new \Exception("mcrypt does not exist in this system - it has been deprecated since PHP 7.1");
             }
             if ($this->ENCRYPT_AES_KEY == md5(md5("TorneLIB Default IV - Please Change this")) || $this->ENCRYPT_AES_IV == md5(md5("TorneLIB Default IV - Please Change this"))) {
@@ -467,7 +499,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
                 $contentData = utf8_encode($decryptedContent);
             }
             /** @noinspection PhpDeprecationInspection */
-            $binEnc      = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $this->ENCRYPT_AES_KEY, $contentData, MCRYPT_MODE_CBC,
+            $binEnc = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $this->ENCRYPT_AES_KEY, $contentData, MCRYPT_MODE_CBC,
                 $this->ENCRYPT_AES_IV);
             $baseEncoded = $this->base64url_encode($binEnc);
             if ($asBase64) {
@@ -487,13 +519,20 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         private function setUseCipher($cipherConstant)
         {
             $this->getOpenSslEncrypt();
-            if (in_array($cipherConstant, openssl_get_cipher_methods())) {
+            $cipherMethods = openssl_get_cipher_methods();
+            if (
+                is_array($cipherMethods) &&
+                in_array(
+                    strtolower($cipherConstant),
+                    array_map('strtolower', $cipherMethods)
+                )
+            ) {
                 $this->OPENSSL_CIPHER_METHOD = $cipherConstant;
-                $this->OPENSSL_IV_LENGTH     = $this->getIvLength($cipherConstant);
+                $this->OPENSSL_IV_LENGTH = $this->getIvLength($cipherConstant);
 
                 return $cipherConstant;
             }
-            throw new \Exception("Cipher does not exists in this openssl module");
+            throw new \Exception("Cipher does not exists in this openssl module", 404);
         }
 
         /** @noinspection PhpUnusedPrivateMethodInspection */
@@ -516,7 +555,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         private function getIvLength($cipherConstant)
         {
             $this->getOpenSslEncrypt();
-            if ( ! empty($cipherConstant)) {
+            if (!empty($cipherConstant)) {
                 return openssl_cipher_iv_length($cipherConstant);
             }
 
@@ -536,19 +575,19 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         public function getCipherTypeByString($encryptedString = "", $decryptedString = "")
         {
             $this->getOpenSslEncrypt();
-            $cipherMethods  = openssl_get_cipher_methods();
-            $skippedMethods = array();
-            $originalKey    = $this->ENCRYPT_AES_KEY;
-            $originalIv     = $this->ENCRYPT_AES_IV;
+            $cipherMethods = openssl_get_cipher_methods();
+            $skippedMethods = [];
+            $originalKey = $this->ENCRYPT_AES_KEY;
+            $originalIv = $this->ENCRYPT_AES_IV;
             foreach ($cipherMethods as $method) {
-                if ( ! in_array($method, $skippedMethods)) {
+                if (!in_array($method, $skippedMethods)) {
                     //$skippedMethods[] = strtoupper($method);
                     try {
                         $this->ENCRYPT_AES_KEY = $originalKey;
-                        $this->ENCRYPT_AES_IV  = $originalIv;
+                        $this->ENCRYPT_AES_IV = $originalIv;
                         $this->setSslCipher($method);
                         $result = $this->getEncryptSsl($decryptedString);
-                        if ( ! empty($result) && $result == $encryptedString) {
+                        if (!empty($result) && $result == $encryptedString) {
                             return $method;
                         }
                     } catch (\Exception $e) {
@@ -561,15 +600,17 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
 
         /**
          * @param string $decryptedContent
-         * @param bool   $asBase64
-         * @param bool   $forceUtf8
+         * @param bool $asBase64
+         * @param bool $forceUtf8
          *
          * @return string
          * @throws \Exception
          */
         public function getEncryptSsl($decryptedContent = "", $asBase64 = true, $forceUtf8 = true)
         {
-            if ($this->ENCRYPT_AES_KEY == md5(md5("TorneLIB Default IV - Please Change this")) || $this->ENCRYPT_AES_IV == md5(md5("TorneLIB Default IV - Please Change this"))) {
+            if ($this->ENCRYPT_AES_KEY == md5(md5("TorneLIB Default IV - Please Change this")) ||
+                $this->ENCRYPT_AES_IV == md5(md5("TorneLIB Default IV - Please Change this"))
+            ) {
                 throw new \Exception("Current encryption key and iv is not allowed to use.");
             }
 
@@ -586,8 +627,13 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
             }
 
             // TODO: openssl_random_pseudo_bytes
-            $binEnc = openssl_encrypt($contentData, $this->OPENSSL_CIPHER_METHOD, $this->getAesKey(), OPENSSL_RAW_DATA,
-                $this->getAesIv(true));
+            $binEnc = openssl_encrypt(
+                $contentData,
+                $this->OPENSSL_CIPHER_METHOD,
+                $this->getAesKey(),
+                OPENSSL_RAW_DATA,
+                $this->getAesIv(true)
+            );
 
             $baseEncoded = $this->base64url_encode($binEnc);
             if ($asBase64) {
@@ -595,7 +641,6 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
             } else {
                 return $binEnc;
             }
-
         }
 
         /**
@@ -619,8 +664,13 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
             }
 
             // TODO: openssl_random_pseudo_bytes
-            return openssl_decrypt($contentData, $this->OPENSSL_CIPHER_METHOD, $this->getAesKey(), OPENSSL_RAW_DATA,
-                $this->getAesIv(true));
+            return openssl_decrypt(
+                $contentData,
+                $this->OPENSSL_CIPHER_METHOD,
+                $this->getAesKey(),
+                OPENSSL_RAW_DATA,
+                $this->getAesIv(true)
+            );
         }
 
         /**
@@ -638,7 +688,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * Decrypt content encoded with RIJNDAEL/AES-encryption
          *
          * @param string $encryptedContent
-         * @param bool   $asBase64
+         * @param bool $asBase64
          *
          * @return string
          * @throws \Exception
@@ -647,13 +697,15 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
         public function aesDecrypt($encryptedContent = "", $asBase64 = true)
         {
 
-            if ( ! $this->USE_MCRYPT) {
+            if (!$this->USE_MCRYPT || version_compare(PHP_VERSION, '7.3', '>=')) {
                 return $this->getDecryptSsl($encryptedContent, $asBase64);
             }
 
             $useKey = $this->ENCRYPT_AES_KEY;
-            $useIv  = $this->ENCRYPT_AES_IV;
-            if ($useKey == md5(md5("TorneLIB Default IV - Please Change this")) || $useIv == md5(md5("TorneLIB Default IV - Please Change this"))) {
+            $useIv = $this->ENCRYPT_AES_IV;
+            if ($useKey == md5(md5("TorneLIB Default IV - Please Change this")) ||
+                $useIv == md5(md5("TorneLIB Default IV - Please Change this"))
+            ) {
                 // TODO: TORNELIB_EXCEPTIONS::TORNELIB_CRYPTO_KEY_EXCEPTION
                 throw new \Exception("Current encryption key and iv is not allowed to use.");
             }
@@ -662,8 +714,15 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
                 $contentData = $this->base64url_decode($encryptedContent);
             }
             /** @noinspection PhpDeprecationInspection */
-            $decryptedOutput = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $useKey, $contentData, MCRYPT_MODE_CBC,
-                $useIv));
+            $decryptedOutput = trim(
+                mcrypt_decrypt(
+                    MCRYPT_RIJNDAEL_256,
+                    $useKey,
+                    $contentData,
+                    MCRYPT_MODE_CBC,
+                    $useIv
+                )
+            );
 
             return $decryptedOutput;
         }
@@ -672,20 +731,21 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * Compress data with gzencode and encode to base64url
          *
          * @param string $data
-         * @param int    $compressionLevel
+         * @param int $compressionLevel
          *
          * @return string
          * @throws \Exception
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         public function base64_gzencode($data = '', $compressionLevel = -1)
         {
 
-            if ( ! empty($this->COMPRESSION_LEVEL)) {
+            if (!empty($this->COMPRESSION_LEVEL)) {
                 $compressionLevel = $this->COMPRESSION_LEVEL;
             }
 
-            if ( ! function_exists('gzencode')) {
+            if (!function_exists('gzencode')) {
                 throw new \Exception("Function gzencode is missing");
             }
             $gzEncoded = gzencode($data, $compressionLevel);
@@ -701,6 +761,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * @return string
          * @throws \Exception
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         public function base64_gzdecode($data = '')
         {
@@ -717,10 +778,11 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * @return string
          * @throws \Exception
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         public function base64_bzencode($data = '')
         {
-            if ( ! function_exists('bzcompress')) {
+            if (!function_exists('bzcompress')) {
                 throw new \Exception("bzcompress is missing");
             }
             $bzEncoded = bzcompress($data);
@@ -736,10 +798,11 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * @return mixed
          * @throws \Exception
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         public function base64_bzdecode($data)
         {
-            if ( ! function_exists('bzdecompress')) {
+            if (!function_exists('bzdecompress')) {
                 throw new \Exception("bzdecompress is missing");
             }
             $bzDecoded = $this->base64url_decode($data);
@@ -755,13 +818,13 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * @return mixed
          * @throws \Exception
          * @since 6.0.0
+         * @todo Remove camelcase
          */
-
         public function base64_compress($data = '')
         {
-            $results         = array();
+            $results = [];
             $bestCompression = null;
-            $lengthArray     = array();
+            $lengthArray = [];
             if (function_exists('gzencode')) {
                 $results['gz0'] = $this->base64_gzencode("gz0:" . $data, 0);
                 $results['gz9'] = $this->base64_gzencode("gz9:" . $data, 9);
@@ -785,15 +848,16 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * Decompress data that has been compressed with base64_compress
          *
          * @param string $data
-         * @param bool   $getCompressionType
+         * @param bool $getCompressionType
          *
          * @return string
          * @throws \Exception
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         public function base64_decompress($data = '', $getCompressionType = false)
         {
-            $results       = array();
+            $results = [];
             $results['gz'] = $this->base64_gzdecode($data);
             if (function_exists('bzdecompress')) {
                 $results['bz'] = $this->base64_bzdecode($data);
@@ -830,35 +894,36 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          * @return string
          * @throws \Exception
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         private function gzDecode($data)
         {
             if (function_exists('gzdecode')) {
                 return gzdecode($data);
             }
-            if ( ! function_exists('gzinflate')) {
+            if (!function_exists('gzinflate')) {
                 throw new \Exception("Function gzinflate and gzdecode is missing");
             }
             // Inhherited from TorneEngine-Deprecated
-            $flags     = ord(substr($data, 3, 1));
+            $flags = ord(substr($data, 3, 1));
             $headerlen = 10;
             //$extralen    = 0;
             //$filenamelen = 0;
             if ($flags & 4) {
-                $extralen  = unpack('v', substr($data, 10, 2));
-                $extralen  = $extralen[1];
+                $extralen = unpack('v', substr($data, 10, 2));
+                $extralen = $extralen[1];
                 $headerlen += 2 + $extralen;
             }
-            if ($flags & 8) // Filename
-            {
+            // Filename
+            if ($flags & 8) {
                 $headerlen = strpos($data, chr(0), $headerlen) + 1;
             }
-            if ($flags & 16) // Comment
-            {
+            // Comment
+            if ($flags & 16) {
                 $headerlen = strpos($data, chr(0), $headerlen) + 1;
             }
-            if ($flags & 2) // CRC at end of file
-            {
+            // CRC at end of file
+            if ($flags & 2) {
                 $headerlen += 2;
             }
             $unpacked = gzinflate(substr($data, $headerlen));
@@ -876,6 +941,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          *
          * @return string
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         public function base64url_encode($data)
         {
@@ -889,6 +955,7 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
          *
          * @return string
          * @since 6.0.0
+         * @todo Remove camelcase
          */
         public function base64url_decode($data)
         {
@@ -897,7 +964,16 @@ if ( ! class_exists('MODULE_CRYPTO', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_ex
     }
 }
 
-if ( ! class_exists('TORNELIB_CRYPTO_TYPES', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\TORNELIB_CRYPTO_TYPES', CRYPTO_CLASS_EXISTS_AUTOLOAD)) {
+/**
+ * @todo Split extenders to another place
+ */
+
+if (!class_exists('TORNELIB_CRYPTO_TYPES', CRYPTO_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists(
+        'TorneLIB\TORNELIB_CRYPTO_TYPES',
+        CRYPTO_CLASS_EXISTS_AUTOLOAD
+    )
+) {
     abstract class TORNELIB_CRYPTO_TYPES
     {
         const TYPE_NONE = 0;
@@ -906,7 +982,12 @@ if ( ! class_exists('TORNELIB_CRYPTO_TYPES', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! 
     }
 }
 
-if ( ! class_exists('TorneLIB_Crypto', CRYPTO_CLASS_EXISTS_AUTOLOAD) && ! class_exists('TorneLIB\TorneLIB_Crypto', CRYPTO_CLASS_EXISTS_AUTOLOAD)) {
+if (!class_exists('TorneLIB_Crypto', CRYPTO_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists(
+        'TorneLIB\TorneLIB_Crypto',
+        CRYPTO_CLASS_EXISTS_AUTOLOAD
+    )
+) {
     class TorneLIB_Crypto extends MODULE_CRYPTO
     {
     }
