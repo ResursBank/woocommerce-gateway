@@ -1344,8 +1344,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         count($paymentMethodTypes)
                     );
 
-                    echo $this->setSeparator(__('Miscellaneous callback configuration',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    echo $this->setSeparator(
+                        __('Miscellaneous callback configuration', 'resurs-bank-payment-gateway-for-woocommerce'),
                         'configSeparateTitleSmall');
                     echo $this->setCheckBox('callbackUpdateAutomation', $namespace);
                     echo $this->setTextBox('callbackUpdateInterval', $namespace);
@@ -1354,9 +1354,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setCheckBox('reduceOrderStock', $namespace);
                     echo $this->setCheckBox('resursOrdersEditable', $namespace);
+                    echo $this->setCheckBox('showCheckoutOverlay', $namespace);
+                    echo $this->setTextBox('checkoutOverlayMessage', $namespace);
 
-                    echo $this->setSeparator(__('Testing and development',
-                        'resurs-bank-payment-gateway-for-woocommerce'));
+                    echo $this->setSeparator(
+                        __('Testing and development', 'resurs-bank-payment-gateway-for-woocommerce')
+                    );
                     echo $this->setCheckBox('logResursEvents', $namespace);
                     echo $this->setCheckBox('devResursSimulation', $namespace);
                     echo $this->setTextBox('devSimulateSuccessUrl', $namespace);

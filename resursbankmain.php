@@ -4613,6 +4613,7 @@ function woocommerce_gateway_resurs_bank_init()
             'customerTypes' => $customerTypes,
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
+            'showCheckoutOverlay' => getResursOption('showCheckoutOverlay'),
         ];
 
         $oneRandomValue = null;
@@ -5337,10 +5338,15 @@ function woocommerce_gateway_resurs_bank_init()
     add_filter('plugin_action_links', 'plugin_page_resurs_bank_for_woocommerce_settings', 10, 2);
 }
 
-function resurs_after_checkout_form() {
+function resurs_after_checkout_form()
+{
+    $customOverlayMessage = getResursOption('checkoutOverlayMessage');
+    $overlayMessage = empty($customOverlayMessage) ?
+        __('Please wait while we process your order...', 'resurs-bank-payment-gateway-for-woocommerce') : $customOverlayMessage;
+
     echo '<div class="purchaseActionsWrapper" id="purchaseActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">' .
-        '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">' .
-        __('Please wait while we process your order...', 'resurs-bank-payment-gateway-for-woocommerce') .
+        '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">'
+        . $overlayMessage .
         '</div></div>';
     echo '<div id="purchaseActions" class="purchaseActions" style="display: none;"></div>';
 

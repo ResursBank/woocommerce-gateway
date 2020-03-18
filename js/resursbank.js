@@ -26,7 +26,11 @@ var rbRefUpdated = false;
 
 $RB(document).ready(function ($) {
     var rb_simpl_checkout_form = $RB('form.checkout');
-    if (typeof rb_simpl_checkout_form !== 'undefined') {
+    if (typeof rb_simpl_checkout_form !== 'undefined' &&
+        typeof resursvars !== 'undefined' &&
+        resursvars['showCheckoutOverlay'] === "1"
+    ) {
+        // Bind overlay on demand.
         rb_simpl_checkout_form.on('checkout_place_order', function () {
             $RB('.purchaseActionsWrapper').show();
         });
