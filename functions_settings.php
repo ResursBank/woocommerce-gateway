@@ -576,10 +576,39 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Resurs Checkout Feature: If your plugin is running in test mode, you might want to study the behaviour of the standard customer form fields when communicating with the iframe',
+                        'Resurs Checkout Feature: If your plugin is running in test mode, you might want to study the ' .
+                        'behaviour of the standard customer form fields when communicating with the iframe.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
+                ],
+                'showCheckoutOverlay' => [
+                    'title' => __(
+                        'Show checkout overlay on purchase',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __(
+                        'When clicking on the purchase button and being redirected to success or signing page, ' .
+                        'this feature adds an extra overlay in the checkout telling the customer that payment ' .
+                        'is in progress.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'desc_tip' => true,
+                ],
+                'checkoutOverlayMessage' => [
+                    'title' => __(
+                        'Custom checkout overlay message',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'If this value is empty, we will use the default notification text in the checkout overlay. ' .
+                        'If not, we will use your customization.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'text',
+                    'default' => '',
                 ],
                 'resursCurrentAnnuityFactors' => [
                     'title' => __('Annuity factor config', 'resurs-bank-payment-gateway-for-woocommerce'),

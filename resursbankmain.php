@@ -4613,6 +4613,7 @@ function woocommerce_gateway_resurs_bank_init()
             'customerTypes' => $customerTypes,
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
+            'showCheckoutOverlay' => getResursOption('showCheckoutOverlay'),
         ];
 
         $oneRandomValue = null;
@@ -5300,6 +5301,7 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('woocommerce_order_refunded', 'resurs_order_refund', 10, 2);
     add_action('woocommerce_before_delete_order_item', 'resurs_remove_order_item');
     add_filter('wc_order_is_editable', 'resurs_order_is_editable', 10, 2);
+    add_action('woocommerce_after_checkout_form', 'resurs_after_checkout_form');
 
     add_filter('woocommerce_get_settings_pages', 'rb_settings_pages');
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway');
@@ -5334,6 +5336,20 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('manage_shop_order_posts_custom_column', 'resurs_order_column_info');
 
     add_filter('plugin_action_links', 'plugin_page_resurs_bank_for_woocommerce_settings', 10, 2);
+}
+
+function resurs_after_checkout_form()
+{
+    $customOverlayMessage = getResursOption('checkoutOverlayMessage');
+    $overlayMessage = empty($customOverlayMessage) ?
+        __('Please wait while we process your order...', 'resurs-bank-payment-gateway-for-woocommerce') : $customOverlayMessage;
+
+    echo '<div class="purchaseActionsWrapper" id="purchaseActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">' .
+        '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">'
+        . $overlayMessage .
+        '</div></div>';
+    echo '<div id="purchaseActions" class="purchaseActions" style="display: none;"></div>';
+
 }
 
 /**

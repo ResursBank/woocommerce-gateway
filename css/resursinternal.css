@@ -378,8 +378,22 @@ a.labelBoot:focus, a.labelBoot:hover {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 999999;
+    z-index: 9999990;
     font-weight: bold;
+    background: url('/wp-content/plugins/resurs-bank-payment-gateway-for-woocommerce/spinnerLocal.gif') no-repeat center;
+}
+
+.purchaseActionsWrapper {
+    position: fixed;
+    top: 30%;
+    left: 20%;
+    right: 20%;
+    bottom: 50%;
+    text-align: center;
+    font-weight: bold;
+    vertical-align: middle;
+    border: 1px solid black;
+    z-index: 9999991;
     background: url('/wp-content/plugins/resurs-bank-payment-gateway-for-woocommerce/spinnerLocal.gif') no-repeat center;
 }
 
