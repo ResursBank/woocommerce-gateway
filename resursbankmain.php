@@ -439,7 +439,7 @@ function woocommerce_gateway_resurs_bank_init()
             if (!count($request) && isset($_GET['event-type'])) {
                 $request = $_GET;
             }
-            $event_type = $request['event-type'];
+            $event_type = isset($request['event-type']) ? $request['event-type'] : '';
 
             if ($event_type == 'TEST') {
                 set_transient('resurs_callbacks_received', time());
