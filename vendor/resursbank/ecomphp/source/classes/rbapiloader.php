@@ -7,7 +7,7 @@
  * @author  Resurs Bank <support@resurs.se>
  * @author  Tomas Tornevall <tomas.tornevall@resurs.se>
  * @branch  1.3
- * @version 1.3.32
+ * @version 1.3.36
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -58,10 +58,10 @@ use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.32');
+    define('ECOMPHP_VERSION', '1.3.36');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20200302');
+    define('ECOMPHP_MODIFY_DATE', '20200403');
 }
 
 /**
@@ -4118,8 +4118,9 @@ class ResursBank
      * @param bool $fetch If ecom should try to download the content from the priceinfolink.
      * @param bool $iframe Pushes the priceinfolink into an iframe. You should preferrably have $fetch false here.
      * @param bool $limitByMinMax By default, ecom only shows priceinformation based on the $amount.
+     * @param bool $bodyOnly
      * @return false|mixed|string|null
-     * @throws Exception
+     * @throws \ResursException
      * @since 1.3.30
      */
     public function getCostOfPriceInformation(
@@ -4127,7 +4128,8 @@ class ResursBank
         $amount = 0,
         $fetch = false,
         $iframe = false,
-        $limitByMinMax = true
+        $limitByMinMax = true,
+        $bodyOnly = false
     ) {
         $return = '';
 
@@ -4169,6 +4171,7 @@ class ResursBank
                 $vars = [
                     'priceInfoTabs' => $tab,
                     'priceInfoBlocks' => $block,
+                    'bodyOnly' => $bodyOnly
                 ];
 
                 $return = $this->getHtmlTemplate($template['costofpriceinfo'], $vars);
@@ -4728,6 +4731,7 @@ class ResursBank
             $this->checkoutShopUrl = $shopUrl;
         }
         if ($validateFormat) {
+            $this->isNetWork();
             $shopUrlValidate = $this->NETWORK->getUrlDomain($this->checkoutShopUrl);
             $this->checkoutShopUrl = $shopUrlValidate[1] . "://" . $shopUrlValidate[0];
         }
@@ -5296,13 +5300,19 @@ class ResursBank
 
                     try {
                         if ($this->isFlag('STORE_ORIGIN')) {
+                            $this->isNetWork();
                             @preg_match_all('/iframe.*src=\"(http(.*?))\"/', $parsedResponse->html, $matches);
                             if (isset($matches[1]) && isset($matches[1][0])) {
                                 $urls = $this->NETWORK->getUrlsFromHtml($parsedResponse->html);
                                 if (is_array($urls) && count($urls)) {
-                                    $iFrameOrigindata = $this->NETWORK->getUrlDomain($urls[0]);
-                                    $this->iframeOrigin = sprintf('%s://%s', $iFrameOrigindata[1],
-                                        $iFrameOrigindata[0]);
+                                    $iFrameOrigindata = $this->NETWORK->getUrlDomain(
+                                        $urls[0]
+                                    );
+                                    $this->iframeOrigin = sprintf(
+                                        '%s://%s',
+                                        $iFrameOrigindata[1],
+                                        $iFrameOrigindata[0]
+                                    );
                                 }
                             }
                         }
@@ -5363,12 +5373,29 @@ class ResursBank
     /**
      * Returns a possible origin source from the iframe request.
      *
+     * @param string $extractFrom
+     * @param bool $useOwn
      * @return string
+     * @throws Exception
      * @since 1.3.30
      */
-    public function getIframeOrigin()
+    public function getIframeOrigin($extractFrom = '', $useOwn = false)
     {
-        return $this->iframeOrigin;
+        $return = $this->iframeOrigin;
+
+        if ((empty($this->iframeOrigin) && !empty($extractFrom)) || (!empty($extractFrom) && $useOwn)) {
+            $this->isNetWork();
+
+            $iFrameOrigindata = $this->NETWORK->getUrlDomain(
+                $extractFrom
+            );
+            $return = sprintf(
+                '%s://%s',
+                $iFrameOrigindata[1],
+                $iFrameOrigindata[0]
+            );
+        }
+        return $return;
     }
 
     /**

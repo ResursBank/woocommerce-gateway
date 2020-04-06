@@ -20,7 +20,7 @@
  * All since-markings are based on the major release of NetCurl.
  *
  * @package TorneLIB
- * @version 6.0.24
+ * @version 6.0.25
  */
 
 namespace TorneLIB;
@@ -29,10 +29,10 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
     !class_exists('TorneLIB\MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD)
 ) {
     if (!defined('NETCURL_CURL_RELEASE')) {
-        define('NETCURL_CURL_RELEASE', '6.0.24');
+        define('NETCURL_CURL_RELEASE', '6.0.25');
     }
     if (!defined('NETCURL_CURL_MODIFY')) {
-        define('NETCURL_CURL_MODIFY', '20191009');
+        define('NETCURL_CURL_MODIFY', '20200401');
     }
     if (!defined('NETCURL_CURL_CLIENTNAME')) {
         define('NETCURL_CURL_CLIENTNAME', 'MODULE_CURL');
@@ -78,7 +78,7 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         private $sslopt = [];
 
         /** @var string $netCurlUrl Where to find NetCurl */
-        private $netCurlUrl = 'http://www.netcurl.org/';
+        private $netCurlUrl = 'https://www.netcurl.org/';
 
         /** @var array $NETCURL_POST_DATA Could also be a string */
         private $NETCURL_POST_DATA = [];
@@ -270,6 +270,16 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         private $CURL_RETRY_TYPES = ['resolve' => 0, 'sslunverified' => 0];
         /** @var string Custom User-Agent sent in the HTTP-HEADER */
         private $HTTP_USER_AGENT;
+
+        /**
+         * @var string
+         * @since 6.0.25
+         */
+        private $HTTP_REAL_USER_AGENT;
+
+        /** @var bool If true, User-Agent will be freed from netcurl extras. */
+        private $spoofableUserAgent = false;
+
         /**
          * @var array Custom User-Agent Memory
          */
@@ -430,7 +440,15 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
             $this->throwableHttpCodes = [];
             $this->getSslDriver();
 
-            $this->HTTP_USER_AGENT = $this->userAgents['Mozilla'] . ' ' . NETCURL_CURL_CLIENTNAME . '-' . NETCURL_RELEASE . "/" . __CLASS__ . "-" . NETCURL_CURL_RELEASE . ' (' . $this->netCurlUrl . ')';
+            $this->HTTP_USER_AGENT = sprintf(
+                '%s %s-%s/%s-%s (%s)',
+                $this->userAgents['Mozilla'],
+                NETCURL_CURL_CLIENTNAME,
+                NETCURL_RELEASE,
+                __CLASS__,
+                NETCURL_CURL_RELEASE,
+                $this->netCurlUrl
+            );
 
             if (!empty($requestUrl)) {
                 $this->CURL_STORED_URL = $requestUrl;
@@ -1435,18 +1453,37 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         }
 
         /**
+         * @param $isSpoofable
+         * @since 6.0.25
+         */
+        public function setSpoofableUserAgent($isSpoofable) {
+            $this->spoofableUserAgent = $isSpoofable;
+        }
+
+        /**
+         * @return bool
+         * @since 6.0.25
+         */
+        public function getSpoofableUserAgent() {
+            return $this->spoofableUserAgent;
+        }
+
+        /**
          * Set up a different user agent for this library
          *
          * To make proper identification of the library we are always appending TorbeLIB+cUrl to the chosen user agent string.
          *
          * @param string $CustomUserAgent
          * @param array $inheritAgents Updates an array that might have lost some data
-         *
+         * @param bool $isSpoofable
          * @since 6.0
          */
-        public function setUserAgent($CustomUserAgent = "", $inheritAgents = [])
+        public function setUserAgent($CustomUserAgent = "", $inheritAgents = [], $isSpoofable = false)
         {
-
+            if (!$this->spoofableUserAgent) {
+                $this->spoofableUserAgent = $isSpoofable;
+                $this->HTTP_REAL_USER_AGENT = $CustomUserAgent;
+            }
             if (is_array($inheritAgents) && count($inheritAgents)) {
                 foreach ($inheritAgents as $inheritedAgentName) {
                     if (!in_array(trim($inheritedAgentName), $this->CUSTOM_USER_AGENT)) {
@@ -1456,43 +1493,46 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
             }
 
             if (!empty($CustomUserAgent)) {
-                $this->mergeUserAgent($CustomUserAgent);
+                $this->mergeUserAgent($CustomUserAgent, $isSpoofable);
             } else {
-                $this->HTTP_USER_AGENT = sprintf(
-                    '%s +TorneLIB-NetCURL-%s +%s +%s (%s)',
-                    $this->userAgents['Mozilla'],
-                    NETCURL_RELEASE,
-                    NETCURL_CURL_CLIENTNAME,
-                    NETCURL_CURL_RELEASE,
-                    $this->netCurlUrl
-                );
+                if (!$this->spoofableUserAgent) {
+                    $this->HTTP_USER_AGENT = sprintf(
+                        '%s +TorneLIB-NetCURL-%s +%s +%s (%s)',
+                        $this->userAgents['Mozilla'],
+                        NETCURL_RELEASE,
+                        NETCURL_CURL_CLIENTNAME,
+                        NETCURL_CURL_RELEASE,
+                        $this->netCurlUrl
+                    );
+                }
             }
         }
 
         /**
          * @param string $CustomUserAgent
-         *
+         * @param bool $isSpoofable
          * @since 6.0.20
          */
-        private function mergeUserAgent($CustomUserAgent = "")
+        private function mergeUserAgent($CustomUserAgent = "", $isSpoofable = false)
         {
             $trimmedUserAgent = trim($CustomUserAgent);
             if (!in_array($trimmedUserAgent, $this->CUSTOM_USER_AGENT)) {
                 $this->CUSTOM_USER_AGENT[] = $trimmedUserAgent;
             }
 
-            // NETCURL_CURL_CLIENTNAME . '-' . NETCURL_RELEASE . "/" . __CLASS__ . "-" . NETCURL_CURL_RELEASE
-            $this->HTTP_USER_AGENT = sprintf(
-                '%s +TorneLIB-NETCURL-%s +%s-%s (%s)',
-                implode(
-                    " ",
-                    $this->CUSTOM_USER_AGENT
-                ),
-                NETCURL_RELEASE,
-                NETCURL_CURL_CLIENTNAME,
-                NETCURL_CURL_RELEASE,
-                $this->netCurlUrl
-            );
+            if (!$this->spoofableUserAgent || !$isSpoofable) {
+                $this->HTTP_USER_AGENT = sprintf(
+                    '%s +TorneLIB-NETCURL-%s +%s-%s (%s)',
+                    implode(
+                        " ",
+                        $this->CUSTOM_USER_AGENT
+                    ),
+                    NETCURL_RELEASE,
+                    NETCURL_CURL_CLIENTNAME,
+                    NETCURL_CURL_RELEASE,
+                    $this->netCurlUrl
+                );
+            }
         }
 
         /**
@@ -1788,6 +1828,7 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @return bool
          * @since 6.0.10
+         * @deprecated Removed from 6.1: Replaced with getSecurityLevelChange()
          */
         public function getSslIsUnsafe()
         {
@@ -3114,7 +3155,15 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          */
         private function setSslUserAgent()
         {
-            $this->setUserAgent(NETCURL_SSL_CLIENTNAME . "-" . NETCURL_SSL_RELEASE);
+            if (!$this->spoofableUserAgent) {
+                $this->setUserAgent(
+                    sprintf(
+                        '%s-%s',
+                        NETCURL_SSL_CLIENTNAME,
+                        NETCURL_SSL_RELEASE
+                    )
+                );
+            }
         }
 
         /**
@@ -3344,6 +3393,9 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                 $this->setCurlOptInternal(CURLOPT_REFERER, $this->NETCURL_HTTP_REFERER);
             }
             if (isset($this->HTTP_USER_AGENT) && !empty($this->HTTP_USER_AGENT)) {
+                if ($this->spoofableUserAgent && !empty($this->HTTP_REAL_USER_AGENT)) {
+                    $this->HTTP_USER_AGENT = $this->HTTP_REAL_USER_AGENT;
+                }
                 $this->setCurlOpt(CURLOPT_USERAGENT, $this->HTTP_USER_AGENT); // overwrite old
             }
             if (isset($this->HTTP_CHARACTER_ENCODING) && !empty($this->HTTP_CHARACTER_ENCODING)) {
@@ -3468,14 +3520,16 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
                 // Special case: Resolver failures
                 if ($this->CURL_RESOLVER_FORCED && $this->CURL_RETRY_TYPES['resolve'] >= 2) {
-                    throw new \Exception(NETCURL_CURL_CLIENTNAME . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for " . $this->CURL_STORED_URL . " has been reached without any successful response. Normally, this happens after " . $this->CURL_RETRY_TYPES['resolve'] . " CurlResolveRetries and might be connected with a bad URL or similar that can not resolve properly.\nCurl error message follows: " . $errorMessage,
+                    throw new \Exception(
+                        NETCURL_CURL_CLIENTNAME . " exception in " . __FUNCTION__ . ": The maximum tries of curl_exec() for " . $this->CURL_STORED_URL . " has been reached without any successful response. Normally, this happens after " . $this->CURL_RETRY_TYPES['resolve'] . " CurlResolveRetries and might be connected with a bad URL or similar that can not resolve properly.\nCurl error message follows: " . $errorMessage,
                         $errorCode);
                 }
                 $this->internal_curl_error_resolver($errorCode, $errorMessage);
             }
 
             if ($this->NETCURL_ERRORHANDLER_HAS_ERRORS && !$this->NETCURL_ERRORHANDLER_RERUN) {
-                throw new \Exception(NETCURL_CURL_CLIENTNAME . " exception from PHP/CURL at " . __FUNCTION__ . ": " . curl_error($this->NETCURL_CURL_SESSION),
+                throw new \Exception(
+                    NETCURL_CURL_CLIENTNAME . " exception from PHP/CURL at " . __FUNCTION__ . ": " . curl_error($this->NETCURL_CURL_SESSION),
                     curl_errno($this->NETCURL_CURL_SESSION));
             }
 
@@ -3694,8 +3748,17 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                 }
             } else {
                 if (is_object($currentDriver) && method_exists($currentDriver, 'executeNetcurlRequest')) {
-                    $returnContent = $currentDriver->executeNetcurlRequest($this->CURL_STORED_URL,
-                        $this->POST_DATA_HANDLED, $this->NETCURL_POST_METHOD, $this->NETCURL_POST_DATA_TYPE);
+                    if (method_exists($currentDriver, 'setAuthentication') &&
+                        isset($this->AuthData) && isset($this->AuthData['Username']) && isset($this->AuthData['Password'])
+                    ) {
+                        $currentDriver->setAuthentication($this->AuthData['Username'], $this->AuthData['Password']);
+                    }
+                    $returnContent = $currentDriver->executeNetcurlRequest(
+                        $this->CURL_STORED_URL,
+                        $this->POST_DATA_HANDLED,
+                        $this->NETCURL_POST_METHOD,
+                        $this->NETCURL_POST_DATA_TYPE
+                    );
                 }
             }
 

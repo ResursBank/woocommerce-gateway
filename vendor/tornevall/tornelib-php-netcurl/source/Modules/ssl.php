@@ -65,6 +65,9 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         /** @var MODULE_NETWORK $NETWORK */
         private $NETWORK;
 
+        /**
+         * @var array Options.
+         */
         private $sslopt = [];
 
         /**
@@ -121,6 +124,7 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Returns true if no errors occured in the control
          *
          * @return bool
+         * @deprecated Removed from 6.1
          */
         public static function hasSsl()
         {
@@ -136,9 +140,9 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param bool $checkSafeMode If true, we will also check if safe_mode is active
          * @param bool $mockSafeMode If true, NetCurl will pretend safe_mode is true (for testing)
-         *
          * @return bool If true, PHP is in secure mode and won't allow things like follow-redirects and setting up different paths for certificates, etc
          * @since 6.0.20
+         * @deprecated Replaced with getSecureMode in 6.1
          */
         public function getIsSecure($checkSafeMode = true, $mockSafeMode = false)
         {
@@ -162,8 +166,8 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Get safe_mode status (mockable)
          *
          * @param bool $mockedSafeMode When active, this always returns true
-         *
          * @return bool
+         * @deprecated Moved to external security library.
          */
         private function getSafeMode($mockedSafeMode = false)
         {
@@ -185,6 +189,7 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param bool $forceChecking
          * @return string
          * @since 6.0.0
+         * @deprecated Removed in 6.1 - context will be handed over to the developer.
          */
         public function getSslCertificateBundle($forceChecking = false)
         {
@@ -235,6 +240,7 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @return bool
          * @throws \Exception
          * @since 6.0.20
+         * @deprecated Removed in 6.1 - context will be handed over to the developer.
          */
         public function setPemLocation($pemLocationData = [])
         {
@@ -265,6 +271,10 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
             return true;
         }
 
+        /**
+         * @return array
+         * @deprecated Removed in 6.1 - context will be handed over to the developer.
+         */
         public function getPemLocations()
         {
             return $this->sslPemLocations;
@@ -275,8 +285,8 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param bool $strictCertificateVerification
          * @param bool $prohibitSelfSigned This only covers streams
-         *
          * @since 6.0.0
+         * @deprecated Input variables will change in 6.1
          */
         public function setStrictVerification($strictCertificateVerification = true, $prohibitSelfSigned = true)
         {
@@ -289,6 +299,7 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @return bool
          * @since 6.0.0
+         * @deprecated Replaced by getContext in 6.1
          */
         public function getStrictVerification()
         {
@@ -296,8 +307,8 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         }
 
         /**
-         *
          * @return bool|null
+         * @deprecated Removed from 6.1
          */
         public function getStrictSelfSignedVerification()
         {
@@ -311,8 +322,8 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Replacement for allowSslUnverified setup
          *
          * @param bool $sslFailoverEnabled *
-         *
          * @since 6.0.0
+         * @deprecated Removed from 6.1
          */
         public function setStrictFallback($sslFailoverEnabled = false)
         {
@@ -322,6 +333,7 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         /**
          * @return bool
          * @since 6.0.0
+         * @deprecated Removed from 6.1
          */
         public function getStrictFallback()
         {
@@ -332,8 +344,8 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Prepare context stream for SSL
          *
          * @return array
-         *
          * @since 6.0.0
+         * @deprecated Rewritten in 6.1
          */
         public function getSslStreamContext()
         {
@@ -362,6 +374,7 @@ if (!class_exists('MODULE_SSL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @return array
          * @since 6.0.0
+         * @deprecated Removed from 6.1
          */
         public function getSslStream($optionsArray = [], $addonContextData = [])
         {
