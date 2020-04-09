@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.3.2
 Requires PHP: 5.4
-Stable tag: 2.2.30
+Stable tag: 2.2.31
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 == Changelog ==
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
+
+= 2.2.31 =
+
+    * [WOO-470] - getAddress triggered but not executed on site when merchant has NATURAL methods only.
 
 = 2.2.30 =
 
