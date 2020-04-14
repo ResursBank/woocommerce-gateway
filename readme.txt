@@ -91,6 +91,7 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
 
 = 2.2.31 =
 
+    * Untasked issue: Now ignoring automatic_fraud_control if getPayments telling something else.
     * [WOO-470] - getAddress triggered but not executed on site when merchant has NATURAL methods only.
 
 = 2.2.30 =
