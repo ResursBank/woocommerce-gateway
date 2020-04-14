@@ -1419,9 +1419,7 @@ function woocommerce_gateway_resurs_bank_init()
             try {
                 /** @var $suggestedStatus RESURS_PAYMENT_STATUS_RETURNCODES */
                 $suggestedStatus = $this->flow->getOrderStatusByPayment(
-                    $paymentIdOrPaymentObject,
-                    $byCallbackEvent,
-                    $callbackEventDataArrayOrString
+                    $paymentIdOrPaymentObject
                 );
 
                 // Developers and merchants should normally not need to touch this section unless they really know what they're doing.
