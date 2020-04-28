@@ -437,10 +437,10 @@ function woocommerce_gateway_resurs_bank_init()
                 $request = [];
             } else {
                 if (count($request) === 1 && isset($request['wc-api'])) {
-                    echo __(
-                        'Something went wrong during what we suppose should have been a redirect somewhere. This URL should contain much more data than the WC_Resurs_Bank-parameter if it should be considered a proper redirect.',
+                    echo '<div style="width: 800px;">' . __(
+                        'Something went wrong during what we suppose should have been a redirect somewhere. This URL should contain much more data than the WC_Resurs_Bank-parameter if it should be considered a proper redirect. Please, contact support if you land here.',
                         'resurs-bank-payment-gateway-for-woocommerce'
-                    );
+                    ) . '</div>';
                     die();
                 }
             }
