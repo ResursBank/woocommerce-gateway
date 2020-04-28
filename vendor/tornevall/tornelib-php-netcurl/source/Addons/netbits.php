@@ -26,194 +26,208 @@
 
 namespace TorneLIB;
 
-if ( ! defined( 'NETCURL_NETBITS_RELEASE' ) ) {
-	define( 'NETCURL_NETBITS_RELEASE', '6.0.1' );
+if (!defined('NETCURL_NETBITS_RELEASE')) {
+    define('NETCURL_NETBITS_RELEASE', '6.0.1');
 }
-if ( ! defined( 'NETCURL_NETBITS_MODIFY' ) ) {
-	define( 'NETCURL_NETBITS_MODIFY', '20180320' );
+if (!defined('NETCURL_NETBITS_MODIFY')) {
+    define('NETCURL_NETBITS_MODIFY', '20180320');
 }
 
 // Check if there is a packagist release already loaded, since this network standalone release is deprecated as of 20180320.
-if ( ! class_exists( 'MODULE_NETBITS', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\MODULE_NETBITS', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
-	/**
-	 * Class TorneLIB_NetBits Netbits Library for calculations with bitmasks
-	 *
-	 * @package TorneLIB
-	 * @version 6.0.1
-	 */
-	class MODULE_NETBITS {
-		/** @var array Standard bitmask setup */
-		private $BIT_SETUP;
-		private $maxBits = 8;
+if (!class_exists('MODULE_NETBITS', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists('TorneLIB\MODULE_NETBITS', NETCURL_CLASS_EXISTS_AUTOLOAD)
+) {
+    /**
+     * Class TorneLIB_NetBits Netbits Library for calculations with bitmasks
+     *
+     * @package TorneLIB
+     * @version 6.0.1
+     * @deprecated Use tornevall/tornelib-php-bitmask instead!
+     */
+    class MODULE_NETBITS
+    {
+        /** @var array Standard bitmask setup */
+        private $BIT_SETUP;
+        private $maxBits = 8;
 
-		function __construct( $bitStructure = array() ) {
-			$this->BIT_SETUP = array(
-				'OFF'     => 0,
-				'BIT_1'   => 1,
-				'BIT_2'   => 2,
-				'BIT_4'   => 4,
-				'BIT_8'   => 8,
-				'BIT_16'  => 16,
-				'BIT_32'  => 32,
-				'BIT_64'  => 64,
-				'BIT_128' => 128
-			);
-			if ( is_array($bitStructure) && count( $bitStructure ) ) {
-				$this->BIT_SETUP = $this->validateBitStructure( $bitStructure );
-			}
-		}
+        function __construct($bitStructure = [])
+        {
+            $this->BIT_SETUP = [
+                'OFF' => 0,
+                'BIT_1' => 1,
+                'BIT_2' => 2,
+                'BIT_4' => 4,
+                'BIT_8' => 8,
+                'BIT_16' => 16,
+                'BIT_32' => 32,
+                'BIT_64' => 64,
+                'BIT_128' => 128,
+            ];
+            if (is_array($bitStructure) && count($bitStructure)) {
+                $this->BIT_SETUP = $this->validateBitStructure($bitStructure);
+            }
+        }
 
-		public function setMaxBits( $maxBits = 8 ) {
-			$this->maxBits = $maxBits;
-			$this->validateBitStructure( $maxBits );
-		}
+        public function setMaxBits($maxBits = 8)
+        {
+            $this->maxBits = $maxBits;
+            $this->validateBitStructure($maxBits);
+        }
 
-		public function getMaxBits() {
-			return $this->maxBits;
-		}
+        public function getMaxBits()
+        {
+            return $this->maxBits;
+        }
 
-		private function getRequiredBits( $maxBits = 8 ) {
-			$requireArray = array();
-			if ( $this->maxBits != $maxBits ) {
-				$maxBits = $this->maxBits;
-			}
-			for ( $curBit = 0; $curBit <= $maxBits; $curBit ++ ) {
-				$requireArray[] = (int) pow( 2, $curBit );
-			}
+        private function getRequiredBits($maxBits = 8)
+        {
+            $requireArray = [];
+            if ($this->maxBits != $maxBits) {
+                $maxBits = $this->maxBits;
+            }
+            for ($curBit = 0; $curBit <= $maxBits; $curBit++) {
+                $requireArray[] = (int)pow(2, $curBit);
+            }
 
-			return $requireArray;
-		}
+            return $requireArray;
+        }
 
-		private function validateBitStructure( $bitStructure = array() ) {
-			if ( is_numeric( $bitStructure ) ) {
-				$newBitStructure = array(
-					'OFF' => 0
-				);
-				for ( $bitIndex = 0; $bitIndex <= $bitStructure; $bitIndex ++ ) {
-					$powIndex                              = pow( 2, $bitIndex );
-					$newBitStructure[ "BIT_" . $powIndex ] = $powIndex;
-				}
-				$bitStructure    = $newBitStructure;
-				$this->BIT_SETUP = $bitStructure;
-			}
-			$require                  = $this->getRequiredBits( count( $bitStructure ) );
-			$validated                = array();
-			$newValidatedBitStructure = array();
-			$valueKeys                = array();
-			foreach ( $bitStructure as $key => $value ) {
-				if ( in_array( $value, $require ) ) {
-					$newValidatedBitStructure[ $key ] = $value;
-					$valueKeys[ $value ]              = $key;
-					$validated[]                      = $value;
-				}
-			}
-			foreach ( $require as $bitIndex ) {
-				if ( ! in_array( $bitIndex, $validated ) ) {
-					if ( $bitIndex == "0" ) {
-						$newValidatedBitStructure["OFF"] = $bitIndex;
-					} else {
-						$bitIdentificationName                              = "BIT_" . $bitIndex;
-						$newValidatedBitStructure[ $bitIdentificationName ] = $bitIndex;
-					}
-				} else {
-					if ( isset( $valueKeys[ $bitIndex ] ) && ! empty( $valueKeys[ $bitIndex ] ) ) {
-						$bitIdentificationName                              = $valueKeys[ $bitIndex ];
-						$newValidatedBitStructure[ $bitIdentificationName ] = $bitIndex;
-					}
-				}
-			}
-			asort( $newValidatedBitStructure );
-			$this->BIT_SETUP = $newValidatedBitStructure;
+        private function validateBitStructure($bitStructure = [])
+        {
+            if (is_numeric($bitStructure)) {
+                $newBitStructure = [
+                    'OFF' => 0,
+                ];
+                for ($bitIndex = 0; $bitIndex <= $bitStructure; $bitIndex++) {
+                    $powIndex = pow(2, $bitIndex);
+                    $newBitStructure["BIT_" . $powIndex] = $powIndex;
+                }
+                $bitStructure = $newBitStructure;
+                $this->BIT_SETUP = $bitStructure;
+            }
+            $require = $this->getRequiredBits(count($bitStructure));
+            $validated = [];
+            $newValidatedBitStructure = [];
+            $valueKeys = [];
+            foreach ($bitStructure as $key => $value) {
+                if (in_array($value, $require)) {
+                    $newValidatedBitStructure[$key] = $value;
+                    $valueKeys[$value] = $key;
+                    $validated[] = $value;
+                }
+            }
+            foreach ($require as $bitIndex) {
+                if (!in_array($bitIndex, $validated)) {
+                    if ($bitIndex == "0") {
+                        $newValidatedBitStructure["OFF"] = $bitIndex;
+                    } else {
+                        $bitIdentificationName = "BIT_" . $bitIndex;
+                        $newValidatedBitStructure[$bitIdentificationName] = $bitIndex;
+                    }
+                } else {
+                    if (isset($valueKeys[$bitIndex]) && !empty($valueKeys[$bitIndex])) {
+                        $bitIdentificationName = $valueKeys[$bitIndex];
+                        $newValidatedBitStructure[$bitIdentificationName] = $bitIndex;
+                    }
+                }
+            }
+            asort($newValidatedBitStructure);
+            $this->BIT_SETUP = $newValidatedBitStructure;
 
-			return $newValidatedBitStructure;
-		}
+            return $newValidatedBitStructure;
+        }
 
-		public function setBitStructure( $bitStructure = array() ) {
-			$this->validateBitStructure( $bitStructure );
-		}
+        public function setBitStructure($bitStructure = [])
+        {
+            $this->validateBitStructure($bitStructure);
+        }
 
-		public function getBitStructure() {
-			return $this->BIT_SETUP;
-		}
+        public function getBitStructure()
+        {
+            return $this->BIT_SETUP;
+        }
 
-		/**
-		 * Finds out if a bitmasked value is located in a bitarray
-		 *
-		 * @param int $requestedExistingBit
-		 * @param int $requestedBitSum
-		 *
-		 * @return bool
-		 */
-		public function isBit( $requestedExistingBit = 0, $requestedBitSum = 0 ) {
-			$return = false;
-			if ( is_array( $requestedExistingBit ) ) {
-				foreach ( $requestedExistingBit as $bitKey ) {
-					if ( ! $this->isBit( $bitKey, $requestedBitSum ) ) {
-						return false;
-					}
-				}
+        /**
+         * Finds out if a bitmasked value is located in a bitarray
+         *
+         * @param int $requestedExistingBit
+         * @param int $requestedBitSum
+         * @return bool
+         */
+        public function isBit($requestedExistingBit = 0, $requestedBitSum = 0)
+        {
+            $return = false;
+            if (is_array($requestedExistingBit)) {
+                foreach ($requestedExistingBit as $bitKey) {
+                    if (!$this->isBit($bitKey, $requestedBitSum)) {
+                        return false;
+                    }
+                }
 
-				return true;
-			}
+                return true;
+            }
 
-			// Solution that works with unlimited bits
-			for ( $bitCount = 0; $bitCount < count( $this->getBitStructure() ); $bitCount ++ ) {
-				if ( $requestedBitSum & pow( 2, $bitCount ) ) {
-					if ( $requestedExistingBit == pow( 2, $bitCount ) ) {
-						$return = true;
-					}
-				}
-			}
+            // Solution that works with unlimited bits
+            for ($bitCount = 0; $bitCount < count($this->getBitStructure()); $bitCount++) {
+                if ($requestedBitSum & pow(2, $bitCount)) {
+                    if ($requestedExistingBit == pow(2, $bitCount)) {
+                        $return = true;
+                    }
+                }
+            }
 
-			// Solution that works with bits up to 8
-			/*
-			$sum = 0;
-			preg_match_all("/\d/", sprintf("%08d", decbin( $requestedBitSum)), $bitArray);
-			for ($bitCount = count($bitArray[0]); $bitCount >= 0; $bitCount--) {
-				if (isset($bitArray[0][$bitCount])) {
-					if ( $requestedBitSum & pow(2, $bitCount)) {
-						if ( $requestedExistingBit == pow(2, $bitCount)) {
-							$return = true;
-						}
-					}
-				}
-			}
-			*/
+            // Solution that works with bits up to 8
+            /*
+            $sum = 0;
+            preg_match_all("/\d/", sprintf("%08d", decbin( $requestedBitSum)), $bitArray);
+            for ($bitCount = count($bitArray[0]); $bitCount >= 0; $bitCount--) {
+                if (isset($bitArray[0][$bitCount])) {
+                    if ( $requestedBitSum & pow(2, $bitCount)) {
+                        if ( $requestedExistingBit == pow(2, $bitCount)) {
+                            $return = true;
+                        }
+                    }
+                }
+            }
+            */
 
-			return $return;
-		}
+            return $return;
+        }
 
-		/**
-		 * Get active bits in an array
-		 *
-		 * @param int $bitValue
-		 *
-		 * @return array
-		 */
-		public function getBitArray( $bitValue = 0 ) {
-			$returnBitList = array();
-			foreach ( $this->BIT_SETUP as $key => $value ) {
-				if ( $this->isBit( $value, $bitValue ) ) {
-					$returnBitList[] = $key;
-				}
-			}
+        /**
+         * Get active bits in an array
+         *
+         * @param int $bitValue
+         * @return array
+         */
+        public function getBitArray($bitValue = 0)
+        {
+            $returnBitList = [];
+            foreach ($this->BIT_SETUP as $key => $value) {
+                if ($this->isBit($value, $bitValue)) {
+                    $returnBitList[] = $key;
+                }
+            }
 
-			return $returnBitList;
-		}
-
-	}
+            return $returnBitList;
+        }
+    }
 }
 
-if ( ! class_exists( 'TorneLIB_NetBits', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\TorneLIB_NetBits', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
-	/**
-	 * Class TorneLIB_NetBits
-	 *
-	 * @package    TorneLIB
-	 * @deprecated Use MODULE_NETBITS
-	 */
-	class TorneLIB_NetBits extends MODULE_NETBITS {
-		function __construct( array $bitStructure = array() ) {
-			parent::__construct( $bitStructure );
-		}
-	}
+if (!class_exists('TorneLIB_NetBits', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists('TorneLIB\TorneLIB_NetBits', NETCURL_CLASS_EXISTS_AUTOLOAD)
+) {
+    /**
+     * Class TorneLIB_NetBits
+     *
+     * @package    TorneLIB
+     * @deprecated Use MODULE_NETBITS
+     */
+    class TorneLIB_NetBits extends MODULE_NETBITS
+    {
+        function __construct(array $bitStructure = [])
+        {
+            parent::__construct($bitStructure);
+        }
+    }
 }

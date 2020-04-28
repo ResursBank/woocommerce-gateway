@@ -24,70 +24,76 @@
 
 namespace TorneLIB;
 
-if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
-	/**
-	 * Class NETCURL_EXCEPTIONS
-	 *
-	 * @package TorneLIB
-	 */
-	abstract class NETCURL_EXCEPTIONS {
-		const NETCURL_NO_ERROR = 0;
-		const NETCURL_EXCEPTION_IT_WORKS = 1;
+if (!class_exists('TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists('TorneLIB\TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD)
+) {
+    /**
+     * Class NETCURL_EXCEPTIONS
+     *
+     * @package TorneLIB
+     */
+    abstract class NETCURL_EXCEPTIONS
+    {
+        const NETCURL_NO_ERROR = 0;
+        const NETCURL_EXCEPTION_IT_WORKS = 1;
         const NETCURL_EXCEPTION_IT_DOESNT_WORK = 500;
 
 
-		/**
-		 * @deprecated
-		 */
-		const NETCURL_CURL_MISSING = 1000;
-		const NETCURL_SETFLAG_KEY_EMPTY = 1001;
+        /**
+         * @deprecated
+         */
+        const NETCURL_CURL_MISSING = 1000;
+        const NETCURL_SETFLAG_KEY_EMPTY = 1001;
 
-		/**
-		 * @deprecated
-		 */
-		const NETCURL_COOKIEPATH_SETUP_FAIL = 1002;
-		const NETCURL_IPCONFIG_NOT_VALID = 1003;
+        /**
+         * @deprecated
+         */
+        const NETCURL_COOKIEPATH_SETUP_FAIL = 1002;
+        const NETCURL_IPCONFIG_NOT_VALID = 1003;
 
-		/**
-		 * @deprecated
-		 */
-		const NETCURL_SETSSLVERIFY_UNVERIFIED_NOT_SET = 1004;
-		const NETCURL_DOMDOCUMENT_CLASS_MISSING = 1005;
-		const NETCURL_GETPARSEDVALUE_KEY_NOT_FOUND = 1006;
-		const NETCURL_SOAPCLIENT_CLASS_MISSING = 1007;
-		const NETCURL_SIMPLESOAP_GETSOAP_CREATE_FAIL = 1008;
-		const NETCURL_WP_TRANSPORT_ERROR = 1009;
-		const NETCURL_CURL_DISABLED = 1010;
+        /**
+         * @deprecated
+         */
+        const NETCURL_SETSSLVERIFY_UNVERIFIED_NOT_SET = 1004;
+        const NETCURL_DOMDOCUMENT_CLASS_MISSING = 1005;
+        const NETCURL_GETPARSEDVALUE_KEY_NOT_FOUND = 1006;
+        const NETCURL_SOAPCLIENT_CLASS_MISSING = 1007;
+        const NETCURL_SIMPLESOAP_GETSOAP_CREATE_FAIL = 1008;
+        const NETCURL_WP_TRANSPORT_ERROR = 1009;
+        const NETCURL_CURL_DISABLED = 1010;
 
-		/**
-		 * @deprecated
-		 */
-		const NETCURL_NOCOMM_DRIVER = 1011;
-		/**
-		 * @deprecated
-		 */
-		const NETCURL_EXTERNAL_DRIVER_MISSING = 1012;
+        /**
+         * @deprecated
+         */
+        const NETCURL_NOCOMM_DRIVER = 1011;
+        /**
+         * @deprecated
+         */
+        const NETCURL_EXTERNAL_DRIVER_MISSING = 1012;
 
-		const NETCURL_GUZZLESTREAM_MISSING = 1013;
-		const NETCURL_HOSTVALIDATION_FAIL = 1014;
-		const NETCURL_PEMLOCATIONDATA_FORMAT_ERROR = 1015;
-		const NETCURL_DOMDOCUMENT_EMPTY = 1016;
-		const NETCURL_NO_DRIVER_AVAILABLE_NOT_EVEN_CURL = 1017;
-		const NETCURL_UNEXISTENT_FUNCTION = 1018;
-		const NETCURL_PARSE_XML_FAILURE = 1019;
-		const NETCURL_IO_PARSER_MISSING = 1020;
+        const NETCURL_GUZZLESTREAM_MISSING = 1013;
+        const NETCURL_HOSTVALIDATION_FAIL = 1014;
+        const NETCURL_PEMLOCATIONDATA_FORMAT_ERROR = 1015;
+        const NETCURL_DOMDOCUMENT_EMPTY = 1016;
+        const NETCURL_NO_DRIVER_AVAILABLE_NOT_EVEN_CURL = 1017;
+        const NETCURL_UNEXISTENT_FUNCTION = 1018;
+        const NETCURL_PARSE_XML_FAILURE = 1019;
+        const NETCURL_IO_PARSER_MISSING = 1020;
         const NETCURL_GUZZLE_RESPONSE_EXCEPTION = 1021;
         const NETCURL_WP_REQUEST_ERROR = 1022;
-	}
+    }
 }
 
-if ( ! class_exists( 'TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) && ! class_exists( 'TorneLIB\TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD ) ) {
-	/**
-	 * Class TORNELIB_NETCURL_EXCEPTIONS
-	 *
-	 * @package    TorneLIB
-	 * @deprecated Use NETCURL_EXCEPTIONS
-	 */
-	abstract class TORNELIB_NETCURL_EXCEPTIONS extends NETCURL_EXCEPTIONS {
-	}
+if (!class_exists('TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
+    !class_exists('TorneLIB\TorneLIB_NETCURL_EXCEPTIONS', NETCURL_CLASS_EXISTS_AUTOLOAD)
+) {
+    /**
+     * Class TORNELIB_NETCURL_EXCEPTIONS
+     *
+     * @package    TorneLIB
+     * @deprecated Use NETCURL_EXCEPTIONS
+     */
+    abstract class TORNELIB_NETCURL_EXCEPTIONS extends NETCURL_EXCEPTIONS
+    {
+    }
 }

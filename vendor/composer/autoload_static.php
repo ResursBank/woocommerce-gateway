@@ -4,11 +4,11 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit1439b03eb8fd130611b70aefa894a288
+class ComposerStaticInit898b0753ebead7604b9b97cc9d3eae45
 {
     public static $files = array (
-        'a2ffb7dc7e05ad2dc2ed262a34ab8f48' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/tornevall_crypto.php',
-        'b5ed896fad722458ed922152c008d871' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/tornevall_io.php',
+        '0d77dbe55e89e2564516e3df29a3c3eb' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/MODULE_CRYPTO.php',
+        '1fb9d905ace8614d4b9073a62a1e84e9' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/MODULE_IO.php',
         'ad018ca6880fd0f3071fee4e20010952' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/netcurl_init.php',
         'eae8af6c08d5e813aca8933280e2c98f' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Interface/drivers.php',
         'ac9f6d2090958022f72d020a08550438' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/Drivers/guzzle.php',
@@ -40,7 +40,6 @@ class ComposerStaticInit1439b03eb8fd130611b70aefa894a288
     public static $prefixLengthsPsr4 = array (
         '\\' => 
         array (
-            '\\TorneLIB\\' => 10,
             '\\Resursbank\\RBEcomPHP\\' => 22,
         ),
         'T' => 
@@ -50,25 +49,23 @@ class ComposerStaticInit1439b03eb8fd130611b70aefa894a288
     );
 
     public static $prefixDirsPsr4 = array (
-        '\\TorneLIB\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source',
-        ),
         '\\Resursbank\\RBEcomPHP\\' => 
         array (
             0 => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/rbapiloader.php',
         ),
         'TorneLIB\\' => 
         array (
-            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source',
+            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-bitmask/src',
+            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source',
+            2 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source',
         ),
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit1439b03eb8fd130611b70aefa894a288::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit1439b03eb8fd130611b70aefa894a288::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit898b0753ebead7604b9b97cc9d3eae45::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit898b0753ebead7604b9b97cc9d3eae45::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

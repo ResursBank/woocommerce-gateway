@@ -1,26 +1,27 @@
 [
     {
         "name": "resursbank/ecomphp",
-        "version": "dev-develop/1.3",
-        "version_normalized": "dev-develop/1.3",
+        "version": "1.3.38",
+        "version_normalized": "1.3.38.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "692b5870134f7d131b3a0c50d7a6228f44e8acd4"
+            "reference": "7274de80ce6768f90bf093843b3f8869839b85d6"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/692b5870134f7d131b3a0c50d7a6228f44e8acd4.zip",
-            "reference": "692b5870134f7d131b3a0c50d7a6228f44e8acd4",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/7274de80ce6768f90bf093843b3f8869839b85d6.zip",
+            "reference": "7274de80ce6768f90bf093843b3f8869839b85d6",
             "shasum": ""
         },
         "require": {
             "ext-curl": "*",
             "ext-soap": "*",
-            "tornevall/tornelib-php-crypto": "^6.0",
-            "tornevall/tornelib-php-netcurl": "^6.0"
+            "tornevall/tornelib-php-bitmask": "^6.1",
+            "tornevall/tornelib-php-crypto": "6.0.*",
+            "tornevall/tornelib-php-netcurl": "6.0.*"
         },
-        "time": "2020-04-03T12:06:25+00:00",
+        "time": "2020-04-27T06:38:54+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -46,27 +47,20 @@
         "homepage": "https://bitbucket.org/resursbankplugins/resurs-ecomphp"
     },
     {
-        "name": "tornevall/tornelib-php-crypto",
-        "version": "6.0.22",
-        "version_normalized": "6.0.22.0",
+        "name": "tornevall/tornelib-php-bitmask",
+        "version": "6.1.0",
+        "version_normalized": "6.1.0.0",
         "source": {
             "type": "git",
-            "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-crypto.git",
-            "reference": "3c63afac01e34d75e1a3d175d50e22106546323a"
+            "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-bitmask.git",
+            "reference": "6e529d8c9a47752a0b99845a048c3dc9a4dff6bc"
         },
-        "require": {
-            "php": ">=5.3"
-        },
-        "time": "2019-12-07T22:19:21+00:00",
+        "time": "2020-04-12T17:31:09+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
-            "files": [
-                "source/tornevall_crypto.php",
-                "source/tornevall_io.php"
-            ],
             "psr-4": {
-                "\\TorneLIB\\": "source"
+                "TorneLIB\\": "src"
             }
         },
         "notification-url": "https://packagist.org/downloads/",
@@ -81,21 +75,56 @@
                 "role": "Developer"
             }
         ],
-        "description": "Small library made for handling different kinds of crypto/encoding"
+        "description": "Library that handles bitmasking issues"
+    },
+    {
+        "name": "tornevall/tornelib-php-crypto",
+        "version": "6.0.26",
+        "version_normalized": "6.0.26.0",
+        "source": {
+            "type": "git",
+            "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-crypto.git",
+            "reference": "0647e1945ce6c8b1dff72cb0076fa4e17b747fe7"
+        },
+        "time": "2020-04-27T08:08:45+00:00",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "files": [
+                "source/MODULE_CRYPTO.php",
+                "source/MODULE_IO.php"
+            ],
+            "psr-4": {
+                "TorneLIB\\": "source"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Tomas Tornevall",
+                "email": "thorne@tornevall.net",
+                "homepage": "https://tornevall.net",
+                "role": "Developer"
+            }
+        ],
+        "description": "Crypto and I/O library for TorneLIB, handling encryption and data."
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.0.25",
-        "version_normalized": "6.0.25.0",
+        "version": "6.0.27",
+        "version_normalized": "6.0.27.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git",
-            "reference": "f3dba896a94a61931bbdbe601ae036ba3c849444"
+            "reference": "8fe3bc6f8f5bfb5f30cbf13fc3a13d853270ac9b"
         },
         "require": {
-            "tornevall/tornelib-php-crypto": "^6.0"
+            "tornevall/tornelib-php-crypto": "6.0.*"
         },
-        "time": "2020-04-01T14:13:36+00:00",
+        "time": "2020-04-19T08:15:54+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

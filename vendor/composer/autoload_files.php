@@ -6,8 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'a2ffb7dc7e05ad2dc2ed262a34ab8f48' => $vendorDir . '/tornevall/tornelib-php-crypto/source/tornevall_crypto.php',
-    'b5ed896fad722458ed922152c008d871' => $vendorDir . '/tornevall/tornelib-php-crypto/source/tornevall_io.php',
+    '0d77dbe55e89e2564516e3df29a3c3eb' => $vendorDir . '/tornevall/tornelib-php-crypto/source/MODULE_CRYPTO.php',
+    '1fb9d905ace8614d4b9073a62a1e84e9' => $vendorDir . '/tornevall/tornelib-php-crypto/source/MODULE_IO.php',
     'ad018ca6880fd0f3071fee4e20010952' => $vendorDir . '/tornevall/tornelib-php-netcurl/source/Modules/netcurl_init.php',
     'eae8af6c08d5e813aca8933280e2c98f' => $vendorDir . '/tornevall/tornelib-php-netcurl/source/Interface/drivers.php',
     'ac9f6d2090958022f72d020a08550438' => $vendorDir . '/tornevall/tornelib-php-netcurl/source/Modules/Drivers/guzzle.php',

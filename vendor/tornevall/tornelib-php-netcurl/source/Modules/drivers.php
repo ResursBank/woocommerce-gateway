@@ -25,7 +25,8 @@
 namespace TorneLIB;
 
 if (!class_exists('NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
-    !class_exists('TorneLIB\NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD)) {
+    !class_exists('TorneLIB\NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD)
+) {
     /**
      * Class NETCURL_DRIVERS Network communications driver detection
      *
@@ -206,7 +207,6 @@ if (!class_exists('NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Get status of disabled function
          *
          * @param string $functionName
-         *
          * @return bool
          */
         public function getIsDisabled($functionName = '')
@@ -239,7 +239,6 @@ if (!class_exists('NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param int $driverId
          * @param array $parameters
          * @param null $ownClass Defines own class to use
-         *
          * @return NETCURL_DRIVERS_INTERFACE
          */
         private function getDriverByClass(
@@ -306,7 +305,6 @@ if (!class_exists('NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param int $driverNameConstans
-         *
          * @return bool
          */
         public function getIsDriver($driverNameConstans = NETCURL_NETWORK_DRIVERS::DRIVER_CURL)
@@ -324,7 +322,6 @@ if (!class_exists('NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param int $netDriver
          * @param null $parameters
          * @param null $ownClass
-         *
          * @return int|NETCURL_DRIVERS_INTERFACE
          * @throws \Exception
          */
@@ -342,7 +339,6 @@ if (!class_exists('NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param int $netDriver
          * @param null $parameters
          * @param null $ownClass
-         *
          * @return int|NETCURL_DRIVERS_INTERFACE
          * @throws \Exception
          */
@@ -408,7 +404,6 @@ if (!class_exists('NETCURL_DRIVER_CONTROLLER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Check if SOAP exists in system
          *
          * @param bool $extendedSearch Extend search for SOAP (unsafe method, looking for constants defined as SOAP_*)
-         *
          * @return bool
          */
         public function hasSoap($extendedSearch = false)

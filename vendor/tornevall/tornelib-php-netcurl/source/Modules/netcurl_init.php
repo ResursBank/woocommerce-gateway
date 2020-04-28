@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Tomas Tornevall & Tornevall Networks
  *
@@ -20,17 +19,17 @@
  * major version too.
  *
  * @package TorneLIB
- * @version 6.0.25
+ * @version 6.0.27
  */
 
 namespace TorneLIB;
 
 // Library Release Information
 if (!defined('NETCURL_RELEASE')) {
-    define('NETCURL_RELEASE', '6.0.25');
+    define('NETCURL_RELEASE', '6.0.27');
 }
 if (!defined('NETCURL_MODIFY')) {
-    define('NETCURL_MODIFY', '20200104');
+    define('NETCURL_MODIFY', '20200419');
 }
 if (!defined('TORNELIB_NETCURL_RELEASE')) {
     // Compatibility constant

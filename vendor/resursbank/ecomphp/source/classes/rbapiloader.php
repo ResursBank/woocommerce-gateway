@@ -7,7 +7,7 @@
  * @author  Resurs Bank <support@resurs.se>
  * @author  Tomas Tornevall <tomas.tornevall@resurs.se>
  * @branch  1.3
- * @version 1.3.36
+ * @version 1.3.38
  * @link    https://test.resurs.com/docs/x/KYM0 Get started - PHP Section
  * @link    https://test.resurs.com/docs/x/TYNM EComPHP Usage
  * @link    https://test.resurs.com/docs/x/KAH1 EComPHP: Bitmasking features
@@ -50,18 +50,20 @@ if (file_exists(__DIR__ . "/../../vendor/autoload.php")) {
 }
 
 use Exception;
+use RESURS_EXCEPTIONS;
+use ResursException;
+use TorneLIB\Module\Bit;
 use TorneLIB\MODULE_CRYPTO;
 use TorneLIB\MODULE_CURL;
-use TorneLIB\MODULE_NETBITS;
 use TorneLIB\MODULE_NETWORK;
 use TorneLIB\NETCURL_POST_DATATYPES;
 
 // Globals starts here
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', '1.3.36');
+    define('ECOMPHP_VERSION', '1.3.38');
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20200403');
+    define('ECOMPHP_MODIFY_DATE', '20200427');
 }
 
 /**
@@ -324,6 +326,16 @@ class ResursBank
     private $CURL;
 
     /**
+     * @var null
+     */
+    private $CURLDRIVER_VERSION = null;
+
+    /**
+     * @var int
+     */
+    private $CURLDRIVER_WSDL_CACHE = 0;
+
+    /**
      * @var MODULE_CURL $CURL_USER_DEFINED
      */
     private $CURL_USER_DEFINED;
@@ -351,7 +363,7 @@ class ResursBank
     /**
      * Another way to handle bitmasks (might be deprecated in future releases)
      *
-     * @var MODULE_NETBITS
+     * @var Bit
      */
     private $BIT;
     /**
@@ -744,6 +756,9 @@ class ResursBank
      * @var string
      */
     private $afterShopInvoiceExtRef = "";
+    /**
+     * @var bool
+     */
     private $isFirstInvoiceId = false;
 
     /**
@@ -840,6 +855,45 @@ class ResursBank
         }
         $this->setUserAgent();
         $this->E_DEPRECATED = new RESURS_DEPRECATED_FLOW();
+    }
+
+    /**
+     * @param $enable
+     * @return $this
+     * @throws Exception
+     */
+    public function setWsdlCache($enable)
+    {
+        $this->InitializeServices(false);
+
+        if (version_compare($this->CURLDRIVER_VERSION, '6.1.0', '>=') && !is_null($this->CURL)) {
+            if ($enable) {
+                $this->CURLDRIVER_WSDL_CACHE = WSDL_CACHE_BOTH;
+                $this->CURL->setWsdlCache(WSDL_CACHE_BOTH);
+            } else {
+                $this->CURLDRIVER_WSDL_CACHE = WSDL_CACHE_NONE;
+                $this->CURL->setWsdlCache(WSDL_CACHE_NONE);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    private function getNcVersion()
+    {
+        $return = '';
+
+        if (defined('NETCURL_RELEASE')) {
+            $return = NETCURL_RELEASE;
+        }
+        if (defined('NETCURL_VERSION')) {
+            $return = NETCURL_VERSION;
+        }
+
+        return $return;
     }
 
     /**
@@ -1003,12 +1057,12 @@ class ResursBank
             $streamWrappers = [];
         }
         if (!in_array('https', array_map("strtolower", $streamWrappers))) {
-            throw new \ResursException(
+            throw new ResursException(
                 sprintf(
                     '%s exception: HTTPS wrapper can not be found.',
                     __FUNCTION__
                 ),
-                \RESURS_EXCEPTIONS::SSL_WRAPPER_MISSING
+                RESURS_EXCEPTIONS::SSL_WRAPPER_MISSING
             );
         }
     }
@@ -1058,6 +1112,12 @@ class ResursBank
             } else {
                 $this->CURL = new MODULE_CURL();
             }
+            $this->CURLDRIVER_VERSION = $this->getNcVersion();
+
+            if (version_compare($this->CURLDRIVER_VERSION, '6.1.0', '>=') && $this->CURLDRIVER_WSDL_CACHE > 0) {
+                $this->CURL->setWsdlCache($this->CURLDRIVER_WSDL_CACHE);
+            }
+
             $this->CURL->setChain(false);
             if ($this->getSslSecurityDisabled()) {
                 $this->CURL->setSslVerify(false, false);
@@ -1074,8 +1134,7 @@ class ResursBank
             if (($cTimeout = $this->getFlag('CURL_TIMEOUT')) > 0) {
                 $this->CURL->setTimeout($cTimeout);
             }
-            $this->NETWORK = new MODULE_NETWORK();
-            $this->BIT = $this->NETWORK->BIT;
+            $this->BIT = new Bit();
         }
         $this->wsdlServices = [];
         foreach ($this->ServiceRequestList as $reqType => $reqService) {
@@ -1244,7 +1303,7 @@ class ResursBank
         if ($this->debug && $this->current_environment == RESURS_ENVIRONMENTS::TEST) {
             $this->curlSslValidationDisable = true;
         } else {
-            throw new \ResursException(
+            throw new ResursException(
                 'Can not set SSL validation in relaxed mode. ' .
                 'Debug mode is disabled and/or test environment are not set',
                 403
@@ -1370,9 +1429,9 @@ class ResursBank
      *
      * @param string $MyUserAgent
      *
-     * @since 1.0.2
-     * @since 1.1.2
      * @throws \Exception
+     * @since 1.1.2
+     * @since 1.0.2
      */
     public function setUserAgent($MyUserAgent = '')
     {
@@ -1432,7 +1491,7 @@ class ResursBank
 
             return true;
         }
-        throw new \ResursException('Flags can not be empty!', 500);
+        throw new ResursException('Flags can not be empty!', 500);
     }
 
     /**
@@ -1576,7 +1635,7 @@ class ResursBank
 
         if ($validate) {
             if (!$this->validateCredentials($this->current_environment, $username, $password)) {
-                throw new \ResursException('Invalid credentials!', 401);
+                throw new ResursException('Invalid credentials!', 401);
             }
             // Returning boolean is normally used for test cases.
             $result = true;
@@ -1604,7 +1663,7 @@ class ResursBank
         $result = false;
 
         if (empty($username) && empty($password) && empty($this->username) && empty($this->password)) {
-            throw new \ResursException(
+            throw new ResursException(
                 'Validating credentials means you have to defined credentials before ' .
                 'validating them. Use setAuthentication() or push your credentials into this method directly.',
                 417
@@ -1620,7 +1679,7 @@ class ResursBank
             if (is_array($methods) && count($methods)) {
                 $result = true;
             } else {
-                throw new \ResursException(
+                throw new ResursException(
                     'Validating credentials was successful, but not payment methods found.',
                     417
                 );
@@ -2001,7 +2060,7 @@ class ResursBank
                 $ResursResponse = $this->CURL->getParsed();
             }
         } catch (\Exception $restException) {
-            throw new \ResursException($restException->getMessage(), $restException->getCode());
+            throw new ResursException($restException->getMessage(), $restException->getCode());
         }
         if ($ReturnAsArray) {
             $ResursResponseArray = [];
@@ -2094,18 +2153,18 @@ class ResursBank
      * This is per default skipped unless requested.
      *
      * @return bool
-     * @throws \ResursException
+     * @throws ResursException
      */
     private function setRegisterCallbackAddressValidation()
     {
         if (is_array($this->validateExternalUrl) && count($this->validateExternalUrl)) {
             $isValidAddress = $this->validateExternalAddress();
             if ($isValidAddress == RESURS_CALLBACK_REACHABILITY::IS_NOT_REACHABLE) {
-                throw new \ResursException(
+                throw new ResursException(
                     'Reachability Response: Your site might not be available to our callbacks.'
                 );
             } elseif ($isValidAddress == RESURS_CALLBACK_REACHABILITY::IS_REACHABLE_WITH_PROBLEMS) {
-                throw new \ResursException(
+                throw new ResursException(
                     'Reachability Response: Your site is available from the outside, ' .
                     'but problems occurred, that indicates that your site can not respond to external calls.'
                 );
@@ -2135,6 +2194,8 @@ class ResursBank
         $basicAuthUserName = null,
         $basicAuthPassword = null
     ) {
+        $registerCallbackException = null;
+        $requestedCallbackType = $callbackType;
         $this->InitializeServices();
 
         // Not thrown = Success or skipped
@@ -2146,12 +2207,12 @@ class ResursBank
         // DEFAULT SETUP
         $renderCallback['eventType'] = $this->getCallbackTypeString($callbackType);
         if (empty($renderCallback['eventType'])) {
-            throw new \ResursException(
+            throw new ResursException(
                 sprintf(
                     '%s exception: The callback type you are trying to register is not supported by EComPHP',
                     __FUNCTION__
                 ),
-                \RESURS_EXCEPTIONS::CALLBACK_TYPE_UNSUPPORTED
+                RESURS_EXCEPTIONS::CALLBACK_TYPE_UNSUPPORTED
             );
         }
         $renderCallback['uriTemplate'] = $callbackUriTemplate;
@@ -2195,9 +2256,9 @@ class ResursBank
         }
 
         if (empty($renderCallback['digestConfiguration']['digestSalt'])) {
-            throw new \ResursException(
+            throw new ResursException(
                 'Digest salt key is missing. Unable to continue.',
-                \RESURS_EXCEPTIONS::CALLBACK_SALTDIGEST_MISSING
+                RESURS_EXCEPTIONS::CALLBACK_SALTDIGEST_MISSING
             );
         }
         ////// DIGEST CONFIGURATION FINISH
@@ -2217,6 +2278,7 @@ class ResursBank
                 $code = $this->CURL->getCode($renderedResponse);
             } catch (\Exception $e) {
                 $code = $e->getCode();
+                $registerCallbackException = $e;
             }
         } else {
             $registerBy = 'wsdl';
@@ -2241,14 +2303,18 @@ class ResursBank
             return true;
         }
 
-        throw new \ResursException(
+        throw new ResursException(
             sprintf(
-                '%s exception %d: Could not register callback event %s via service %s.',
+                '%s exception code %d: Failed to register callback event %s (originally %s) via service %s.',
                 __FUNCTION__,
                 $code,
-                isset($renderCallback['eventType']) ? $renderCallback['eventType'] : 'Unknown eventType',
+                isset($renderCallback['eventType']) ?
+                    $renderCallback['eventType'] : 'Unknown eventType: $renderCallback[eventType] was never set',
+                'RESURS_CALLBACK_TYPES::' . $requestedCallbackType,
                 $registerBy
-            )
+            ),
+            RESURS_EXCEPTIONS::CALLBACK_REGISTRATION_ERROR,
+            $registerCallbackException
         );
     }
 
@@ -2270,7 +2336,7 @@ class ResursBank
     ) {
         $callbackArray = [];
         if ($isMultiple) {
-            $this->BIT = new MODULE_NETBITS();
+            $this->BIT = new Bit();
             $this->BIT->setBitStructure(
                 [
                     'UNFREEZE' => RESURS_CALLBACK_TYPES::UNFREEZE,
@@ -2549,6 +2615,8 @@ class ResursBank
             $this->CURL->setFlag("SOAPWARNINGS", true);
             $Service = $this->CURL->doGet($serviceNameUrl);
             try {
+                // Using call_user_func_array requires the parameters at this level to be pushed into an array.
+                //$RequestService = call_user_func_array(array($Service, $serviceName), [$resursParameters]);
                 $RequestService = $Service->$serviceName($resursParameters);
             } catch (\Exception $serviceRequestException) {
                 // Try to fetch previous exception (This is what we actually want)
@@ -2594,10 +2662,10 @@ class ResursBank
                     }
                 }
                 if (empty($exceptionCode) || $exceptionCode == "0") {
-                    $exceptionCode = \RESURS_EXCEPTIONS::UNKOWN_SOAP_EXCEPTION_CODE_ZERO;
+                    $exceptionCode = RESURS_EXCEPTIONS::UNKOWN_SOAP_EXCEPTION_CODE_ZERO;
                 }
                 // Cast internal soap errors into a new, since the exception code is lost
-                throw new \ResursException($exceptionMessage, $exceptionCode, $serviceRequestException);
+                throw new ResursException($exceptionMessage, $exceptionCode, $serviceRequestException);
             }
             $ParsedResponse = $Service->getParsed($RequestService);
             $ResponseCode = $Service->getCode();
@@ -3204,8 +3272,8 @@ class ResursBank
      * @param $duration
      *
      * @return float
-     * @since 1.1.24
      * @throws \Exception
+     * @since 1.1.24
      */
     public function getAnnuityPriceByDuration($totalAmount, $paymentMethodIdOrFactorObject, $duration)
     {
@@ -3257,9 +3325,9 @@ class ResursBank
             // Get internal exceptions before http responses
             $exceptionTestBody = @json_decode($this->CURL->getBody());
             if (isset($exceptionTestBody->errorCode) && isset($exceptionTestBody->description)) {
-                throw new \ResursException($exceptionTestBody->description, $exceptionTestBody->errorCode, $e);
+                throw new ResursException($exceptionTestBody->description, $exceptionTestBody->errorCode, $e);
             }
-            throw new \ResursException($e->getMessage(), $e->getCode(), $e);
+            throw new ResursException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -3381,7 +3449,7 @@ class ResursBank
      * @param string $paymentId
      * @param bool $requestCached Try fetch cached data before going for livedata.
      * @return array|mixed|null
-     * @throws \ResursException
+     * @throws ResursException
      * @since 1.0.1
      * @since 1.1.1
      * @since 1.0.31 Refactored from this version
@@ -3418,12 +3486,12 @@ class ResursBank
                 $this->lastPaymentStored[$paymentId] = $this->getPaymentByRest($paymentId);
                 $this->lastPaymentStored[$paymentId]->cached = time();
                 $return = $this->lastPaymentStored[$paymentId];
-            } catch (\ResursException $e) {
+            } catch (ResursException $e) {
                 // 3 = The order does not exist, default REST error.
                 // If we for some reason get 404 errors here, the error should be retrown as 3.
                 // If we for some unknown reason get 500+ errors, we can almost be sure that something else went wrong.
                 if ($e->getCode() === 404) {
-                    throw new \ResursException($e->getMessage(), 3, $e);
+                    throw new ResursException($e->getMessage(), 3, $e);
                 }
                 if (!$this->SOAP_AVAILABLE && $e->getCode() === 51) {
                     // Failover on SSL ceritificate errors (first) as the domain for soap is different than RCO-rest.
@@ -3496,7 +3564,7 @@ class ResursBank
                 $payment = $paymentId;
             } else {
                 if (!$internalMetadata) {
-                    throw new \ResursException('getMetaDataException: PaymentID is neither and id nor object.', 500);
+                    throw new ResursException('getMetaDataException: PaymentID is neither and id nor object.', 500);
                 }
             }
             if (isset($payment) && isset($payment->metaData)) {
@@ -3656,8 +3724,8 @@ class ResursBank
     }
 
     /**
-     * @param  string $paymentId The current paymentId
-     * @param  string $to What it should be updated to
+     * @param string $paymentId The current paymentId
+     * @param string $to What it should be updated to
      *
      * @return bool
      * @throws \Exception
@@ -3667,7 +3735,7 @@ class ResursBank
     public function updatePaymentReference($paymentId, $to)
     {
         if (empty($paymentId) || empty($to)) {
-            throw new \ResursException('Payment id and to must be set.');
+            throw new ResursException('Payment id and to must be set.');
         }
         $this->InitializeServices();
         $url = $this->getCheckoutUrl() . '/checkout/payments/' . $paymentId . '/updatePaymentReference';
@@ -3694,7 +3762,7 @@ class ResursBank
                         $errorMessage = $e->getMessage();
                     }
 
-                    throw new \ResursException(
+                    throw new ResursException(
                         $errorMessage,
                         is_numeric($jsonized->errorCode) ? $jsonized->errorCode : 0,
                         null,
@@ -3759,10 +3827,10 @@ class ResursBank
     public function addMetaData($paymentId = '', $metaDataKey = '', $metaDataValue = '')
     {
         if (empty($paymentId)) {
-            throw new \ResursException('Payment id is not set.');
+            throw new ResursException('Payment id is not set.');
         }
         if (empty($metaDataKey) || empty($metaDataValue)) {
-            throw new \ResursException('Can not have empty meta information.');
+            throw new ResursException('Can not have empty meta information.');
         }
 
         $customErrorMessage = "";
@@ -3772,7 +3840,7 @@ class ResursBank
             $customErrorMessage = $e->getMessage();
         }
         if (!isset($checkPayment->id) && !empty($customErrorMessage)) {
-            throw new \ResursException($customErrorMessage);
+            throw new ResursException($customErrorMessage);
         }
         $metaDataArray = [
             'paymentId' => $paymentId,
@@ -3817,7 +3885,7 @@ class ResursBank
                 }
             }
         } else {
-            throw new \ResursException(sprintf('Metadata key "%s" is already set.', $key), 400);
+            throw new ResursException(sprintf('Metadata key "%s" is already set.', $key), 400);
         }
     }
 
@@ -4120,7 +4188,7 @@ class ResursBank
      * @param bool $limitByMinMax By default, ecom only shows priceinformation based on the $amount.
      * @param bool $bodyOnly
      * @return false|mixed|string|null
-     * @throws \ResursException
+     * @throws ResursException
      * @since 1.3.30
      */
     public function getCostOfPriceInformation(
@@ -4171,7 +4239,7 @@ class ResursBank
                 $vars = [
                     'priceInfoTabs' => $tab,
                     'priceInfoBlocks' => $block,
-                    'bodyOnly' => $bodyOnly
+                    'bodyOnly' => $bodyOnly,
                 ];
 
                 $return = $this->getHtmlTemplate($template['costofpriceinfo'], $vars);
@@ -4180,7 +4248,7 @@ class ResursBank
             if (is_string($paymentMethod)) {
                 $paymentMethod = $this->getPaymentMethodSpecific($paymentMethod);
                 if (!isset($paymentMethod->minLimit)) {
-                    throw new \ResursException(
+                    throw new ResursException(
                         sprintf(
                             '%s exception: Payment method does not support limits!',
                             __FUNCTION__
@@ -4364,9 +4432,9 @@ class ResursBank
                 $ParsedResponse = $WebResponse->response->isAvailableResponse;
             } else {
                 if (isset($WebResponse->errors) && !empty($WebResponse->errors->faultstring)) {
-                    throw new \ResursException($WebResponse->errors->faultstring, $WebResponse->errors->code);
+                    throw new ResursException($WebResponse->errors->faultstring, $WebResponse->errors->code);
                 } else {
-                    throw new \ResursException('No response returned from API', 500);
+                    throw new ResursException('No response returned from API', 500);
                 }
             }
             if (
@@ -4418,17 +4486,7 @@ class ResursBank
     private function getCustomerIp()
     {
         $this->isNetWork();
-
         $primaryAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "127.0.0.1";
-        // Warning: This is untested and currently returns an array instead of a string, which may break ecommerce
-        if (
-            $this->preferCustomerProxy &&
-            !empty($this->NETWORK) &&
-            is_array($this->NETWORK->getProxyHeaders()) &&
-            count($this->NETWORK->getProxyHeaders())
-        ) {
-            $primaryAddress = $this->NETWORK->getProxyHeaders();
-        }
 
         return $primaryAddress;
     }
@@ -4489,7 +4547,7 @@ class ResursBank
      * @param int $quantity
      *
      * @return mixed
-     * @throws \ResursException
+     * @throws ResursException
      * @since 1.3.20
      * @since 1.0.47
      * @since 1.1.47
@@ -4503,9 +4561,9 @@ class ResursBank
             } elseif (isset($artObject['quantity'])) {
                 $quantity = $artObject['quantity'];
             } else {
-                throw new \ResursException(
+                throw new ResursException(
                     'A valid quantity is required for this recalculation.',
-                    \RESURS_EXCEPTIONS::INTERNAL_QUANTITY_EXCEPTION
+                    RESURS_EXCEPTIONS::INTERNAL_QUANTITY_EXCEPTION
                 );
             }
         }
@@ -5177,10 +5235,10 @@ class ResursBank
      * @param string $payment_id_or_method For ResursCheckout the payment id are preferred before the payment method
      * @param array $payload If there are any extra (or full) payload for the chosen payment, it should be placed here
      *
-     * @throws \Exception
-     * @since 1.0.2
-     * @since 1.1.2
      * @return array
+     * @throws \Exception
+     * @since 1.1.2
+     * @since 1.0.2
      */
     public function createPayment($payment_id_or_method = '', $payload = [])
     {
@@ -5200,7 +5258,6 @@ class ResursBank
                 }
             }
         } catch (\Exception $e) {
-
         }
         $this->preparePayload($payment_id_or_method, $payload);
         if ($this->paymentMethodIsPsp) {
@@ -5245,9 +5302,9 @@ class ResursBank
             $timeDiff = time() - $lastPaymentExecute;
             if ($timeDiff <= $maxTime) {
                 if ($this->isFlag('PREVENT_EXEC_FLOOD_EXCEPTIONS')) {
-                    throw new \ResursException(
+                    throw new ResursException(
                         'You are running createPayment too fast',
-                        \RESURS_EXCEPTIONS::CREATEPAYMENT_TOO_FAST
+                        RESURS_EXCEPTIONS::CREATEPAYMENT_TOO_FAST
                     );
                 }
 
@@ -5256,9 +5313,9 @@ class ResursBank
             $this->setSessionVar('lastPaymentExecute', time());
         }
         if (trim(strtolower($this->username)) == "exshop") {
-            throw new \ResursException(
+            throw new ResursException(
                 'The use of exshop is no longer supported',
-                \RESURS_EXCEPTIONS::EXSHOP_PROHIBITED
+                RESURS_EXCEPTIONS::EXSHOP_PROHIBITED
             );
         }
         $error = [];
@@ -5328,7 +5385,7 @@ class ResursBank
                     if (isset($parsedResponse->message)) {
                         $error[] = $parsedResponse->message;
                     }
-                    throw new \ResursException(implode("\n", $error), $responseCode);
+                    throw new ResursException(implode("\n", $error), $responseCode);
                 }
             } catch (\Exception $e) {
                 $this->handlePostErrors($e);
@@ -5354,14 +5411,14 @@ class ResursBank
                         $error[] = $parsedResponse->message;
                     }
                     $responseCode = $this->CURL->getCode($hostedResponse);
-                    throw new \ResursException(implode("\n", $error), $responseCode);
+                    throw new ResursException(implode("\n", $error), $responseCode);
                 }
             } catch (\Exception $e) {
                 $this->handlePostErrors($e);
             }
         }
 
-        throw new \ResursException(
+        throw new ResursException(
             sprintf(
                 '%s exception: Flow unmatched during execution.',
                 __FUNCTION__
@@ -5427,12 +5484,12 @@ class ResursBank
             $bodyErrTest = json_decode($bodyTest);
             if (is_object($bodyErrTest)) {
                 if (isset($bodyErrTest->message) && isset($bodyErrTest->status)) {
-                    throw new \ResursException(
+                    throw new ResursException(
                         $bodyErrTest->message,
                         $bodyErrTest->status
                     );
                 } elseif (isset($bodyErrTest->description)) {
-                    throw new \ResursException(
+                    throw new ResursException(
                         $bodyErrTest->description,
                         isset($bodyErrTest->errorCode) ? $bodyErrTest->errorCode : 500
                     );
@@ -5441,7 +5498,7 @@ class ResursBank
         }
         if (method_exists($e, 'getMessage')) {
             /** @noinspection PhpUndefinedMethodInspection */
-            throw new \ResursException($e->getMessage(), $e->getCode(), $e);
+            throw new ResursException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -5505,7 +5562,7 @@ class ResursBank
         if (!empty($this->createPaymentExecuteCommand)) {
             return $this->createPaymentExecute($this->createPaymentExecuteCommand);
         } else {
-            throw new \ResursException('createPaymentDelay() must used before you use this function.', 403);
+            throw new ResursException('createPaymentDelay() must used before you use this function.', 403);
         }
     }
 
@@ -5583,17 +5640,17 @@ class ResursBank
 
         if ($this->getPreferredPaymentFlowService() === RESURS_FLOW_TYPES::RESURS_CHECKOUT) {
             if (empty($payment_id_or_method) && empty($this->preferredId)) {
-                throw new \ResursException(
+                throw new ResursException(
                     'A payment method or payment id must be defined.',
-                    \RESURS_EXCEPTIONS::CREATEPAYMENT_NO_ID_SET
+                    RESURS_EXCEPTIONS::CREATEPAYMENT_NO_ID_SET
                 );
             }
             $payment_id_or_method = $this->preferredId;
         }
         if (!count($this->Payload) && !$this->isFlag('USE_AFTERSHOP_RENDERING')) {
-            throw new \ResursException(
+            throw new ResursException(
                 'No payload are set for this payment.',
-                \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA
+                RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA
             );
         }
 
@@ -6327,9 +6384,9 @@ class ResursBank
 
         } else {
             // We don't guess on customer types
-            throw new \ResursException(
+            throw new ResursException(
                 'No customer type has been set. Use NATURAL or LEGAL to proceed',
-                \RESURS_EXCEPTIONS::BOOK_CUSTOMERTYPE_MISSING
+                RESURS_EXCEPTIONS::BOOK_CUSTOMERTYPE_MISSING
             );
         }
         if (!empty($contactgovernmentId)) {
@@ -6635,7 +6692,7 @@ class ResursBank
         if (!empty($this->ocShopScript)) {
             return trim($this->ocShopScript);
         }
-        throw new \ResursException(
+        throw new ResursException(
             sprintf(
                 '%s exception: could not fetch th ocShopScript from iframe.'
             )
@@ -6710,7 +6767,7 @@ class ResursBank
     public function updateCheckoutOrderLines($paymentId = '', $orderLines = [])
     {
         if (empty($paymentId)) {
-            throw new \ResursException('Payment id not set.');
+            throw new ResursException('Payment id not set.');
         }
         if (!$this->hasServicesInitialization) {
             $this->InitializeServices();
@@ -6740,7 +6797,7 @@ class ResursBank
             ['orderLines' => $sanitizedOutputOrderLines], NETCURL_POST_DATATYPES::DATATYPE_JSON);
         $updateOrderLinesResponseCode = $this->CURL->getCode($updateOrderLinesResponse);
         if ($updateOrderLinesResponseCode >= 400) {
-            throw new \ResursException(
+            throw new ResursException(
                 'Could not update order lines.',
                 $updateOrderLinesResponseCode
             );
@@ -7073,8 +7130,11 @@ class ResursBank
             if (is_array($paymentDiff) && count($paymentDiff)) {
                 // Inspired by DataGert.
                 foreach ($paymentDiff as $type => $paymentDiffObject) {
-                    $orderLinesByStatus = $this->getMergedPaymentDiff($paymentDiffObject->paymentSpec->specLines,
-                        $orderLinesByStatus, $paymentDiffObject->type);
+                    $orderLinesByStatus = $this->getMergedPaymentDiff(
+                        $paymentDiffObject->paymentSpec->specLines,
+                        $orderLinesByStatus,
+                        $paymentDiffObject->type
+                    );
                 }
             }
         }
@@ -7753,7 +7813,7 @@ class ResursBank
         } catch (\Exception $getOrderDataException) {
             // If there is no payload, make sure we'll render this from the current payment
             if (
-                $getOrderDataException->getCode() == \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA &&
+                $getOrderDataException->getCode() == RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA &&
                 !count($customPayloadItemList)
             ) {
                 //array_merge($this->SpecLines, $actualEcommerceOrderSpec);
@@ -7888,7 +7948,7 @@ class ResursBank
         } catch (Exception $afterShopObjectException) {
             // No rows to finalize? Check if this was auto debited by internal rules, or throw back error.
             if (
-                $afterShopObjectException->getCode() === \RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA &&
+                $afterShopObjectException->getCode() === RESURS_EXCEPTIONS::BOOKPAYMENT_NO_BOOKDATA &&
                 (
                     $this->getOrderStatusByPayment($paymentId) &
                     RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED
@@ -7907,9 +7967,9 @@ class ResursBank
                 // Throw it like Resurs Bank one step earlier. Since we do a getPayment
                 // before the finalization we do not have make an extra call if payment status
                 // is frozen.
-                throw new \ResursException(
+                throw new ResursException(
                     'EComPHP can not finalize frozen payments',
-                    \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE
+                    RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_IN_CURRENT_STATE
                 );
             }
         }
@@ -7927,8 +7987,8 @@ class ResursBank
             // 29 ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID
             if (
                 (
-                    (int)$finalizationException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID ||
-                    (int)$finalizationException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
+                    (int)$finalizationException->getCode() === RESURS_EXCEPTIONS::ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID ||
+                    (int)$finalizationException->getCode() === RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
                 ) &&
                 !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL')
             ) {
@@ -7947,7 +8007,7 @@ class ResursBank
                 }
             }
 
-            throw new \ResursException(
+            throw new ResursException(
                 $finalizationException->getMessage(),
                 $finalizationException->getCode(),
                 $finalizationException
@@ -8100,8 +8160,8 @@ class ResursBank
             // 29 ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID
             if (
                 (
-                    (int)$creditException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID ||
-                    (int)$creditException->getCode() === \RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
+                    (int)$creditException->getCode() === RESURS_EXCEPTIONS::ECOMMERCEERROR_ALREADY_EXISTS_INVOICE_ID ||
+                    (int)$creditException->getCode() === RESURS_EXCEPTIONS::ECOMMERCEERROR_NOT_ALLOWED_INVOICE_ID
                 ) &&
                 !$this->isFlag('SKIP_AFTERSHOP_INVOICE_CONTROL')
             ) {
@@ -8120,7 +8180,7 @@ class ResursBank
                 }
             }
 
-            throw new \ResursException(
+            throw new ResursException(
                 $creditException->getMessage(),
                 $creditException->getCode(),
                 $creditException
@@ -8234,7 +8294,7 @@ class ResursBank
             }
         } catch (\Exception $cancelException) {
             // Last catched exception will be thrown back to the plugin/developer.
-            throw new \ResursException(
+            throw new ResursException(
                 $cancelException->getMessage(),
                 $cancelException->getCode(),
                 $cancelException
@@ -8590,7 +8650,7 @@ class ResursBank
         } elseif (is_object($paymentIdOrPaymentObject)) {
             $paymentData = $paymentIdOrPaymentObject;
         } else {
-            throw new \ResursException('Payment data object or id is not valid.', 500);
+            throw new ResursException('Payment data object or id is not valid.', 500);
         }
 
         // If nothing else suits us, this will be used
@@ -9009,7 +9069,7 @@ class ResursBank
             }
         }
         // 501 NOT IMPLEMENTED
-        throw new \ResursException(
+        throw new ResursException(
             sprintf(
                 'Method "%s" not found in ECom Library, neither in the current release nor in the deprecation library.',
                 $func

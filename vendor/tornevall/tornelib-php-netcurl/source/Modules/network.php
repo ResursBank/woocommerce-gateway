@@ -37,13 +37,11 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
     /**
      * Library for handling network related things (currently not sockets). A conversion of a legacy PHP library called "TorneEngine" and family.
-     *
      * Class MODULE_NETWORK
      *
      * @link    https://phpdoc.tornevall.net/TorneLIBv5/class-TorneLIB.TorneLIB_Network.html PHPDoc/Staging - TorneLIB_Network
      * @link    https://docs.tornevall.net/x/KQCy TorneLIB (PHP) Landing documentation
      * @link    https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php/browse Sources of TorneLIB
-     *
      * @package TorneLIB
      */
     class MODULE_NETWORK
@@ -90,12 +88,10 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Get an exception code from internal abstract
-         *
          * If the exception constant name does not exist, or the abstract class is not included in this package,
          * a generic unknown error, based on internal server error, will be returned (500).
          *
          * @param string $exceptionConstantName Constant name (make sure it exists before use)
-         *
          * @return int
          */
         public function getExceptionCode($exceptionConstantName = 'NETCURL_NO_ERROR')
@@ -248,7 +244,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         /**
          * @param string $myVersion
          * @param string $gitUrl
-         *
          * @return array
          * @throws \Exception
          * @since 6.0.4
@@ -271,7 +266,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param string $myVersion
          * @param string $gitUrl
-         *
          * @return bool
          * @throws \Exception
          * @since 6.0.4
@@ -287,13 +281,11 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Extract domain from URL-based string.
-         *
          * To make a long story short: This is a very unclever function from the birth of the developer (in a era when documentation was not "necessary" to read and stupidity ruled the world).
          * As some functions still uses this, we chose to keep it, but do it "right".
          *
          * @param string $requestedUrlHost
          * @param bool $validateHost Validate that the hostname do exist
-         *
          * @return array
          * @throws \Exception
          */
@@ -336,7 +328,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param int $urlLimit
          * @param array $protocols
          * @param bool $preventDuplicates
-         *
          * @return array
          */
         public function getUrlsFromHtml(
@@ -402,7 +393,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param string $name
          * @param string $value
          * @param string $expire
-         *
          * @return bool
          */
         public function setCookie($name = '', $value = '', $expire = '')
@@ -498,7 +488,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Return correct data on https-detection
          *
          * @param bool $returnProtocol
-         *
          * @return bool|string
          * @since 6.0.3
          */
@@ -544,7 +533,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $returnProtocol
-         *
          * @return bool|string
          * @since 6.0.15
          */
@@ -576,7 +564,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Extract domain name (zone name) from hostname
          *
          * @param string $useHost Alternative hostname than the HTTP_HOST
-         *
          * @return string
          * @throws \Exception
          * @since 5.0.0
@@ -608,7 +595,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * base64_encode
          *
          * @param $data
-         *
          * @return string
          */
         public function base64url_encode($data)
@@ -620,7 +606,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * base64_decode
          *
          * @param $data
-         *
          * @return string
          */
         public function base64url_decode($data)
@@ -634,7 +619,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param string $ipAddr
          * @param bool $returnIpType
-         *
          * @return int|string
          */
         public function getArpaFromAddr($ipAddr = '', $returnIpType = false)
@@ -671,7 +655,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Get IP range from netmask
          *
          * @param null $mask
-         *
          * @return array
          */
         public function getRangeFromMask($mask = null)
@@ -693,7 +676,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param $IP
          * @param $CIDR
-         *
          * @return bool
          */
         public function isIpInRange($IP, $CIDR)
@@ -711,7 +693,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Translate ipv6 address to reverse octets
          *
          * @param string $ipAddr
-         *
          * @return string
          */
         public function getArpaFromIpv6($ipAddr = '::')
@@ -729,7 +710,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Translate ipv4 address to reverse octets
          *
          * @param string $ipAddr
-         *
          * @return string
          */
         public function getArpaFromIpv4($ipAddr = '127.0.0.1')
@@ -745,7 +725,6 @@ if (!class_exists('MODULE_NETWORK', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Translate ipv6 reverse octets to ipv6 address
          *
          * @param string $arpaOctets
-         *
          * @return string
          */
         public function getIpv6FromOctets(

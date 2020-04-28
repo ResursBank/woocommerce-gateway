@@ -20,7 +20,7 @@
  * All since-markings are based on the major release of NetCurl.
  *
  * @package TorneLIB
- * @version 6.0.25
+ * @version 6.0.26
  */
 
 namespace TorneLIB;
@@ -29,10 +29,10 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
     !class_exists('TorneLIB\MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD)
 ) {
     if (!defined('NETCURL_CURL_RELEASE')) {
-        define('NETCURL_CURL_RELEASE', '6.0.25');
+        define('NETCURL_CURL_RELEASE', '6.0.26');
     }
     if (!defined('NETCURL_CURL_MODIFY')) {
-        define('NETCURL_CURL_MODIFY', '20200401');
+        define('NETCURL_CURL_MODIFY', '20200418');
     }
     if (!defined('NETCURL_CURL_CLIENTNAME')) {
         define('NETCURL_CURL_CLIENTNAME', 'MODULE_CURL');
@@ -47,17 +47,27 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
      * @link    https://docs.tornevall.net/x/KwCy Network & Curl v5 and v6 Library usage
      * @link    https://docs.tornevall.net/x/FoBU TorneLIB Full documentation
      * @since   6.0.20
+     * @deprecated MODULE_CURL is still present in v6.1 but will be raised as a backward compatible module.
      */
     class MODULE_CURL
     {
-
         //// PUBLIC VARIABLES
         /**
          * Default settings when initializing our curlsession.
-         *
          * Since v6.0.2 no urls are followed by default, it is set internally by first checking PHP security before
          * setting this up. The reason of the change is not only the security, it is also about inheritage of options
          * to SOAPClient.
+         *
+         * $curlopt will return in 6.1 but in WrapperConfig with a proper setup instead.
+         *
+         * This array is not in use and seems to be unused for a long time (discovered in april 2020). The discovery
+         * is based on the fact that CURLOPT_SSLVERSION was set to the value 4 (CURL_SSLVERSION_TLSv1_0) which
+         * should've not worked properly with for example omnitest.resurs.com. Instead of using TLS 1.0, netcurl
+         * is configuring everything on fly and is actually no longer using this part of the module. Instead,
+         * CURLOPT_SSLVERSION is set to CURL_SSLVERSION_DEFAULT which means that curl tries to automatically
+         * discover which TLS version that should be used. This is why the TLS connectivity "always" works.
+         *
+         * 0=CURL_SSLVERSION_DEFAULT, some systems will throw exceptions when lost.
          *
          * @var array
          */
@@ -70,10 +80,11 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
             CURLOPT_TIMEOUT => 10,
             CURLOPT_USERAGENT => 'TorneLIB-PHPcURL',
             CURLOPT_POST => true,
-            CURLOPT_SSLVERSION => 4,
+            CURLOPT_SSLVERSION => 0,
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_HTTPHEADER => ['Accept-Language: en'],
         ];
+
         /** @var array User set SSL Options */
         private $sslopt = [];
 
@@ -156,7 +167,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Die on use of proxy/tunnel on first try (Incomplete).
-         *
          * This function is supposed to stop if the proxy fails on connection, so the library won't continue looking for a preferred exit point, since that will reveal the current unproxified address.
          *
          * @var bool
@@ -372,7 +382,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Set up if this library can throw exceptions, whenever it needs to do that.
-         *
          * Note: This does not cover everything in the library. It was set up for handling SoapExceptions.
          *
          * @var bool
@@ -393,7 +402,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param array $requestPostData
          * @param int $requestPostMethod
          * @param array $requestFlags
-         *
          * @throws \Exception
          */
         public function __construct(
@@ -480,7 +488,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Termination Controller
-         *
          * As of 6.0.20 cookies will be only stored if there is a predefined cookiepath or if system tempdir is allowed
          *
          * @since 5.0
@@ -639,7 +646,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $useCookies
-         *
          * @since 6.0.20
          */
         public function setUseCookies($useCookies = true)
@@ -658,7 +664,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param int $curlResolveType
-         *
          * @since 6.0.20
          */
         public function setCurlResolve($curlResolveType = NETCURL_RESOLVER::RESOLVER_DEFAULT)
@@ -677,12 +682,10 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Enable or disable the ability to let netcurl throw exceptions on places where it is not always necessary.
-         *
          * This function has minor effects on newer netcurls since throwing exxceptions should be considered necessary
          * in many situations to handle errors.
          *
          * @param bool $netCurlCanThrow
-         *
          * @since 6.0.20
          */
         public function setThrowable($netCurlCanThrow = true)
@@ -703,7 +706,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * When you just need responses and nothing else (except for exceptions)
-         *
          * Activation means you will always get a proper response back, on http requests.
          * Defaults to parsed content, but if the parse is empty, we will fall back on the body parts and if bodyparts
          * is empty netcurl will fall back to an array called simplifiedContainer.
@@ -732,7 +734,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Enable/disable the parsing of Dom content
          *
          * @param bool $domContentProhibit
-         *
          * @since 6.0.22
          */
         public function setDomContentParser($domContentProhibit = false)
@@ -753,7 +754,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param array $arrayData
-         *
          * @return bool
          * @since 6.0
          */
@@ -802,7 +802,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $setContentTypeString
-         *
          * @since 6.0.17
          */
         public function setContentType($setContentTypeString = 'application/json; charset=utf-8')
@@ -884,13 +883,11 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Set timeout for CURL, normally we'd like a quite short timeout here. Default: CURL default
-         *
          * Affects connect and response timeout by below values:
          *   CURLOPT_CONNECTTIMEOUT = ceil($timeout/2)    - How long a request is allowed to wait for conneciton, curl default = 300
          *   CURLOPT_TIMEOUT = ceil($timeout)             - How long a request is allowed to take, curl default = never timeout (0)
          *
          * @param int $timeout
-         *
          * @since 6.0.13
          */
         public function setTimeout($timeout = 6)
@@ -950,7 +947,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Sets, if defined by user, up a cookie directory storage
          *
          * @param $ownCookiePath
-         *
          * @return bool
          * @since 6.0.20
          */
@@ -1006,7 +1002,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param string $flagKey
          * @param string $flagValue Nullable since 6.0.10 = If null, then it is considered a true boolean, set setFlag("key") will always be true as an activation key
-         *
          * @return bool If successful
          * @throws \Exception
          * @since 6.0.9
@@ -1029,7 +1024,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $flagKey
-         *
          * @return bool
          * @since 6.0.10
          */
@@ -1046,7 +1040,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $flagKey
-         *
          * @return bool
          * @since 6.0.13 Consider using unsetFlag
          */
@@ -1057,7 +1050,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $flagKey
-         *
          * @return bool
          * @since 6.0.13 Consider using unsetFlag
          */
@@ -1078,7 +1070,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Get internal flag
          *
          * @param string $flagKey
-         *
          * @return mixed|null
          * @since 6.0.9
          */
@@ -1095,7 +1086,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Check if flag is set and true
          *
          * @param string $flagKey
-         *
          * @return bool
          * @since 6.0.9
          */
@@ -1112,7 +1102,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Check if there is an internal flag set with current key
          *
          * @param string $flagKey
-         *
          * @return bool
          * @since 6.0.9
          */
@@ -1129,7 +1118,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Enable chained mode ($Module->doGet(URL)->getParsedResponse()"
          *
          * @param bool $enable
-         *
          * @throws \Exception
          * @since 6.0.14
          */
@@ -1158,7 +1146,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param string $message
          * @param string $code
-         *
          * @throws \Exception
          * @since 6.0.6
          */
@@ -1192,14 +1179,12 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Allow fallback tests in SOAP mode
-         *
          * Defines whether, when there is a SOAP-call, we should try to make the SOAP initialization twice.
          * This is a kind of fallback when users forget to add ?wsdl or &wsdl in urls that requires this to call for SOAP.
          * It may happen when setting NETCURL_POST_DATATYPES to a SOAP-call but, the URL is not defined as one.
          * Setting this to false, may suppress important errors, since this will suppress fatal errors at first try.
          *
          * @param bool $enabledMode
-         *
          * @since 6.0.9
          */
         public function setSoapTryOnce($enabledMode = true)
@@ -1223,7 +1208,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Set the curl libraray to die, if no proxy has been successfully set up (Currently not active in module)
          *
          * @param bool $dieEnabled
-         *
          * @since 6.0.9
          */
         public function setDieOnNoProxy($dieEnabled = true)
@@ -1247,7 +1231,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param int $throwableMin Minimum value to throw on (Used with >=)
          * @param int $throwableMax Maxmimum last value to throw on (Used with <)
-         *
          * @since 6.0.6
          */
         public function setThrowableHttpCodes($throwableMin = 400, $throwableMax = 599)
@@ -1272,7 +1255,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * When using soap/xml fields returned as CDATA will be returned as text nodes if this is disabled (default: diabled)
          *
          * @param bool $enabled
-         *
          * @since 5.0.0
          */
         public function setCdata($enabled = true)
@@ -1293,11 +1275,9 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Enable the use of local cookie storage
-         *
          * Use this only if necessary and if you are planning to cookies locally while, for example, needs to set a logged in state more permanent during get/post/etc
          *
          * @param bool $enabled
-         *
          * @since 5.0.0
          */
         public function setLocalCookies($enabled = false)
@@ -1331,7 +1311,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Enforce a response type if you're not happy with the default returned array.
          *
          * @param int $NETCURL_RETURN_RESPONSE_TYPE
-         *
          * @since 5.0.0
          */
         public function setResponseType($NETCURL_RETURN_RESPONSE_TYPE = NETCURL_RESPONSETYPE::RESPONSETYPE_ARRAY)
@@ -1352,12 +1331,10 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Enforce a specific type of post method
-         *
          * To always send PostData, even if it is not set in the doXXX-method, you can use this setting to enforce - for example - JSON posts
          * $myLib->setPostTypeDefault(NETCURL_POST_DATATYPES::DATATYPE_JSON)
          *
          * @param int $postType
-         *
          * @since 6.0.6
          */
         public function setPostTypeDefault($postType = NETCURL_POST_DATATYPES::DATATYPE_NOT_SET)
@@ -1380,7 +1357,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Enforces CURLOPT_FOLLOWLOCATION to act different if not matching with the internal rules
          *
          * @param bool $setEnabledState
-         *
          * @since 5.0
          */
         public function setEnforceFollowLocation($setEnabledState = true)
@@ -1401,11 +1377,9 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Allow the initCookie-function to throw exceptions if the local cookie store can not be created properly
-         *
          * Exceptions are invoked, normally when the function for initializing cookies can not create the storage directory. This is something you should consider disabled in a production environment.
          *
          * @param bool $enabled
-         *
          * @deprecated 6.0.20 No longer in use
          */
         public function setCookieExceptions($enabled = false)
@@ -1431,7 +1405,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Set up whether we should allow html parsing or not
          *
          * @param bool $enabled
-         *
          * @since      6.0
          * @deprecated 6.0.22 Use setDomContentParser and getDomContentParser
          */
@@ -1456,7 +1429,8 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param $isSpoofable
          * @since 6.0.25
          */
-        public function setSpoofableUserAgent($isSpoofable) {
+        public function setSpoofableUserAgent($isSpoofable)
+        {
             $this->spoofableUserAgent = $isSpoofable;
         }
 
@@ -1464,13 +1438,13 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @return bool
          * @since 6.0.25
          */
-        public function getSpoofableUserAgent() {
+        public function getSpoofableUserAgent()
+        {
             return $this->spoofableUserAgent;
         }
 
         /**
          * Set up a different user agent for this library
-         *
          * To make proper identification of the library we are always appending TorbeLIB+cUrl to the chosen user agent string.
          *
          * @param string $CustomUserAgent
@@ -1559,7 +1533,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $refererString
-         *
          * @since 6.0.9
          */
         public function setReferer($refererString = "")
@@ -1602,7 +1575,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param array|string $curlOptArrayOrKey If arrayed, there will be multiple options at once
          * @param null $curlOptValue If not null, and the first parameter is not an array, this is taken as a single update value.
-         *
          * @throws \Exception
          * @since 6.0
          */
@@ -1612,15 +1584,17 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                 if (is_null($this->NETCURL_CURL_SESSION)) {
                     $this->initializeNetCurl();
                 }
+                // curlopt is normally in use from the top array, but as curl_setopt fails on invalid
+                // key/value combinations not all options here will be set properly.
                 if (is_array($curlOptArrayOrKey)) {
                     foreach ($curlOptArrayOrKey as $key => $val) {
                         $this->curlopt[$key] = $val;
-                        curl_setopt($this->NETCURL_CURL_SESSION, $key, $val);
+                        @curl_setopt($this->NETCURL_CURL_SESSION, $key, $val);
                     }
                 }
                 if (!is_array($curlOptArrayOrKey) && !empty($curlOptArrayOrKey) && !is_null($curlOptValue)) {
                     $this->curlopt[$curlOptArrayOrKey] = $curlOptValue;
-                    curl_setopt($this->NETCURL_CURL_SESSION, $curlOptArrayOrKey, $curlOptValue);
+                    @curl_setopt($this->NETCURL_CURL_SESSION, $curlOptArrayOrKey, $curlOptValue);
                 }
             }
         }
@@ -1630,7 +1604,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param array|string $curlOptArrayOrKey
          * @param null $curlOptValue
-         *
          * @throws \Exception
          * @since 6.0
          */
@@ -1643,7 +1616,7 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                 if (!is_array($curlOptArrayOrKey) && !empty($curlOptArrayOrKey) && !is_null($curlOptValue)) {
                     if (!isset($this->curlopt[$curlOptArrayOrKey])) {
                         $this->curlopt[$curlOptArrayOrKey] = $curlOptValue;
-                        curl_setopt($this->NETCURL_CURL_SESSION, $curlOptArrayOrKey, $curlOptValue);
+                        @curl_setopt($this->NETCURL_CURL_SESSION, $curlOptArrayOrKey, $curlOptValue);
                     }
                 }
             }
@@ -1685,7 +1658,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Set up special SSL option array for communicators
          *
          * @param array $sslOptArray
-         *
          * @since 6.0.9
          */
         public function setSslOpt($sslOptArray = [])
@@ -1713,7 +1685,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Get the current version of the module
          *
          * @param bool $fullRelease
-         *
          * @return string
          * @since 5.0
          */
@@ -1783,7 +1754,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Check against Tornevall Networks API if there are updates for this module
          *
          * @param string $libName
-         *
          * @return string
          * @throws \Exception
          * @deprecated 6.0.20
@@ -1800,7 +1770,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $libName
-         *
          * @return string
          * @throws \Exception
          * @deprecated 6.0.20
@@ -1852,14 +1821,12 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Automatically generates stream_context and appends it to whatever you need it for.
-         *
          * Example:
          *  $addonContextData = array('http' => array("user_agent" => "MyUserAgent"));
          *  $this->soapOptions = sslGetDefaultStreamContext($this->soapOptions, $addonContextData);
          *
          * @param array $optionsArray
          * @param array $addonContextData
-         *
          * @return array
          * @throws \Exception
          * @since 6.0
@@ -1873,7 +1840,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Set and/or append certificate bundle locations to current configuration
          *
          * @param array $locationArrayOrString
-         *
          * @return bool
          * @throws \Exception
          * @since 6.0
@@ -1898,11 +1864,9 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * Enable/disable SSL Certificate autodetection (and/or host/peer ssl verications)
-         *
          * The $hostVerification-flag can also be called manually with setSslVerify()
          *
          * @param bool $enabledFlag
-         *
          * @deprecated 6.0.20 Use setSslVerify
          */
         public function setCertAuto($enabledFlag = true)
@@ -1915,7 +1879,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param bool $strictCertificateVerification
          * @param bool $prohibitSelfSigned
-         *
          * @return void
          * @since 6.0
          */
@@ -1937,7 +1900,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $sslFailoverEnabled
-         *
          * @since 6.0.22
          */
         public function setSslStrictFallback($sslFailoverEnabled = false)
@@ -1947,7 +1909,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $sslFailoverEnabled
-         *
          * @since      6.0.20
          * @deprecated 6.0.22 Use setSslStrictFallback as it is better described
          */
@@ -1978,13 +1939,11 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * While doing SSL calls, and SSL certificate verifications is failing, enable the ability to skip SSL verifications.
-         *
          * Normally, we want a valid SSL certificate while doing https-requests, but sometimes the verifications must be disabled. One reason of this is
          * in cases, when crt-files are missing and PHP can not under very specific circumstances verify the peer. To allow this behaviour, the client
          * must use this function.
          *
          * @param bool $allowStrictFallback
-         *
          * @since      5.0
          * @deprecated 6.0.20 Use setStrictFallback
          */
@@ -2007,7 +1966,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * TestCerts - Test if your webclient has certificates available (make sure the $testssldeprecated are enabled if you want to test older PHP-versions - meaning older than 5.6.0)
-         *
          * Note: This function also forces full ssl certificate checking.
          *
          * @return bool
@@ -2112,7 +2070,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param     $ProxyAddr
          * @param int $ProxyType
-         *
          * @throws \Exception
          * @since 6.0
          */
@@ -2145,7 +2102,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Enable curl tunneling
          *
          * @param bool $curlTunnelEnable
-         *
          * @throws \Exception
          * @since 6.0.11
          */
@@ -2170,7 +2126,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $byWhat
-         *
          * @return array
          * @since 6.0.20
          */
@@ -2187,7 +2142,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         /**
          * @param null $rawInput
          * @param bool $internalRaw
-         *
          * @return $this|array|null|NETCURL_HTTP_OBJECT
          * @throws \Exception
          */
@@ -2347,7 +2301,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param string $netCurlResponse
-         *
          * @return array|string|MODULE_CURL|NETCURL_HTTP_OBJECT
          * @throws \Exception
          */
@@ -2386,7 +2339,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Get head and body from a request parsed
          *
          * @param string $content
-         *
          * @return array
          * @throws \Exception
          * @since 6.0
@@ -2431,7 +2383,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Extract a parsed response from a webrequest
          *
          * @param null $inputResponse
-         *
          * @return null
          * @throws \Exception
          * @since 6.0.20
@@ -2461,7 +2412,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param $inputResponse
-         *
          * @return bool
          * @throws \Exception
          * @since 6.0.20
@@ -2483,7 +2433,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param $inputResponse
-         *
          * @return null
          * @since 6.0.20
          */
@@ -2500,7 +2449,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param $inputResponse
-         *
          * @return mixed
          * @since 6.0.20
          */
@@ -2516,7 +2464,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param $inputResponse
-         *
          * @return null
          * @since 6.0.20
          */
@@ -2535,7 +2482,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $ResponseContent
-         *
          * @return int
          * @since 6.0.20
          */
@@ -2556,7 +2502,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $ResponseContent
-         *
          * @return int
          * @since 6.0.20
          */
@@ -2576,7 +2521,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $ResponseContent
-         *
          * @return null
          * @since 6.0.20
          */
@@ -2615,7 +2559,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $ResponseContent
-         *
          * @return null|string
          * @since 6.0.20
          */
@@ -2640,7 +2583,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param      $keyName
          * @param null $responseContent
-         *
          * @return mixed|null
          * @throws \Exception
          * @since 6.0.20
@@ -2725,7 +2667,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Create an array of a header, with keys and values
          *
          * @param array $HeaderRows
-         *
          * @return array
          * @since 6.0
          */
@@ -2755,7 +2696,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Check if SOAP exists in system
          *
          * @param bool $extendedSearch Extend search for SOAP (unsafe method, looking for constants defined as SOAP_*)
-         *
          * @return bool
          * @since 6.0
          */
@@ -2779,7 +2719,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Defines if this library should be able to store the curl_getinfo() for each curl_exec that generates an exception
          *
          * @param bool $Activate
-         *
          * @since 6.0.6
          */
         public function setStoreSessionExceptions($Activate = false)
@@ -2838,7 +2777,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param string $url
          * @param array $postData
          * @param int $postAs
-         *
          * @return array|null|string|MODULE_CURL|NETCURL_HTTP_OBJECT
          * @throws \Exception
          * @since 5.0
@@ -2860,7 +2798,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param string $url
          * @param array $postData
          * @param int $postAs
-         *
          * @return array|null|string|MODULE_CURL|NETCURL_HTTP_OBJECT
          * @throws \Exception
          * @since 5.0
@@ -2882,7 +2819,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param string $url
          * @param array $postData
          * @param int $postAs
-         *
          * @return array|null|string|MODULE_CURL|NETCURL_HTTP_OBJECT
          * @throws \Exception
          * @since 5.0
@@ -2903,7 +2839,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param string $url
          * @param int $postAs
-         *
          * @return array|null|string|MODULE_CURL|NETCURL_HTTP_OBJECT
          * @throws \Exception
          * @since 5.0
@@ -2925,7 +2860,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param null $Username
          * @param null $Password
          * @param int $AuthType Falls back on CURLAUTH_ANY if none are given. NETCURL_AUTH_TYPES are minimalistic since it follows the standards of CURLAUTH_
-         *
          * @throws \Exception
          * @since 6.0
          */
@@ -2947,7 +2881,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Fix problematic header data by converting them to proper outputs.
          *
          * @param array $headerList
-         *
          * @since 6.0
          */
         private function fixHttpHeaders($headerList = [])
@@ -2969,7 +2902,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param string $key
          * @param string $value
-         *
          * @since 6.0
          */
         public function setCurlHeader($key = '', $value = '')
@@ -3080,7 +3012,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param bool $checkSafeMode If true, we will also check if safe_mode is active
          * @param bool $mockSafeMode If true, NetCurl will pretend safe_mode is true (for testing)
-         *
          * @return bool If true, PHP is in secure mode and won't allow things like follow-redirects and setting up different paths for certificates, etc
          * @since 6.0.20
          */
@@ -3106,7 +3037,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Get safe_mode status (mockable)
          *
          * @param bool $mockedSafeMode When active, this always returns true
-         *
          * @return bool
          * @since 6.0.20
          */
@@ -3128,7 +3058,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Trust the pems defined from SSL_MODULE
          *
          * @param bool $iTrustBundlesSetBySsl If this is false, NetCurl will trust internals (PHP + Curl) rather than pre-set pem bundles
-         *
          * @since 6.0.20
          */
         public function setTrustedSslBundles($iTrustBundlesSetBySsl = false)
@@ -3216,7 +3145,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Initializes internal curl driver
          *
          * @param bool $reinitialize
-         *
          * @throws \Exception
          * @since 6.0.20
          */
@@ -3477,7 +3405,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Add debug data
          *
          * @param $returnContent
-         *
          * @since 6.0.20
          */
         private function internal_curl_execute_add_debug($returnContent)
@@ -3569,7 +3496,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param $errorCode
          * @param $errorMessage
-         *
          * @throws \Exception
          * @since 6.0.20
          */
@@ -3581,7 +3507,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         /**
          * @param $errorCode
          * @param $errorMessage
-         *
          * @throws \Exception
          */
         private function sslVerificationAdjustment($errorCode, $errorMessage)
@@ -3630,12 +3555,16 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         private function internal_curl_execute()
         {
             $returnContent = curl_exec($this->NETCURL_CURL_SESSION);
+
             $this->internal_curl_execute_add_debug($returnContent);
 
             if ($this->internal_curl_errors()) {
                 if ($this->internal_curl_can_rerun()) {
-                    return $this->executeUrlCall($this->CURL_STORED_URL, $this->POST_DATA_HANDLED,
-                        $this->NETCURL_POST_METHOD);
+                    return $this->executeUrlCall(
+                        $this->CURL_STORED_URL,
+                        $this->POST_DATA_HANDLED,
+                        $this->NETCURL_POST_METHOD
+                    );
                 }
             }
 
@@ -3694,7 +3623,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param array $postData
          * @param int $postMethod
          * @param int $postDataType
-         *
          * @return mixed
          * @throws \Exception
          * @since 6.0
@@ -3741,6 +3669,7 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                         'opt' => $this->getCurlOptByKeys(),
                         'success' => true,
                         'exception' => null,
+                        'curlinfo' => curl_getinfo($this->NETCURL_CURL_SESSION)
                     ];
                 } catch (\Exception $e) {
                     throw new \Exception(NETCURL_CURL_CLIENTNAME . " exception from PHP/CURL at " . __FUNCTION__ . ": " . $e->getMessage(),
@@ -3771,7 +3700,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param string $url
          * @param array $postData
          * @param int $CurlMethod
-         *
          * @return MODULE_SOAP
          * @throws \Exception
          * @since 6.0.14
@@ -3811,9 +3739,10 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                     'previous' => null,
                 ];
             } catch (\Exception $getSoapResponseException) {
-
-                $this->sslVerificationAdjustment($getSoapResponseException->getCode(),
-                    $getSoapResponseException->getMessage());
+                $this->sslVerificationAdjustment(
+                    $getSoapResponseException->getCode(),
+                    $getSoapResponseException->getMessage()
+                );
 
                 $this->DEBUG_DATA['soapdata']['url'][] = [
                     'url' => $this->CURL_STORED_URL,
@@ -3848,7 +3777,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $responseInData
-         *
          * @return int
          * @since      6.0
          * @deprecated 6.0.20 Use getCode
@@ -3860,7 +3788,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $responseInData
-         *
          * @return null
          * @since      6.0
          * @deprecated 6.0.20 Use getBody
@@ -3872,7 +3799,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $responseInData
-         *
          * @return string
          * @since      6.0.16
          * @deprecated 6.0.20 Use getUrl
@@ -3884,7 +3810,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param null $inputResponse
-         *
          * @return null
          * @throws \Exception
          * @since      6.0
@@ -3898,7 +3823,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
         /**
          * @param null $keyName
          * @param null $responseContent
-         *
          * @return mixed|null
          * @throws \Exception
          * @since      6.0
@@ -3928,7 +3852,6 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @return array
-         *
          * @since      6.0.16
          * @deprecated 6.0.20
          */
@@ -3959,7 +3882,5 @@ if (!class_exists('MODULE_CURL', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
 			throw new \Exception( NETCURL_CURL_CLIENTNAME . " exception: Function " . $name . " does not exist!", $this->NETWORK->getExceptionCode( "NETCURL_UNEXISTENT_FUNCTION" ) );
 		}*/
-
-
     }
 }

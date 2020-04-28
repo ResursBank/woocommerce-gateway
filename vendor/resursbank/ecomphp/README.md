@@ -4,11 +4,6 @@ Resurs EComPHP Gateway for Resurs Bank shopflows, with functionality enough to g
 
 As EComPHP is continuously developed, you should take a look at our bitbucket repo to keep this information updated. It can be found at https://bitbucket.org/resursbankplugins/resurs-ecomphp
 
-## phpunit problems with newer php
-
-phpunits might fail aver PHP 7.3 as phpunit uses setUp differently than older versions. We're working on that part.
-
-
 ## Regular requirements, dependencies and information
 
 * For EComPHP 1.0 (With no namespaces) at least PHP 5.6.
@@ -20,7 +15,11 @@ phpunits might fail aver PHP 7.3 as phpunit uses setUp differently than older ve
 * EComPHP uses [NetCURL](https://www.netcurl.org) for "mixed calls" (SOAP vs REST). The packagist component is located [here](https://www.netcurl.org/packagist).
 * If you plan to *ONLY* use Resurs Checkout (checkout only, with no aftershop, callbacks or needs of listing payment methods etc) - there should be no need for SoapClient.
 
-_EComPHP 2.0 is currently revoked._
+_EComPHP 2.0 is revoked._
+
+### phpunit problems with newer php
+
+phpunits might fail aver PHP 7.3 as phpunit uses setUp differently than older versions. We're working on that part.
 
 ### Installing curl, xml, soapclient, etc
 
@@ -30,14 +29,16 @@ For Ubuntu, you can quickly fetch those with apt-get like below, if your system 
      
 There might be a slight chance that you also need openssl or similar, as our services runs on https-only (normally openssl are delivered automatically, but sometimes they do not - apt-get install openssl might work in those cases if you have access to the server).
 
+### Deployment notes
+
+Version 1.3 is the current major release of EComPHP. New deployments are quite rapid as it is based on composer/packagist releases. Version 1.0 and 1.1 are usually merged and synchronized with 1.3 but since they are more considered maintenance releases there might be a slight delay between them. It could also be interesting to know that they contain a merged component of "netcurl" which means updates are more sensitive to changes if something goes wrong.
 
 # PHP versions verified
 
-### December 9, 2019
+### Verified PHP versions
 
-    Pipelines/Bamboo Verified : 5.6 - 7.4
-                       Legacy : 5.4 - 5.5
-                   Unverified : 5.3 and lower.
+    5.6 - 7.4 (Bamboo & Pipelines)
+    < 5.6     (No longer tested)
 
 Take a look at [this page](https://www.php.net/supported-versions.php) if you're unsure which PHP versions that are still supported by the PHP team.
 As of february 2020, only 7.3 and 7.4 have full support open. 7.2 still do have security patch support, but is on deprecation. All older versions are completely unsupported and should probably get upgrade by you also.

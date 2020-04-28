@@ -1,26 +1,21 @@
 <?php
-
 /**
  * Copyright 2018 Tomas Tornevall & Tornevall Networks
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
  * http://www.apache.org/licenses/LICENSE-2.0
- *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  * Tornevall Networks netCurl library - Yet another http- and network communicator library
  * Each class in this library has its own version numbering to keep track of where the changes are. However, there is a
  * major version too.
  *
  * @package TorneLIB
- * @version 6.0.3
+ * @version 6.0.5
  */
 
 namespace TorneLIB;
@@ -32,6 +27,7 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
      * Class NETCURL_PARSER Network communications driver detection
      *
      * @package TorneLIB
+     * @deprecated netcurl 6.1 is rewritten without the guessing games.
      */
     class NETCURL_PARSER
     {
@@ -65,8 +61,7 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * @param string $htmlContent
          * @param string $contentType
          * @param array $flags
-         *
-         * @throws \Exception
+         * @throws Exception
          * @since 6.0.0
          */
         public function __construct($htmlContent = '', $contentType = '', $flags = [])
@@ -88,7 +83,6 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $returnAsIs
-         *
          * @return null|string
          * @since 6.0.0
          */
@@ -100,7 +94,7 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                 }
 
                 return $this->getNull($this->IO->getFromJson($this->PARSE_CONTAINER));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
 
             return null;
@@ -110,7 +104,6 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          * Enable/disable the parsing of Dom content
          *
          * @param bool $domContentProhibit
-         *
          * @since 6.0.3
          */
         public function setDomContentParser($domContentProhibit = false)
@@ -131,7 +124,6 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $returnAsIs
-         *
          * @return null|string
          * @since 6.0.0
          */
@@ -143,7 +135,7 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                 }
 
                 return $this->getNull($this->IO->getFromXml($this->PARSE_CONTAINER));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
 
             return null;
@@ -151,7 +143,6 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $returnAsIs
-         *
          * @return null|string
          * @since 6.0.0
          */
@@ -163,7 +154,7 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
                 }
 
                 return $this->getNull($this->IO->getFromYaml($this->PARSE_CONTAINER));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
 
             return null;
@@ -171,27 +162,84 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @param bool $returnAsIs
-         *
          * @return null|string
          * @since 6.0.0
+         * @deprecated This function is not supported in version 6.1.0 and above.
          */
         public function getContentBySerial($returnAsIs = false)
         {
+            $return = null;
+
             try {
                 if ($returnAsIs) {
-                    return $this->IO->getFromSerializerInternal($this->PARSE_CONTAINER);
+                    return $this->getFromSerializerInternal($this->PARSE_CONTAINER);
                 }
 
-                return $this->getNull($this->IO->getFromSerializerInternal($this->PARSE_CONTAINER));
-            } catch (\Exception $e) {
+                return $this->getNull($this->getFromSerializerInternal($this->PARSE_CONTAINER));
+            } catch (Exception $e) {
             }
 
-            return null;
+            return $return;
+        }
+
+        /**
+         * Return serialized-by-php content. Not supported in the IO-package from v6.1 so we're taking it home.
+         *
+         * @param string $serialInput
+         * @param bool $assoc
+         * @return mixed|null
+         * @throws Exception
+         * @since 6.0.26
+         * @deprecated This function is not supported in version 6.1.0 and above.
+         */
+        public function getFromSerializerInternal($serialInput = '', $assoc = false)
+        {
+            // Skip this if there's nothing to serialize, as some error handlers might pick up errors even if we
+            // suppress them.
+            $trimData = trim($serialInput);
+            if (empty($trimData)) {
+                return null;
+            }
+            if (!$assoc) {
+                return @unserialize($serialInput);
+            } else {
+                return $this->arrayObjectToStdClass(@unserialize($serialInput));
+            }
+        }
+
+        /**
+         * @param array $objectArray
+         * @return mixed|null
+         * @throws Exception
+         */
+        public function arrayObjectToStdClass($objectArray = [])
+        {
+            /**
+             * If json_decode and json_encode exists as function, do it the simple way.
+             * http://php.net/manual/en/function.json-encode.php
+             */
+            if (function_exists('json_decode') &&
+                function_exists('json_encode')) {
+                return json_decode(json_encode($objectArray));
+            }
+            $newArray = null;
+            if (is_array($objectArray) || is_object($objectArray)) {
+                foreach ($objectArray as $itemKey => $itemValue) {
+                    if (is_array($itemValue)) {
+                        $newArray[$itemKey] = (array)$this->arrayObjectToStdClass($itemValue);
+                    } elseif (is_object($itemValue)) {
+                        $newArray[$itemKey] = (object)(array)$this->arrayObjectToStdClass($itemValue);
+                    } else {
+                        $newArray[$itemKey] = $itemValue;
+                    }
+                }
+            }
+
+            return $newArray;
         }
 
         /**
          * @param string $testData
-         *
          * @return null|string
          * @since 6.0.0
          */
@@ -206,7 +254,7 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
         /**
          * @return array|null|string
-         * @throws \Exception
+         * @throws Exception
          * @since 6.0.0
          */
         private function getContentByTest()
@@ -215,24 +263,14 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
 
             if (!is_null($respond = $this->getContentByJson())) {
                 $returnNonNullValue = $respond;
-            } else {
-                if (!is_null($respond = $this->getContentBySerial())) {
-                    $returnNonNullValue = $respond;
-                } else {
-                    if (!is_null($respond = $this->getContentByXml())) {
-                        $returnNonNullValue = $respond;
-                    } else {
-                        if (!is_null($respond = $this->getContentByYaml())) {
-                            $returnNonNullValue = $respond;
-                        } else {
-                            if (!$this->NETCURL_PROHIBIT_DOMCONTENT_PARSE &&
-                                !is_null($response = $this->getDomElements())
-                            ) {
-                                return $response;
-                            }
-                        }
-                    }
-                }
+            } elseif (!is_null($respond = $this->getContentBySerial())) {
+                $returnNonNullValue = $respond;
+            } elseif (!is_null($respond = $this->getContentByXml())) {
+                $returnNonNullValue = $respond;
+            } elseif (!is_null($respond = $this->getContentByYaml())) {
+                $returnNonNullValue = $respond;
+            } elseif (!$this->NETCURL_PROHIBIT_DOMCONTENT_PARSE && !is_null($response = $this->getDomElements())) {
+                return $response;
             }
 
             return $returnNonNullValue;
@@ -244,7 +282,6 @@ if (!class_exists('NETCURL_PARSER', NETCURL_CLASS_EXISTS_AUTOLOAD) &&
          *
          * @param array $childNode
          * @param string $getAs
-         *
          * @return array
          * @since 6.0.0
          */
