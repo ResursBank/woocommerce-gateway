@@ -1,0 +1,18 @@
+{
+    "name": "tornevall/tornelib-php-bitmask",
+    "description": "Library that handles bitmasking issues",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Tomas Tornevall",
+            "email": "thorne@tornevall.net",
+            "homepage": "https://tornevall.net",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TorneLIB\\": "src"
+        }
+    }
+}
