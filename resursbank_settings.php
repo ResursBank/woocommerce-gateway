@@ -583,9 +583,24 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $this->displayAvail($getEnabledCurl) . ($getEnabledCurl ? "v" . $this->getCurlInformation('version') : "") .
             $curlWarning .
             '</td></tr>';
+
+        $netcurlRelease = $this->getDefined('NETCURL_RELEASE');
+        $nc = sprintf(
+            'NETCURL-v%s, MODULE_CURL-v%s, MODULE_SOAP-v%s',
+            $this->getDefined('NETCURL_RELEASE'),
+            $this->getDefined('NETCURL_CURL_RELEASE'),
+            $this->getDefined('NETCURL_SIMPLESOAP_RELEASE')
+        );
+
+        if (empty($netcurlRelease)) {
+            $nc = sprintf(
+                'NETCURL-v%s',
+                $this->getDefined('NETCURL_VERSION')
+            );
+        }
         $pluginInfo .= '<tr><td ' . $topCss . '>SoapClient</td><td ' . $topCss . '>' . $this->displayAvail($hasSoap) . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>SSL/https (wrapper)</td><td ' . $topCss . '>' . $this->displayAvail($hasSsl) . (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : "") . '</td></tr>';
-        $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '> NETCURL-v' . $this->getDefined('NETCURL_RELEASE') . ' / MODULE_CURL-v' . $this->getDefined('NETCURL_CURL_RELEASE') . ' / MODULE_SOAP-v' . $this->getDefined('NETCURL_SIMPLESOAP_RELEASE') . '<br>
+        $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '>' . $nc . '<br>
             <div id="rwocurltag" style="display:none;"></div>
         </td></tr>';
 
@@ -602,11 +617,14 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
      * @param $topCss
      * @return string
      */
-    function getGitInfo($topCss)
+    public function getGitInfo($topCss)
     {
         $pluginInfo = "";
         try {
             $gitbin = (string)getResursFlag('GIT_BIN');
+            if (empty($gitbin) && file_exists('/usr/bin/git')) {
+                $gitbin = '/usr/bin/git';
+            }
             if (empty($gitbin) || !file_exists($gitbin)) {
                 $pluginInfo .= '<tr><td ' . $topCss . '>gitinfo</td><td ' . $topCss . '>' .
                     __(
@@ -634,15 +652,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         return $pluginInfo;
     }
 
-    function displayAvail($boolValue)
+    public function displayAvail($boolValue)
     {
         if ($boolValue == true) {
-            return '<div style="color:#009900; font-weight: bold;">' . __('Available',
-                    'resurs-bank-payment-gateway-for-woocommerce') . '</div>';
+            return '<div style="color:#009900; font-weight: bold;">' .
+                __('Available', 'resurs-bank-payment-gateway-for-woocommerce') . '</div>';
         }
 
-        return '<div style="color:#990000; font-weight: bold;">' . __('Not available',
-                'resurs-bank-payment-gateway-for-woocommerce') . '</div>';
+        return '<div style="color:#990000; font-weight: bold;">' .
+            __('Not available', 'resurs-bank-payment-gateway-for-woocommerce') .
+            '</div>';
     }
 
     /**
