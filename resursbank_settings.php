@@ -841,15 +841,23 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('postidreference', $namespace);
                     echo $this->setSeparator(__('API Settings', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setDropDown('flowtype', $namespace);
-                    echo $this->setDropDown('country', $namespace, null,
-                        "onchange=adminResursChangeFlowByCountry(this)");
+                    echo $this->setDropDown(
+                        'country',
+                        $namespace,
+                        null,
+                        "onchange=adminResursChangeFlowByCountry(this)"
+                    );
                     echo $this->setDropDown('serverEnv', $namespace);
 
-                    echo $this->setTextBox('login', $namespace,
-                        'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"');
+                    echo $this->setTextBox(
+                        'login',
+                        $namespace,
+                        'onfocus="jQuery(\'#woocommerce_resurs-bank_password\').click();"'
+                    );
                     echo $this->setTextBox('password', $namespace); // Former callback "updateResursPaymentMethods"
-                    echo $this->setSeparator(__('Callbacks',
-                        'resurs-bank-payment-gateway-for-woocommerce')); // , "configSeparateTitleSmall"
+                    echo $this->setSeparator(
+                        __('Callbacks', 'resurs-bank-payment-gateway-for-woocommerce')
+                    ); // , "configSeparateTitleSmall"
 
                     $callSent = get_transient("resurs_callbacks_sent");
                     $callRecv = get_transient("resurs_callbacks_received");
@@ -860,14 +868,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     ';
 
                     if (callbackUpdateRequest()) {
-                        echo '<div id="callbacksRequireUpdate" style="margin-top: 8px;" class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . __('Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...',
-                                'resurs-bank-payment-gateway-for-woocommerce') . '</div><br><br>';
+                        echo '<div id="callbacksRequireUpdate" style="margin-top: 8px;" class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' .
+                            __('Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...', 'resurs-bank-payment-gateway-for-woocommerce') .
+                            '</div><br><br>';
                     }
 
                     echo '
-                            <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' . __('Callback URLs registered at Resurs Bank',
-                            'resurs-bank-payment-gateway-for-woocommerce') . ' ' . ($this->curlInDebug ? " [" . __('curl module is set to enter debug mode',
-                                'resurs-bank-payment-gateway-for-woocommerce') . "]" : "") . '</div>
+                            <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' .
+                        __('Callback URLs that is registered at Resurs Bank', 'resurs-bank-payment-gateway-for-woocommerce') .
+                        ' ' . (
+                            $this->curlInDebug ? " [" . __('curl module is set to enter debug mode', 'resurs-bank-payment-gateway-for-woocommerce') . "]" : "") . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
                     $login = getResursOption("login");
