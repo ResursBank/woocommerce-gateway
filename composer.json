@@ -4,7 +4,6 @@
         "preferred-install": "dist"
     },
     "require": {
-        "tornevall/tornelib-php-netcurl": "6.0.*",
-        "resursbank/ecomphp": "1.3.*"
+        "resursbank/ecomphp": "^1.3"
     }
 }
