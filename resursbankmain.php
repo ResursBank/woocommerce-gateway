@@ -672,6 +672,8 @@ function woocommerce_gateway_resurs_bank_init()
                                             $responseArray['callbacks'] = $this->flow->getCallBacksByRest(true);
                                             set_transient("resurs_callback_templates_cache_last", time());
                                             $myBool = true;
+                                            set_transient("resurs_callback_templates_cache", $responseArray['callbacks']);
+                                            $responseArray['cached'] = false;
                                         } catch (Exception $e) {
                                             $errorMessage = $e->getMessage();
                                             $errorCode = $e->getCode();
@@ -683,8 +685,6 @@ function woocommerce_gateway_resurs_bank_init()
                                                 $errorMessage = 'curl failed';
                                             }
                                         }
-                                        set_transient("resurs_callback_templates_cache", $responseArray['callbacks']);
-                                        $responseArray['cached'] = false;
                                     } else {
                                         $myBool = true;
                                         $responseArray['callbacks'] = $lastFetchedCache;
