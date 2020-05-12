@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitbbd1079c932571217963749d6f4203c0
+class ComposerStaticInit09a2359417f6d17affca4513ba4a2708
 {
     public static $files = array (
         '0d77dbe55e89e2564516e3df29a3c3eb' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/MODULE_CRYPTO.php',
@@ -38,34 +38,34 @@ class ComposerStaticInitbbd1079c932571217963749d6f4203c0
     );
 
     public static $prefixLengthsPsr4 = array (
-        '\\' => 
-        array (
-            '\\Resursbank\\RBEcomPHP\\' => 22,
-        ),
         'T' => 
         array (
             'TorneLIB\\' => 9,
         ),
+        'R' => 
+        array (
+            'Resursbank\\RBEcomPHP\\' => 21,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
-        '\\Resursbank\\RBEcomPHP\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/rbapiloader.php',
-        ),
         'TorneLIB\\' => 
         array (
             0 => __DIR__ . '/..' . '/tornevall/tornelib-php-bitmask/src',
             1 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source',
             2 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source',
         ),
+        'Resursbank\\RBEcomPHP\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/rbapiloader.php',
+        ),
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitbbd1079c932571217963749d6f4203c0::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitbbd1079c932571217963749d6f4203c0::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit09a2359417f6d17affca4513ba4a2708::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit09a2359417f6d17affca4513ba4a2708::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

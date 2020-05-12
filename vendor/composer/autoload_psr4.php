@@ -6,6 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    '\\Resursbank\\RBEcomPHP\\' => array($vendorDir . '/resursbank/ecomphp/source/classes/rbapiloader.php'),
     'TorneLIB\\' => array($vendorDir . '/tornevall/tornelib-php-bitmask/src', $vendorDir . '/tornevall/tornelib-php-crypto/source', $vendorDir . '/tornevall/tornelib-php-netcurl/source'),
+    'Resursbank\\RBEcomPHP\\' => array($vendorDir . '/resursbank/ecomphp/source/classes/rbapiloader.php'),
 );

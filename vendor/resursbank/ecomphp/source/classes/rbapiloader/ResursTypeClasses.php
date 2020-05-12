@@ -226,15 +226,40 @@ abstract class RESURS_PAYMENT_STATUS_RETURNCODES
  */
 abstract class RESURS_ENVIRONMENTS
 {
+    /**
+     * @var int
+     */
     const PRODUCTION = 0;
+
+    /**
+     * Test (default).
+     * @var int
+     */
     const TEST = 1;
+
+    /**
+     * Not set by anyone.
+     * @var int
+     * @deprecated Not in use
+     */
     const NOT_SET = 2;
 
-    /** @deprecated Redundant name */
+    /**
+     * @var int
+     * @deprecated Redundant name.
+     */
     const ENVIRONMENT_PRODUCTION = 0;
-    /** @deprecated Redundant name */
+
+    /**
+     * @var int
+     * @deprecated Redundant name.
+     */
     const ENVIRONMENT_TEST = 1;
-    /** @deprecated Not in use */
+
+    /**
+     * @var int
+     * @deprecated Redundant name.
+     */
     const ENVIRONMENT_NOT_SET = 2;
 }
 
