@@ -1,12 +1,9 @@
-# MODULE_CRYPTO + MODULE_IO
+# tornevall/tornelib-php-crypto v6.1
 
-Maintenance edition. Take a look at 6.1 instead.
-Repository is now only merging 6.0 maintenance updates into stable/6.0 since the cryptolib 6.1 takes over completely.
+Encryption helper library that helps to standardize encrypted data over (amongst others) http links.
 
-## Caution!
+Most of the encrypted data used in this library will be encoded into strings that can be handled over http networks. There are also compression handled through this library that could be used in the same way.
 
-Crypto 6.1 contains crypto only! The IO library has been separated into its own repository. If you are building something, do not use master!
+## Where is MODULE_IO?
 
-## Documents
-
-[Read more](https://docs.tornevall.net/x/HgCsAQ)
+The module that handled unencrypted strings and data has been moved to tornevall/tornelib-php-io - this module have a dependency to it, since "crypto" was the first version that contained both modules. To avoid problems, this module keeps importing it via composer.

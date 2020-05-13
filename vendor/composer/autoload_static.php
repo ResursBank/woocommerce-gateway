@@ -4,35 +4,10 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitd5e1a375995a957717e6423442926b6a
+class ComposerStaticInitb03de2ac4480a4a83b026c06fd46b350
 {
     public static $files = array (
-        '0d77dbe55e89e2564516e3df29a3c3eb' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/MODULE_CRYPTO.php',
-        '1fb9d905ace8614d4b9073a62a1e84e9' => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source/MODULE_IO.php',
-        'ad018ca6880fd0f3071fee4e20010952' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/netcurl_init.php',
-        'eae8af6c08d5e813aca8933280e2c98f' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Interface/drivers.php',
-        'ac9f6d2090958022f72d020a08550438' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/Drivers/guzzle.php',
-        '066a58ca44970046efe383a6391258aa' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/Drivers/wordpress.php',
-        '1487f9727827260fb0df319ac39f393d' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/parser.php',
-        '806020ff7f04231f064091eb26a90168' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/drivers.php',
-        'df878c9cd49b76db71defd667414646a' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/ssl.php',
-        'bf537d28f5e1ba3b09e964153311c868' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Addons/netbits.php',
-        '50a8ab9d35edefc11097247e100de04b' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Exception/Exception.php',
-        '4fde2b865094bb92dbc31b68d5007f47' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/authtypes.php',
-        'f10557b53c2de67bb302efc444b174ad' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/curlobject.php',
-        '7d51a11a7daee398635225d60ff43f8b' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/datatypes.php',
-        '7b90c7b2d53f361f9bab7fb14590b5e5' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/drivers.php',
-        'a96b03857f16b18b34910e5df00f863e' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/environment.php',
-        'bc1c565e1649c5306e547b86134f435a' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/ip_protocols.php',
-        '6b8e025b2c346231dac727359f4ae563' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/postmethods.php',
-        '826a8c409b244ab44ed0d29f361de31e' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/resolvers.php',
-        '39fa5b0cfd59d90b59fc509582c5491d' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Model/Type/responses.php',
-        '4a7a2444f2d491c7d8161d1dc7d59ca1' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/network.php',
-        'c7d2989c2bcba97fb1b0e7f0140ff213' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/network_dep.php',
-        '2ec79023d995178b0fb9ece85f227b80' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/curl.php',
-        '486f8a6be2cc00fb63502110572da111' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/curl_dep.php',
-        'fdd125965a2f74a934f756f47ef5f84f' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/soap.php',
-        '03e02b117b8ae280876a0e4357418c2f' => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source/Modules/soap_dep.php',
+        'bc521b269795605ef2585a7369f0017e' => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src/Network.php',
         '90d189b1df317b83da222c214c8e0dc4' => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/ecomhooks.php',
         'e6cb3e061b463a34be4630aa7d1ecca2' => __DIR__ . '/..' . '/resursbank/ecomphp/source/classes/rbapiloader.php',
     );
@@ -52,8 +27,13 @@ class ComposerStaticInitd5e1a375995a957717e6423442926b6a
         'TorneLIB\\' => 
         array (
             0 => __DIR__ . '/..' . '/tornevall/tornelib-php-bitmask/src',
-            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/source',
-            2 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/source',
+            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/src',
+            2 => __DIR__ . '/..' . '/tornevall/tornelib-php-errorhandler/src',
+            3 => __DIR__ . '/..' . '/tornevall/tornelib-php-flags/src',
+            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-io/src',
+            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
+            6 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
+            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
         ),
         'Resursbank\\RBEcomPHP\\' => 
         array (
@@ -64,8 +44,8 @@ class ComposerStaticInitd5e1a375995a957717e6423442926b6a
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitd5e1a375995a957717e6423442926b6a::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitd5e1a375995a957717e6423442926b6a::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitb03de2ac4480a4a83b026c06fd46b350::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitb03de2ac4480a4a83b026c06fd46b350::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

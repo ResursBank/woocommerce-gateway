@@ -26,7 +26,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     /** @var $flow Resursbank\RBEcomPHP\ResursBank */
     private $flow;
     private $paymentMethods = [];
-    private $NET;
 
     function __construct()
     {
@@ -38,8 +37,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         add_action('woocommerce_settings_' . $this->id, [$this, 'resursbank_settings_show'], 10);
         add_action('woocommerce_update_options_' . $this->id, [$this, 'resurs_settings_save']);
         $getOpt = get_option('woocommerce_resurs-bank_settings');
-
-        $this->NET = new \TorneLIB\MODULE_NETWORK();
 
         if (!hasResursOptionValue('enabled', 'woocommerce_resurs_bank_omnicheckout_settings')) {
             $this->resurs_settings_save('resurs_bank_omnicheckout');
