@@ -173,6 +173,7 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                         return;
                     }
                     if (eventDataObject.hasOwnProperty('eventType') && typeof eventDataObject.eventType === 'string') {
+                        console.log("Event", eventDataObject.eventType);
                         switch (eventDataObject.eventType) {
                             case currentResursEventNamePrefix + ":loaded":
                                 postMessage({
@@ -197,6 +198,7 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                                     } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":user-info-change") {
                                         if (resursCheckoutDebug) {
                                             console.log("ResursCheckoutJS: [Inbound] user-info-change");
+                                            console.log(eventDataObject);
                                         }
                                         resursCheckoutData.customerData = {
                                             "address": (typeof eventDataObject.address !== "undefined" ? eventDataObject.address : {}),
