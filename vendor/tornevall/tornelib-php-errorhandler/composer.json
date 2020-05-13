@@ -1,0 +1,18 @@
+{
+    "name": "tornevall/tornelib-php-errorhandler",
+    "description": "Global exception and errorhandling for TorneLIB, with all errorcodes stored in the same place.",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Tomas Tornevall",
+            "email": "thorne@tornevall.net",
+            "homepage": "https://www.tornevall.net",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TorneLIB\\": "src/"
+        }
+    }
+}

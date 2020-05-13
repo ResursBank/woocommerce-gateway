@@ -1,0 +1,20 @@
+{
+    "name": "tornevall/tornelib-php-flags",
+    "description": "Decentralized special flagsetter. Could be used globally.",
+    "minimum-stability": "stable",
+    "license": "Apache-2.0",
+    "require": {},
+    "authors": [
+        {
+            "name": "Tomas Tornevall",
+            "email": "thorne@tornevall.net",
+            "homepage": "https://tornevall.net",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TorneLIB\\": "src"
+        }
+    }
+}
