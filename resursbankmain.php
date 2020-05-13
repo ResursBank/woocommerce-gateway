@@ -9,6 +9,7 @@ use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
+use Resursbank\RBEcomPHP\ResursBank;
 
 $resurs_obsolete_coexistence_disable = (bool)apply_filters('resurs_obsolete_coexistence_disable', null);
 if ($resurs_obsolete_coexistence_disable) {
@@ -73,7 +74,7 @@ function woocommerce_gateway_resurs_bank_init()
     class WC_Resurs_Bank extends WC_Payment_Gateway
     {
 
-        /** @var \Resursbank\RBEcomPHP\ResursBank */
+        /** @var ResursBank */
         protected $flow;
         protected $rates;
         private $callback_types;
@@ -200,7 +201,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             if (hasEcomPHP()) {
                 if (!empty($this->login) && !empty($this->password)) {
-                    /** @var \Resursbank\RBEcomPHP\ResursBank */
+                    /** @var ResursBank */
                     $this->flow = initializeResursFlow();
 
                     $setSessionEnable = true;
@@ -1549,7 +1550,7 @@ function woocommerce_gateway_resurs_bank_init()
         {
             $uriTemplate = null;
             if (false === is_object($this->flow)) {
-                /** @var \Resursbank\RBEcomPHP\ResursBank */
+                /** @var ResursBank */
                 $this->flow = initializeResursFlow();
             }
             try {
@@ -1619,7 +1620,7 @@ function woocommerce_gateway_resurs_bank_init()
         public function init_webservice($username = '', $password = '')
         {
             try {
-                /** @var \Resursbank\RBEcomPHP\ResursBank */
+                /** @var ResursBank */
                 $this->flow = initializeResursFlow();
             } catch (Exception $initFlowException) {
                 return false;
@@ -2497,7 +2498,7 @@ function woocommerce_gateway_resurs_bank_init()
             $className = isset($_REQUEST['payment_method']) ? $_REQUEST['payment_method'] : null;
             $shortMethodName = str_replace('resurs_bank_nr_', '', $className);
             $paymentMethodInformation = $this->getTransientMethod($shortMethodName);
-            /** @var \Resursbank\RBEcomPHP\ResursBank */
+            /** @var ResursBank */
             $this->flow = initializeResursFlow();
             $this->process_payment_prepare_customer();
 
@@ -2593,7 +2594,7 @@ function woocommerce_gateway_resurs_bank_init()
         {
             //$methodList = get_transient('resurs_bank_payment_methods');
             if (empty($this->flow)) {
-                /** @var \Resursbank\RBEcomPHP\ResursBank */
+                /** @var ResursBank */
                 $this->flow = initializeResursFlow();
             }
             $methodList = $this->flow->getPaymentMethods([], true);
@@ -3027,7 +3028,7 @@ function woocommerce_gateway_resurs_bank_init()
 
         /**
          * @param $order
-         * @param \Resursbank\RBEcomPHP\ResursBank $flow
+         * @param ResursBank $flow
          * @param $requestedPaymentId
          * @param $requestedUpdateOrder
          * @return string
@@ -3491,7 +3492,7 @@ function woocommerce_gateway_resurs_bank_init()
             $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : "";
             $customerType = isset($_REQUEST['ssnCustomerType']) ? $_REQUEST['ssnCustomerType'] : "NATURAL";
 
-            /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+            /** @var $flow ResursBank */
             $flow = initializeResursFlow();
             $regEx = $flow->getRegEx(null, $countryCode, $customerType);
             // TODO: Leave the oldFlowSimulator/regex behind and replace with own field generators.
@@ -3723,7 +3724,7 @@ function woocommerce_gateway_resurs_bank_init()
                 ) {
                     $results = getAddressProd($_REQUEST['ssn'], $customerType, self::get_ip_address());
                 } else {
-                    /** @var \Resursbank\RBEcomPHP\ResursBank */
+                    /** @var ResursBank */
                     $flow = initializeResursFlow();
                     try {
                         $results = $flow->getAddress($_REQUEST['ssn'], $customerType, self::get_ip_address());
@@ -3760,7 +3761,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
             $styles[] = plugin_dir_url(__FILE__) . 'css/resursinternal.css';
 
-            /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+            /** @var $flow ResursBank */
             $flow = initializeResursFlow();
             $method = $_REQUEST['method'];
             $amount = floatval($_REQUEST['amount']);
@@ -3804,7 +3805,7 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public static function get_address_customertype($return = false)
         {
-            /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+            /** @var $flow ResursBank */
             $flow = initializeResursFlow();
             $methodsHasErrors = false;
             $methodsErrorMessage = null;
@@ -3963,7 +3964,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             $order = new WC_Order($order_id);
             $payment_method = $order->get_payment_method();
-            /** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
+            /** @var $resursFlow ResursBank */
             $resursFlow = initializeResursFlow();
 
             $payment_id = get_post_meta($order->get_id(), 'paymentId', true);
@@ -4334,7 +4335,7 @@ function woocommerce_gateway_resurs_bank_init()
             $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
             $errorOnLiveData = false;
             if ($timeDiff >= 3600) {
-                /** @var $theFlow \Resursbank\RBEcomPHP\ResursBank */
+                /** @var $theFlow ResursBank */
                 $theFlow = initializeResursFlow();
                 try {
                     $methodList = $theFlow->getPaymentMethods([], true);
@@ -4990,7 +4991,7 @@ function woocommerce_gateway_resurs_bank_init()
         $displayAnnuity = "";
         $annuityMethod = trim(getResursOption("resursAnnuityMethod"));
         if (is_object($product) && !empty($annuityMethod)) {
-            /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+            /** @var $flow ResursBank */
             $flow = initializeResursFlow();
 
             $customWidgetSetting = intval(getResursOption('partPayWidgetPage'));
@@ -5496,7 +5497,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
     if (!empty($resursPaymentId)) {
         $hasError = "";
         try {
-            /** @var $rb \Resursbank\RBEcomPHP\ResursBank */
+            /** @var $rb ResursBank */
             $rb = initializeResursFlow();
             try {
                 $rb->setFlag('GET_PAYMENT_BY_SOAP');
@@ -5898,7 +5899,7 @@ function ThirdPartyHooks($type = '', $content = '', $addonData = [])
  */
 function ThirdPartyHooksSetPaymentTrigger($type = '', $paymentId = '', $internalOrderId = null, $callbackType = null)
 {
-    /** @var $flow \Resursbank\RBEcomPHP\ResursBank */
+    /** @var $flow ResursBank */
     $flow = initializeResursFlow();
     $paymentDataIn = [];
     try {
@@ -5940,7 +5941,7 @@ function resurs_remove_order_item($item_id)
         die(-1);
     }
 
-    /** @var $resursFlow \Resursbank\RBEcomPHP\ResursBank */
+    /** @var $resursFlow ResursBank */
     $resursFlow = null;
     if (hasEcomPHP()) {
         $resursFlow = initializeResursFlow();
@@ -6163,7 +6164,7 @@ if (!function_exists('r_wc_get_order_item_type_by_item_id')) {
 
 /**
  * @param $username
- * @param $flow \Resursbank\RBEcomPHP\ResursBank
+ * @param $flow ResursBank
  * @return mixed
  */
 function getResursInternalRcoUrl($username, $flow)
@@ -6203,7 +6204,7 @@ function getResursInternalRcoUrl($username, $flow)
  * @param string $overridePassword
  * @param int $setEnvironment
  * @param bool $requireNewFlow Do not reuse old ecom-instance on true.
- * @return \Resursbank\RBEcomPHP\ResursBank
+ * @return ResursBank
  * @throws Exception
  */
 function initializeResursFlow(
@@ -6236,8 +6237,8 @@ function initializeResursFlow(
         return $resursSavedInstance;
     }
 
-    /** @var $initFlow \Resursbank\RBEcomPHP\ResursBank */
-    $initFlow = new \Resursbank\RBEcomPHP\ResursBank($username, $password);
+    /** @var $initFlow ResursBank */
+    $initFlow = new ResursBank($username, $password);
     $ecomCacheTime = getResursFlag('ECOM_CACHE_TIME');
     if (!empty($ecomCacheTime) && is_numeric($ecomCacheTime) && $ecomCacheTime > 1) {
         $initFlow->setApiCacheTime($ecomCacheTime);
@@ -6332,7 +6333,7 @@ function getAddressProd($ssn = '', $customerType = '', $ip = '')
     $username = resursOption("ga_login");
     $password = resursOption("ga_password");
     if (!empty($username) && !empty($password)) {
-        /** @var \Resursbank\RBEcomPHP\ResursBank $initFlow */
+        /** @var ResursBank $initFlow */
         $initFlow = new ResursBank($username, $password);
         $initFlow->setUserAgent(RB_WOO_CLIENTNAME . "-" . RB_WOO_VERSION);
         $initFlow->setEnvironment(RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION);
