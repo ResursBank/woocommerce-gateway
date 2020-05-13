@@ -1,0 +1,24 @@
+{
+    "name": "tornevall/tornelib-php-crypto",
+    "description": "Crypto and I/O library for TorneLIB, handling encryption and data.",
+    "license": "Apache-2.0",
+    "require": {
+        "tornevall/tornelib-php-utils": "^6.1.0",
+        "tornevall/tornelib-php-flags": "^6.1.0",
+        "tornevall/tornelib-php-io": "^6.1.0",
+        "tornevall/tornelib-php-errorhandler": "^6.1.0"
+    },
+    "authors": [
+        {
+            "name": "Tomas Tornevall",
+            "email": "thorne@tornevall.net",
+            "homepage": "https://www.tornevall.net",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TorneLIB\\": "src"
+        }
+    }
+}
