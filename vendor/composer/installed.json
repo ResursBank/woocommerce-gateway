@@ -6,19 +6,20 @@
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "5c471774152dba76e5c76598a14d45b9cf42e0a1"
+            "reference": "26f97d1418a0f3204c483054465b0852ee8e77c4"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/5c471774152dba76e5c76598a14d45b9cf42e0a1.zip",
-            "reference": "5c471774152dba76e5c76598a14d45b9cf42e0a1",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/26f97d1418a0f3204c483054465b0852ee8e77c4.zip",
+            "reference": "26f97d1418a0f3204c483054465b0852ee8e77c4",
             "shasum": ""
         },
         "require": {
             "tornevall/tornelib-php-netcurl": ">6.1",
+            "tornevall/tornelib-php-netcurl-deprecate-60": "^6.0",
             "tornevall/tornelib-php-network": "^6.0"
         },
-        "time": "2020-05-13T12:55:03+00:00",
+        "time": "2020-05-13T13:06:01+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -245,6 +246,37 @@
             }
         ],
         "description": "Yet another Curl Library to handling web calls"
+    },
+    {
+        "name": "tornevall/tornelib-php-netcurl-deprecate-60",
+        "version": "6.0.1",
+        "version_normalized": "6.0.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl-deprecate-60.git",
+            "reference": "9fa9469997a39c5c0fb48b7a8f51ec381bb2121c"
+        },
+        "time": "2020-04-11T13:46:53+00:00",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "TorneLIB\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Tomas Tornevall",
+                "email": "thorne@tornevall.net",
+                "homepage": "https://www.tornevall.net",
+                "role": "Developer"
+            }
+        ],
+        "description": "netcurl-6.0 deprecation library"
     },
     {
         "name": "tornevall/tornelib-php-network",

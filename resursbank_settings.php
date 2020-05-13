@@ -21,7 +21,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     public $id = "tab_resursbank";
     //private $current_section;
     private $CONFIG_NAMESPACE = "woocommerce_resurs-bank";
-    /** @var array THe oldFormFields are not so old actually. They are still in use! */
+    /** @var array The oldFormFields are not so old actually. They are still in use! */
     private $oldFormFields;
     /** @var $flow Resursbank\RBEcomPHP\ResursBank */
     private $flow;
