@@ -2827,17 +2827,18 @@ function woocommerce_gateway_resurs_bank_init()
                     if (count($resursDeliveryAddress)) {
                         $_POST['ship_to_different_address'] = true;
                         $wooDeliveryAddress = [
-                            'first_name' => !empty($resursDeliveryAddress['firstname']) ? $resursDeliveryAddress['firstname'] : !empty($resursBillingAddress['firstname']) ? $resursBillingAddress['firstname'] : "",
-                            'last_name' => !empty($resursDeliveryAddress['surname']) ? $resursDeliveryAddress['surname'] : !empty($resursBillingAddress['surname']) ? $resursBillingAddress['surname'] : "",
-                            'address_1' => !empty($resursDeliveryAddress['address']) ? $resursDeliveryAddress['address'] : !empty($resursBillingAddress['address']) ? $resursBillingAddress['address'] : "",
-                            'address_2' => !empty($resursDeliveryAddress['addressExtra']) ? $resursDeliveryAddress['addressExtra'] : !empty($resursBillingAddress['addressExtra']) ? $resursBillingAddress['addressExtra'] : "",
-                            'city' => !empty($resursDeliveryAddress['city']) ? $resursDeliveryAddress['city'] : !empty($resursBillingAddress['city']) ? $resursBillingAddress['city'] : "",
-                            'postcode' => !empty($resursDeliveryAddress['postal']) ? $resursDeliveryAddress['postal'] : !empty($resursBillingAddress['postal']) ? $resursBillingAddress['postal'] : "",
-                            'country' => !empty($resursDeliveryAddress['countryCode']) ? $resursDeliveryAddress['countryCode'] : !empty($resursBillingAddress['countryCode']) ? $resursBillingAddress['countryCode'] : "",
-                            'email' => !empty($resursDeliveryAddress['email']) ? $resursDeliveryAddress['email'] : !empty($resursBillingAddress['email']) ? $resursBillingAddress['email'] : "",
-                            'phone' => !empty($resursDeliveryAddress['telephone']) ? $resursDeliveryAddress['telephone'] : !empty($resursBillingAddress['telephone']) ? $resursBillingAddress['telephone'] : "",
+                            'first_name' => $this->getDeliveryFrom('firstname', $resursDeliveryAddress, $resursBillingAddress),
+                            'last_name' => $this->getDeliveryFrom('surname', $resursDeliveryAddress, $resursBillingAddress),
+                            'address_1' => $this->getDeliveryFrom('address', $resursDeliveryAddress, $resursBillingAddress),
+                            'address_2' => $this->getDeliveryFrom('addressExtra', $resursDeliveryAddress, $resursBillingAddress),
+                            'city' => $this->getDeliveryFrom('city', $resursDeliveryAddress, $resursBillingAddress),
+                            'postcode' => $this->getDeliveryFrom('postal', $resursDeliveryAddress, $resursBillingAddress),
+                            'country' => $this->getDeliveryFrom('countryCode', $resursDeliveryAddress, $resursBillingAddress),
+                            'email' => $this->getDeliveryFrom('email', $resursDeliveryAddress, $resursBillingAddress),
+                            'phone' => $this->getDeliveryFrom('telephone', $resursDeliveryAddress, $resursBillingAddress),
                         ];
-                    } else {
+                    }
+                    else {
                         // Helper for "sameAddress"-cases.
                         $_POST['ship_to_different_address'] = false;
                         $wooDeliveryAddress = $wooBillingAddress;
@@ -3023,6 +3024,26 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $this->returnJsonResponse($returnResult, $responseCode, $resursOrder);
+        }
+
+        /**
+         * Get delivery address by delivery address with fallback on billing.
+         * @param $key
+         * @param $deliveryArray
+         * @param $billingArray
+         * @return string
+         */
+        public function getDeliveryFrom($key, $deliveryArray, $billingArray)
+        {
+            if (isset($deliveryArray[$key]) && !empty($deliveryArray[$key])) {
+                $return = $deliveryArray[$key];
+            } elseif (isset($billingArray[$key]) && !empty($billingArray[$key])) {
+                $return = $billingArray[$key];
+            } else {
+                $return = '';
+            }
+
+            return $return;
         }
 
         /**
