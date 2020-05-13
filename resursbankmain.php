@@ -2827,15 +2827,15 @@ function woocommerce_gateway_resurs_bank_init()
                     if (count($resursDeliveryAddress)) {
                         $_POST['ship_to_different_address'] = true;
                         $wooDeliveryAddress = [
-                            'first_name' => !empty($resursDeliveryAddress['firstname']) ? $resursDeliveryAddress['firstname'] : "",
-                            'last_name' => !empty($resursDeliveryAddress['surname']) ? $resursDeliveryAddress['surname'] : "",
-                            'address_1' => !empty($resursDeliveryAddress['address']) ? $resursDeliveryAddress['address'] : "",
-                            'address_2' => !empty($resursDeliveryAddress['addressExtra']) ? $resursDeliveryAddress['addressExtra'] : "",
-                            'city' => !empty($resursDeliveryAddress['city']) ? $resursDeliveryAddress['city'] : "",
-                            'postcode' => !empty($resursDeliveryAddress['postal']) ? $resursDeliveryAddress['postal'] : "",
-                            'country' => !empty($resursDeliveryAddress['countryCode']) ? $resursDeliveryAddress['countryCode'] : "",
-                            'email' => !empty($resursDeliveryAddress['email']) ? $resursDeliveryAddress['email'] : "",
-                            'phone' => !empty($resursDeliveryAddress['telephone']) ? $resursDeliveryAddress['telephone'] : "",
+                            'first_name' => !empty($resursDeliveryAddress['firstname']) ? $resursDeliveryAddress['firstname'] : !empty($resursBillingAddress['firstname']) ? $resursBillingAddress['firstname'] : "",
+                            'last_name' => !empty($resursDeliveryAddress['surname']) ? $resursDeliveryAddress['surname'] : !empty($resursBillingAddress['surname']) ? $resursBillingAddress['surname'] : "",
+                            'address_1' => !empty($resursDeliveryAddress['address']) ? $resursDeliveryAddress['address'] : !empty($resursBillingAddress['address']) ? $resursBillingAddress['address'] : "",
+                            'address_2' => !empty($resursDeliveryAddress['addressExtra']) ? $resursDeliveryAddress['addressExtra'] : !empty($resursBillingAddress['addressExtra']) ? $resursBillingAddress['addressExtra'] : "",
+                            'city' => !empty($resursDeliveryAddress['city']) ? $resursDeliveryAddress['city'] : !empty($resursBillingAddress['city']) ? $resursBillingAddress['city'] : "",
+                            'postcode' => !empty($resursDeliveryAddress['postal']) ? $resursDeliveryAddress['postal'] : !empty($resursBillingAddress['postal']) ? $resursBillingAddress['postal'] : "",
+                            'country' => !empty($resursDeliveryAddress['countryCode']) ? $resursDeliveryAddress['countryCode'] : !empty($resursBillingAddress['countryCode']) ? $resursBillingAddress['countryCode'] : "",
+                            'email' => !empty($resursDeliveryAddress['email']) ? $resursDeliveryAddress['email'] : !empty($resursBillingAddress['email']) ? $resursBillingAddress['email'] : "",
+                            'phone' => !empty($resursDeliveryAddress['telephone']) ? $resursDeliveryAddress['telephone'] : !empty($resursBillingAddress['telephone']) ? $resursBillingAddress['telephone'] : "",
                         ];
                     } else {
                         // Helper for "sameAddress"-cases.
