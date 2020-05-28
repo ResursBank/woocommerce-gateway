@@ -4,7 +4,7 @@
  * See LICENSE for license details.
  */
 
-namespace TorneLIB\Module\Config;
+namespace TorneLIB\Helpers;
 
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\IO\Data\Content;

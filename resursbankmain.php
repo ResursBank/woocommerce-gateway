@@ -3813,6 +3813,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             $resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
             $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+            //$timeDiff = 3600;
             try {
                 if ($timeDiff >= 3600) {
                     $paymentMethods = $flow->getPaymentMethods([], true);

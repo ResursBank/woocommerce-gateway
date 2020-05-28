@@ -590,9 +590,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         );
 
         if (empty($netcurlRelease)) {
+            $newRelease = $this->getDefined('NETCURL_VERSION');
             $nc = sprintf(
                 'NETCURL-v%s',
-                $this->getDefined('NETCURL_VERSION')
+                $newRelease
             );
         }
         $pluginInfo .= '<tr><td ' . $topCss . '>SoapClient</td><td ' . $topCss . '>' . $this->displayAvail($hasSoap) . '</td></tr>';

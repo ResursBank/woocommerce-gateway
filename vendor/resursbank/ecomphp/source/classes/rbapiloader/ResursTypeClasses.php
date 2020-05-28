@@ -390,3 +390,9 @@ abstract class ResursMethodTypes extends RESURS_FLOW_TYPES
 abstract class ResursCountry extends RESURS_COUNTRY
 {
 }
+
+if (!@class_exists('Bit') && @class_exists('MODULE_NETBITS')) {
+    class Bit extends MODULE_NETBITS {
+
+    }
+}

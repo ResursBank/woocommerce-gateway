@@ -10,13 +10,13 @@ use Exception;
 use SoapClient;
 use SoapFault;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Helpers\GenericParser;
 use TorneLIB\IO\Data\Strings;
 use TorneLIB\Model\Interfaces\WrapperInterface;
 use TorneLIB\Model\Type\authSource;
 use TorneLIB\Model\Type\authType;
 use TorneLIB\Model\Type\dataType;
 use TorneLIB\Model\Type\requestMethod;
-use TorneLIB\Module\Config\GenericParser;
 use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Utils\Generic;
 use TorneLIB\Utils\Security;
@@ -115,6 +115,42 @@ class SoapClientWrapper implements WrapperInterface
         $this->CONFIG->setSoapRequest(true);
         $this->CONFIG->setCurrentWrapper(__CLASS__);
         $this->getPriorCompatibilityArguments(func_get_args());
+    }
+
+    /**
+     * If staging is false, we're considering production mode.
+     * @param bool $staging
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function setStaging($staging = true)
+    {
+        return $this->CONFIG->setStaging($staging);
+    }
+
+    /**
+     * @return bool
+     * @since 6.1.0
+     */
+    public function getStaging() {
+        return $this->CONFIG->getStaging();
+    }
+
+    /**
+     * @param bool $production
+     * @return
+     * @since 6.1.0
+     */
+    public function setProduction($production = true) {
+        return $this->CONFIG->setProduction($production);
+    }
+
+    /**
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getProduction() {
+        return $this->CONFIG->getProduction();
     }
 
     /**

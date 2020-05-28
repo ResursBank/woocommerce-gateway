@@ -946,7 +946,7 @@ msgid ""
 "Curl seems to be installed but some vital functions may be disabled in php."
 "ini"
 msgstr ""
-"Curl ser ut att vara installerad med med vitala funktioner avstängda i php."
+"Curl ser ut att vara installerad, men med vitala funktioner avstängda i php."
 "ini"
 
 #: resursbank_settings.php:574

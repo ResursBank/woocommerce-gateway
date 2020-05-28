@@ -105,9 +105,15 @@ class WrapperConfig
      */
     private $isCustomUserAgent = false;
 
-    /** @var string */
+    /**
+     * @var string
+     * @since 6.1.0
+     */
     private $proxyAddress = '';
-    /** @var int */
+    /**
+     * @var int
+     * @since 6.1.0
+     */
     private $proxyType = 0;
 
     /**
@@ -173,6 +179,18 @@ class WrapperConfig
     private $isStreamRequest = false;
 
     /**
+     * @var
+     * @since 6.1.0
+     */
+    private $authSource;
+
+    /**
+     * @var bool
+     * @since 6.1.0
+     */
+    private $staging = false;
+
+    /**
      * WrapperConfig constructor.
      * @since 6.1.0
      */
@@ -184,11 +202,6 @@ class WrapperConfig
 
         return $this;
     }
-
-    /**
-     * @var
-     */
-    private $authSource;
 
     /**
      * Preparing curl defaults in a way we like.
@@ -219,7 +232,7 @@ class WrapperConfig
      * @param int $throwableMin Minimum value to throw on (Used with >=)
      * @param int $throwableMax Maxmimum last value to throw on (Used with <)
      * @return WrapperConfig
-     * @since 6.0.6 Since netcurl.
+     * @since 6.0.6
      */
     public function setThrowableHttpCodes($throwableMin = 400, $throwableMax = 599)
     {
@@ -278,7 +291,7 @@ class WrapperConfig
      * that is normally thrown on errors.
      *
      * @return array
-     * @since 6.0.6 Since netcurl.
+     * @since 6.0.6
      */
     public function getThrowableHttpCodes()
     {
@@ -1164,6 +1177,49 @@ class WrapperConfig
     }
 
     /**
+     * @param bool $staging
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function setStaging($staging = true)
+    {
+        $this->staging = $staging;
+        if (!$staging) {
+            $this->setWsdlCache(3);
+        } else {
+            $this->setWsdlCache(0);
+        }
+        return $this;
+    }
+
+    /**
+     * @return bool
+     * @since 6.1.0
+     */
+    public function getStaging()
+    {
+        return $this->staging;
+    }
+
+    /**
+     * @param bool $isProduction
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setProduction($isProduction = true) {
+        $this->setStaging($isProduction ? false : true);
+        return $this;
+    }
+
+    /**
+     * @return bool
+     * @since 6.1.0
+     */
+    public function getProduction() {
+        return !$this->getStaging() ? true : false;
+    }
+
+    /**
      * Returns internal information about the configured timeouts.
      *
      * @return array
@@ -1214,8 +1270,7 @@ class WrapperConfig
     public function setWsdlCache($cacheSet = 0, $ttlCache = null)
     {
         $this->streamOptions['cache_wsdl'] = $cacheSet;
-        if (
-            (new Ini())->getIniSettable('soap.wsdl_cache_ttl') &&
+        if ((new Ini())->getIniSettable('soap.wsdl_cache_ttl') &&
             !empty($ttlCache) &&
             (int)$ttlCache
         ) {
@@ -1223,6 +1278,15 @@ class WrapperConfig
         }
 
         return $this;
+    }
+
+    /**
+     * @return mixed|null
+     * @since 6.1.0
+     */
+    public function getWsdlCache()
+    {
+        return isset($this->streamOptions['cache_wsdl']) ? $this->streamOptions['cache_wsdl'] : null;
     }
 
     /**
@@ -1427,42 +1491,53 @@ class WrapperConfig
      */
     public function __call($name, $arguments)
     {
-        $method = substr($name, 0, 3);
-        $methodContent = (new Strings())->getCamelCase(substr($name, 3));
+        $methodType = '';
+        $cutAfter = 3;
+        $allowedTypes = ['get', 'is', 'set'];
+        foreach ($allowedTypes as $item) {
+            $testItem = @substr($name, 0, strlen($item));
+            if (in_array($testItem, $allowedTypes)) {
+                $methodType = $testItem;
+                $cutAfter = strlen($item);
+            }
+        }
+        $methodName = (new Strings())->getCamelCase(substr($name, $cutAfter));
 
-        switch (strtolower($method)) {
-            case 'get':
-                if (method_exists($this, sprintf('get%s', ucfirst($methodContent)))) {
+        switch (strtolower($methodType)) {
+            case 'set':
+                if (method_exists($this, sprintf('set%s', ucfirst($methodName)))) {
+                    call_user_func_array(
+                        [
+                            $this,
+                            sprintf('set%s', ucfirst($methodName)),
+                        ],
+                        $arguments
+                    );
+                }
+
+                $this->configData[$methodName] = array_pop($arguments);
+                break;
+            case 'get' || 'is':
+                if (method_exists($this, sprintf('%s%s', 'get', ucfirst($methodName))) ||
+                    method_exists($this, sprintf('%s%s', 'is', ucfirst($methodName)))
+                ) {
                     return call_user_func_array(
                         [
                             $this,
                             sprintf(
                                 'get%s',
-                                ucfirst($methodContent)
+                                ucfirst($methodName)
                             ),
                         ],
                         []
                     );
                 }
 
-                if (isset($this->configData[$methodContent])) {
-                    return $this->configData[$methodContent];
+                if (isset($this->configData[$methodName])) {
+                    return $this->configData[$methodName];
                 }
 
                 throw new ExceptionHandler('Variable not set.', Constants::LIB_CONFIGWRAPPER_VAR_NOT_SET);
-                break;
-            case 'set':
-                if (method_exists($this, sprintf('set%s', ucfirst($methodContent)))) {
-                    call_user_func_array(
-                        [
-                            $this,
-                            sprintf('set%s', ucfirst($methodContent)),
-                        ],
-                        $arguments
-                    );
-                }
-
-                $this->configData[$methodContent] = array_pop($arguments);
                 break;
             default:
                 break;

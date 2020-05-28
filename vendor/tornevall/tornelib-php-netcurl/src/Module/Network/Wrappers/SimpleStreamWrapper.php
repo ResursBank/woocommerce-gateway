@@ -14,7 +14,7 @@ use TorneLIB\Model\Type\authSource;
 use TorneLIB\Model\Type\authType;
 use TorneLIB\Model\Type\dataType;
 use TorneLIB\Model\Type\requestMethod;
-use TorneLIB\Module\Config\GenericParser;
+use TorneLIB\Helpers\GenericParser;
 use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Utils\Generic;
 use TorneLIB\Utils\Security;

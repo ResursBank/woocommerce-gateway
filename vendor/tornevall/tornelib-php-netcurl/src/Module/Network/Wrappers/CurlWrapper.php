@@ -15,7 +15,7 @@ use TorneLIB\Model\Interfaces\WrapperInterface;
 use TorneLIB\Model\Type\authType;
 use TorneLIB\Model\Type\dataType;
 use TorneLIB\Model\Type\requestMethod;
-use TorneLIB\Module\Config\GenericParser;
+use TorneLIB\Helpers\GenericParser;
 use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Module\Config\WrapperCurlOpt;
 use TorneLIB\Utils\Generic;
