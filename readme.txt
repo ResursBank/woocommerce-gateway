@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.4.1
 Requires PHP: 5.4
-Stable tag: 2.2.32
+Stable tag: 2.2.33
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,18 +14,17 @@ Maintenance release.
 
 == Description ==
 
-
 = About =
 
-This is a payment gateway for Resurs Bank, that supports three Resurs Bank shopflows. Depending on which flow that's being selected, there are also requirements on different communication drivers, but in short - to get full control over this plugin - it is good to have them all available.
-
+Official payment gateway for Resurs Bank, with full support for all non-deprecated shop flows.
+SoapClient is required as many of the administrative actions are using SOAP.
 
 = Compatibility =
 
 The plugin was once written for WooCommerce v2.6 and up but as of today, we've started to change the requirements. It is no longer guaranteed that this plugin is compatible with such old versions. Ever since WooCommerce [discoverd a file deletion vulnerable (click here)](https://blog.ripstech.com/2018/wordpress-design-flaw-leads-to-woocommerce-rce/) our goal is to patch away deprecated functions.
 
- * Compatibility: WooCommerce - at least 3.x and up to 3.9.X
- * Plugin verified with PHP version 5.6 - 7.3
+ * Compatibility: WooCommerce - at least 3.x and up to 4.2.x
+ * Plugin verified with PHP version 5.6 - 7.4 - avoid running on older PHP releases!
 
 
 = Upgrade notice =
@@ -40,12 +39,11 @@ If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested 
 
 = Requirements and content =
 
- * At least PHP 5.6
- * [curl](https://curl.haxx.se): For communication via rest (Hosted flow and Resurs Checkout)
- * [PHP streams](http://php.net/manual/en/book.stream.php)
- * [SoapClient](http://php.net/manual/en/class.soapclient.php)
- * [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
- * [NetCURL](https://docs.tornevall.net/x/CYBiAQ) (Bundled) [Bitbucket](https://www.netcurl.org)
+ * Required: At least PHP 5.6
+ * Required: [curl](https://curl.haxx.se) or [PHP stream](http://php.net/manual/en/book.stream.php) features active (for REST based actions).
+ * Required: [SoapClient](http://php.net/manual/en/class.soapclient.php) with xml drivers.
+ * Included: [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
+ * Included: [NetCURL](https://netcurl.org/docs/) [Bitbucket](https://www.netcurl.org)
 
 [Project URL](https://test.resurs.com/docs/display/ecom/WooCommerce) - [Plugin URL](https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/)
 
@@ -87,30 +85,16 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.31 =
+= 2.2.33 =
 
-    * Untasked issue: Now ignoring automatic_fraud_control if getPayments telling something else.
-    * [WOO-470] - getAddress triggered but not executed on site when merchant has NATURAL methods only.
+    * [WOO-474] - Payment methods in simplified checkout is desynched on credential switching
 
-= 2.2.30 =
+= 2.2.32 =
 
-    * [WOO-468] - Spinner/Text on simplified "Purchase order"
-
-= 2.2.29 =
-
-    * WC tested up to 4.0.0
-
-= 2.2.28 =
-
-    * [WOO-463] - Static DK prices with paymentlimit 0
-    * [WOO-464] - Description for stock handling is wrong lagerhantering i woocommerce är "lite otydlig".
-    * [WOO-466] - Annuityfactors does not update on credential switch
-    * EComPHP fix for priceinfo.
-
-
-= 2.2.27 =
-
-    * [WOO-461] - While testing credentials when updating environment/config cached flow could potentially set the plugin in stuck mode (hotfix)
+    * [WOO-477] - 2.2.32 ecomphp+netcurl patch
+    * [WOO-478] - WC Tested up to: 4.2.0
+    * [WOO-467] - Mockfail issue, index event-type not found
+    * [WOO-470] - getAddress triggered but not executed on site when merchant has NATURAL methods only
 
 
 == Upgrade Notice ==
