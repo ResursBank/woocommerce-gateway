@@ -547,9 +547,11 @@ function woocommerce_gateway_resurs_bank_init()
                                     setResursOption("serverEnv", $envVal);
                                 }
 
-                                setResursOption("resursAnnuityDuration", 0);
-                                setResursOption("resursAnnuityMethod", '');
-                                setResursOption("resursCurrentAnnuityFactors", []);
+                                setResursOption('resursAnnuityDuration', 0);
+                                setResursOption('resursAnnuityMethod', '');
+                                setResursOption('resursCurrentAnnuityFactors', []);
+                                delete_transient('resursTemporaryPaymentMethodsTime');
+                                delete_transient('resursTemporaryPaymentMethods');
 
                                 $myResponse['element'] = ["currentResursPaymentMethods", "callbackContent"];
                                 set_transient('resurs_bank_last_callback_setup', 0);
@@ -3813,9 +3815,10 @@ function woocommerce_gateway_resurs_bank_init()
 
             $resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
             $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
-            //$timeDiff = 3600;
+            $maxWaitForTransients = 1500;
+
             try {
-                if ($timeDiff >= 3600) {
+                if ($timeDiff >= $maxWaitForTransients) {
                     $paymentMethods = $flow->getPaymentMethods([], true);
                     set_transient("resursTemporaryPaymentMethodsTime", time(), 3600);
                     set_transient("resursTemporaryPaymentMethods", serialize($paymentMethods), 3600);
