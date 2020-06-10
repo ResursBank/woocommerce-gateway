@@ -4640,8 +4640,20 @@ function woocommerce_gateway_resurs_bank_init()
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
         );
         wp_enqueue_script(
+            'rcoface',
+            plugin_dir_url(__FILE__) . 'js/rcoface.js' . $oneRandomValue,
+            ['jquery'],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
+        );
+        wp_enqueue_script(
             'resursbankmain',
             plugin_dir_url(__FILE__) . 'js/resursbank.js' . $oneRandomValue,
+            ['jquery'],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
+        );
+        wp_enqueue_script(
+            'rcojs',
+            plugin_dir_url(__FILE__) . 'js/rcojs.js' . $oneRandomValue,
             ['jquery'],
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? "-" . time() : "")
         );
