@@ -1,8 +1,10 @@
 var $RB = jQuery.noConflict();
 
 $RB(document).ready(function ($) {
-    // Watch for this: typeof window.RCO !== 'undefined'
-    if (typeof ResursCheckout !== "undefined" &&
+    // rcoFacelift back-compatible checkout.
+    // The part below is set to run if rcoFacelift is not available.
+    if (!rcoFacelift &&
+        typeof ResursCheckout !== "undefined" &&
         typeof omnivars !== "undefined" &&
         omnivars !== null
     ) {

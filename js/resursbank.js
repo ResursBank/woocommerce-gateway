@@ -3,6 +3,7 @@
  */
 var $RB = jQuery.noConflict();
 var resursReloadRequired = false;
+var rcoFacelift = false;
 
 // Things below wants to be loaded first and not wait for readiness
 if (null !== omnivars) {
