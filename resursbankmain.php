@@ -3457,10 +3457,12 @@ function woocommerce_gateway_resurs_bank_init()
         {
             $methods = [];
             $class_files = [];
+            $idMerchant = 0;
             foreach ($payment_methods as $payment_method) {
                 $methods[] = 'resurs-bank-id-' . $payment_method->id;
-                $class_files[] = 'resurs_bank_nr_' . $payment_method->id . '.php';
+                $class_files[] = 'resurs_bank_nr_' . $idMerchant . '_' . $payment_method->id . '.php';
                 $this->write_class_to_file($payment_method);
+                $idMerchant++;
             }
             $this->UnusedPaymentClassesCleanup($class_files);
             set_transient('resurs_bank_class_files', $class_files);
@@ -4336,7 +4338,8 @@ function woocommerce_gateway_resurs_bank_init()
             }
             // Here we use the translated or not translated values for Private and Company radiobuttons
             $resursTemporaryPaymentMethodsTime = get_transient("resursTemporaryPaymentMethodsTime");
-            $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+            $timeDiff = apply_filters('resurs_methodlist_timediff', time() - $resursTemporaryPaymentMethodsTime);
+
             $errorOnLiveData = false;
             if ($timeDiff >= 3600) {
                 /** @var $theFlow ResursBank */
@@ -4885,7 +4888,7 @@ function woocommerce_gateway_resurs_bank_init()
 
     function rb_settings_pages($settings)
     {
-        $settings[] = include(plugin_dir_path(__FILE__) . "/resursbank_settings.php");
+        $settings[] = include(plugin_dir_path(__FILE__) . '/resursbank_settings.php');
 
         return $settings;
     }
@@ -4897,7 +4900,6 @@ function woocommerce_gateway_resurs_bank_init()
      * Add the Gateway to WooCommerce
      *
      * @param  array $methods The available payment methods
-     *
      * @return array          The available payment methods
      */
     function woocommerce_add_resurs_bank_gateway($methods)
@@ -4932,7 +4934,6 @@ function woocommerce_gateway_resurs_bank_init()
      * Remove the gateway from the available payment options at checkout
      *
      * @param  array $gateways The array of payment gateways
-     *
      * @return array           The array of payment gateways
      */
     function woocommerce_resurs_bank_available_payment_gateways($gateways)
@@ -6658,7 +6659,6 @@ function resurs_omnicheckout_order_button_html($classButtonHtml)
  * Payment methods validator for OmniCheckout
  *
  * @param $paymentGatewaysCheck
- *
  * @return null
  */
 function resurs_omnicheckout_payment_gateways_check($paymentGatewaysCheck)

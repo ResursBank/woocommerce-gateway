@@ -470,6 +470,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         }
+
+        return true;
     }
 
     /**
@@ -777,18 +779,20 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     $this->paymentMethods = $this->flow->getPaymentMethods([], true);
                 }
                 if (is_array($this->paymentMethods)) {
+                    $idMerchant = 0;
                     foreach ($this->paymentMethods as $methodLoop) {
-                        $class_files[] = $methodLoop->id;
+                        $class_files[] = sprintf('%d_%s', $idMerchant, $methodLoop->id);
+                        $idMerchant++;
                     }
                 }
                 $this->UnusedPaymentClassesCleanup($class_files);
             } else {
                 if (!empty($loginInfo)) {
-                    $theMethod = preg_replace("/^resurs_bank_nr_(.*?)/", '$1', $section);
+                    $theMethod = preg_replace("/^resurs_bank_nr_\d_(.*?)/", '$1', $section);
                     // Make sure there is an overrider on PSP
                     $this->flow->setSimplifiedPsp(true);
                     $this->paymentMethods = $this->flow->getPaymentMethodSpecific($theMethod);
-                    $methodDescription = isset($this->paymentMethods->description) ? $this->paymentMethods->description : "";
+                    $methodDescription = isset($this->paymentMethods->description) ? $this->paymentMethods->description : '';
                 }
             }
         } catch (Exception $e) {
@@ -1044,7 +1048,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 // Description at this location is only used as an assoc array
                                 // and should not interfere with the listview itself since the listview
                                 // are showing the assoc value.
-                                $description = $methodArray->description . uniqid(microtime(true));
+                                $description = (string)$methodArray->description . uniqid(microtime(true), true);
 
                                 // Choose another sort order by the content.
                                 $anotherValue = apply_filters(
@@ -1062,18 +1066,20 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 }
                                 $sortByDescription[$description] = $methodArray;
                             }
-                            ksort($sortByDescription);
+                            //ksort($sortByDescription);
                             $url = admin_url('admin.php');
                             $url = add_query_arg('page', $_REQUEST['page'], $url);
                             $url = add_query_arg('tab', $_REQUEST['tab'], $url);
 
+                            $idMerchant = 0;
                             foreach ($sortByDescription as $methodArray) {
                                 $curId = isset($methodArray->id) ? $methodArray->id : "";
                                 $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
                                 if (!hasResursOptionValue('enabled', $optionNamespace)) {
                                     $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
                                 }
-                                write_resurs_class_to_file($methodArray);
+                                write_resurs_class_to_file($methodArray, $idMerchant);
+                                $idMerchant++;
                                 $settingsControl = get_option($optionNamespace);
                                 $isEnabled = false;
                                 if (is_array($settingsControl) && count($settingsControl)) {
