@@ -945,8 +945,9 @@ if (!function_exists('getResursWooFormFields')) {
 if (is_admin()) {
 
     if (!function_exists('write_resurs_class_to_file')) {
-        function write_resurs_class_to_file($payment_method)
+        function write_resurs_class_to_file($payment_method, $idMerchant)
         {
+            $idMerchantPrio = 10+$idMerchant;
             // No id - no file.
             if (!isset($payment_method->id) || (isset($payment_method->id) && empty($payment_method->id))) {
                 return;
@@ -962,6 +963,12 @@ if (is_admin()) {
 
             $initName = 'woocommerce_gateway_resurs_bank_nr_' . $payment_method->id . '_init';
             $class_name = 'resurs_bank_nr_' . $payment_method->id;
+            $classFileName = 'resurs_bank_nr_' . $idMerchant . '_' . $payment_method->id;
+            if (isset($payment_method->country)) {
+                $classFileName .= '_' . $payment_method->country;
+            }
+            $classFileName .= '.php';
+
             $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
             $method_name = $payment_method->description;
             $type = strtolower($payment_method->type);
@@ -982,18 +989,15 @@ if (is_admin()) {
 
             $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
 
-            $path_to_icon = $icon = apply_filters('woocommerce_resurs_bank_' . $type . '_checkout_icon',
-                $plugin_url . '/img/' . $icon_name . '.png');
+            $icon = apply_filters(
+                'woocommerce_resurs_bank_' . $type . '_checkout_icon',
+                $plugin_url . '/img/' . $icon_name . '.png'
+            );
+            $path_to_icon = $icon;
             $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
             $has_icon = (string)file_exists($temp_icon);
             $ajaxUrl = admin_url('admin-ajax.php');
             $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
-
-            $classFileName = $class_name;
-            if (isset($payment_method->country)) {
-                $classFileName .= "_" . $payment_method->country;
-            }
-            $classFileName .= ".php";
 
             /*
              * Demoshop note: All classes will be written for each country. However, if they are named the same in the merchant admin portal the classes themselves
@@ -1014,6 +1018,7 @@ if (is_admin()) {
                 //\$this->allMethods = array();
                 \$this->overRideIsAvailable = true;
                 \$this->overRideDescription = false;
+                \$this->sortOrder = '{$idMerchant}';
                 \$this->hasErrors = false;
                 \$this->forceDisable = false;
                 \$this->id           = '{$class_name}';
@@ -1427,7 +1432,7 @@ if (is_admin()) {
                 \$methods[] = '{$class_name}';
                 return \$methods;
             }
-            add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway_{$class_name}' );
+            add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway_{$class_name}', {$idMerchantPrio} );
             add_action( 'woocommerce_checkout_process', '{$class_name}::interfere_checkout',0 );
             add_action( 'woocommerce_checkout_order_review', '{$class_name}::interfere_checkout_review', 1 );
             add_action( 'woocommerce_checkout_update_order_review', '{$class_name}::interfere_update_order_review', 1 );
