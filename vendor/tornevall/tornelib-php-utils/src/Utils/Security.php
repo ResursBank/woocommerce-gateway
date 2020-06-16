@@ -343,7 +343,8 @@ class Security
      * @return string
      * @since 6.1.2
      */
-    public static function getIniRuntime($iniKey) {
+    public static function getIniRuntime($iniKey)
+    {
         return (new Security())->getIni($iniKey);
     }
 
@@ -352,7 +353,8 @@ class Security
      * @return bool
      * @since 6.1.2
      */
-    public static function getIniSet($iniKey) {
+    public static function getIniSet($iniKey)
+    {
         return (new Security())->getIniBoolean($iniKey);
     }
 }

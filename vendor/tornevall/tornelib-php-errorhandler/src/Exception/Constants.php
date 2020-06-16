@@ -84,6 +84,12 @@ abstract class Constants
     const LIB_NETCURL_CURL_MULTI_EXCEPTION_DISCOVERY = 1012;
 
     /**
+     * @var int Invalid path or file location.
+     * @since 6.1.8
+     */
+    const LIB_INVALID_PATH = 1013;
+
+    /**
      * @var int Cipher does not exist in current openssl driver.
      */
     const LIB_SSL_CIPHER_UNAVAILABLE = 3000;
@@ -126,11 +132,23 @@ abstract class Constants
     /**
      * @var int Thrown from the Flag class.
      */
-    const LIB_FLAG_EXCEPTION = 65004;
+    const LIB_FLAG_EXCEPTION = 65006;
 
     /**
      * @var int PHP version is too old.
      * @since 6.1.5
      */
-    const LIB_TOO_OLD_PHP = 65005;
+    const LIB_TOO_OLD_PHP = 65007;
+
+    /**
+     * @var int SSL capabilities unavailable.
+     * @since 6.1.9
+     */
+    const LIB_SSL_UNAVAILABLE = 65008;
+
+    /**
+     * @var int Generic unavailable driver.
+     * @since 6.1.9
+     */
+    const LIB_GENERIC_DRIVER_UNAVAILABLE = 65009;
 }
