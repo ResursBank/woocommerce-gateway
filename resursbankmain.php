@@ -4712,7 +4712,9 @@ function woocommerce_gateway_resurs_bank_init()
                 $flow = initializeResursFlow();
                 $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
                 $resursMeta = isset($methodInfo->type) ? $methodInfo->type : '';
+                $resursMetaSpecific = isset($methodInfo->specificType) ? $methodInfo->specificType : '';
                 setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodType', $resursMeta);
+                setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodSpecificType', $resursMetaSpecific);
             }
         }
 
@@ -5635,6 +5637,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $flow = initializeResursFlow();
                     $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
                     setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodType', $methodInfo->type);
+                    setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodSpecificType', $methodInfo->specificType);
                 }
             }
 
@@ -6869,6 +6872,13 @@ function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMet
                     $id,
                     'resursBankMetaPaymentMethodType',
                     $method->type
+                );
+            }
+            if (isset($method->specificType) && !empty($method->specificType)) {
+                update_post_meta(
+                    $id,
+                    'resursBankMetaPaymentMethodSpecificType',
+                    $method->specificType
                 );
             }
         } catch (\Exception $e) {
