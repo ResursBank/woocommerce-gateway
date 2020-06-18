@@ -1599,7 +1599,6 @@ function woocommerce_gateway_resurs_bank_init()
          * Get digest parameters for register callback
          *
          * @param array $params The parameters
-         *
          * @return array         The parameters reordered
          */
         public function get_digest_parameters($params)
@@ -1905,7 +1904,7 @@ function woocommerce_gateway_resurs_bank_init()
             $setLabel = $labels[$fieldName];
             if (isset($labelsLegal[$fieldName]) &&
                 !empty($labelsLegal[$fieldName]) &&
-                $customerType != 'NATURAL'
+                $customerType !== 'NATURAL'
             ) {
                 $setLabel = $labelsLegal[$fieldName];
             }
@@ -2113,7 +2112,6 @@ function woocommerce_gateway_resurs_bank_init()
 
         /**
          * @param $order_id
-         *
          * @return string
          * @since 2.2.7
          */
@@ -2483,7 +2481,6 @@ function woocommerce_gateway_resurs_bank_init()
          * Proccess the payment
          *
          * @param int $order_id WooCommerce order ID
-         *
          * @return array|void Null on failure, array on success
          * @throws Exception
          */
@@ -2842,7 +2839,8 @@ function woocommerce_gateway_resurs_bank_init()
                             'email' => $this->getDeliveryFrom('email', $resursDeliveryAddress, $resursBillingAddress),
                             'phone' => $this->getDeliveryFrom('telephone', $resursDeliveryAddress, $resursBillingAddress),
                         ];
-                    } else {
+                    }
+                    else {
                         // Helper for "sameAddress"-cases.
                         $_POST['ship_to_different_address'] = false;
                         $wooDeliveryAddress = $wooBillingAddress;
