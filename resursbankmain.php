@@ -2829,18 +2829,53 @@ function woocommerce_gateway_resurs_bank_init()
                     if (count($resursDeliveryAddress)) {
                         $_POST['ship_to_different_address'] = true;
                         $wooDeliveryAddress = [
-                            'first_name' => $this->getDeliveryFrom('firstname', $resursDeliveryAddress, $resursBillingAddress),
-                            'last_name' => $this->getDeliveryFrom('surname', $resursDeliveryAddress, $resursBillingAddress),
-                            'address_1' => $this->getDeliveryFrom('address', $resursDeliveryAddress, $resursBillingAddress),
-                            'address_2' => $this->getDeliveryFrom('addressExtra', $resursDeliveryAddress, $resursBillingAddress),
-                            'city' => $this->getDeliveryFrom('city', $resursDeliveryAddress, $resursBillingAddress),
-                            'postcode' => $this->getDeliveryFrom('postal', $resursDeliveryAddress, $resursBillingAddress),
-                            'country' => $this->getDeliveryFrom('countryCode', $resursDeliveryAddress, $resursBillingAddress),
-                            'email' => $this->getDeliveryFrom('email', $resursDeliveryAddress, $resursBillingAddress),
-                            'phone' => $this->getDeliveryFrom('telephone', $resursDeliveryAddress, $resursBillingAddress),
+                            'first_name' => $this->getDeliveryFrom(
+                                'firstname',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'last_name' => $this->getDeliveryFrom(
+                                'surname',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'address_1' => $this->getDeliveryFrom(
+                                'address',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'address_2' => $this->getDeliveryFrom(
+                                'addressExtra',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'city' => $this->getDeliveryFrom(
+                                'city',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'postcode' => $this->getDeliveryFrom(
+                                'postal',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'country' => $this->getDeliveryFrom(
+                                'countryCode',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'email' => $this->getDeliveryFrom(
+                                'email',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
+                            'phone' => $this->getDeliveryFrom(
+                                'telephone',
+                                $resursDeliveryAddress,
+                                $resursBillingAddress
+                            ),
                         ];
-                    }
-                    else {
+                    } else {
                         // Helper for "sameAddress"-cases.
                         $_POST['ship_to_different_address'] = false;
                         $wooDeliveryAddress = $wooBillingAddress;
