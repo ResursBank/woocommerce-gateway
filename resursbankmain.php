@@ -2,8 +2,8 @@
 
 require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/v3core.php');
-require_once('functions_settings.php');
-require_once('functions_gateway.php');
+require_once(__DIR__ . '/functions_settings.php');
+require_once(__DIR__ . '/functions_gateway.php');
 
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
@@ -439,9 +439,9 @@ function woocommerce_gateway_resurs_bank_init()
             } else {
                 if (count($request) === 1 && isset($request['wc-api'])) {
                     echo '<div style="width: 800px;">' . __(
-                        'Something went wrong during what we suppose should have been a redirect somewhere. This URL should contain much more data than the WC_Resurs_Bank-parameter if it should be considered a proper redirect. Please, contact support if you land here.',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ) . '</div>';
+                            'Something went wrong during what we suppose should have been a redirect somewhere. This URL should contain much more data than the WC_Resurs_Bank-parameter if it should be considered a proper redirect. Please, contact support if you land here.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</div>';
                     die();
                 }
             }
@@ -675,7 +675,8 @@ function woocommerce_gateway_resurs_bank_init()
                                             $responseArray['callbacks'] = $this->flow->getCallBacksByRest(true);
                                             set_transient("resurs_callback_templates_cache_last", time());
                                             $myBool = true;
-                                            set_transient("resurs_callback_templates_cache", $responseArray['callbacks']);
+                                            set_transient("resurs_callback_templates_cache",
+                                                $responseArray['callbacks']);
                                             $responseArray['cached'] = false;
                                         } catch (Exception $e) {
                                             $errorMessage = $e->getMessage();
@@ -1542,8 +1543,8 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Register a callback event (EComPHP)
          *
-         * @param  string $type The callback type to be registered
-         * @param  array $options The parameters for the SOAP request
+         * @param string $type The callback type to be registered
+         * @param array $options The parameters for the SOAP request
          *
          * @return bool|mixed|string
          * @throws Exception
@@ -1596,7 +1597,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Get digest parameters for register callback
          *
-         * @param  array $params The parameters
+         * @param array $params The parameters
          *
          * @return array         The parameters reordered
          */
@@ -1614,8 +1615,8 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Initialize the web services through EComPHP-Simplified
          *
-         * @param  string $username The username for the API, is fetched from options if not specified
-         * @param  string $password The password for the API, is fetched from options if not specified
+         * @param string $username The username for the API, is fetched from options if not specified
+         * @param string $password The password for the API, is fetched from options if not specified
          *
          * @return boolean          Return whether or not the action succeeded
          */
@@ -2039,7 +2040,7 @@ function woocommerce_gateway_resurs_bank_init()
          * From now on, we won't get any returned values from this function. Instead, we'll create the form at this
          * level.
          *
-         * @param  int $payment_id The chosen payment method
+         * @param int $payment_id The chosen payment method
          * @param null $method_class
          *
          * @throws Exception
@@ -2112,8 +2113,8 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * @param $order_id
          *
-         * @since 2.2.7
          * @return string
+         * @since 2.2.7
          */
         private function getSuccessUrl($order_id, $preferredId)
         {
@@ -2480,7 +2481,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Proccess the payment
          *
-         * @param  int $order_id WooCommerce order ID
+         * @param int $order_id WooCommerce order ID
          *
          * @return array|void Null on failure, array on success
          * @throws Exception
@@ -3451,7 +3452,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Generate the payment methods that were returned from Resurs Bank API
          *
-         * @param  array $payment_methods The payment methods
+         * @param array $payment_methods The payment methods
          */
         public function generate_payment_gateways($payment_methods)
         {
@@ -3471,7 +3472,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Generates and writes a class for a specified payment methods to file
          *
-         * @param  stdClass $payment_method A payment method return from Resurs Bank API
+         * @param stdClass $payment_method A payment method return from Resurs Bank API
          */
         public function write_class_to_file($payment_method)
         {
@@ -3955,9 +3956,9 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Called when the status of an order is changed
          *
-         * @param  int $order_id The order id
-         * @param  string $old_status_slug The old status
-         * @param  string $new_status_slug The new stauts
+         * @param int $order_id The order id
+         * @param string $old_status_slug The old status
+         * @param string $new_status_slug The new stauts
          * @throws Exception
          */
         public static function order_status_changed($order_id, $old_status_slug, $new_status_slug)
@@ -4308,7 +4309,7 @@ function woocommerce_gateway_resurs_bank_init()
     /**
      * Adds the SSN field to the checkout form for fetching a address
      *
-     * @param  WC_Checkout $checkout The WooCommerce checkout object
+     * @param WC_Checkout $checkout The WooCommerce checkout object
      *
      * @return WC_Checkout           The WooCommerce checkout object
      */
@@ -4901,7 +4902,7 @@ function woocommerce_gateway_resurs_bank_init()
     /**
      * Add the Gateway to WooCommerce
      *
-     * @param  array $methods The available payment methods
+     * @param array $methods The available payment methods
      * @return array          The available payment methods
      */
     function woocommerce_add_resurs_bank_gateway($methods)
@@ -4935,7 +4936,7 @@ function woocommerce_gateway_resurs_bank_init()
     /**
      * Remove the gateway from the available payment options at checkout
      *
-     * @param  array $gateways The array of payment gateways
+     * @param array $gateways The array of payment gateways
      * @return array           The array of payment gateways
      */
     function woocommerce_resurs_bank_available_payment_gateways($gateways)
@@ -5368,7 +5369,8 @@ function resurs_after_checkout_form()
 {
     $customOverlayMessage = getResursOption('checkoutOverlayMessage');
     $overlayMessage = empty($customOverlayMessage) ?
-        __('Please wait while we process your order...', 'resurs-bank-payment-gateway-for-woocommerce') : $customOverlayMessage;
+        __('Please wait while we process your order...',
+            'resurs-bank-payment-gateway-for-woocommerce') : $customOverlayMessage;
 
     echo '<div class="purchaseActionsWrapper" id="purchaseActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">' .
         '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">'
@@ -5637,7 +5639,8 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $flow = initializeResursFlow();
                     $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
                     setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodType', $methodInfo->type);
-                    setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodSpecificType', $methodInfo->specificType);
+                    setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodSpecificType',
+                        $methodInfo->specificType);
                 }
             }
 
