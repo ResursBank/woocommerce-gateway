@@ -1,25 +1,25 @@
 [
     {
         "name": "resursbank/ecomphp",
-        "version": "dev-future/1.3",
-        "version_normalized": "dev-future/1.3",
+        "version": "1.3.40",
+        "version_normalized": "1.3.40.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp.git",
-            "reference": "26f97d1418a0f3204c483054465b0852ee8e77c4"
+            "reference": "c52c1d59d0ee6918e0d5cf259846a0a96ea075ab"
         },
         "dist": {
             "type": "zip",
-            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/26f97d1418a0f3204c483054465b0852ee8e77c4.zip",
-            "reference": "26f97d1418a0f3204c483054465b0852ee8e77c4",
+            "url": "https://bitbucket.org/resursbankplugins/resurs-ecomphp/get/c52c1d59d0ee6918e0d5cf259846a0a96ea075ab.zip",
+            "reference": "c52c1d59d0ee6918e0d5cf259846a0a96ea075ab",
             "shasum": ""
         },
         "require": {
-            "tornevall/tornelib-php-netcurl": ">6.1",
+            "tornevall/tornelib-php-bitmask": "^6.1",
             "tornevall/tornelib-php-netcurl-deprecate-60": "^6.0",
-            "tornevall/tornelib-php-network": "^6.0"
+            "tornevall/tornelib-php-network": "^6.1"
         },
-        "time": "2020-05-13T13:06:01+00:00",
+        "time": "2020-05-31T14:35:24+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -77,12 +77,12 @@
     },
     {
         "name": "tornevall/tornelib-php-crypto",
-        "version": "6.1.1",
-        "version_normalized": "6.1.1.0",
+        "version": "6.1.2",
+        "version_normalized": "6.1.2.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-crypto.git",
-            "reference": "65613426e89efb1ca86f15c2362780976d5ba5a4"
+            "reference": "2ceac6a5be2cf1775023a67db3b4618413c100f6"
         },
         "require": {
             "tornevall/tornelib-php-errorhandler": "^6.1.0",
@@ -90,7 +90,7 @@
             "tornevall/tornelib-php-io": "^6.1.0",
             "tornevall/tornelib-php-utils": "^6.1.0"
         },
-        "time": "2020-04-23T06:19:05+00:00",
+        "time": "2020-05-28T15:06:45+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -114,14 +114,14 @@
     },
     {
         "name": "tornevall/tornelib-php-errorhandler",
-        "version": "6.1.7",
-        "version_normalized": "6.1.7.0",
+        "version": "6.1.9",
+        "version_normalized": "6.1.9.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-errorhandler.git",
-            "reference": "52c455e569226dd52326f4971778b1fb4bbcb9ef"
+            "reference": "e84e75c3eaf2b6a848025aedbf223bf3a1dc81e4"
         },
-        "time": "2020-05-11T16:46:21+00:00",
+        "time": "2020-06-14T08:44:12+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -211,21 +211,21 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "6.1.0",
+        "version_normalized": "6.1.0.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git",
-            "reference": "6ac22e6653ad8b0d3d58904157a5be6e25e1ac5c"
+            "reference": "85fc1138da489839ebaf1f7fafa27fea17cf1e70"
         },
         "require": {
-            "tornevall/tornelib-php-crypto": "^6.1",
-            "tornevall/tornelib-php-errorhandler": "^6.1",
-            "tornevall/tornelib-php-flags": "^6.1",
-            "tornevall/tornelib-php-io": "^6.1",
-            "tornevall/tornelib-php-utils": "^6.1"
+            "tornevall/tornelib-php-crypto": "6.1.*",
+            "tornevall/tornelib-php-errorhandler": "6.1.*",
+            "tornevall/tornelib-php-flags": "6.1.*",
+            "tornevall/tornelib-php-io": "6.1.*",
+            "tornevall/tornelib-php-utils": "6.1.*"
         },
-        "time": "2020-05-12T17:26:19+00:00",
+        "time": "2020-05-24T13:25:00+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -280,21 +280,18 @@
     },
     {
         "name": "tornevall/tornelib-php-network",
-        "version": "6.1.2",
-        "version_normalized": "6.1.2.0",
+        "version": "6.1.4",
+        "version_normalized": "6.1.4.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-network.git",
-            "reference": "228c9c43632ae7857834463dbd5e9d9c46d6eb6f"
+            "reference": "075ca7b3b246c9410d6194fe36265102b6ee8f19"
         },
         "require": {
-            "tornevall/tornelib-php-bitmask": "^6.1",
-            "tornevall/tornelib-php-crypto": "^6.1",
             "tornevall/tornelib-php-errorhandler": "^6.1",
-            "tornevall/tornelib-php-io": "^6.1",
-            "tornevall/tornelib-php-netcurl": "dev-master"
+            "tornevall/tornelib-php-netcurl": "^6.1"
         },
-        "time": "2020-04-27T16:28:43+00:00",
+        "time": "2020-05-26T13:04:17+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -321,18 +318,18 @@
     },
     {
         "name": "tornevall/tornelib-php-utils",
-        "version": "6.1.3",
-        "version_normalized": "6.1.3.0",
+        "version": "6.1.5",
+        "version_normalized": "6.1.5.0",
         "source": {
             "type": "git",
             "url": "https://bitbucket.tornevall.net/scm/lib/tornelib-php-utils.git",
-            "reference": "9cd109abbac4835eec93426baa285abeffdd40d3"
+            "reference": "d626f48d1fc9ca27802b17474e8f56f2606390ba"
         },
         "require": {
             "tornevall/tornelib-php-errorhandler": "^6.1.0",
             "tornevall/tornelib-php-flags": "^6.1.0"
         },
-        "time": "2020-04-28T10:52:01+00:00",
+        "time": "2020-06-11T12:58:48+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

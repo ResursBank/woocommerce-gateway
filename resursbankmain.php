@@ -2,14 +2,15 @@
 
 require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/v3core.php');
-require_once('functions_settings.php');
-require_once('functions_gateway.php');
+require_once(__DIR__ . '/functions_settings.php');
+require_once(__DIR__ . '/functions_gateway.php');
 
 use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
 use Resursbank\RBEcomPHP\ResursBank;
+use TorneLIB\MODULE_NETWORK;
 
 $resurs_obsolete_coexistence_disable = (bool)apply_filters('resurs_obsolete_coexistence_disable', null);
 if ($resurs_obsolete_coexistence_disable) {
@@ -173,7 +174,7 @@ function woocommerce_gateway_resurs_bank_init()
                 <select name="setflow">
                 ';
                     foreach ($availableFlowTypes as $selectFlowType => $flowTypeDescription) {
-                        if ($selectFlowType == $currentFlowType) {
+                        if ($selectFlowType === $currentFlowType) {
                             $selectedFlowType = 'selected';
                         } else {
                             $selectedFlowType = '';
@@ -439,9 +440,9 @@ function woocommerce_gateway_resurs_bank_init()
             } else {
                 if (count($request) === 1 && isset($request['wc-api'])) {
                     echo '<div style="width: 800px;">' . __(
-                        'Something went wrong during what we suppose should have been a redirect somewhere. This URL should contain much more data than the WC_Resurs_Bank-parameter if it should be considered a proper redirect. Please, contact support if you land here.',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ) . '</div>';
+                            'Something went wrong during what we suppose should have been a redirect somewhere. This URL should contain much more data than the WC_Resurs_Bank-parameter if it should be considered a proper redirect. Please, contact support if you land here.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</div>';
                     die();
                 }
             }
@@ -525,7 +526,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     $failSetup = true;
                                     /** @var $errorMessage */
                                     $errorMessage = $e->getMessage();
-                                    /** @var $prevError \Exception */
+                                    /** @var $prevError Exception */
                                     $prevError = $e->getPrevious();
                                     if (!empty($prevError)) {
                                         $errorMessage = $prevError->getMessage();
@@ -550,6 +551,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 setResursOption('resursAnnuityDuration', 0);
                                 setResursOption('resursAnnuityMethod', '');
                                 setResursOption('resursCurrentAnnuityFactors', []);
+                                delete_transient('resursTemporaryPaymentMethodsTime');
+                                delete_transient('resursTemporaryPaymentMethods');
 
                                 $myResponse['element'] = ['currentResursPaymentMethods', 'callbackContent'];
                                 set_transient('resurs_bank_last_callback_setup', 0);
@@ -646,7 +649,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (isset($_REQUEST['data']) && isset($_REQUEST['data']['paymentId'])) {
                                     try {
                                         canResursRefund($_REQUEST['data']['paymentId']);
-                                    } catch (\Exception $e) {
+                                    } catch (Exception $e) {
                                         if ($e->getCode() === 1234) {
                                             // Only return false at this point if this is a special payment.
                                             // Some payment methods does not allow refunding and this is stated here only.
@@ -673,7 +676,8 @@ function woocommerce_gateway_resurs_bank_init()
                                             $responseArray['callbacks'] = $this->flow->getCallBacksByRest(true);
                                             set_transient('resurs_callback_templates_cache_last', time());
                                             $myBool = true;
-                                            set_transient('resurs_callback_templates_cache', $responseArray['callbacks']);
+                                            set_transient('resurs_callback_templates_cache',
+                                                $responseArray['callbacks']);
                                             $responseArray['cached'] = false;
                                         } catch (Exception $e) {
                                             $errorMessage = $e->getMessage();
@@ -729,11 +733,11 @@ function woocommerce_gateway_resurs_bank_init()
                                     }
                                 }
                             } elseif ($_REQUEST['run'] == 'getNetCurlTag') {
-                                $NET = new \TorneLIB\MODULE_NETWORK();
+                                $NET = new MODULE_NETWORK();
                                 $curlTags = $NET->getGitTagsByUrl('https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git');
                                 $responseArray['netCurlTag'] = is_array($curlTags) && count($curlTags) ? array_pop($curlTags) : [];
                             } elseif ($_REQUEST['run'] == 'getEcomTag') {
-                                $NET = new \TorneLIB\MODULE_NETWORK();
+                                $NET = new MODULE_NETWORK();
                                 $ecomTags = $NET->getGitTagsByUrl('https://bitbucket.org/resursbankplugins/resurs-ecomphp.git');
                                 $responseArray['ecomTag'] = is_array($ecomTags) && count($ecomTags) ? array_pop($ecomTags) : [];
                             } elseif ($_REQUEST['run'] == 'getNextInvoiceSequence') {
@@ -869,7 +873,7 @@ function woocommerce_gateway_resurs_bank_init()
                             } elseif ($_REQUEST['run'] == 'cleanRbCache') {
                                 try {
                                     $wpdb->query('DELETE FROM ' . $wpdb->options . " WHERE option_name LIKE '%resursTemporary%'");
-                                } catch (\Exception $dbException) {
+                                } catch (Exception $dbException) {
 
                                 }
                                 $myBool = true;
@@ -880,7 +884,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $numConfirm = 0;
                                 try {
                                     $wpdb->query('DELETE FROM ' . $wpdb->options . " WHERE option_name LIKE '%resursTemporaryPaymentMethods%'");
-                                } catch (\Exception $dbException) {
+                                } catch (Exception $dbException) {
 
                                 }
                                 // Make sure that the globs does not return anything else than an array.
@@ -1530,7 +1534,7 @@ function woocommerce_gateway_resurs_bank_init()
                     default:
                         break;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Ignore errors
             }
 
@@ -1540,8 +1544,8 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Register a callback event (EComPHP)
          *
-         * @param  string $type The callback type to be registered
-         * @param  array $options The parameters for the SOAP request
+         * @param string $type The callback type to be registered
+         * @param array $options The parameters for the SOAP request
          *
          * @return bool|mixed|string
          * @throws Exception
@@ -1594,8 +1598,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Get digest parameters for register callback
          *
-         * @param  array $params The parameters
-         *
+         * @param array $params The parameters
          * @return array         The parameters reordered
          */
         public function get_digest_parameters($params)
@@ -1612,8 +1615,8 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Initialize the web services through EComPHP-Simplified
          *
-         * @param  string $username The username for the API, is fetched from options if not specified
-         * @param  string $password The password for the API, is fetched from options if not specified
+         * @param string $username The username for the API, is fetched from options if not specified
+         * @param string $password The password for the API, is fetched from options if not specified
          *
          * @return boolean          Return whether or not the action succeeded
          */
@@ -1901,7 +1904,7 @@ function woocommerce_gateway_resurs_bank_init()
             $setLabel = $labels[$fieldName];
             if (isset($labelsLegal[$fieldName]) &&
                 !empty($labelsLegal[$fieldName]) &&
-                $customerType != 'NATURAL'
+                $customerType !== 'NATURAL'
             ) {
                 $setLabel = $labelsLegal[$fieldName];
             }
@@ -2037,7 +2040,7 @@ function woocommerce_gateway_resurs_bank_init()
          * From now on, we won't get any returned values from this function. Instead, we'll create the form at this
          * level.
          *
-         * @param  int $payment_id The chosen payment method
+         * @param int $payment_id The chosen payment method
          * @param null $method_class
          *
          * @throws Exception
@@ -2109,9 +2112,8 @@ function woocommerce_gateway_resurs_bank_init()
 
         /**
          * @param $order_id
-         *
-         * @since 2.2.7
          * @return string
+         * @since 2.2.7
          */
         private function getSuccessUrl($order_id, $preferredId)
         {
@@ -2266,7 +2268,7 @@ function woocommerce_gateway_resurs_bank_init()
                 try {
                     // Going payload-arrays in ECOMPHP is deprecated so we'll do it right
                     $hostedFlowUrl = $this->flow->createPayment($shortMethodName, $bookDataArray);
-                } catch (\Exception $hostedException) {
+                } catch (Exception $hostedException) {
                     $hostedFlowBookingFailure = true;
                     wc_add_notice($hostedException->getMessage(), 'error');
                 }
@@ -2380,7 +2382,7 @@ function woocommerce_gateway_resurs_bank_init()
                             true
                         );
                         $order->save();
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         wc_add_notice($e->getMessage(), 'error');
 
                         return;
@@ -2478,8 +2480,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Proccess the payment
          *
-         * @param  int $order_id WooCommerce order ID
-         *
+         * @param int $order_id WooCommerce order ID
          * @return array|void Null on failure, array on success
          * @throws Exception
          */
@@ -2588,7 +2589,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @param string $methodId
          *
          * @return array
-         * @throws \Exception
+         * @throws Exception
          */
         public function getTransientMethod($methodId = '')
         {
@@ -2637,7 +2638,7 @@ function woocommerce_gateway_resurs_bank_init()
                 // this should not go further in the process.
                 $flow->updateCheckoutOrderLines($requestedPaymentId, $paymentSpec['specLines']);
                 $returnResult['success'] = true;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $returnResult['success'] = false;
                 $code = $e->getCode();
                 if (!intval($code)) {
@@ -3093,7 +3094,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $requestedUpdateOrder
                             )
                         );
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // Errors that will be refelected down to order notices where the references is
                         // not properly handled. This requires ECom-upgrades.
                         // 1-100 may be thrown from ecommerce
@@ -3405,7 +3406,7 @@ function woocommerce_gateway_resurs_bank_init()
                             true
                         );
                         $order->save();
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         wc_add_notice($e->getMessage(), 'error');
 
                         return;
@@ -3470,16 +3471,18 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Generate the payment methods that were returned from Resurs Bank API
          *
-         * @param  array $payment_methods The payment methods
+         * @param array $payment_methods The payment methods
          */
         public function generate_payment_gateways($payment_methods)
         {
             $methods = [];
             $class_files = [];
+            $idMerchant = 0;
             foreach ($payment_methods as $payment_method) {
                 $methods[] = 'resurs-bank-id-' . $payment_method->id;
-                $class_files[] = 'resurs_bank_nr_' . $payment_method->id . '.php';
+                $class_files[] = 'resurs_bank_nr_' . $idMerchant . '_' . $payment_method->id . '.php';
                 $this->write_class_to_file($payment_method);
+                $idMerchant++;
             }
             $this->UnusedPaymentClassesCleanup($class_files);
             set_transient('resurs_bank_class_files', $class_files);
@@ -3488,7 +3491,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Generates and writes a class for a specified payment methods to file
          *
-         * @param  stdClass $payment_method A payment method return from Resurs Bank API
+         * @param stdClass $payment_method A payment method return from Resurs Bank API
          */
         public function write_class_to_file($payment_method)
         {
@@ -3834,8 +3837,10 @@ function woocommerce_gateway_resurs_bank_init()
 
             $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
             $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+            $maxWaitForTransients = 1500;
+
             try {
-                if ($timeDiff >= 3600) {
+                if ($timeDiff >= $maxWaitForTransients) {
                     $paymentMethods = $flow->getPaymentMethods([], true);
                     set_transient('resursTemporaryPaymentMethodsTime', time(), 3600);
                     set_transient('resursTemporaryPaymentMethods', serialize($paymentMethods), 3600);
@@ -3970,9 +3975,9 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * Called when the status of an order is changed
          *
-         * @param  int $order_id The order id
-         * @param  string $old_status_slug The old status
-         * @param  string $new_status_slug The new stauts
+         * @param int $order_id The order id
+         * @param string $old_status_slug The old status
+         * @param string $new_status_slug The new stauts
          * @throws Exception
          */
         public static function order_status_changed($order_id, $old_status_slug, $new_status_slug)
@@ -4021,7 +4026,7 @@ function woocommerce_gateway_resurs_bank_init()
                         // we can still prevent wrong id's to be fixed at this point.
                         $payment_id = $payment->id;
                     }
-                } catch (\Exception $getPaymentException) {
+                } catch (Exception $getPaymentException) {
                     return;
                 }
                 if (isset($payment)) {
@@ -4218,7 +4223,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 'resurs-bank-payment-gateway-for-woocommerce'
                             )
                         );
-                        throw new \Exception($flowErrorMessage);
+                        throw new Exception($flowErrorMessage);
                     }
                     wp_safe_redirect($url);
                     break;
@@ -4263,7 +4268,7 @@ function woocommerce_gateway_resurs_bank_init()
                         ];
                         //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         $order->update_status($old_status_slug);
-                        throw new \Exception($flowErrorMessage);
+                        throw new Exception($flowErrorMessage);
                     }
                     wp_safe_redirect($url);
                     break;
@@ -4307,7 +4312,7 @@ function woocommerce_gateway_resurs_bank_init()
                         ];
                         //wp_set_object_terms($order_id, $old_status_slug, 'shop_order_status', false);
                         $order->update_status($old_status_slug);
-                        throw new \Exception($flowErrorMessage);
+                        throw new Exception($flowErrorMessage);
                     }
                     wp_safe_redirect($url);
                     break;
@@ -4323,7 +4328,7 @@ function woocommerce_gateway_resurs_bank_init()
     /**
      * Adds the SSN field to the checkout form for fetching a address
      *
-     * @param  WC_Checkout $checkout The WooCommerce checkout object
+     * @param WC_Checkout $checkout The WooCommerce checkout object
      *
      * @return WC_Checkout           The WooCommerce checkout object
      */
@@ -4353,7 +4358,8 @@ function woocommerce_gateway_resurs_bank_init()
             }
             // Here we use the translated or not translated values for Private and Company radiobuttons
             $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
-            $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+            $timeDiff = apply_filters('resurs_methodlist_timediff', time() - $resursTemporaryPaymentMethodsTime);
+
             $errorOnLiveData = false;
             if ($timeDiff >= 3600) {
                 /** @var $theFlow ResursBank */
@@ -4362,7 +4368,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $methodList = $theFlow->getPaymentMethods([], true);
                     set_transient('resursTemporaryPaymentMethodsTime', time(), 3600);
                     set_transient('resursTemporaryPaymentMethods', serialize($methodList), 3600);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Can't save transients if this is down. So try to refetch this list.
                     $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
                     $errorOnLiveData = true;
@@ -4662,6 +4668,18 @@ function woocommerce_gateway_resurs_bank_init()
             ['jquery'],
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
+        wp_enqueue_script(
+            'rcoface',
+            plugin_dir_url(__FILE__) . 'js/rcoface.js' . $oneRandomValue,
+            ['jquery'],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
+        );
+        wp_enqueue_script(
+            'rcojs',
+            plugin_dir_url(__FILE__) . 'js/rcojs.js' . $oneRandomValue,
+            ['jquery'],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
+        );
         wp_localize_script('resursbankmain', 'rb_getaddress_fields', $resursLanguageLocalization);
         wp_localize_script('resursbankmain', 'rb_general_translations', $generalJsTranslations);
         wp_localize_script('resursbankmain', 'ajax_object', $ajaxObject);
@@ -4714,7 +4732,9 @@ function woocommerce_gateway_resurs_bank_init()
                 $flow = initializeResursFlow();
                 $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
                 $resursMeta = isset($methodInfo->type) ? $methodInfo->type : '';
+                $resursMetaSpecific = isset($methodInfo->specificType) ? $methodInfo->specificType : '';
                 setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodType', $resursMeta);
+                setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodSpecificType', $resursMetaSpecific);
             }
         }
 
@@ -4901,8 +4921,7 @@ function woocommerce_gateway_resurs_bank_init()
     /**
      * Add the Gateway to WooCommerce
      *
-     * @param  array $methods The available payment methods
-     *
+     * @param array $methods The available payment methods
      * @return array          The available payment methods
      */
     function woocommerce_add_resurs_bank_gateway($methods)
@@ -4936,8 +4955,7 @@ function woocommerce_gateway_resurs_bank_init()
     /**
      * Remove the gateway from the available payment options at checkout
      *
-     * @param  array $gateways The array of payment gateways
-     *
+     * @param array $gateways The array of payment gateways
      * @return array           The array of payment gateways
      */
     function woocommerce_resurs_bank_available_payment_gateways($gateways)
@@ -5024,7 +5042,7 @@ function woocommerce_gateway_resurs_bank_init()
             $annuityDurationOverride = null;
 
             if (isResursDemo() && isset($_SESSION['rb_country']) && class_exists('CountryHandler')) {
-                $countryHandler = new \CountryHandler();
+                $countryHandler = new CountryHandler();
                 $annuityFactorsOverride = $countryHandler->getAnnuityFactors();
                 $annuityDurationOverride = $countryHandler->getAnnuityFactorsDuration();
             }
@@ -5160,7 +5178,7 @@ function woocommerce_gateway_resurs_bank_init()
                             }
                         }
                     }
-                } catch (\Exception $annuityException) {
+                } catch (Exception $annuityException) {
                     // In the multilingual demoshop there might be exceptions when the session is lost.
                     // Exceptions may also occur there, when the wrong payment method is checked and wrong language is chosen.
                     $displayAnnuity .= __(
@@ -5255,7 +5273,7 @@ function woocommerce_gateway_resurs_bank_init()
                 null,
                 floatval($totalDiscount) > 0 || $hasShippingRefund || $refundPriceAlwaysOverride ? true : false
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errors = true;
             $errorCode = $e->getCode();
             $errorString = $e->getMessage();
@@ -5281,7 +5299,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $errorString
                 )
             );
-            throw new \Exception($errorString, $errorCode);
+            throw new Exception($errorString, $errorCode);
         }
 
         // Add order note here of what happened.
@@ -5302,7 +5320,7 @@ function woocommerce_gateway_resurs_bank_init()
 
         try {
             canResursRefund($resursOrderId);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($e->getCode() === 1234) {
                 // Only return false at this point if this is a special payment.
                 // Some payment methods does not allow refunding and this is stated here only.
@@ -5370,7 +5388,8 @@ function resurs_after_checkout_form()
 {
     $customOverlayMessage = getResursOption('checkoutOverlayMessage');
     $overlayMessage = empty($customOverlayMessage) ?
-        __('Please wait while we process your order...', 'resurs-bank-payment-gateway-for-woocommerce') : $customOverlayMessage;
+        __('Please wait while we process your order...', 'resurs-bank-payment-gateway-for-woocommerce') :
+        $customOverlayMessage;
 
     echo '<div class="purchaseActionsWrapper" id="purchaseActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">' .
         '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">'
@@ -5455,7 +5474,7 @@ function getPaymentInfo($order, $getPaymentId = '', $fallback = false)
     $resursPaymentInfo = null;
     try {
         $resursPaymentInfo = $rb->getPayment($getPaymentId);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         if (resursOption('postidreference')) {
             if ($e->getCode() === 8) {
                 if (!empty($resursPaymentIdLast) && $getPaymentId !== $resursPaymentIdLast) {
@@ -5470,7 +5489,7 @@ function getPaymentInfo($order, $getPaymentId = '', $fallback = false)
                         $fallback = true;
                         $resursPaymentInfo = getPaymentInfo($order, $order->get_id(), $fallback);
                     } else {
-                        throw new \Exception('Order was not found at Resurs Bank', 8);
+                        throw new Exception('Order was not found at Resurs Bank', 8);
                     }
                 }
             } else {
@@ -5523,7 +5542,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             try {
                 $rb->setFlag('GET_PAYMENT_BY_SOAP');
                 $resursPaymentInfo = getPaymentInfo($order, $resursPaymentId);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errorMessage = $e->getMessage();
                 if ($e->getCode() === 8) {
                     // REFERENCED_DATA_DONT_EXISTS
@@ -5639,6 +5658,8 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $flow = initializeResursFlow();
                     $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
                     setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodType', $methodInfo->type);
+                    setResursOrderMetaData($orderId, 'resursBankMetaPaymentMethodSpecificType',
+                        $methodInfo->specificType);
                 }
             }
 
@@ -6663,10 +6684,9 @@ function resurs_omnicheckout_order_button_html($classButtonHtml)
  * Payment methods validator for OmniCheckout
  *
  * @param $paymentGatewaysCheck
- *
  * @return null
  */
-function resurs_omnicheckout_payment_gateways_check($paymentGatewaysCheck)
+function resurs_omnicheckout_payment_gateways_check()
 {
     global $woocommerce;
     $paymentGatewaysCheck = $woocommerce->payment_gateways->get_available_payment_gateways();
@@ -6679,7 +6699,8 @@ function resurs_omnicheckout_payment_gateways_check($paymentGatewaysCheck)
             return null;
         }
 
-        return __('There are currently no payment methods available', 'resurs-bank-payment-gateway-for-woocommerce');
+        return __('There are currently no payment methods available',
+            'resurs-bank-payment-gateway-for-woocommerce');
     }
 
     return $paymentGatewaysCheck;
@@ -6697,11 +6718,7 @@ function hasPaymentGateways()
     if (is_array($paymentGatewaysCheck)) {
         $paymentGatewaysCheck = [];
     }
-    if (count($paymentGatewaysCheck) > 1) {
-        return true;
-    }
-
-    return false;
+    return count($paymentGatewaysCheck) > 1;
 }
 
 /********************** OMNICHECKOUT RELATED ENDS HERE ******************/
@@ -6720,7 +6737,7 @@ if (is_admin()) {
  * @param string $operator
  *
  * @return bool
- * @throws \Exception
+ * @throws Exception
  */
 function hasWooCommerce($versionRequest = '2.0.0', $operator = '>=')
 {
@@ -6751,7 +6768,7 @@ function getResursLogActive()
         $return = false;
     }
     if (!file_exists(getResursLogDestination() . '/resurs.log')) {
-        @file_put_contents(getResursLogDestination() . '/resurs.log', time() . ': ' . "Log initialization\n");
+        @file_put_contents(getResursLogDestination() . '/resurs.log', time() . ': ' . "Log initialization.\n");
     }
     if (!file_exists(getResursLogDestination() . '/resurs.log')) {
         $return = false;
@@ -6876,7 +6893,14 @@ function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMet
                     $method->type
                 );
             }
-        } catch (\Exception $e) {
+            if (isset($method->specificType) && !empty($method->specificType)) {
+                update_post_meta(
+                    $id,
+                    'resursBankMetaPaymentMethodSpecificType',
+                    $method->specificType
+                );
+            }
+        } catch (Exception $e) {
             // Silently ignore API calls if they don't work at this moment.
         }
 

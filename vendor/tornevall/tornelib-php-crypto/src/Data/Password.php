@@ -1,25 +1,8 @@
 <?php
-/**
- * Copyright 2020 Tomas Tornevall & Tornevall Networks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * @package TorneLIB
- * @version 6.1.0
- * @since 6.0
- */
 
 namespace TorneLIB\Data;
+
+use function random_int;
 
 /**
  * Class Password Password generating library.
@@ -28,7 +11,6 @@ namespace TorneLIB\Data;
  * password strings that is based on bitmasks.
  *
  * @package TorneLIB\Data
- * @version 6.1.0
  */
 class Password
 {
@@ -120,7 +102,12 @@ class Password
         if (!count($allowedList)) {
             $return = $this->characterArray[self::COMPLEX_UPPER];
         } else {
-            $return = $allowedList[random_int(0, count($allowedList) - 1)];
+            if (function_exists('random_int')) {
+                $rInt = random_int(0, count($allowedList) - 1);
+            } else {
+                $rInt = rand(0, count($allowedList) - 1);
+            }
+            $return = $allowedList[$rInt];
         }
 
         return $return;
@@ -158,7 +145,15 @@ class Password
             $complexity,
             $this->getCharacterList($complexity)
         );
-        $return = $characterArray[random_int(0, count($characterArray) - 1)];
+
+        // Seems to fail sometimes, in PHP 7.4 for unknown reasons.
+        if (function_exists('random_int')) {
+            $rInt = random_int(0, count($characterArray) - 1);
+        } else {
+            $rInt = rand(0, count($characterArray) - 1);
+        }
+
+        $return = $characterArray[$rInt];
 
         if (
             // complexity is not special and numerics and return is the same as last

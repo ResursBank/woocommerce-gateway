@@ -4,16 +4,16 @@ namespace TorneLIB\Utils;
 
 use ReflectionClass;
 use ReflectionException;
+use TorneLIB\Exception\Constants;
+use TorneLIB\Exception\ExceptionHandler;
 
 /**
  * Class Generic Generic functions
  * @package TorneLIB\Utils
- * @version 6.1.0
- * @since 6.1.3
+ * @version 6.1.5
  */
 class Generic
 {
-
     /**
      * Generic constructor.
      * @since 6.1.0
@@ -26,9 +26,11 @@ class Generic
     /**
      * @param $item
      * @param $functionName
+     * @param string $className
      * @return string
      * @throws ReflectionException
      * @since 6.1.0
+     * @noinspection PhpUnusedParameterInspection Called from externals.
      */
     private function getExtractedDocBlock(
         $item,
@@ -83,11 +85,12 @@ class Generic
     /**
      * @param $item
      * @param string $functionName
+     * @param string $className
      * @return string
      * @throws ReflectionException
      * @since 6.1.0
      */
-    public function getDocBlockItem($item, $functionName = '', $className)
+    public function getDocBlockItem($item, $functionName = '', $className = '')
     {
         return (string)$this->getExtractedDocBlockItem(
             $item,
@@ -100,6 +103,7 @@ class Generic
     }
 
     /**
+     * @param string $className
      * @return string
      * @throws ReflectionException
      * @since 6.1.0
@@ -107,6 +111,82 @@ class Generic
     public function getVersionByClassDoc($className = '')
     {
         return $this->getDocBlockItem('@version', '', $className);
+    }
+
+    /**
+     * @param $location
+     * @param int $maxDepth
+     * @return string
+     * @throws ExceptionHandler
+     * @since 6.1.3
+     */
+    public function getVersionByComposer($location, $maxDepth = 3)
+    {
+        $return = '';
+        if ($maxDepth > 3 || $maxDepth < 1) {
+            $maxDepth = 3;
+        }
+        if (!file_exists($location)) {
+            throw new ExceptionHandler('Invalid path', Constants::LIB_INVALID_PATH);
+        }
+        $startAt = dirname($location);
+        if ($this->getComposerJson($startAt)) {
+            return $this->getComposerTag($startAt, 'version');
+        }
+
+        $composerLocation = null;
+        while ($maxDepth--) {
+            $startAt .= '/..';
+            if ($this->getComposerJson($startAt)) {
+                $composerLocation = $startAt;
+                break;
+            }
+        }
+
+        if (!empty($composerLocation)) {
+            $return = $this->getComposerTag($composerLocation, 'version');
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $location
+     * @return bool
+     * @since 6.1.3
+     */
+    private function getComposerJson($location)
+    {
+        $return = false;
+
+        if (file_exists(sprintf('%s/composer.json', $location))) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $location
+     * @param $tag
+     * @return string
+     * @since 6.1.3
+     */
+    private function getComposerTag($location, $tag)
+    {
+        $return = '';
+
+        $composerData = json_decode(
+            file_get_contents(
+                sprintf('%s/composer.json', $location)
+            )
+        );
+
+        if (isset($composerData->$tag)) {
+            $return = $composerData->$tag;
+        }
+
+        return (string)$return;
     }
 
     /**

@@ -151,6 +151,17 @@ class Network
     }
 
     /**
+     * @param string $redirectToUrl
+     * @param bool $replaceHeader
+     * @param int $responseCode
+     * @since 6.1.3
+     */
+    public function redirect($redirectToUrl = '', $replaceHeader = false, $responseCode = 301)
+    {
+        return (new Domain())->redirect($redirectToUrl, $replaceHeader, $responseCode);
+    }
+
+    /**
      * @param $name
      * @param $arguments
      * @return mixed
