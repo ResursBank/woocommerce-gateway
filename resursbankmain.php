@@ -5369,8 +5369,8 @@ function resurs_after_checkout_form()
 {
     $customOverlayMessage = getResursOption('checkoutOverlayMessage');
     $overlayMessage = empty($customOverlayMessage) ?
-        __('Please wait while we process your order...',
-            'resurs-bank-payment-gateway-for-woocommerce') : $customOverlayMessage;
+        __('Please wait while we process your order...', 'resurs-bank-payment-gateway-for-woocommerce') :
+        $customOverlayMessage;
 
     echo '<div class="purchaseActionsWrapper" id="purchaseActionsWrapper" style="display: none; text-align: center; align-content: center; background-color: #FFFFFF; padding: 5px;">' .
         '<div style="text-align: center; vertical-align: middle; font-weight:bold; background-color:#FFFFFF; border: 1px solid white;">'
