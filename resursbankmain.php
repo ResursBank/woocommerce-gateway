@@ -2593,7 +2593,6 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function getTransientMethod($methodId = '')
         {
-            //$methodList = get_transient('resurs_bank_payment_methods');
             if (empty($this->flow)) {
                 /** @var ResursBank */
                 $this->flow = initializeResursFlow();
@@ -4977,6 +4976,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             return $methods;
         }
+
         $methods[] = 'WC_Resurs_Bank';
         if (is_admin() && is_array($methods)) {
             foreach ($methods as $id => $m) {
@@ -4999,6 +4999,29 @@ function woocommerce_gateway_resurs_bank_init()
     function woocommerce_resurs_bank_available_payment_gateways($gateways)
     {
         unset($gateways['resurs-bank']);
+        global $woocommerce;
+
+        $selectedCountry = getResursOption('country');
+        $customerCountry = $woocommerce->customer->get_billing_country();
+
+        // Do not distribute payment methods for countries that do not belong to current
+        // Resurs setup, with an exception for VISA/Mastercard.
+        if (strtolower($customerCountry) !== strtolower($selectedCountry)) {
+            foreach ($gateways as $gatewayName => $gatewayClass) {
+                if (preg_match('/^resurs_bank_nr/i', $gatewayName)) {
+                    $type = isset($gatewayClass->type) ? $gatewayClass->type : '';
+                    $specificType = isset($gatewayClass->specificType) ? $gatewayClass->specificType : '';
+
+                    if (strtoupper($type) === 'PAYMENT_PROVIDER' && preg_match('/card/i', $specificType)) {
+                        continue;
+                    }
+                    unset($gateways[$gatewayName]);
+                }
+            }
+
+            return $gateways;
+        }
+
 
         return $gateways;
     }

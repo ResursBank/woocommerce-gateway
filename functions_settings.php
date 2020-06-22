@@ -947,7 +947,7 @@ if (is_admin()) {
     if (!function_exists('write_resurs_class_to_file')) {
         function write_resurs_class_to_file($payment_method, $idMerchant)
         {
-            $idMerchantPrio = 10+$idMerchant;
+            $idMerchantPrio = 10 + $idMerchant;
             // No id - no file.
             if (!isset($payment_method->id) || (isset($payment_method->id) && empty($payment_method->id))) {
                 return;
@@ -1007,10 +1007,11 @@ if (is_admin()) {
 
             $class = <<<EOT
 <?php
-
     if (!class_exists('{$class_name}')) {
-
         class {$class_name} extends WC_Resurs_Bank {
+            public \$type;
+            public \$specificType;
+        
             public function __construct()
             {
                 global \$woocommerce;
@@ -1032,6 +1033,9 @@ if (is_admin()) {
                 } else {
                     \$this->has_fields   = false;
                 }
+                
+                \$this->type = '{$payment_method->type}';
+                \$this->specificType = '{$payment_method->specificType}';
     
                 \$this->init_form_fields();
                 \$this->init_settings();
