@@ -103,7 +103,7 @@ if (!function_exists('canResursRefund')) {
     function canResursRefund($resursOrderId)
     {
         $resursFlow = initializeResursFlow();
-        if ($resursFlow->canDebit($resursOrderId)) {
+        if ($resursFlow->canCredit($resursOrderId)) {
             $paymentMethodType = getResursPaymentMethodMeta($resursOrderId, 'resursBankMetaPaymentMethodType');
             if ($paymentMethodType === 'PAYMENT_PROVIDER') {
                 throw new \Exception('Not refundable', 1234);
