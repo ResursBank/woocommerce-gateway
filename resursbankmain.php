@@ -74,7 +74,6 @@ function woocommerce_gateway_resurs_bank_init()
      */
     class WC_Resurs_Bank extends WC_Payment_Gateway
     {
-
         /** @var ResursBank */
         protected $flow;
         protected $rates;
@@ -3851,7 +3850,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $costOfPurchaseHtml
             );
 
-            echo sprintf(
+            printf(
                 '<html><head>
                     %s
                     </head><body>%s</body></html>',
@@ -4027,13 +4026,14 @@ function woocommerce_gateway_resurs_bank_init()
 
             $order = new WC_Order($order_id);
             $payment_method = $order->get_payment_method();
-            /** @var $resursFlow ResursBank */
-            $resursFlow = initializeResursFlow();
 
             $payment_id = get_post_meta($order->get_id(), 'paymentId', true);
-            if (false === (boolean)preg_match('/resurs_bank/', $payment_method)) {
+            if (!(bool)preg_match('/resurs_bank/', $payment_method)) {
                 return;
             }
+
+            /** @var $resursFlow ResursBank */
+            $resursFlow = initializeResursFlow();
 
             if (isset($_REQUEST['wc-api']) || isset($_REQUEST['cancel_order'])) {
                 if (isset($_REQUEST['isBack'])) {
