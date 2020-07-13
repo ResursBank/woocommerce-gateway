@@ -5253,6 +5253,20 @@ function woocommerce_gateway_resurs_bank_init()
     }
 
     /**
+     * Check if payment method on supplied order stems from Resurs Bank.
+     *
+     * @param WC_Order $order
+     * @return bool
+     */
+    function isResursBankOrder(WC_Order $order)
+    {
+        return (bool) preg_match(
+            '/resurs_bank/',
+            (string) $order->get_payment_method()
+        );
+    }
+
+    /**
      * This function allows partial refunding based on amount rather than article numbers.
      *
      * Written experimental for the future - eventually - since the logics allows a lot more than we have time to fix right now.
@@ -5268,6 +5282,11 @@ function woocommerce_gateway_resurs_bank_init()
     {
         $refundObject = new WC_Order_Refund($refundId);
         $order = new WC_Order($orderId);
+
+        if (!isResursBankOrder($order)) {
+            return false;
+        }
+
         $refundStatus = false;
 
         $resursOrderId = wc_get_payment_id_by_order_id($orderId);
