@@ -84,6 +84,8 @@ class Security
             }
         }
 
+        /** @noinspection SpellCheckingInspection */
+        /** @noinspection PhpUndefinedMethodInspection */
         if (Flag::isFlag(
             sprintf(
                 'testmode_disabled_%s',
@@ -288,12 +290,14 @@ class Security
         }
 
         return array_map(
-            'trim', preg_split(
+            'trim',
+            preg_split(
                 sprintf(
                     '/[%s]/',
                     implode('', $delimiter)
                 ),
-                $this->getIni($key))
+                $this->getIni($key)
+            )
         );
     }
 

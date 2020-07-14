@@ -21,8 +21,6 @@ class MODULE_CRYPTO
     public function __construct()
     {
         $this->CRYPTO = new Crypto();
-
-        return $this;
     }
 
     /**

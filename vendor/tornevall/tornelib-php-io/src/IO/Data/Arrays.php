@@ -11,7 +11,7 @@ class Arrays
      * Convert object to a data object. Formerly known as a repair tool for __PHP_Incomplete_Class.
      *
      * @param array $objectArray
-     * @return object
+     * @return object|array|mixed
      * @throws ExceptionHandler
      * @since 6.0.0
      */
