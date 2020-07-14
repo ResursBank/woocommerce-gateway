@@ -10,8 +10,11 @@ if (!defined('ABSPATH')) {
 
 require_once(__DIR__ . "/vendor/autoload.php");
 
-load_plugin_textdomain('resurs-bank-payment-gateway-for-woocommerce', false,
-    dirname(plugin_basename(__FILE__)) . '/languages');
+load_plugin_textdomain(
+    'resurs-bank-payment-gateway-for-woocommerce',
+    false,
+    dirname(plugin_basename(__FILE__)) . '/languages'
+);
 
 if (!function_exists('getResursWooFormFields')) {
     function getResursWooFormFields($addId = null, $namespace = "")
@@ -157,8 +160,10 @@ if (!function_exists('getResursWooFormFields')) {
                         ),
                     ],
                     'default' => 'resurs_bank_omnicheckout',
-                    'description' => __('What kind of shop flow you want to use',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'What kind of shop flow you want to use',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => true,
                 ],
                 'title' => [
@@ -354,7 +359,8 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'false',
                     'description' => __(
                         'Defines if the plugin should perform a simple check against proxies on customer ip addresses (Not recommended to activate since it opens up for exploits, but if you have many connecting customers that seem to be on NATed networks, this may help a bit)',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'desc_tip' => false,
                 ],
                 'resursOrdersEditable' => [
@@ -548,9 +554,9 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'description' => __(
-                            'Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '<br><b>' . __(
+                        'Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '<br><b>' . __(
                             '(It is no longer recommended to actively use this setting)',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</b>',
@@ -711,7 +717,8 @@ if (!function_exists('getResursWooFormFields')) {
                 'icon' => [
                     'title' => __(
                         'Custom payment method icon',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => $icon,
                     'description' => __(
@@ -784,8 +791,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'iframeShape' => [
-                    'title' => __('Change the (CSS)-shape of the iframe',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Change the (CSS)-shape of the iframe',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'text',
                     'default' => '',
                     'description' => __(
@@ -932,10 +941,11 @@ if (!function_exists('getResursWooFormFields')) {
             // If this store ever had the setting for iframe location in payment method list (or have)
             // this will be continuosly readded to the above configuration.
             if (!isset($returnArray['iFrameLocation']['options']['inMethods']) && getHadMisplacedIframeLocation()) {
-                $returnArray['iFrameLocation']['options']['inMethods'] = __('In payment method list (Deprecated, not recommended to use)',
-                    'resurs-bank-payment-gateway-for-woocommerce');
+                $returnArray['iFrameLocation']['options']['inMethods'] = __(
+                    'In payment method list (Deprecated, not recommended to use)',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                );
             }
-
         }
 
         return $returnArray;
@@ -943,7 +953,6 @@ if (!function_exists('getResursWooFormFields')) {
 }
 
 if (is_admin()) {
-
     if (!function_exists('write_resurs_class_to_file')) {
         function write_resurs_class_to_file($payment_method, $idMerchant)
         {
@@ -955,8 +964,10 @@ if (is_admin()) {
             $class_name = 'resurs_bank_nr_' . $payment_method->id;
             if (!file_exists(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name)) {
             } else {
-                if (!in_array(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name,
-                    get_included_files())) {
+                if (!in_array(
+                    plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name,
+                    get_included_files()
+                )) {
                     include(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name);
                 }
             }
@@ -1458,8 +1469,7 @@ EOT;
             $methodTable = "";
             if ($returnAs != "html") {
                 @ob_start();
-            }
-            ?>
+            } ?>
             <table class="wc_gateways widefat" cellspacing="0px" cellpadding="0px" style="width: inherit;">
                 <thead>
                 <tr>
@@ -1475,33 +1485,32 @@ EOT;
                 <?php
 
                 $sortByDescription = [];
-                foreach ($methodArray as $methodArray) {
-                    $description = $methodArray->description;
-                    $sortByDescription[$description] = $methodArray;
+            foreach ($methodArray as $methodArray) {
+                $description = $methodArray->description;
+                $sortByDescription[$description] = $methodArray;
+            }
+            ksort($sortByDescription);
+            $url = admin_url('admin.php');
+            $url = add_query_arg('page', $_REQUEST['page'], $url);
+            $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+            foreach ($sortByDescription as $methodArray) {
+                $curId = isset($methodArray->id) ? $methodArray->id : "";
+                $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
+                /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                    $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
+                }*/
+                write_resurs_class_to_file($methodArray);
+                $settingsControl = get_option($optionNamespace);
+                $isEnabled = false;
+                if (is_array($settingsControl) && count($settingsControl)) {
+                    if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
+                        $isEnabled = true;
+                    }
                 }
-                ksort($sortByDescription);
-                $url = admin_url('admin.php');
-                $url = add_query_arg('page', $_REQUEST['page'], $url);
-                $url = add_query_arg('tab', $_REQUEST['tab'], $url);
-                foreach ($sortByDescription as $methodArray) {
-                    $curId = isset($methodArray->id) ? $methodArray->id : "";
-                    $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                    /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
-                        $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
-                    }*/
-                    write_resurs_class_to_file($methodArray);
-                    $settingsControl = get_option($optionNamespace);
-                    $isEnabled = false;
-                    if (is_array($settingsControl) && count($settingsControl)) {
-                        if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
-                            $isEnabled = true;
-                        }
-                    }
-                    $maTitle = $methodArray->description;
-                    if (isset($settingsControl['title']) && !empty($settingsControl['title'])) {
-                        $maTitle = $settingsControl['title'];
-                    }
-                    ?>
+                $maTitle = $methodArray->description;
+                if (isset($settingsControl['title']) && !empty($settingsControl['title'])) {
+                    $maTitle = $settingsControl['title'];
+                } ?>
                     <tr>
                         <td width="1%">&nbsp;</td>
                         <td class="name" width="300px"><a
@@ -1517,7 +1526,7 @@ EOT;
                                                       data-tip="<?php echo __('Disabled', 'woocommerce') ?>">-</span>
                             </td>
                         <?php } else {
-                            ?>
+                    ?>
                             <td id="status_<?php echo $curId; ?>" class="status"
                                 style="cursor: pointer;"
                                 onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
@@ -1525,12 +1534,11 @@ EOT;
                                                       data-tip="<?php echo __('Enabled', 'woocommerce') ?>">-</span>
                             </td>
                             <?php
-                        } ?>
+                } ?>
                         <td id="process_<?php echo $curId; ?>"></td>
                     </tr>
                     <?php
-                }
-                ?>
+            } ?>
                 </tbody>
             </table>
             <?php

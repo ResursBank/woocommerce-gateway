@@ -2,6 +2,7 @@
 
 namespace TorneLIB\Utils;
 
+use Exception;
 use ReflectionClass;
 use ReflectionException;
 use TorneLIB\Exception\Constants;
@@ -15,12 +16,89 @@ use TorneLIB\Exception\ExceptionHandler;
 class Generic
 {
     /**
+     * @var string $templatePath
+     * @since 6.1.6
+     */
+    private $templatePath = '';
+
+    /**
+     * Defines if current rendered template is plain.
+     * @var bool $templateText
+     * @since 6.1.6
+     */
+    private $templatePlain = false;
+
+    /**
+     * @var array $templateExtension
+     * @since 6.1.6
+     */
+    private $templateExtension = ['htm', 'html', 'txt', 'php', 'phtml'];
+
+    /**
      * Generic constructor.
      * @since 6.1.0
      */
     public function __construct()
     {
         return $this;
+    }
+
+    /**
+     * @param string $className
+     * @return string
+     * @throws ReflectionException
+     * @since 6.1.0
+     */
+    public function getVersionByClassDoc($className = '')
+    {
+        return $this->getDocBlockItem('@version', '', $className);
+    }
+
+    /**
+     * @param $item
+     * @param string $functionName
+     * @param string $className
+     * @return string
+     * @throws ReflectionException
+     * @since 6.1.0
+     */
+    public function getDocBlockItem($item, $functionName = '', $className = '')
+    {
+        return (string)$this->getExtractedDocBlockItem(
+            $item,
+            $this->getExtractedDocBlock(
+                $item,
+                $functionName,
+                $className
+            )
+        );
+    }
+
+    /**
+     * @param $item
+     * @param $doc
+     * @return string
+     * @since 6.1.0
+     */
+    private function getExtractedDocBlockItem($item, $doc)
+    {
+        $return = '';
+
+        if (!empty($doc)) {
+            preg_match_all(sprintf('/%s\s(\w.+)\n/s', $item), $doc, $docBlock);
+
+            if (isset($docBlock[1]) && isset($docBlock[1][0])) {
+                $return = $docBlock[1][0];
+
+                // Strip stuff after line breaks
+                if (preg_match('/[\n\r]/', $return)) {
+                    $multiRowData = preg_split('/[\n\r]/', $return);
+                    $return = isset($multiRowData[0]) ? $multiRowData[0] : '';
+                }
+            }
+        }
+
+        return (string)$return;
     }
 
     /**
@@ -53,64 +131,6 @@ class Generic
         }
 
         return (string)$return;
-    }
-
-    /**
-     * @param $item
-     * @param $doc
-     * @return string
-     * @since 6.1.0
-     */
-    private function getExtractedDocBlockItem($item, $doc)
-    {
-        $return = '';
-
-        if (!empty($doc)) {
-            preg_match_all(sprintf('/%s\s(\w.+)\n/s', $item), $doc, $docBlock);
-
-            if (isset($docBlock[1]) && isset($docBlock[1][0])) {
-                $return = $docBlock[1][0];
-
-                // Strip stuff after line breaks
-                if (preg_match('/[\n\r]/', $return)) {
-                    $multiRowData = preg_split('/[\n\r]/', $return);
-                    $return = isset($multiRowData[0]) ? $multiRowData[0] : '';
-                }
-            }
-        }
-
-        return (string)$return;
-    }
-
-    /**
-     * @param $item
-     * @param string $functionName
-     * @param string $className
-     * @return string
-     * @throws ReflectionException
-     * @since 6.1.0
-     */
-    public function getDocBlockItem($item, $functionName = '', $className = '')
-    {
-        return (string)$this->getExtractedDocBlockItem(
-            $item,
-            $this->getExtractedDocBlock(
-                $item,
-                $functionName,
-                $className
-            )
-        );
-    }
-
-    /**
-     * @param string $className
-     * @return string
-     * @throws ReflectionException
-     * @since 6.1.0
-     */
-    public function getVersionByClassDoc($className = '')
-    {
-        return $this->getDocBlockItem('@version', '', $className);
     }
 
     /**
@@ -217,5 +237,125 @@ class Generic
         }
 
         return $return;
+    }
+
+    /**
+     * @param $templateName
+     * @param bool $isHtml
+     * @param array $assignedVariables
+     * @return false|string
+     * @throws Exception
+     * @since 6.1.6
+     */
+    public function getTemplate($templateName, $assignedVariables = [])
+    {
+        $templateFile = $this->getProperTemplate($templateName);
+
+        if (empty($templateFile)) {
+            throw new Exception('Template file not found!', 404);
+        }
+
+        if (is_array($assignedVariables) && count($assignedVariables)) {
+            foreach ($assignedVariables as $key => $value) {
+                if (preg_match('/^\$/', $key)) {
+                    $key = substr($key, 1);
+                }
+                ${$key} = $value;
+            }
+        }
+
+        ob_start();
+        include($templateFile);
+        $templateHtml = ob_get_clean();
+        return $templateHtml;
+    }
+
+    /**
+     * @param $templateName
+     * @return string
+     * @throws Exception
+     * @since 6.1.6
+     */
+    public function getProperTemplate($templateName)
+    {
+        return (string)$this->getProperFileName(
+            sprintf(
+                '%s/%s',
+                $this->getTemplatePath(),
+                preg_replace('/(.*)\.(.*)$/', '$1', $templateName)
+            )
+        );
+    }
+
+    /**
+     * @param $partialFilename
+     * @return string|null
+     * @since 6.1.6
+     */
+    private function getProperFileName($partialFilename)
+    {
+        $templateFile = null;
+
+        foreach ($this->templateExtension as $extension) {
+            if (file_exists($partialFilename . '.' . $extension)) {
+                $templateFile = $partialFilename . '.' . $extension;
+                $this->setTemplatePlain(true);
+                break;
+            }
+        }
+
+        return $templateFile;
+    }
+
+    /**
+     * @param bool $templatePlain
+     * @since 6.1.6
+     */
+    private function setTemplatePlain($templatePlain)
+    {
+        $this->templatePlain = $templatePlain;
+    }
+
+    /**
+     * Get path of templates. Default: __DIR__/templates.
+     * @return string
+     * @throws Exception
+     * @since 6.1.6
+     */
+    public function getTemplatePath()
+    {
+        if (empty($this->templatePath)) {
+            $this->templatePath = __DIR__ . '/templates';
+        }
+
+        if (!file_exists($this->templatePath)) {
+            throw new Exception(
+                sprintf(
+                    'Template path %s not found!',
+                    $this->templatePath
+                ),
+                404
+            );
+        }
+
+        return $this->templatePath;
+    }
+
+    /**
+     * @param string $templatePath
+     * @since 6.1.6
+     */
+    public function setTemplatePath($templatePath)
+    {
+        $this->templatePath = $templatePath;
+    }
+
+    /**
+     * @return bool
+     * @since 6.1.6
+     */
+    public function isTemplatePlain()
+    {
+        return $this->templatePlain;
     }
 }

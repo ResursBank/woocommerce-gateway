@@ -14,9 +14,30 @@ use TorneLIB\Utils\Security;
  */
 class Content
 {
+    /**
+     * @var
+     */
     private $serializer;
+    /**
+     * @var
+     */
     private $unserializer;
+    /**
+     * @var
+     */
     private $simpleElement;
+
+    /**
+     * @var int XML_NORMALIZE Normalize XML content.
+     * @since 6.1.1
+     */
+    const XML_NORMALIZE = 1;
+
+    /**
+     * @var int XML_NO_PATH Do not follow the xml-path.
+     * @since 6.1.1
+     */
+    const XML_NO_PATH = 2;
 
     /**
      * Special options array to use with XML requests.
@@ -35,7 +56,6 @@ class Content
     public function __construct()
     {
         $this->getAvailableSerializers();
-        return $this;
     }
 
     /**
@@ -65,17 +85,18 @@ class Content
 
     /**
      * @param $data
-     * @param bool $normalize
+     * @param int $returnOptions
+     * @param string $expectVariable
      * @return array
      * @throws ExceptionHandler
      * @since 6.0.5
      */
-    public function getFromXml($data, $normalize = true)
+    public function getFromXml($data, $returnOptions = 1, $expectVariable = '')
     {
         $return = [];
 
         if ($this->simpleElement) {
-            $return = $this->getFromSimpleXml($data, $normalize);
+            $return = $this->getFromSimpleXml($data, $returnOptions, $expectVariable);
         }
 
         return $return;
@@ -148,14 +169,14 @@ class Content
      * IO-6.0 did not extract soapdata via xpath if the first simpleXml data object failed.
      *
      * @param $data
-     * @param bool $normalize
+     * @param int $returnOptions NORMALIZE + XML_NO_PATH
+     * @param string $expectVariable
      * @return object|null
-     * @throws ExceptionHandler
      * @since 6.1.0
      */
-    public function getFromSimpleXml($data, $normalize = true)
+    public function getFromSimpleXml($data, $returnOptions = 1, $expectVariable = '')
     {
-        $return = '';
+        $return = null;
         $data = $this->validateXml($data);
 
         // Assume this is proper content.
@@ -169,15 +190,37 @@ class Content
                     (defined('LIBXML_NOERROR' ? LIBXML_NOERROR : 32))
                 );
                 $simpleXmlElement = @new \SimpleXMLElement($data, $options);
-                try {
-                    $return = $this->getXmlFromPath($simpleXmlElement);
-                    $xmlPath = true;
-                } catch (ExceptionHandler $e) {
-                    $xmlPath = false;
+                $return = $simpleXmlElement;
+
+                if (empty($return) && ($returnOptions & self::XML_NO_PATH)) {
+                    // Remove XML_NO_PATH if nothing was returned from the first try.
+                    $returnOptions -= self::XML_NO_PATH;
                 }
 
-                if ($normalize && !$xmlPath && is_null($simpleXmlPath)) {
-                    $return = (new Arrays())->arrayObjectToStdClass($simpleXmlElement);
+                try {
+                    $simpleXmlPath = $this->getXmlFromPath($simpleXmlElement);
+                    $xmlPath = false;
+                    if (!($returnOptions & self::XML_NO_PATH)) {
+                        $xmlPath = true;
+                        $return = $simpleXmlPath;
+                    }
+
+                    if ($xmlPath &&
+                        !empty($expectVariable) &&
+                        !isset($simpleXmlPath->$expectVariable) &&
+                        isset($simpleXmlElement->$expectVariable)
+                    ) {
+                        // Detect misconfigured returns by checking what the user expected to find
+                        // in the request. If it is present in the old transformation but not in the path-based
+                        // control, restore the state.
+                        $return = $simpleXmlElement;
+                    }
+
+                } catch (ExceptionHandler $e) {
+                }
+
+                if (($returnOptions & self::XML_NORMALIZE) && !is_null($return)) {
+                    $return = (new Arrays())->arrayObjectToStdClass($return);
                 }
             } catch (ExceptionHandler $e) {
             }

@@ -77,6 +77,7 @@ class Aes
 
     /**
      * Aes constructor.
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function __construct()
@@ -147,8 +148,7 @@ class Aes
         // Check if a testflag is available, to switch over to mcrypt.
         // If openssl is absent, switch over to mcrypt keying (md5 instead of sha1) automatically.
         if (
-            (
-                Flag::getFlag('mcrypt') ||
+            (Flag::getFlag('mcrypt') ||
                 !Security::getCurrentFunctionState('openssl_encrypt', false) ||
                 $this->getMcryptOverSsl()
             ) &&
@@ -282,6 +282,7 @@ class Aes
      */
     private function getEncryptedSsl($dataToEncrypt = '', $asBase64 = true, $forceUtf8 = true)
     {
+        $return = null;
         if (empty($this->aesKey) || empty($this->aesIv)) {
             throw new ExceptionHandler(
                 'You need to set KEY and IV to encrypt content.',
@@ -289,19 +290,46 @@ class Aes
             );
         }
 
-        $return = openssl_encrypt(
-            $forceUtf8 ? utf8_encode($dataToEncrypt) : $dataToEncrypt,
-            $this->getSslCipherType(),
-            $this->getAesKey(),
-            OPENSSL_RAW_DATA,
-            $this->getAesIv(true)
-        );
+        try {
+            $return = openssl_encrypt(
+                $forceUtf8 ? utf8_encode($dataToEncrypt) : $dataToEncrypt,
+                $this->getSslCipherType(),
+                $this->getAesKey(),
+                OPENSSL_RAW_DATA,
+                $this->getAesIv(true)
+            );
+        } catch (\Exception $e) {
+            if (preg_match('/AEAD/', $e->getMessage()) && $e->getCode() === 2) {
+                $return = $this->getEncryptedSslTag($dataToEncrypt, $forceUtf8);
+            } else {
+                throw $e;
+            }
+        }
 
         if ($asBase64) {
             $return = (new Strings())->base64urlEncode($return);
         }
 
         return $return;
+    }
+
+    /**
+     * @param string $dataToEncrypt
+     * @param bool $forceUtf8
+     * @return false|string
+     * @throws ExceptionHandler
+     * @since 6.1.3
+     */
+    private function getEncryptedSslTag($dataToEncrypt, $forceUtf8 = true, $tag = '')
+    {
+        return openssl_encrypt(
+            $forceUtf8 ? utf8_encode($dataToEncrypt) : $dataToEncrypt,
+            $this->getSslCipherType(),
+            $this->getAesKey(),
+            OPENSSL_RAW_DATA,
+            $this->getAesIv(true),
+            $tag
+        );
     }
 
     /**

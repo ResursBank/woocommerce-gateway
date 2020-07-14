@@ -11,14 +11,6 @@ namespace TorneLIB\IO\Data;
 class Strings
 {
     /**
-     * Strings constructor.
-     */
-    public function __construct()
-    {
-        return $this;
-    }
-
-    /**
      * @param $string
      * @return string
      * @since 6.1.0

@@ -2,6 +2,7 @@
 
 namespace TorneLIB\Data;
 
+use Exception;
 use function random_int;
 
 /**
@@ -74,6 +75,62 @@ class Password
     }
 
     /**
+     * Refactored generator to create a random password or string.
+     *
+     * @param int $complexity
+     * @param int $totalLength Length of the string
+     * @param bool $ambigous Exclude what we see as ambigous characters (this has no effect in complexity > 4)
+     * @param bool $antiDouble Never use same character twice.
+     * @return string
+     * @throws Exception
+     * @since 6.0.4
+     */
+    public function mkpass(
+        $complexity = self::COMPLEX_UPPER + self::COMPLEX_LOWER + self::COMPLEX_NUMERICS,
+        $totalLength = 16,
+        $ambigous = true,
+        $antiDouble = true
+    ) {
+        $pwString = '';
+
+        if (is_null($complexity)) {
+            // Defaultify if someone sends null in here.
+            $complexity = self::COMPLEX_UPPER + self::COMPLEX_LOWER + self::COMPLEX_NUMERICS;
+        }
+        if (!intval($totalLength)) {
+            $totalLength = 16;
+        }
+
+        for ($charIndex = 0; $charIndex < $totalLength; $charIndex++) {
+            $pwString .= $this->getCharacterFromComplexity($complexity, $ambigous, $antiDouble);
+        }
+
+        return $pwString;
+    }
+
+    /**
+     * Returns a random character based on complexity selection.
+     *
+     * @param int $complexity
+     * @param bool $ambigous
+     * @param bool $antiDouble
+     * @return mixed|string
+     * @throws Exception
+     * @since 6.0.4
+     */
+    private function getCharacterFromComplexity(
+        $complexity,
+        $ambigous = false,
+        $antiDouble = false
+    ) {
+        if ($complexity & self::COMPLEX_BINARY && $this->characterArray[$complexity]) {
+            $this->getBinaryTable();
+        }
+
+        return $this->getRandomCharacterFromArray($complexity, $ambigous, $antiDouble);
+    }
+
+    /**
      * @since 6.1.0
      */
     private function getBinaryTable()
@@ -84,56 +141,13 @@ class Password
     }
 
     /**
-     * @param int $complexity
-     * @return mixed
-     * @throws \Exception
-     * @since 6.1.0
-     */
-    public function getCharacterList($complexity)
-    {
-        $allowedList = [];
-
-        foreach ($this->characterArray as $arrayBit => $arrayContent) {
-            if ($complexity & $arrayBit) {
-                $allowedList[] = $arrayContent;
-            }
-        }
-
-        if (!count($allowedList)) {
-            $return = $this->characterArray[self::COMPLEX_UPPER];
-        } else {
-            if (function_exists('random_int')) {
-                $rInt = random_int(0, count($allowedList) - 1);
-            } else {
-                $rInt = rand(0, count($allowedList) - 1);
-            }
-            $return = $allowedList[$rInt];
-        }
-
-        return $return;
-    }
-
-    /**
-     * Returns a selected character list array string as a new array
-     *
-     * @param int $complexity
-     * @param $characterString
-     * @return array
-     * @since 6.0.4
-     */
-    private function getCharactersFromList($complexity, $characterString)
-    {
-        return preg_split("//", $characterString, -1, PREG_SPLIT_NO_EMPTY);
-    }
-
-    /**
-     * Returns a random character from a selected character list
+     * Returns a random character from a selected character list.
      *
      * @param int $complexity
      * @param bool $ambigous
      * @param bool $antiDouble
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      * @since 6.0.4
      */
     private function getRandomCharacterFromArray(
@@ -189,58 +203,46 @@ class Password
     }
 
     /**
-     * Returns a random character based on complexity selection
+     * Returns a selected character list array string as a new array.
      *
      * @param int $complexity
-     * @param bool $ambigous
-     * @param bool $antiDouble
-     * @return mixed|string
-     * @throws \Exception
+     * @param $characterString
+     * @return array
      * @since 6.0.4
+     * @noinspection PhpUnusedParameterInspection
      */
-    private function getCharacterFromComplexity(
-        $complexity,
-        $ambigous = false,
-        $antiDouble = false
-    ) {
-        if ($complexity & self::COMPLEX_BINARY && $this->characterArray[$complexity]) {
-            $this->getBinaryTable();
-        }
-
-        return $this->getRandomCharacterFromArray($complexity, $ambigous, $antiDouble);
+    private function getCharactersFromList($complexity, $characterString)
+    {
+        return preg_split("//", $characterString, -1, PREG_SPLIT_NO_EMPTY);
     }
 
     /**
-     * Refactored generator to create a random password or string
-     *
      * @param int $complexity
-     * @param int $totalLength Length of the string
-     * @param bool $ambigous Exclude what we see as ambigous characters (this has no effect in complexity > 4)
-     * @param bool $antiDouble Never use same character twice.
-     * @return string
-     * @throws \Exception
-     * @since 6.0.4
+     * @return mixed
+     * @throws Exception
+     * @since 6.1.0
      */
-    public function mkpass(
-        $complexity = self::COMPLEX_UPPER + self::COMPLEX_LOWER + self::COMPLEX_NUMERICS,
-        $totalLength = 16,
-        $ambigous = true,
-        $antiDouble = true
-    ) {
-        $pwString = '';
+    public function getCharacterList($complexity)
+    {
+        $allowedList = [];
 
-        if (is_null($complexity)) {
-            // Defaultify if someone sends null in here.
-            $complexity = self::COMPLEX_UPPER + self::COMPLEX_LOWER + self::COMPLEX_NUMERICS;
-        }
-        if (!intval($totalLength)) {
-            $totalLength = 16;
+        foreach ($this->characterArray as $arrayBit => $arrayContent) {
+            if ($complexity & $arrayBit) {
+                $allowedList[] = $arrayContent;
+            }
         }
 
-        for ($charIndex = 0; $charIndex < $totalLength; $charIndex++) {
-            $pwString .= $this->getCharacterFromComplexity($complexity, $ambigous, $antiDouble);
+        if (!count($allowedList)) {
+            $return = $this->characterArray[self::COMPLEX_UPPER];
+        } else {
+            if (function_exists('random_int')) {
+                $rInt = random_int(0, count($allowedList) - 1);
+            } else {
+                $rInt = rand(0, count($allowedList) - 1);
+            }
+            $return = $allowedList[$rInt];
         }
 
-        return $pwString;
+        return $return;
     }
 }
