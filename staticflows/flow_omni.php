@@ -40,10 +40,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $this->omniSuccessUrl = "";
 
         $icon_name = "resurs-standard";
-        $path_to_icon = $this->icon = apply_filters(
+        $this->icon = apply_filters(
             'woocommerce_resurs_bank_checkout_icon',
             $this->plugin_url() . '/img/' . $icon_name . '.png'
         );
+        $path_to_icon = $this->icon;
         $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
         $has_icon = (string)file_exists($temp_icon);
 

@@ -5260,9 +5260,9 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function isResursBankOrder(WC_Order $order)
     {
-        return (bool) preg_match(
+        return (bool)preg_match(
             '/resurs_bank/',
-            (string) $order->get_payment_method()
+            (string)$order->get_payment_method()
         );
     }
 
@@ -5589,8 +5589,7 @@ function getPaymentInfo($order, $getPaymentId = '', $fallback = false)
 
 /**
  * Hook into WooCommerce OrderAdmin fetch payment data from Resurs Bank.
- * This hook are tested from WooCommerce 2.1.5 up to WooCommcer 2.5.2
- *
+ * This hook are tested from WooCommerce 2.1.5 up to WooCommerce 2.5.2
  * @param WC_Order $order
  * @param null $orderDataInfoAfter
  *
@@ -7031,3 +7030,4 @@ function getResursRequireSession()
 }
 
 isResursSimulation();
+
