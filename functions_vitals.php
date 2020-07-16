@@ -178,15 +178,21 @@ function allowPluginToRun()
 }
 
 /**
- * @param $allow Current inbound allow state.
- * @param $info Very basic requests from _REQUEST and _POST parameters that could easily be analyzed.
+ * @param bool $allow Current inbound allow state.
+ * @param array $informationSet Very basic requests from _REQUEST and _POST parameters that could easily be analyzed.
  * @return bool If true, the plugin is allowed to proceed.
  */
-function allowResursRun($allow, $info)
+function allowResursRun($allow = null, $informationSet = null)
 {
+    if ($allow === null) {
+        $allow = false;
+    }
+    if (!is_array($informationSet)) {
+        $informationSet = (array)$informationSet;
+    }
+
     // For this method, $allow above is ignored and considered always off.
     // Since we're in admin this is an option that won't harm very much in frontend and store views.
-    $allow = false;
 
     // Heartbeats are known to pass here. In our case we choose to ignore the heartbeats.
     $allowFrom = [
@@ -199,19 +205,19 @@ function allowResursRun($allow, $info)
 
     // Refunds passing wp-remove-post-lock (ignored).
 
-    if (in_array($info['action'], $allowFrom) ||
-        in_array($info['page'], $allowFrom) ||
-        in_array($info['post_type'], $allowFrom)
+    if (in_array($informationSet['action'], $allowFrom, true) ||
+        in_array($informationSet['page'], $allowFrom, true) ||
+        in_array($informationSet['post_type'], $allowFrom, true)
     ) {
         $allow = true;
     }
 
     // Normally accept ajax actions. Discovered that "forgotten actions" could fail during this run.
-    if (!empty($info['action'])) {
+    if (!empty($informationSet['action'])) {
         $allow = true;
     }
 
-    if (preg_match('/woocommerce/i', $info['action'])) {
+    if (stripos($informationSet['action'], "woocommerce") !== false) {
         $allow = true;
     }
 
