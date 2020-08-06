@@ -5125,7 +5125,6 @@ function woocommerce_gateway_resurs_bank_init()
             return $gateways;
         }
 
-
         return $gateways;
     }
 
