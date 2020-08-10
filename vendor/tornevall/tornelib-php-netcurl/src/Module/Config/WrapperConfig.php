@@ -1,4 +1,7 @@
 <?php
+/** @noinspection PhpUndefinedMethodInspection */
+/** @noinspection PhpComposerExtensionStubsInspection */
+
 /**
  * Copyright © Tomas Tornevall / Tornevall Networks. All rights reserved.
  * See LICENSE for license details.
@@ -25,7 +28,7 @@ use TorneLIB\Utils\Ini;
  * Configuration handler. All wrapper services that needs shared configuration like credentials, SSL setup, etc.
  *
  * @package Module\Config
- * @version 6.1.0
+ * @version 6.1.1
  * @since 6.1.0
  */
 class WrapperConfig
@@ -199,8 +202,6 @@ class WrapperConfig
         $this->SSL = new WrapperSSL();
         $this->setThrowableHttpCodes();
         $this->setCurlDefaults();
-
-        return $this;
     }
 
     /**
@@ -236,8 +237,8 @@ class WrapperConfig
      */
     public function setThrowableHttpCodes($throwableMin = 400, $throwableMax = 599)
     {
-        $throwableMin = intval($throwableMin) > 0 ? $throwableMin : 400;
-        $throwableMax = intval($throwableMax) > 0 ? $throwableMax : 599;
+        $throwableMin = (int)$throwableMin > 0 ? $throwableMin : 400;
+        $throwableMax = (int)$throwableMax > 0 ? $throwableMax : 599;
         $this->throwableHttpCodes[] = [$throwableMin, $throwableMax];
 
         return $this;
@@ -265,11 +266,7 @@ class WrapperConfig
             $this->throwableHttpCodes = [];
         }
         foreach ($this->throwableHttpCodes as $codeListArray => $codeArray) {
-            if ((isset($codeArray[1]) &&
-                    $httpCode >= intval($codeArray[0]) &&
-                    $httpCode <= intval($codeArray[1])
-                ) || $forceException
-            ) {
+            if ((isset($codeArray[1]) && $httpCode >= (int)$codeArray[0] && $httpCode <= (int)$codeArray[1]) || $forceException) {
                 throw new ExceptionHandler(
                     sprintf(
                         'Error %d returned from server: "%s".',
@@ -404,6 +401,17 @@ class WrapperConfig
     }
 
     /**
+     * Entry point.
+     *
+     * @return mixed
+     * @since 6.1.1
+     */
+    public function getRequestDataContainer()
+    {
+        return $this->requestDataContainer;
+    }
+
+    /**
      * Handle json. Legacy. Maybe.
      *
      * @param $transformData
@@ -415,7 +423,7 @@ class WrapperConfig
         $return = $transformData;
 
         if (is_string($transformData)) {
-            $stringTest = json_decode($transformData);
+            $stringTest = json_decode($transformData, false);
             if (is_object($stringTest) || is_array($stringTest)) {
                 $return = $transformData;
             }
@@ -621,13 +629,11 @@ class WrapperConfig
                 ) {
                     if (!isset($currentStreamContext[$subKey][$key])) {
                         $currentStreamContext[$subKey][$key] = $value;
+                    } elseif ($key === 'header') {
+                        $currentStreamContext[$subKey][$key] .= "\r\n" . $value;
                     } else {
-                        if ($key === 'header') {
-                            $currentStreamContext[$subKey][$key] .= "\r\n" . $value;
-                        } else {
-                            // Overwrite if not header context.
-                            $currentStreamContext[$subKey][$key] = $value;
-                        }
+                        // Overwrite if not header context.
+                        $currentStreamContext[$subKey][$key] = $value;
                     }
                 }
             }
@@ -650,12 +656,18 @@ class WrapperConfig
         $dynamicOverwrites = Flag::getFlag('canoverwrite');
 
         $return = in_array(
-            $key, array_map('strtolower', $this->irreplacable)
+            $key,
+            array_map('strtolower', $this->irreplacable),
+            false
         ) ? false : true;
 
         // Dynamic override.
-        if (is_array($dynamicOverwrites) && in_array(
-                $key, $dynamicOverwrites
+        if (
+            is_array($dynamicOverwrites) &&
+            in_array(
+                $key,
+                $dynamicOverwrites,
+                false
             )
         ) {
             $return = true;
@@ -740,7 +752,7 @@ class WrapperConfig
     {
         $return = null;
 
-        if (preg_match('/CURL/', $key)) {
+        if (false !== strpos($key, 'CURL')) {
             $constantValue = @constant('TorneLIB\Module\Config\WrapperCurlOpt::NETCURL_' . $key);
             if (!empty($constantValue)) {
                 $return = $constantValue;
@@ -789,7 +801,9 @@ class WrapperConfig
 
         // If the current wrapper class that is used is. Saved for later use.
         //if ($this->getCurrentWrapperClass(true) === 'SimpleStreamWrapper') {}
-        $this->setDualStreamHttp('proxy', sprintf(
+        $this->setDualStreamHttp(
+            'proxy',
+            sprintf(
                 'tcp://%s',
                 $proxyAddress
             )
@@ -835,10 +849,8 @@ class WrapperConfig
             if (isset($this->options[$key])) {
                 return $this->options[$key];
             }
-        } else {
-            if (isset($this->streamOptions[$key])) {
-                return $this->streamOptions[$key];
-            }
+        } elseif (isset($this->streamOptions[$key])) {
+            return $this->streamOptions[$key];
         }
 
         throw new ExceptionHandler(
@@ -1047,7 +1059,7 @@ class WrapperConfig
      */
     public function getAuthentication()
     {
-        return (array)$this->authData;
+        return $this->authData;
     }
 
     /**
@@ -1154,7 +1166,7 @@ class WrapperConfig
      */
     public function getUserAgent()
     {
-        $globalSignature = WrapperConfig::getSignature();
+        $globalSignature = self::getSignature();
         if (!empty($globalSignature)) {
             return $globalSignature;
         }
@@ -1206,7 +1218,8 @@ class WrapperConfig
      * @return $this
      * @since 6.1.0
      */
-    public function setProduction($isProduction = true) {
+    public function setProduction($isProduction = true)
+    {
         $this->setStaging($isProduction ? false : true);
         return $this;
     }
@@ -1215,8 +1228,9 @@ class WrapperConfig
      * @return bool
      * @since 6.1.0
      */
-    public function getProduction() {
-        return !$this->getStaging() ? true : false;
+    public function getProduction()
+    {
+        return !$this->getStaging();
     }
 
     /**
@@ -1224,6 +1238,7 @@ class WrapperConfig
      *
      * @return array
      * @since 6.1.0
+     * @noinspection PhpUnusedPrivateMethodInspection
      */
     private function getTimeout()
     {
@@ -1270,11 +1285,11 @@ class WrapperConfig
     public function setWsdlCache($cacheSet = 0, $ttlCache = null)
     {
         $this->streamOptions['cache_wsdl'] = $cacheSet;
-        if ((new Ini())->getIniSettable('soap.wsdl_cache_ttl') &&
-            !empty($ttlCache) &&
-            (int)$ttlCache
+        // Noinspection set to avoid unnecessary setups.
+        if ((int)$ttlCache > 0 &&
+            (new Ini())->getIniSettable('soap.wsdl_cache_ttl')
         ) {
-            ini_set('soap.wsdl_cache_ttl', 1);
+            ini_set('soap.wsdl_cache_ttl', $ttlCache);
         }
 
         return $this;
@@ -1385,7 +1400,7 @@ class WrapperConfig
      */
     public function setUserAgentSignature($userAgentSignatureString)
     {
-        WrapperConfig::setSignature($userAgentSignatureString);
+        self::setSignature($userAgentSignatureString);
         return $this;
     }
 
@@ -1395,7 +1410,7 @@ class WrapperConfig
      */
     public function getUserAgentSignature()
     {
-        return WrapperConfig::getSignature();
+        return self::getSignature();
     }
 
     /**
@@ -1463,9 +1478,9 @@ class WrapperConfig
         if (!empty($url)) {
             $this->setRequestUrl($url);
         }
-        if ((is_array($data) && count($data)) ||
-            (is_string($data) && strlen($data) > 0)
-        ) {
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /** @var mixed $data */
+        if ((is_string($data) && $data !== '') || (is_array($data) && count($data))) {
             $this->setRequestData($data);
         }
 
@@ -1496,7 +1511,7 @@ class WrapperConfig
         $allowedTypes = ['get', 'is', 'set'];
         foreach ($allowedTypes as $item) {
             $testItem = @substr($name, 0, strlen($item));
-            if (in_array($testItem, $allowedTypes)) {
+            if (in_array($testItem, $allowedTypes, false)) {
                 $methodType = $testItem;
                 $cutAfter = strlen($item);
             }

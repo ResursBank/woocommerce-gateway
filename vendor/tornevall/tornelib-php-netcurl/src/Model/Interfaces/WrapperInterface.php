@@ -8,6 +8,7 @@ namespace TorneLIB\Model\Interfaces;
 
 use TorneLIB\Model\Type\authType;
 use TorneLIB\Model\Type\dataType;
+use TorneLIB\Model\Type\requestMethod;
 use TorneLIB\Module\Config\WrapperConfig;
 
 // Avoid conflicts and use what we have.
@@ -18,7 +19,7 @@ if (!defined('NETCURL_VERSION')) {
 /**
  * Interface Wrapper Interface with basic setup that should be present in all modules included in this package.
  * @package TorneLIB\Module\Network\Model
- * @version 6.1.0
+ * @version 6.1.1
  * @since 6.1.0
  */
 interface WrapperInterface

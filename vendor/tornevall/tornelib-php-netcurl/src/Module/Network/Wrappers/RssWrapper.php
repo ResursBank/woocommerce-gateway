@@ -4,8 +4,17 @@
  * See LICENSE for license details.
  */
 
+// Inspections should be ignored here as this is a depending-environment-based class.
+/** @noinspection PhpUndefinedClassInspection */
+/** @noinspection PhpSingleStatementWithBracesInspection */
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
+/** @noinspection PhpUndefinedNamespaceInspection */
+/** @noinspection NotOptimalIfConditionsInspection */
+
 namespace TorneLIB\Module\Network\Wrappers;
 
+use Exception;
+use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
 use TorneLIB\Model\Interfaces\WrapperInterface;
 use TorneLIB\Model\Type\authType;
@@ -15,17 +24,20 @@ use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Module\Network\NetWrapper;
 use TorneLIB\Utils\Generic;
 
-try {
-    Version::getRequiredVersion();
-} catch (Exception $e) {
-    die($e->getMessage());
+// If 8 or higher, don't bother.
+if (PHP_VERSION_ID < 80000) {
+    try {
+        Version::getRequiredVersion();
+    } catch (Exception $e) {
+        die($e->getMessage());
+    }
 }
 
 /**
  * Class RssWrapper
  * @package TorneLIB\Module\Network\Wrappers
  * @link https://docs.laminas.dev/laminas-feed/consuming-rss/
- * @version 6.1.0
+ * @version 6.1.1
  */
 class RssWrapper implements WrapperInterface
 {
@@ -57,15 +69,12 @@ class RssWrapper implements WrapperInterface
     }
 
     /**
-     * @param $config
-     * @return mixed
+     * @return WrapperConfig
      * @since 6.1.0
      */
-    private function getInheritedConfig($config)
+    public function getConfig()
     {
-        $config->setCurrentWrapper($this->CONFIG->getCurrentWrapper());
-
-        return $config;
+        return $this->CONFIG;
     }
 
     /**
@@ -81,12 +90,15 @@ class RssWrapper implements WrapperInterface
     }
 
     /**
-     * @return WrapperConfig
+     * @param $config
+     * @return mixed
      * @since 6.1.0
      */
-    public function getConfig()
+    private function getInheritedConfig($config)
     {
-        return $this->CONFIG;
+        $config->setCurrentWrapper($this->CONFIG->getCurrentWrapper());
+
+        return $config;
     }
 
     /**
@@ -142,9 +154,11 @@ class RssWrapper implements WrapperInterface
 
     /**
      * @inheritDoc
+     * @throws \ReflectionException
      */
     public function getVersion()
     {
+        /** @noinspection PhpUndefinedFieldInspection */
         $return = $this->version;
 
         if (empty($return)) {
@@ -156,6 +170,7 @@ class RssWrapper implements WrapperInterface
 
     /**
      * @inheritDoc
+     * @throws ExceptionHandler
      */
     public function request(
         $url,
@@ -169,6 +184,7 @@ class RssWrapper implements WrapperInterface
         } elseif (class_exists('Laminas\Feed\Reader\Reader')) {
             // If the http client in laminas is missing, fall back on our local wrappers. But instead of using
             // the netwrapper type RSS, we'll fetch the data as a regular data request to disable parts of the automation.
+            /** @noinspection NullPointerExceptionInspection */
             $this->requestResponseRaw = (new NetWrapper())
                 ->request(
                     $url,

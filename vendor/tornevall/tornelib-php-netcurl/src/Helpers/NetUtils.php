@@ -14,9 +14,12 @@ use TorneLIB\Module\Network\NetWrapper;
  * @package TorneLIB\Helpers
  * @since 6.1.0
  */
-class NetUtils {
+class NetUtils
+{
     /**
      * @param $gitRequest
+     * @param bool $numericsOnly
+     * @param bool $numericsSanitized
      * @return array
      * @since 6.1.0
      */
@@ -27,15 +30,13 @@ class NetUtils {
         if (isset($tagMatches[1]) && is_array($tagMatches[1])) {
             $tagList = $tagMatches[1];
             foreach ($tagList as $tag) {
-                if (!preg_match("/\^/", $tag)) {
+                if (!(bool)preg_match("/\^/", $tag)) {
                     if ($numericsOnly) {
                         if (($currentTag = $this->getGitTagsSanitized($tag, $numericsSanitized))) {
                             $return[] = $currentTag;
                         }
-                    } else {
-                        if (!isset($return[$tag])) {
-                            $return[$tag] = $tag;
-                        }
+                    } elseif (!isset($return[$tag])) {
+                        $return[$tag] = $tag;
                     }
                 }
             }
@@ -82,12 +83,10 @@ class NetUtils {
         foreach ($splitTag as $tagValue) {
             if (is_numeric($tagValue)) {
                 $tagArrayUnCombined[] = $tagValue;
-            } else {
-                if ($numericsSanitized) {
-                    // Sanitize string if content is dual.
-                    $numericStringOnly = preg_replace("/[^0-9$]/is", '', $tagValue);
-                    $tagArrayUnCombined[] = $numericStringOnly;
-                }
+            } elseif ($numericsSanitized) {
+                // Sanitize string if content is dual.
+                $numericStringOnly = preg_replace("/[^0-9$]/", '', $tagValue);
+                $tagArrayUnCombined[] = $numericStringOnly;
             }
         }
 
@@ -102,15 +101,15 @@ class NetUtils {
      * getGitTagsByUrl (From 6.1, the $keepCredentials has no effect).
      *
      * @param $url
-     * @param bool $numericsOnly
-     * @param bool $numericsSanitized
      * @return array
+     * @throws ExceptionHandler
      * @since 6.0.4 Moved from Network Library.
+     * @noinspection PhpUndefinedMethodInspection
      */
-    public function getGitTagsByUrl($url, $numericsOnly = false, $numericsSanitized = false)
+    public function getGitTagsByUrl($url)
     {
         $url .= "/info/refs?service=git-upload-pack";
-        $gitRequest = (new NetWrapper())->setTimeout(10)->request($url);
+        $gitRequest = (new NetWrapper())->request($url);
         return $this->getGitsTagsRegEx($gitRequest->getBody());
     }
 
@@ -118,10 +117,10 @@ class NetUtils {
      * @param $giturl
      * @param $version1
      * @param $version2
-     * @param $operator
      * @return array
+     * @throws ExceptionHandler
      */
-    public function getGitTagsByVersion($giturl, $version1, $version2, $operator)
+    public function getGitTagsByVersion($giturl, $version1, $version2)
     {
         $return = [];
         $versionList = $this->getGitTagsByUrl($giturl);
@@ -129,7 +128,7 @@ class NetUtils {
             foreach ($versionList as $versionNum) {
                 if (version_compare($versionNum, $version1, '>=') &&
                     version_compare($versionNum, $version2, '<=') &&
-                    !in_array($versionNum, $return)
+                    !in_array($versionNum, $return, false)
                 ) {
                     $return[] = $versionNum;
                 }
@@ -143,10 +142,11 @@ class NetUtils {
      * @param $gitUrl
      * @param string $yourVersion
      * @return array
+     * @throws ExceptionHandler
      */
     public function getHigherVersions($gitUrl, $yourVersion = '')
     {
-        $versionArray = $this->getGitTagsByUrl($gitUrl, true, true);
+        $versionArray = $this->getGitTagsByUrl($gitUrl);
         $versionsHigher = [];
         foreach ($versionArray as $tagVersion) {
             if (version_compare($tagVersion, $yourVersion, ">")) {
@@ -163,6 +163,7 @@ class NetUtils {
      * @param $gitUrl
      * @param string $yourVersion
      * @return bool
+     * @throws ExceptionHandler
      */
     public function getVersionLatest($gitUrl, $yourVersion = '')
     {

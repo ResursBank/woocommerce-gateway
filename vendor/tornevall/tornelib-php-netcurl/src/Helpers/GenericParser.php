@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpComposerExtensionStubsInspection */
+
 /**
  * Copyright © Tomas Tornevall / Tornevall Networks. All rights reserved.
  * See LICENSE for license details.
@@ -37,15 +38,22 @@ class GenericParser
             trim($string)
         );
 
-        if (preg_match('/\s/', $headString)) {
+        if ((bool)preg_match('/\s/', $headString)) {
             $headContent = explode(' ', $headString, 2);
 
             // Make sure there is no extras when starting to extract this data.
-            if (!is_numeric($headContent[0]) &&
-                preg_match('/^http/i', $headContent[0]) &&
-                preg_match('/\s/', $headContent[1]) || (
+            if (
+                (
                     $returnData === 'code' &&
-                    intval($headContent[1]) > 0
+                    (int)$headContent[1] > 0
+                ) ||
+                (
+                    !is_numeric($headContent[0]) &&
+                    0 === stripos($headContent[0], "http") &&
+                    (bool)preg_match(
+                        '/\s/',
+                        $headContent[1]
+                    )
                 )
             ) {
                 // Drop one to the left, and retry.
@@ -82,23 +90,24 @@ class GenericParser
         $return = $content;
 
         switch ($contentType) {
-            case (!empty($contentType) && preg_match('/\/xml|\+xml/i', $contentType) ? true : false):
+            case !empty($contentType) && (bool)preg_match('/\/xml|\+xml/i', $contentType):
                 // More detection possibilites.
                 /* <?xml version="1.0" encoding="UTF-8"?><rss version="2.0"*/
 
                 // If Laminas is available, prefer that engine before simple xml.
-                if (preg_match('/\/xml|\+xml/i', $contentType) && class_exists('Laminas\Feed\Reader\Reader')) {
+                if ((bool)preg_match('/\/xml|\+xml/i', $contentType) && class_exists('Laminas\Feed\Reader\Reader')) {
                     $return = (new RssWrapper())->getParsed($content);
                     break;
                 }
                 $return = (new Content())->getFromXml($content);
                 break;
-            case (preg_match('/\/json/i', $contentType) ? true : false):
+            case (bool)preg_match('/\/json/i', $contentType):
+                // If this check is not a typecasted check, things will break bad.
                 if (is_array($content)) {
                     // Did we get bad content?
                     $content = json_encode($content);
                 }
-                $return = json_decode($content);
+                $return = json_decode($content, false);
                 break;
             default:
                 break;

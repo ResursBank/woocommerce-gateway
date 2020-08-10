@@ -12,7 +12,7 @@ namespace TorneLIB\Module\Config;
  * cause warnings or worse in a system that uses them. This is the failover class.
  *
  * @package TorneLIB\Module\Config
- * @version 6.1.0
+ * @version 6.1.1
  * @since 6.1.0
  */
 abstract class WrapperCurlOpt

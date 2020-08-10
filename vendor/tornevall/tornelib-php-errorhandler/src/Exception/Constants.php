@@ -108,6 +108,13 @@ abstract class Constants
     const LIB_INVALID_PATH = 1013;
 
     /**
+     * When SoapClient is not instantiated before usage.
+     * @var int
+     * @since 6.1.11
+     */
+    const LIB_NETCURL_SOAPINSTANCE_MISSING = 1014;
+
+    /**
      * Cipher does not exist in current openssl driver.
      * @var int
      * @since 6.1.8

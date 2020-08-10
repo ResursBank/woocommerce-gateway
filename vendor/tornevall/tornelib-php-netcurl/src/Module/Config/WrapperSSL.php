@@ -7,6 +7,8 @@
 namespace TorneLIB\Module\Config;
 
 use Exception;
+use TorneLIB\Exception\Constants;
+use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Flags;
 
 /**
@@ -14,7 +16,7 @@ use TorneLIB\Flags;
  * for curl, etc.
  *
  * @package TorneLIB\Helpers
- * @version 6.1.0
+ * @version 6.1.1
  * @since 6.1.0
  */
 class WrapperSSL
@@ -61,8 +63,6 @@ class WrapperSSL
         }
 
         $this->setContextUserAgent();
-
-        return $this;
     }
 
     /**
@@ -77,7 +77,10 @@ class WrapperSSL
     public function getSslCapabilities()
     {
         if (!($return = $this->capable)) {
-            throw new Exception('NETCURL Exception: SSL capabilities is missing.', 500);
+            throw new ExceptionHandler(
+                'NETCURL Exception: SSL capabilities is missing.',
+                Constants::LIB_SSL_UNAVAILABLE
+            );
         }
 
         return $return;
@@ -125,7 +128,7 @@ class WrapperSSL
             $streamWrappers = [];
             $this->capabilities[] = 'stream';
         }
-        if (in_array('https', array_map("strtolower", $streamWrappers))) {
+        if (in_array('https', array_map("strtolower", $streamWrappers), false)) {
             $return = true;
             $this->capabilities[] = 'curl';
         }
@@ -136,6 +139,7 @@ class WrapperSSL
     /**
      * @return bool
      * @since 6.1.0
+     * @noinspection PhpComposerExtensionStubsInspection
      */
     private function getCurlSsl()
     {
@@ -144,7 +148,7 @@ class WrapperSSL
             $curlVersionRequest = curl_version();
 
             if (isset($curlVersionRequest['features'])) {
-                $return = ($curlVersionRequest['features'] & CURL_VERSION_SSL ? true : false);
+                $return = ((bool)($curlVersionRequest['features'] & CURL_VERSION_SSL));
             }
         }
 
@@ -172,7 +176,7 @@ class WrapperSSL
      * @param bool $selfsignedBooleanValue Allow self signed vertificates (default=false, never allow this).
      * @return mixed
      * @link https://www.php.net/manual/en/context.ssl.php
-     * @version 6.1.0
+     * @version 6.1.1
      */
     public function setStrictVerification($verifyBooleanValue = true, $selfsignedBooleanValue = false)
     {
@@ -190,7 +194,7 @@ class WrapperSSL
 
     /**
      * @return $this
-     * @version 6.1.0
+     * @version 6.1.1
      */
     private function setContextUserAgent()
     {
@@ -205,28 +209,26 @@ class WrapperSSL
      * Get prepared stream context array.
      *
      * @return array
-     * @version 6.1.0
+     * @version 6.1.1
      */
     public function getSslStreamContext()
     {
         // Create the stream with full context.
-        $streamContext = [
+        return [
             'stream_context' => stream_context_create($this->context),
         ];
-
-        return $streamContext;
     }
 
     /**
      * @param $key
      * @return array
-     * @version 6.1.0
+     * @version 6.1.1
      */
     public function getContext($key = null)
     {
         $return = $this->context['ssl'];
 
-        if (!is_null($key) && isset($this->context['ssl'][$key])) {
+        if (!empty($key) && isset($this->context['ssl'][$key])) {
             $return = $this->context['ssl'][$key];
         }
 
@@ -239,7 +241,7 @@ class WrapperSSL
      * @param $key
      * @param $value
      * @return WrapperSSL
-     * @version 6.1.0
+     * @version 6.1.1
      */
     public function setContext($key, $value)
     {
@@ -250,7 +252,7 @@ class WrapperSSL
 
     /**
      * @return array
-     * @version 6.1.0
+     * @version 6.1.1
      */
     public function getSecurityLevelChanges()
     {

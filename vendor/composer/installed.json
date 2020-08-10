@@ -126,20 +126,20 @@
     },
     {
         "name": "tornevall/tornelib-php-errorhandler",
-        "version": "6.1.10",
-        "version_normalized": "6.1.10.0",
+        "version": "6.1.11",
+        "version_normalized": "6.1.11.0",
         "source": {
             "type": "git",
             "url": "https://github.com/Tornevall/tornelib-php-errorhandler.git",
-            "reference": "be04f20f918bd55a148bdaaff78f84d2b7db0097"
+            "reference": "00414d96f110ea43995fc9c9162bfcc0740a0470"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-errorhandler/zipball/be04f20f918bd55a148bdaaff78f84d2b7db0097",
-            "reference": "be04f20f918bd55a148bdaaff78f84d2b7db0097",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-errorhandler/zipball/00414d96f110ea43995fc9c9162bfcc0740a0470",
+            "reference": "00414d96f110ea43995fc9c9162bfcc0740a0470",
             "shasum": ""
         },
-        "time": "2020-06-28T14:07:31+00:00",
+        "time": "2020-07-24T16:21:15+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -241,17 +241,17 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.1.0",
-        "version_normalized": "6.1.0.0",
+        "version": "6.1.1",
+        "version_normalized": "6.1.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/Tornevall/tornelib-php-netcurl.git",
-            "reference": "85fc1138da489839ebaf1f7fafa27fea17cf1e70"
+            "reference": "d82b11149bd956563672eabe3bff2c4056e9ce9a"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/85fc1138da489839ebaf1f7fafa27fea17cf1e70",
-            "reference": "85fc1138da489839ebaf1f7fafa27fea17cf1e70",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/d82b11149bd956563672eabe3bff2c4056e9ce9a",
+            "reference": "d82b11149bd956563672eabe3bff2c4056e9ce9a",
             "shasum": ""
         },
         "require": {
@@ -259,9 +259,10 @@
             "tornevall/tornelib-php-errorhandler": "6.1.*",
             "tornevall/tornelib-php-flags": "6.1.*",
             "tornevall/tornelib-php-io": "6.1.*",
-            "tornevall/tornelib-php-utils": "6.1.*"
+            "tornevall/tornelib-php-utils": "6.1.*",
+            "tornevall/tornelib-php-version": "6.1.*"
         },
-        "time": "2020-05-24T13:25:00+00:00",
+        "time": "2020-07-24T16:58:14+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -277,7 +278,7 @@
             {
                 "name": "Tomas Tornevall",
                 "email": "thorne@tornevall.net",
-                "homepage": "https://www.tornevall.net",
+                "homepage": "https://developer.tornevall.net",
                 "role": "Developer"
             }
         ],
@@ -404,5 +405,45 @@
             }
         ],
         "description": "Utils that many of the TorneLIB-based libraries may need."
+    },
+    {
+        "name": "tornevall/tornelib-php-version",
+        "version": "6.1.0",
+        "version_normalized": "6.1.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Tornevall/tornelib-php-version.git",
+            "reference": "377c3b940f92e46787b819fb2976facd599e2edd"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-version/zipball/377c3b940f92e46787b819fb2976facd599e2edd",
+            "reference": "377c3b940f92e46787b819fb2976facd599e2edd",
+            "shasum": ""
+        },
+        "require": {
+            "tornevall/tornelib-php-errorhandler": "6.1.*"
+        },
+        "time": "2020-06-27T08:27:54+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "TorneLIB\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Tomas Tornevall",
+                "email": "thorne@tornevall.net",
+                "homepage": "https://developer.tornevall.net",
+                "role": "Developer"
+            }
+        ],
+        "description": "Yet another Curl Library to handling web calls"
     }
 ]

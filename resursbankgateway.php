@@ -12,7 +12,7 @@
  * Domain Path: /language
  */
 
-define('RB_WOO_VERSION', '2.2.34');
+define('RB_WOO_VERSION', '2.2.35');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resurs-bank-payment-gateway-for-woocommerce');
 

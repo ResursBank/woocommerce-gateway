@@ -7,26 +7,30 @@
 namespace TorneLIB\Helpers;
 
 use Exception;
+use RuntimeException;
 use TorneLIB\Exception\Constants;
 
 /**
  * Class Version netcurl version guard, throws errors when running too low PHP-versions (below 5.4).
  *
  * @package TorneLIB\Helpers
- * @since 6.1.0
  * @version 6.1.0
  */
 class Version
 {
     /**
-     * @param string $lowest
+     * @param string $lowest Lowest allowed version for clients. Defaults to 5.6.
      * @param string $op
      * @throws Exception
      */
-    public static function getRequiredVersion($lowest = '5.5', $op = '<')
+    public static function getRequiredVersion($lowest = '5.6', $op = '<')
     {
+        if (defined('TORNELIB_LOWEST_REQUIREMENT')) {
+            $lowest = TORNELIB_LOWEST_REQUIREMENT;
+        }
+
         if (version_compare(PHP_VERSION, $lowest, $op)) {
-            throw new Exception(
+            throw new RuntimeException(
                 sprintf(
                     'Your PHP version is way too old (%s)! It is time to upgrade. ' .
                     'Try somthing above PHP 7.2 where PHP still has support. ' .

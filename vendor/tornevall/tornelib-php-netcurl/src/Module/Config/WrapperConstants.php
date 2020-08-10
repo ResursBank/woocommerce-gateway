@@ -11,7 +11,7 @@ namespace TorneLIB\Module\Config;
  * Seems quite empty as for now.
  *
  * @package TorneLIB\Module\Config
- * @version 6.1.0
+ * @version 6.1.1
  */
 abstract class WrapperConstants
 {

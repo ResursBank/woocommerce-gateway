@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.4.1
 Requires PHP: 5.4
-Stable tag: 2.2.34
+Stable tag: 2.2.35
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,17 +85,9 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.33 =
+= 2.2.35 =
 
-    * [WOO-474] - Payment methods in simplified checkout is desynched on credential switching
-
-= 2.2.32 =
-
-    * [WOO-477] - 2.2.32 ecomphp+netcurl patch
-    * [WOO-478] - WC Tested up to: 4.2.0
-    * [WOO-467] - Mockfail issue, index event-type not found
-    * [WOO-470] - getAddress triggered but not executed on site when merchant has NATURAL methods only
-
+    Woocommerce and payment gateways interfering with menu editor wrongfully.
 
 == Upgrade Notice ==
 

@@ -1,13 +1,16 @@
 {
-    "name": "tornevall/tornelib-php-errorhandler",
-    "version": "6.1.11",
-    "description": "Global exception and errorhandling for TorneLIB, with all errorcodes stored in the same place.",
+    "name": "tornevall/tornelib-php-version",
+    "version": "6.1.0",
+    "description": "Yet another Curl Library to handling web calls",
     "license": "Apache-2.0",
+    "require": {
+        "tornevall/tornelib-php-errorhandler": "6.1.*"
+    },
     "authors": [
         {
             "name": "Tomas Tornevall",
             "email": "thorne@tornevall.net",
-            "homepage": "https://www.tornevall.net",
+            "homepage": "https://developer.tornevall.net",
             "role": "Developer"
         }
     ],

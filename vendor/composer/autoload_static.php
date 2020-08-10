@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit04f58c298d1222a794400044ea9ed123
+class ComposerStaticInitda6f88f37bfa7fc737a7f6c8d142bb04
 {
     public static $files = array (
         'bc521b269795605ef2585a7369f0017e' => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src/Network.php',
@@ -35,6 +35,7 @@ class ComposerStaticInit04f58c298d1222a794400044ea9ed123
             6 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl-deprecate-60/src',
             7 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
             8 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
+            9 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
         ),
         'Resursbank\\RBEcomPHP\\' => 
         array (
@@ -45,8 +46,8 @@ class ComposerStaticInit04f58c298d1222a794400044ea9ed123
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit04f58c298d1222a794400044ea9ed123::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit04f58c298d1222a794400044ea9ed123::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitda6f88f37bfa7fc737a7f6c8d142bb04::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitda6f88f37bfa7fc737a7f6c8d142bb04::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

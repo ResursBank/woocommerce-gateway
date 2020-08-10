@@ -6,6 +6,8 @@
 
 namespace TorneLIB\Module\Network\Wrappers;
 
+use Exception;
+use ReflectionException;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
@@ -29,13 +31,13 @@ try {
  * Class SimpleWrapper Fetching tool in the simplest form. Using file_get_contents.
  *
  * @package TorneLIB\Module\Network\Wrappers
- * @version 6.1.0
+ * @version 6.1.1
  */
 class SimpleStreamWrapper implements WrapperInterface
 {
     /**
      * @var WrapperConfig $CONFIG
-     * @version 6.1.0
+     * @version 6.1.1
      */
     private $CONFIG;
 
@@ -50,6 +52,10 @@ class SimpleStreamWrapper implements WrapperInterface
      */
     private $streamContentResponseHeader = [];
 
+    /**
+     * SimpleStreamWrapper constructor.
+     * @throws ExceptionHandler
+     */
     public function __construct()
     {
         // Base streamwrapper (file_get_contents, fopen, etc) is only allowed if allow_url_fopen is available.
@@ -70,9 +76,11 @@ class SimpleStreamWrapper implements WrapperInterface
 
     /**
      * @inheritDoc
+     * @throws ReflectionException
      */
     public function getVersion()
     {
+        /** @noinspection PhpUndefinedFieldInspection */
         $return = $this->version;
 
         if (empty($return)) {
@@ -148,6 +156,7 @@ class SimpleStreamWrapper implements WrapperInterface
 
     /**
      * @inheritDoc
+     * @throws ExceptionHandler
      */
     public function getParsed()
     {
@@ -194,9 +203,9 @@ class SimpleStreamWrapper implements WrapperInterface
     {
         $return = '';
 
-        if (strtolower($key) === 'http' &&
-            isset($this->streamContentResponseHeader[0]) &&
-            preg_match('/^http\//i', $this->streamContentResponseHeader[0])
+        if (isset($this->streamContentResponseHeader[0]) &&
+            strtolower($key) === 'http' &&
+            (bool)preg_match('/^http\//i', $this->streamContentResponseHeader[0])
         ) {
             return (string)$this->streamContentResponseHeader[0];
         }
@@ -228,6 +237,7 @@ class SimpleStreamWrapper implements WrapperInterface
     }
 
     /**
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function getStreamRequest()
@@ -304,6 +314,7 @@ class SimpleStreamWrapper implements WrapperInterface
             $this->CONFIG->getStreamContext()
         );
 
+        /** @noinspection IssetArgumentExistenceInspection */
         $this->streamContentResponseHeader = isset($http_response_header) ? $http_response_header : [];
 
         $httpExceptionMessage = $this->getHttpMessage();
@@ -315,6 +326,8 @@ class SimpleStreamWrapper implements WrapperInterface
             $httpExceptionMessage,
             $this->getCode()
         );
+
+        return $this;
     }
 
     /**
@@ -354,7 +367,8 @@ class SimpleStreamWrapper implements WrapperInterface
      * @param int $method
      * @param int $dataType
      * @return SimpleStreamWrapper
-     * @version 6.1.0
+     * @throws ExceptionHandler
+     * @version 6.1.1
      */
     public function request($url, $data = [], $method = requestMethod::METHOD_GET, $dataType = dataType::NORMAL)
     {

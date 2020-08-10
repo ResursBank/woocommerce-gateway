@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpComposerExtensionStubsInspection */
+
 /**
  * Copyright © Tomas Tornevall / Tornevall Networks. All rights reserved.
  * See LICENSE for license details.
@@ -7,8 +8,10 @@
 namespace TorneLIB\Module\Network\Wrappers;
 
 use Exception;
+use ReflectionException;
 use SoapClient;
 use SoapFault;
+use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\GenericParser;
 use TorneLIB\IO\Data\Strings;
@@ -25,7 +28,7 @@ use TorneLIB\Utils\Security;
  * Class SoapClientWrapper
  *
  * @package TorneLIB\Module\Network\Wrappers
- * @version 6.1.0
+ * @version 6.1.1
  */
 class SoapClientWrapper implements WrapperInterface
 {
@@ -106,6 +109,7 @@ class SoapClientWrapper implements WrapperInterface
     /**
      * SoapClientWrapper constructor.
      * @throws ExceptionHandler
+     * @throws Exception
      */
     public function __construct()
     {
@@ -132,16 +136,18 @@ class SoapClientWrapper implements WrapperInterface
      * @return bool
      * @since 6.1.0
      */
-    public function getStaging() {
+    public function getStaging()
+    {
         return $this->CONFIG->getStaging();
     }
 
     /**
      * @param bool $production
-     * @return
+     * @return WrapperConfig
      * @since 6.1.0
      */
-    public function setProduction($production = true) {
+    public function setProduction($production = true)
+    {
         return $this->CONFIG->setProduction($production);
     }
 
@@ -149,15 +155,18 @@ class SoapClientWrapper implements WrapperInterface
      * @return mixed
      * @since 6.1.0
      */
-    public function getProduction() {
+    public function getProduction()
+    {
         return $this->CONFIG->getProduction();
     }
 
     /**
      * @inheritDoc
+     * @throws ReflectionException
      */
     public function getVersion()
     {
+        /** @noinspection PhpUndefinedFieldInspection */
         $return = $this->version;
 
         if (empty($return)) {
@@ -294,7 +303,8 @@ class SoapClientWrapper implements WrapperInterface
         $this->CONFIG->getOptions();
         $this->getSoapInitErrorHandler();
         $streamOpt = $this->getPreparedProxyOptions($this->getConfig()->getStreamOptions());
-        if (version_compare(PHP_VERSION, '7.1.0', '>=')) {
+        // version_compare(PHP_VERSION, '7.1.0', '>=')
+        if (PHP_VERSION_ID >= 70100) {
             $this->soapClient = new SoapClient(
                 $this->getConfig()->getRequestUrl(),
                 $streamOpt
@@ -321,6 +331,8 @@ class SoapClientWrapper implements WrapperInterface
         }
 
         if (is_array($this->soapProxyOptions)) {
+            /** @noinspection AdditionOperationOnArraysInspection */
+            // + is intended.
             $streamOptions += $this->soapProxyOptions;
         }
 
@@ -333,6 +345,7 @@ class SoapClientWrapper implements WrapperInterface
      *
      * @return $this
      * @throws ExceptionHandler
+     * @throws Exception
      * @since 6.1.0
      */
     private function getSoapInit()
@@ -381,9 +394,12 @@ class SoapClientWrapper implements WrapperInterface
      *
      * @return $this
      * @since 6.1.0
+     * @noinspection SuspiciousAssignmentsInspection
      */
     private function getSoapInitErrorHandler()
     {
+        // No inspections on this, it is handled properly handled despite the immediate overrider.
+        // The overrider is present as it has to be nulled out after each use.
         if (!is_null($this->currentErrorHandler)) {
             restore_error_handler();
             $this->currentErrorHandler = null;
@@ -475,7 +491,7 @@ class SoapClientWrapper implements WrapperInterface
     {
         $return = null;
 
-        if (method_exists($this->soapClient, $methodName)) {
+        if (!empty($this->soapClient) && method_exists($this->soapClient, $methodName)) {
             $return = call_user_func_array([$this->soapClient, $methodName], []);
         }
 
@@ -486,6 +502,7 @@ class SoapClientWrapper implements WrapperInterface
      * @param $userAgentString
      * @return WrapperConfig
      * @since 6.1.0
+     * @noinspection PhpUnusedPrivateMethodInspection
      */
     private function setUserAgent($userAgentString)
     {
@@ -496,6 +513,7 @@ class SoapClientWrapper implements WrapperInterface
      * @return mixed
      * @throws ExceptionHandler
      * @since 6.1.0
+     * @noinspection PhpUnusedPrivateMethodInspection
      */
     private function getUserAgent()
     {
@@ -582,7 +600,11 @@ class SoapClientWrapper implements WrapperInterface
         try {
             // Giving the soapcall a more natural touch with call_user_func_array. Besides, this also means
             // we don't have to check for arguments.
-            $return = call_user_func_array([$this->soapClient, $name], $arguments);
+            if (!empty($this->soapClient)) {
+                $return = call_user_func_array([$this->soapClient, $name], $arguments);
+            } else {
+                throw new ExceptionHandler('SoapClient instance was never initialized.', Constants::LIB_NETCURL_SOAPINSTANCE_MISSING);
+            }
         } catch (Exception $soapFault) {
             // Public note: Those exceptions may be thrown by the soap-api or when the wsdl is cache and there is
             // for example authorization problems. This is why the soapResponse is fetched and analyzed before
@@ -655,13 +677,13 @@ class SoapClientWrapper implements WrapperInterface
             case 'get':
                 $getResponse = $this->getMagicGettableCall($methodContent, $name, $arguments);
                 if (!is_null($getResponse)) {
-                    return $getResponse;
+                    $return = $getResponse;
                 }
                 break;
             case 'set':
                 $getResponse = $this->getMagicSettableCall($name, $arguments);
                 if (!is_null($getResponse)) {
-                    return $getResponse;
+                    $return = $getResponse;
                 }
                 break;
             default:
@@ -743,7 +765,7 @@ class SoapClientWrapper implements WrapperInterface
             if (count($spacedSplit) > 1) {
                 $splitName = !$lCase ? $spacedSplit[0] : strtolower($spacedSplit[0]);
 
-                if (preg_match('/^http\/(.*?)$/i', $splitName)) {
+                if ((bool)preg_match('/^http\/(.*?)$/i', $splitName)) {
                     $httpSplitName = explode("/", $splitName, 2);
                     $realSplitName = !$lCase ? $httpSplitName[0] : strtolower($httpSplitName[0]);
 
@@ -837,6 +859,7 @@ class SoapClientWrapper implements WrapperInterface
      * @param $arguments
      * @return SoapClientWrapper
      * @throws ExceptionHandler
+     * @throws Exception
      * @since 6.1.0
      */
     public function __call($name, $arguments)
