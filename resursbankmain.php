@@ -6458,7 +6458,7 @@ function initializeResursFlow(
     $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
     $requireNewFlow = false
 ) {
-    global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance;
+    global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance, $woocommerce;
     $username = getResursOption('login');
     $password = getResursOption('password');
     $useEnvironment = getServerEnv();
@@ -6526,7 +6526,12 @@ function initializeResursFlow(
         }
     }
 
-    $initFlow->setUserAgent(RB_WOO_CLIENTNAME . '-' . RB_WOO_VERSION);
+    $initFlow->setUserAgent(sprintf(
+        '%s-%s-with-woocommerce-%s',
+        RB_WOO_CLIENTNAME,
+        RB_WOO_VERSION,
+        $woocommerce->version
+    ));
     $initFlow->setEnvironment($useEnvironment);
     $initFlow->setDefaultUnitMeasure();
     if (isset($_REQUEST['testurl'])) {
