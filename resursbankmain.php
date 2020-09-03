@@ -3986,18 +3986,24 @@ function woocommerce_gateway_resurs_bank_init()
             $responseArray = [
                 'natural' => [],
                 'legal' => [],
+                'hasNatural' => false,
+                'hasLegal' => false,
             ];
 
             if (is_array($paymentMethods)) {
                 foreach ($paymentMethods as $objId) {
                     if (isset($objId->id) && isset($objId->customerType)) {
                         $nr = 'resurs_bank_nr_' . $objId->id;
-                        if (!is_array($objId->customerType)) {
-                            $responseArray[strtolower($objId->customerType)][] = $nr;
-                        } else {
+                        if (is_array($objId->customerType)) {
                             foreach ($objId->customerType as $customerType) {
-                                $responseArray[strtolower($customerType)][] = $nr;
+                                $lCaseType = strtolower($customerType);
+                                $responseArray[sprintf('has%s', ucfirst($lCaseType))] = true;
+                                $responseArray[$lCaseType][] = $nr;
                             }
+                        } else {
+                            $lCaseType = strtolower($objId->customerType);
+                            $responseArray[sprintf('has%s', ucfirst($lCaseType))] = true;
+                            $responseArray[$lCaseType][] = $nr;
                         }
                     }
                 }

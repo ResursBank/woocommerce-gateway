@@ -397,27 +397,14 @@ function preSetResursMethods(customerType, returnedObjects) {
         );
     }
 
-    // Only invoke if there are multiple customer types
-    if (customerType.toLowerCase() == "natural") {
-        var hideCustomerType = "legal";
-    } else {
-        var hideCustomerType = "natural";
-    }
     if (typeof customerType === "undefined") {
         return;
     }
     customerType = customerType.toLowerCase();
-    if (hideCustomerType === "legal" && !getResursMethodList(returnedObjects, "natural", true)) {
-        // Hiding legal methods when there are not legal methods available, makes the radio buttons
-        // not necessary to be shown at all.
+    if (!resursvars["customerTypes"]["hasLegal"]) {
+        console.log("Legal: !hasLegal");
         $RB('#ssnCustomerRadioNATURAL').remove();
         $RB('#ssnCustomerRadioLEGAL').remove();
-    }
-    if (!getResursMethodList(returnedObjects, hideCustomerType, false)) {
-        // Switch back to a method list that is still allowed to display themselves.
-        if (!getResursMethodList(returnedObjects, customerType.toLowerCase(), false)) {
-            console.log('Someone chose to not display any payment method at all. This might be caused by a filter hook.');
-        }
     }
 
     if ($RB('#billing_company').length > 0) {
@@ -432,8 +419,7 @@ function preSetResursMethods(customerType, returnedObjects) {
 }
 
 /**
- * Get a proper list of methods and display them on checkout screen depending on NATURAL or LEGAL.
- *
+ * Render a proper list of methods and set css-display depending on NATURAL or LEGAL.
  * @param returnedObjects
  * @param hideCustomerType
  * @param skipDisplay
