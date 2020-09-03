@@ -278,8 +278,9 @@ $RB(document).ready(function ($) {
         remove_first_checkout_button: function () {
             $('.checkout-button').each(function (index, value) {
                 var $value = $(value);
-                if (!$value.hasClass('second-checkout-button'))
+                if (!$value.hasClass('second-checkout-button')) {
                     $value.hide();
+                }
             });
         }
     };
