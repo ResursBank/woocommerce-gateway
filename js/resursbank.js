@@ -222,7 +222,6 @@ $RB(document).ready(function ($) {
                     $RB('.ssn-error-message').remove();
                     this.ssnInput.css('border-color', '');
                     var customerType = "";
-                    console.log("PMR: " + $RB('input[id^="payment_method_resurs_bank"]').length);
                     /**
                      * Conditional: If there is a customer type to look for, we also look for payment methods, before
                      * continuing. However, if there is neither NATURAL nor LEGAL customer types present on the webpage
@@ -230,13 +229,12 @@ $RB(document).ready(function ($) {
                      * radio buttons is naturally removed from the site. In THAT case, we should check if both radion
                      * buttons is missing and proceed with getAddress if that is the case.
                      */
-                    if (($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0 &&
-                            $RB('input[id^="payment_method_resurs_bank"]').length > 0
-                        ) ||
+                    // Removing validation:
+                    //$RB('input[id^="payment_method_resurs_bank"]').length > 0
+                    if (($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0) ||
                         (
                             $RB('#ssnCustomerTypeNATURAL').length === 0 &&
-                            $RB('#ssnCustomerTypeLEGAL').length === 0 &&
-                            $RB('input[id^="payment_method_resurs_bank"]').length > 0
+                            $RB('#ssnCustomerTypeLEGAL').length === 0
                         )
                     ) {
                         var selectedType = $RB('#ssnCustomerType' + currentCustomerType + ':checked');
