@@ -156,7 +156,7 @@ $RB(document).ready(function ($) {
 
             $(fetchAddressButton).click(function (e) {
                 var input = ssnField.val().trim();
-                var customerType = $(' #ssnCustomerType:checked ').val();
+                var customerType = $(' #ssnCustomerType:checked ').val().toUpperCase();
                 if (that.validate_ssn_address_field(input)) {
                     that.fetch_address(input, customerType);
                 }
@@ -230,8 +230,6 @@ $RB(document).ready(function ($) {
                      * buttons is missing and proceed with getAddress if that is the case.
                      */
 
-                    console.log(currentCustomerType);
-                    console.log($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length);
                     if (($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0 &&
                             $RB('input[id^="payment_method_resurs_bank"]').length > 0
                         ) ||
@@ -241,10 +239,10 @@ $RB(document).ready(function ($) {
                             $RB('input[id^="payment_method_resurs_bank"]').length > 0
                         )
                     ) {
-                        console.log("REACHED ENDPOINT");
-                        var selectedType = $RB('#ssnCustomerType' + currentCustomerType.toUpperCase() + ':checked');
+                        console.log(currentCustomerType + " / " + customerType);
+                        var selectedType = $RB('#ssnCustomerType' + currentCustomerType + ':checked');
                         if (selectedType.length > 0) {
-                            customerType = selectedType.val();
+                            customerType = selectedType.val().toUpperCase();
                         } else {
                             customerType = 'NATURAL';
                         }
@@ -325,8 +323,8 @@ function getMethodType(customerType) {
 
     if ($RB('#resursSelectedCountry').length > 0 && $RB('#ssn_field').length > 0) {
         currentResursCountry = $RB('#resursSelectedCountry').val();
-        currentCustomerType = customerType.toLowerCase();
-        if (currentCustomerType === "natural") {
+        currentCustomerType = customerType.toUpperCase();
+        if (currentCustomerType === "NATURAL") {
             enterNumberPhrase = getResursPhrase("getAddressEnterGovernmentId", currentResursCountry);
             labelNumberPhrase = getResursPhrase("labelGovernmentId", currentResursCountry);
         } else {
@@ -339,10 +337,10 @@ function getMethodType(customerType) {
     if ($RB('#ssnCustomerType' + customerType.toUpperCase()).length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
         var selectedType = $RB('#ssnCustomerType' + customerType.toUpperCase() + ':checked');
         if ($RB('#billing_company').length > 0 && $RB('#billing_company').val() !== "") {
-            customerType = "legal";
+            customerType = "LEGAL";
         } else {
             if (selectedType.length > 0) {
-                customerType = selectedType.val();
+                customerType = selectedType.val().toUpperCase();
             }
         }
         $RB('input[id^="payment_method_resurs_bank"]').each(
