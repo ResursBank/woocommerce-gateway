@@ -239,7 +239,6 @@ $RB(document).ready(function ($) {
                         )
                     ) {
                         var selectedType = $RB('#ssnCustomerType' + currentCustomerType.toUpperCase() + ':checked');
-                        console.log(selectedType);
                         if (selectedType.length > 0) {
                             customerType = selectedType.val();
                         } else {
