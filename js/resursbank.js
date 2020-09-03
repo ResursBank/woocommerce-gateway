@@ -407,11 +407,14 @@ function preSetResursMethods(customerType, returnedObjects) {
         return;
     }
     customerType = customerType.toLowerCase();
-    if (hideCustomerType === "legal" && !getResursMethodList(returnedObjects, "natural", true)) {
-        // Hiding legal methods when there are not legal methods available, makes the radio buttons
-        // not necessary to be shown at all.
-        $RB('#ssnCustomerRadioNATURAL').remove();
-        $RB('#ssnCustomerRadioLEGAL').remove();
+    if (hideCustomerType === "legal") {
+        if (!getResursMethodList(returnedObjects, "natural", true)) {
+            // Hiding legal methods when there are not legal methods available, makes the radio buttons
+            // not necessary to be shown at all.
+            $RB('#ssnCustomerRadioNATURAL').remove();
+            $RB('#ssnCustomerRadioLEGAL').remove();
+            console.log("hideCustomer legal, natural methodlist returned false. Remove radios!");
+        }
     }
     if (!getResursMethodList(returnedObjects, hideCustomerType, false)) {
         // Switch back to a method list that is still allowed to display themselves.
@@ -432,8 +435,7 @@ function preSetResursMethods(customerType, returnedObjects) {
 }
 
 /**
- * Get a proper list of methods and display them on checkout screen depending on NATURAL or LEGAL.
- *
+ * Render a proper list of methods and set css-display depending on NATURAL or LEGAL.
  * @param returnedObjects
  * @param hideCustomerType
  * @param skipDisplay
