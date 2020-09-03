@@ -244,6 +244,7 @@ $RB(document).ready(function ($) {
                         } else {
                             customerType = 'NATURAL';
                         }
+                        console.log("Selected: " + customerType);
                         // Put up as much as possible as default
                         if (typeof info.firstName !== "undefined") {
                             $("#billing_first_name").val(info.firstName);
