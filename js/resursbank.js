@@ -208,7 +208,7 @@ $RB(document).ready(function ($) {
                     console.log(getResursPhrase("ssnElementMissing"));
                 }
 
-                console.log(info);
+                console.log(info.error);
                 if (typeof info.error !== 'undefined') {
                     var form = $('form[name="checkout"]');
                     var tempSpan = $('<div></div>', {
