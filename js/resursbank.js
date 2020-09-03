@@ -240,7 +240,7 @@ $RB(document).ready(function ($) {
                             $RB('input[id^="payment_method_resurs_bank"]').length > 0
                         )
                     ) {
-                        var selectedType = $RB('#ssnCustomerType' + currentCustomerType + ':checked');
+                        var selectedType = $RB('#ssnCustomerType' + currentCustomerType.toUpperCase() + ':checked');
                         if (selectedType.length > 0) {
                             customerType = selectedType.val();
                         } else {
