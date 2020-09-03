@@ -196,6 +196,7 @@ $RB(document).ready(function ($) {
                     'customerType': currentCustomerType.toUpperCase()
                 }
             }).done(function (info) {
+                console.dir(info);
                 $('#fetch_address_status').hide();
 
                 this.ssnP = $RB('p[class="resurs_ssn_field"]');
