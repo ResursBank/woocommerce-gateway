@@ -222,7 +222,8 @@ $RB(document).ready(function ($) {
                     $RB('.ssn-error-message').remove();
                     this.ssnInput.css('border-color', '');
                     var customerType = "";
-                    console.log("LFLDSJ");
+                    console.log(currentCustomerType);
+                    console.log($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length);
                     /**
                      * Conditional: If there is a customer type to look for, we also look for payment methods, before
                      * continuing. However, if there is neither NATURAL nor LEGAL customer types present on the webpage
