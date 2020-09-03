@@ -208,7 +208,6 @@ $RB(document).ready(function ($) {
                     console.log(getResursPhrase("ssnElementMissing"));
                 }
 
-                console.log(info.error);
                 if (typeof info.error !== 'undefined') {
                     var form = $('form[name="checkout"]');
                     var tempSpan = $('<div></div>', {
@@ -223,6 +222,7 @@ $RB(document).ready(function ($) {
                     $RB('.ssn-error-message').remove();
                     this.ssnInput.css('border-color', '');
                     var customerType = "";
+                    console.log("LFLDSJ");
                     /**
                      * Conditional: If there is a customer type to look for, we also look for payment methods, before
                      * continuing. However, if there is neither NATURAL nor LEGAL customer types present on the webpage
