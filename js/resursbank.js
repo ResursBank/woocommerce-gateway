@@ -156,7 +156,7 @@ $RB(document).ready(function ($) {
 
             $(fetchAddressButton).click(function (e) {
                 var input = ssnField.val().trim();
-                var customerType = $RB('#ssnCustomerType:checked').val();
+                var customerType = $(' #ssnCustomerType:checked ').val();
                 if (that.validate_ssn_address_field(input)) {
                     that.fetch_address(input, customerType);
                 }
@@ -229,21 +229,21 @@ $RB(document).ready(function ($) {
                      * radio buttons is naturally removed from the site. In THAT case, we should check if both radion
                      * buttons is missing and proceed with getAddress if that is the case.
                      */
-                    // Removing validation:
-                    //$RB('input[id^="payment_method_resurs_bank"]').length > 0
-                    if (($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0) ||
+                    if (
+                        (
+                            $RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0
+                        ) ||
                         (
                             $RB('#ssnCustomerTypeNATURAL').length === 0 &&
                             $RB('#ssnCustomerTypeLEGAL').length === 0
                         )
                     ) {
-                        var selectedType = $RB('#ssnCustomerType' + currentCustomerType + ':checked');
+                        var selectedType = $RB('#ssnCustomerType' + currentCustomerType.toUpperCase() + ':checked');
                         if (selectedType.length > 0) {
-                            customerType = selectedType.val().toUpperCase();
+                            customerType = selectedType.val();
                         } else {
                             customerType = 'NATURAL';
                         }
-                        console.log("Selected: " + customerType);
                         // Put up as much as possible as default
                         if (typeof info.firstName !== "undefined") {
                             $("#billing_first_name").val(info.firstName);
@@ -320,8 +320,8 @@ function getMethodType(customerType) {
 
     if ($RB('#resursSelectedCountry').length > 0 && $RB('#ssn_field').length > 0) {
         currentResursCountry = $RB('#resursSelectedCountry').val();
-        currentCustomerType = customerType.toUpperCase();
-        if (currentCustomerType === "NATURAL") {
+        currentCustomerType = customerType.toLowerCase();
+        if (currentCustomerType === "natural") {
             enterNumberPhrase = getResursPhrase("getAddressEnterGovernmentId", currentResursCountry);
             labelNumberPhrase = getResursPhrase("labelGovernmentId", currentResursCountry);
         } else {
@@ -334,10 +334,10 @@ function getMethodType(customerType) {
     if ($RB('#ssnCustomerType' + customerType.toUpperCase()).length > 0 && $RB('input[id^="payment_method_resurs_bank"]').length > 0) {
         var selectedType = $RB('#ssnCustomerType' + customerType.toUpperCase() + ':checked');
         if ($RB('#billing_company').length > 0 && $RB('#billing_company').val() !== "") {
-            customerType = "LEGAL";
+            customerType = "legal";
         } else {
             if (selectedType.length > 0) {
-                customerType = selectedType.val().toUpperCase();
+                customerType = selectedType.val();
             }
         }
         $RB('input[id^="payment_method_resurs_bank"]').each(
