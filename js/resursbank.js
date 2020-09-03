@@ -196,7 +196,6 @@ $RB(document).ready(function ($) {
                     'customerType': currentCustomerType.toUpperCase()
                 }
             }).done(function (info) {
-                console.dir(info);
                 $('#fetch_address_status').hide();
 
                 this.ssnP = $RB('p[class="resurs_ssn_field"]');
@@ -220,6 +219,7 @@ $RB(document).ready(function ($) {
                     this.ssnInput.css('border-color', '#fb7f88');
                     $RB('.ssn-error-message').delay('4000').fadeOut('medium');
                 } else {
+                    console.log("Worked.");
                     $RB('.ssn-error-message').remove();
                     this.ssnInput.css('border-color', '');
                     var customerType = "";
