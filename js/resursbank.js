@@ -229,9 +229,7 @@ $RB(document).ready(function ($) {
                      * radio buttons is naturally removed from the site. In THAT case, we should check if both radion
                      * buttons is missing and proceed with getAddress if that is the case.
                      */
-                    if (
-                        (
-                            $RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0 &&
+                    if (($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0 &&
                             $RB('input[id^="payment_method_resurs_bank"]').length > 0
                         ) ||
                         (
@@ -241,6 +239,7 @@ $RB(document).ready(function ($) {
                         )
                     ) {
                         var selectedType = $RB('#ssnCustomerType' + currentCustomerType.toUpperCase() + ':checked');
+                        console.log(selectedType);
                         if (selectedType.length > 0) {
                             customerType = selectedType.val();
                         } else {
