@@ -219,7 +219,6 @@ $RB(document).ready(function ($) {
                     this.ssnInput.css('border-color', '#fb7f88');
                     $RB('.ssn-error-message').delay('4000').fadeOut('medium');
                 } else {
-                    console.log("Worked.");
                     $RB('.ssn-error-message').remove();
                     this.ssnInput.css('border-color', '');
                     var customerType = "";
@@ -239,6 +238,7 @@ $RB(document).ready(function ($) {
                             $RB('input[id^="payment_method_resurs_bank"]').length > 0
                         )
                     ) {
+                        console.log("REACHED ENDPOINT");
                         var selectedType = $RB('#ssnCustomerType' + currentCustomerType.toUpperCase() + ':checked');
                         if (selectedType.length > 0) {
                             customerType = selectedType.val();
