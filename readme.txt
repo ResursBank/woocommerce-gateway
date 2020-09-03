@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.4.1
 Requires PHP: 5.4
-Stable tag: 2.2.35
+Stable tag: 2.2.36
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,9 +85,9 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.35 =
+= 2.2.36 =
 
-    Woocommerce and payment gateways interfering with menu editor wrongfully.
+    * WOO-488: Possible NATURAL vs LEGAL issue, where LEGAL methods won't shop up in checkout.
 
 == Upgrade Notice ==
 
