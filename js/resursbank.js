@@ -156,7 +156,7 @@ $RB(document).ready(function ($) {
 
             $(fetchAddressButton).click(function (e) {
                 var input = ssnField.val().trim();
-                var customerType = $(' #ssnCustomerType:checked ').val().toUpperCase();
+                var customerType = $RB('#ssnCustomerType:checked').val();
                 if (that.validate_ssn_address_field(input)) {
                     that.fetch_address(input, customerType);
                 }
