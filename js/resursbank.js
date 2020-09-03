@@ -222,8 +222,7 @@ $RB(document).ready(function ($) {
                     $RB('.ssn-error-message').remove();
                     this.ssnInput.css('border-color', '');
                     var customerType = "";
-                    console.log(currentCustomerType);
-                    console.log($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length);
+                    console.log("PMR: " + $RB('input[id^="payment_method_resurs_bank"]').length);
                     /**
                      * Conditional: If there is a customer type to look for, we also look for payment methods, before
                      * continuing. However, if there is neither NATURAL nor LEGAL customer types present on the webpage
