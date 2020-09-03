@@ -396,7 +396,16 @@ function preSetResursMethods(customerType, returnedObjects) {
     if (typeof customerType === "undefined") {
         return;
     }
+
+    // Only invoke if there are multiple customer types
+    if (customerType.toLowerCase() == "natural") {
+        var hideCustomerType = "legal";
+    } else {
+        var hideCustomerType = "natural";
+    }
     customerType = customerType.toLowerCase();
+    getResursMethodList(returnedObjects, hideCustomerType, false);
+
     if (!resursvars["customerTypes"]["hasLegal"]) {
         console.log("Legal: !hasLegal");
         $RB('#ssnCustomerRadioNATURAL').remove();
