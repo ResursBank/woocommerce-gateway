@@ -208,6 +208,7 @@ $RB(document).ready(function ($) {
                     console.log(getResursPhrase("ssnElementMissing"));
                 }
 
+                console.log(info);
                 if (typeof info.error !== 'undefined') {
                     var form = $('form[name="checkout"]');
                     var tempSpan = $('<div></div>', {
@@ -229,7 +230,6 @@ $RB(document).ready(function ($) {
                      * radio buttons is naturally removed from the site. In THAT case, we should check if both radion
                      * buttons is missing and proceed with getAddress if that is the case.
                      */
-                    console.log(currentCustomerType + " / " + customerType);
                     if (($RB('#ssnCustomerType' + currentCustomerType.toUpperCase()).length > 0 &&
                             $RB('input[id^="payment_method_resurs_bank"]').length > 0
                         ) ||
