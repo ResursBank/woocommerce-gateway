@@ -6490,6 +6490,7 @@ function initializeResursFlow(
 
     /** @var $initFlow ResursBank */
     $initFlow = new ResursBank($username, $password);
+    $initFlow->setWsdlCache(true);
     $ecomCacheTime = getResursFlag('ECOM_CACHE_TIME');
     if (!empty($ecomCacheTime) && is_numeric($ecomCacheTime) && $ecomCacheTime > 1) {
         $initFlow->setApiCacheTime($ecomCacheTime);
