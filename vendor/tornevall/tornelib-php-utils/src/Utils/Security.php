@@ -14,15 +14,6 @@ use TorneLIB\Exception\ExceptionHandler;
 class Security
 {
     /**
-     * Security constructor.
-     * @since 6.1.0
-     */
-    public function __construct()
-    {
-        return $this;
-    }
-
-    /**
      * Get trimmed data from ini file
      * @param $key
      * @return string
