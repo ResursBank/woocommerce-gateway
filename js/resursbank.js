@@ -403,6 +403,7 @@ function preSetResursMethods(customerType, returnedObjects) {
     } else {
         var hideCustomerType = "natural";
     }
+
     customerType = customerType.toLowerCase();
     getResursMethodList(returnedObjects, hideCustomerType, false);
 
