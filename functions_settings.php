@@ -143,7 +143,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'flowtype' => [
-                    'title' => __('Checkout type', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __('Checkout handling', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'select',
                     'options' => [
                         'resurs_bank_omnicheckout' => __(

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2020-09-07 08:44+0200\n"
-"PO-Revision-Date: 2020-09-07 08:44+0200\n"
+"POT-Creation-Date: 2020-09-07 09:03+0200\n"
+"PO-Revision-Date: 2020-09-07 09:03+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -123,9 +123,9 @@ msgstr "Norge"
 msgid "The country for which the payment services should be used"
 msgstr "Välj det land som betalalternativen skall användas i"
 
-#: functions_settings.php:146 resursbank_settings.php:66
-msgid "Checkout type"
-msgstr "Typ av kassa"
+#: functions_settings.php:146
+msgid "Checkout handling"
+msgstr "Hantering av kassa"
 
 #: functions_settings.php:150
 msgid "Resurs Bank Checkout (RCO)."
@@ -304,7 +304,7 @@ msgid ""
 "immediately, like electronic tickets and downloads"
 msgstr ""
 "Du kan endast aktivera den här egenskapen om du har gods som kan hanteras "
-"omedelbart, exempelvis elektroniska biljetter eller nedladdningsbara filer."
+"omedelbart, exempelvis elektroniska biljetter eller nedladdningsbara filer"
 
 #: functions_settings.php:334
 msgid "Restoring Payment Method gateway files"
@@ -320,11 +320,11 @@ msgstr ""
 "Om en betalmetods gateway-fil saknas (lagras i includes-mappen) kommer den "
 "att återställas automatiskt (exempelvis när pluginet uppgraderas). Klickar "
 "du i denna box begränsas den typen av återställningar, så att de bara körs "
-"när en administratör är inloggad."
+"när en administratör är inloggad"
 
 #: functions_settings.php:342
 msgid "Only administrators may restore gateway files"
-msgstr "Endast administratörer kan återställa gateway-filer."
+msgstr "Endast administratörer kan återställa gateway-filer"
 
 #: functions_settings.php:346
 msgid "URL to custom CSS for costOfPurchase"
@@ -366,7 +366,7 @@ msgid ""
 msgstr ""
 "Gör ordrar redigerbara även om de är markerade för behandling. OBS: Denna "
 "inställningen är experimentell och har begränsad redigeringskapacitet. Den "
-"skall normalt sett inte användas."
+"skall normalt sett inte användas"
 
 #: functions_settings.php:377
 msgid "getAddressBox Enabled"
@@ -541,7 +541,7 @@ msgid ""
 msgstr ""
 "Aktiverar du detta, kommer pluginet att uppdatera callbackurler och "
 "saltnyckel, varje gång du går in i administrationspanelen efter att en "
-"specifik tid har gått."
+"specifik tid har gått"
 
 #: functions_settings.php:560
 msgid "(It is no longer recommended to actively use this setting)"
@@ -735,7 +735,7 @@ msgstr ""
 
 #: functions_settings.php:808
 msgid "Internal Test URL for special accounts"
-msgstr "Interna testurler för specialkonton."
+msgstr "Interna testurler för specialkonton"
 
 #: functions_settings.php:814
 msgid ""
@@ -744,7 +744,7 @@ msgid ""
 msgstr ""
 "Om det finns en URL här, kommer den att användas när speciella konton "
 "används. URLen skall peka mot den service där du skickar alla dina initiala "
-"POST-data."
+"POST-data"
 
 #: functions_settings.php:820
 msgid "Permanent PTE"
@@ -756,7 +756,7 @@ msgstr "Specialfunktion. Visas enbart när du befinner dig i rätt domän."
 
 #: functions_settings.php:829
 msgid "iFrame location"
-msgstr "Plats för iFrame"
+msgstr "iFramens plats"
 
 #: functions_settings.php:833
 msgid "After checkout form (Default)"
@@ -798,12 +798,12 @@ msgid ""
 msgstr ""
 "Om du upplever problem under checkouten (att iframen inte laddas om "
 "ordentligt när varukorgen uppdateras), kan du aktivera den här funktionen "
-"för att ladda om hela sidan i stället för bara iframen."
+"för att ladda om hela sidan i stället för bara iframen"
 
 #: functions_settings.php:876
 msgid "Remove all default customer fields when loading Omni Checkout iframe"
 msgstr ""
-"Ta bort samtliga fält ifrån orderformulären, när Resurs Checkout laddas."
+"Ta bort samtliga fält ifrån orderformulären, när Resurs Checkout laddas"
 
 #: functions_settings.php:882
 msgid ""
@@ -835,7 +835,7 @@ msgstr ""
 "Vanligen tar pluginet bort alla kunddata-fält från checkouten eftersom denna "
 "informationen kommer från iframen. I det här läget försöker vi dock använda "
 "dessa fälten (dolda) för att uppdatera fraktsätten, när postnumret "
-"uppdateras. Detta är en betafunktion.o"
+"uppdateras. Detta är en betafunktion."
 
 #: functions_settings.php:902
 msgid "Checkout form fields must not be empty"
@@ -848,7 +848,7 @@ msgid ""
 msgstr ""
 "Den här inställningen säkrar att pluginet returnerar en array, om "
 "WooCommerce av någon anledning skickar över totalt tomma data (null) under "
-"utcheckningsprocessen."
+"utcheckningsprocessen"
 
 #: functions_settings.php:921
 msgid ""
@@ -920,6 +920,10 @@ msgstr "Standardinställningar"
 #: resursbank_settings.php:62
 msgid "Resurs Checkout"
 msgstr "Resurs Checkout"
+
+#: resursbank_settings.php:66
+msgid "Checkout type"
+msgstr "Typ av kassa"
 
 #: resursbank_settings.php:68
 msgid "Advanced settings"
@@ -1091,7 +1095,7 @@ msgid ""
 "must be entered above"
 msgstr ""
 "För att aktivera denna delen av pluginet, behöver du skriva in dina "
-"användaruppgifter till webservicarna ovan."
+"användaruppgifter till webservicarna ovan"
 
 #: resursbank_settings.php:1042
 msgid "Name"
@@ -1131,7 +1135,7 @@ msgid ""
 "Resurs Bank preferred configuration"
 msgstr ""
 "När alla inställningarna nedan är avmarkerade, så använder pluginet en, av "
-"Resurs Bank föredragen, konfiguration."
+"Resurs Bank föredragen, konfiguration"
 
 #: resursbank_settings.php:1312
 msgid "Next invoice number to use"
@@ -1228,7 +1232,7 @@ msgstr "Underhåll"
 
 #: resursbank_settings.php:1464
 msgid "Clean up "
-msgstr "Städa upp"
+msgstr "Städa upp "
 
 #: resursbank_settings.php:1466
 msgid "Resurs settings"
@@ -1240,7 +1244,7 @@ msgstr "Cachelagrad data"
 
 #: resursbank_settings.php:1488
 msgid "Default title set by Resurs Bank is "
-msgstr "Standardtiteln som satts av Resurs Bank är"
+msgstr "Standardtiteln som satts av Resurs Bank är "
 
 #: resursbank_settings.php:1501
 msgid ""
@@ -1315,7 +1319,7 @@ msgstr ""
 
 #: resursbankmain.php:661
 msgid "Configuration has not yet been initiated."
-msgstr "Konfigurationen har ännu inte initierats"
+msgstr "Konfigurationen har ännu inte initierats."
 
 #: resursbankmain.php:788 resursbankmain.php:4918
 msgid "Waiting for callback"
@@ -1514,7 +1518,7 @@ msgid ""
 "customer services for more information."
 msgstr ""
 "Betalningen kan inte färdigställas. Ett problem med signeringen uppstod. "
-"Kontakta kundservice för mer information"
+"Kontakta kundservice för mer information."
 
 #: resursbankmain.php:2514 resursbankmain.php:3427 resursbankmain.php:3546
 msgid ""
@@ -1527,11 +1531,11 @@ msgid ""
 "never received properly in the payment process"
 msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen. Betalnings-id emottogs "
-"aldrig i betalprocessen."
+"aldrig i betalprocessen"
 
 #: resursbankmain.php:2533 resursbankmain.php:2543 resursbankmain.php:3562
 msgid "An unknown error occured. Please, try again later"
-msgstr "Ett okänt fel har uppstått. Vänligen försök igen senare."
+msgstr "Ett okänt fel har uppstått. Vänligen försök igen senare"
 
 #: resursbankmain.php:3080
 msgid "[Resurs Bank] Customer retried to place order, after failure."
@@ -1639,7 +1643,7 @@ msgid ""
 "never received properly in signing response"
 msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen. Betalningsid emottogs "
-"aldrig ordentligt under signeringsprocessen."
+"aldrig ordentligt under signeringsprocessen"
 
 #: resursbankmain.php:3572
 msgid "Something went wrong during the signing process."
@@ -1659,7 +1663,7 @@ msgstr "Det får inte vara tomt"
 
 #: resursbankmain.php:3889
 msgid "Can not get the address from current government ID"
-msgstr "Kan inte hämta adressen från angivet personnummer/organisationsnummer."
+msgstr "Kan inte hämta adressen från angivet personnummer/organisationsnummer"
 
 #: resursbankmain.php:3944
 msgid "Close"
@@ -1735,7 +1739,7 @@ msgstr "Företag"
 
 #: resursbankmain.php:4552
 msgid "Resurs Bank has connection errors!"
-msgstr "Resurs Bank annullerade ordern"
+msgstr "Resurs Bank annullerade ordern!"
 
 #: resursbankmain.php:4568
 msgid "Government ID"
@@ -1767,7 +1771,7 @@ msgstr "Organisationsnummer"
 
 #: resursbankmain.php:4749
 msgid "Changing delivery address requires signing"
-msgstr "Ändring av leveransadress kräver e-signering."
+msgstr "Ändring av leveransadress kräver e-signering"
 
 #: resursbankmain.php:4753
 msgid "I can not show errors since the element is missing"
