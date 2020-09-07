@@ -6499,6 +6499,9 @@ function initializeResursFlow(
     $cTimeout = getResursFlag('CURL_TIMEOUT');
     if ($cTimeout > 0) {
         $initFlow->setFlag('CURL_TIMEOUT', $cTimeout);
+    } else {
+        // Changes default timeout to 10 sec.
+        $initFlow->setFlag('CURL_TIMEOUT', 12);
     }
     $initFlow->setSimplifiedPsp(true);
     $initFlow->setRealClientName('Woo');
