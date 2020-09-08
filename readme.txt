@@ -87,7 +87,23 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
 
 = 2.2.36 =
 
-    * WOO-488: Possible NATURAL vs LEGAL issue, where LEGAL methods won't shop up in checkout.
+    * [WOO-490] - Activate WSDL cache for performance
+    * [WOO-491] - Slow responses from API causes timeouts
+    * [WOO-488] - Possible NATURAL vs LEGAL issue, where LEGAL methods won't shop up in checkout
+    * [WOO-489] - Company name is not properly filled in
+
+= 2.2.30 - 2.2.35 =
+
+    * [WOO-477] - 2.2.32 ecomphp+netcurl patch
+    * [WOO-478] - WC Tested up to: 4.2.0
+    * [WOO-467] - Mockfail issue, index event-type not found
+    * [WOO-470] - getAddress triggered but not executed on site when merchant has NATURAL methods only
+    * [WOO-480] - Payment methods for simple/hosted should be sorted in "portal order"
+    * [WOO-482] - New specificTypes in PSP
+    * [WOO-483] - Visa bara betalmetod externt kort(Visa/MC) vid val av land som skilljer sig från ombudets land hos Resurs.
+    * [WOO-473] - Delivery address  and user-info-change (RCO-535)
+    * [WOO-485] - Payment methods are not limited to selected merchant country
+    * [WOO-468] - Spinner/Text on simplified "Purchase order"
 
 == Upgrade Notice ==
 
