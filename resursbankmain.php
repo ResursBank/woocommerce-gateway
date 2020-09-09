@@ -1830,7 +1830,7 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 }
             }
-            if ($cart->coupons_enabled()) {
+            if (wc_coupons_enabled()) {
                 $coupons = $cart->get_coupons();
                 if (is_array($coupons) && count($coupons) > 0) {
                     // TODO: Deprecated variables

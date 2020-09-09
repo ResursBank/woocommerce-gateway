@@ -662,7 +662,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 }
             }
         }
-        if ($cart->coupons_enabled()) {
+        if (wc_coupons_enabled()) {
             $coupons = $cart->get_coupons();
             if (is_array($coupons) && count($coupons) > 0) {
                 $coupon_values = $cart->coupon_discount_amounts;
