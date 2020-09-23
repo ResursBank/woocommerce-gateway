@@ -1020,10 +1020,11 @@ function woocommerce_gateway_resurs_bank_init()
             $order->add_order_note(
                 sprintf(
                     __(
-                        '[Resurs Bank] The event %s received. Additional result flag: %s.',
+                        '[Resurs Bank] The event %s received (Method %s). Additional result flag: %s.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     $event_type,
+                    isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '?',
                     isset($request['result']) ? $request['result'] : __(
                         'No extra flags.',
                         'resurs-bank-payment-gateway-for-woocommerce'
@@ -1163,48 +1164,47 @@ function woocommerce_gateway_resurs_bank_init()
                     ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'BOOKED':
-                    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
-                        update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                        if ($currentStatus != 'cancelled') {
-                            $optionReduceOrderStock = getResursOption('reduceOrderStock');
-                            $hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
-                            if ($optionReduceOrderStock && empty($hasReduceStock)) {
-                                update_post_meta($orderId, 'hasReduceStock', time());
-                                $order->add_order_note(
-                                    __(
-                                        'Stock reducing requested to be handled by Resurs Bank (Callback).',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    )
-                                );
-                                if (isWooCommerce3()) {
-                                    wc_reduce_stock_levels($order->get_id());
-                                } else {
-                                    $order->reduce_order_stock();
-                                }
-                            }
-                            $statusValue = $this->updateOrderByResursPaymentStatus(
-                                $order,
-                                $currentStatus,
-                                $request['paymentId'],
-                                RESURS_CALLBACK_TYPES::BOOKED
+                    update_post_meta($orderId, 'hasCallback' . $event_type, time());
+                    //if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+                    if ($currentStatus !== 'cancelled') {
+                        $optionReduceOrderStock = getResursOption('reduceOrderStock');
+                        $hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
+                        if ($optionReduceOrderStock && empty($hasReduceStock)) {
+                            update_post_meta($orderId, 'hasReduceStock', time());
+                            $order->add_order_note(
+                                __(
+                                    'Stock reducing requested to be handled by Resurs Bank (Callback).',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
                             );
-
-                            if (!(bool)$statusValue & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
-                                $order->add_order_note(
-                                    sprintf(
-                                        __(
-                                            '[Resurs Bank] The event %s updated the order to %s [%s].',
-                                            'resurs-bank-payment-gateway-for-woocommerce'
-                                        ),
-                                        $event_type,
-                                        $this->getOrderStatusByResursReturnCode($statusValue),
-                                        $currentValidationString
-                                    )
-                                );
+                            if (isWooCommerce3()) {
+                                wc_reduce_stock_levels($order->get_id());
+                            } else {
+                                $order->reduce_order_stock();
                             }
-
-                            ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                         }
+                        $statusValue = $this->updateOrderByResursPaymentStatus(
+                            $order,
+                            $currentStatus,
+                            $request['paymentId'],
+                            RESURS_CALLBACK_TYPES::BOOKED
+                        );
+
+                        if (!(bool)$statusValue) {
+                            $order->add_order_note(
+                                sprintf(
+                                    __(
+                                        '[Resurs Bank] The event %s updated the order to %s [%s].',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ),
+                                    $event_type,
+                                    $this->getOrderStatusByResursReturnCode($statusValue),
+                                    $currentValidationString
+                                )
+                            );
+                        }
+
+                        ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     }
                     break;
                 case 'UPDATE':
@@ -3359,9 +3359,11 @@ function woocommerce_gateway_resurs_bank_init()
                         WC()->session->set('order_awaiting_payment', true);
                         $getRedirectUrl = wc_get_cart_url();
                     } else {
+                        /*
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
                         $hasReduceStock = get_post_meta($order_id, 'hasReduceStock');
-                        // While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
+                        // While waiting for the order confirmation from Resurs Bank,
+                        // reducing stock may be necessary, anyway. - We ask ourselves why.
                         if ($optionReduceOrderStock && empty($hasReduceStock)) {
                             update_post_meta($order_id, 'hasReduceStock', time());
                             $order->add_order_note(
@@ -3376,6 +3378,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $order->reduce_order_stock();
                             }
                         }
+                        */
                         $getRedirectUrl = $this->get_return_url($order);
 
                         $order->add_order_note(
