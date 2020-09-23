@@ -1170,6 +1170,12 @@ function woocommerce_gateway_resurs_bank_init()
                             $hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
                             if ($optionReduceOrderStock && empty($hasReduceStock)) {
                                 update_post_meta($orderId, 'hasReduceStock', time());
+                                $order->add_order_note(
+                                    __(
+                                        'Stock reducing requested to be handled by Resurs Bank (Callback).',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
                                 if (isWooCommerce3()) {
                                     wc_reduce_stock_levels($order->get_id());
                                 } else {
@@ -3358,6 +3364,12 @@ function woocommerce_gateway_resurs_bank_init()
                         // While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
                         if ($optionReduceOrderStock && empty($hasReduceStock)) {
                             update_post_meta($order_id, 'hasReduceStock', time());
+                            $order->add_order_note(
+                                __(
+                                    'Stock reducing requested to be handled by Resurs Bank (RCO).',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
                             if (isWooCommerce3()) {
                                 wc_reduce_stock_levels($order_id);
                             } else {
