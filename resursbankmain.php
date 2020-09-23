@@ -1020,10 +1020,11 @@ function woocommerce_gateway_resurs_bank_init()
             $order->add_order_note(
                 sprintf(
                     __(
-                        '[Resurs Bank] The event %s received. Additional result flag: %s.',
+                        '[Resurs Bank] The event %s received (Method %s). Additional result flag: %s.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     $event_type,
+                    isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '?',
                     isset($request['result']) ? $request['result'] : __(
                         'No extra flags.',
                         'resurs-bank-payment-gateway-for-woocommerce'
@@ -1164,11 +1165,18 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'BOOKED':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    if ($currentStatus != 'cancelled') {
+                    //if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+                    if ($currentStatus !== 'cancelled') {
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
                         $hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
                         if ($optionReduceOrderStock && empty($hasReduceStock)) {
                             update_post_meta($orderId, 'hasReduceStock', time());
+                            $order->add_order_note(
+                                __(
+                                    'Stock reducing requested to be handled by Resurs Bank (Callback).',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                )
+                            );
                             if (isWooCommerce3()) {
                                 wc_reduce_stock_levels($order->get_id());
                             } else {
@@ -1182,7 +1190,7 @@ function woocommerce_gateway_resurs_bank_init()
                             RESURS_CALLBACK_TYPES::BOOKED
                         );
 
-                        if (!(bool)$statusValue & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
+                        if (!(bool)$statusValue) {
                             $order->add_order_note(
                                 sprintf(
                                     __(
@@ -1199,40 +1207,6 @@ function woocommerce_gateway_resurs_bank_init()
                         ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     }
                     break;
-                /*
-                 * The below code belongs to the BOOKED event.
-                 * In the future, injecting order lines as the BOOKED callback is running may be supported, but since
-                 * WooCommerce itself offers a bunch of extra fees, we are currently excluding this, since we missing too much
-                 * important values to inject a proper payment spec into woocommerce orderadmin. Besides, by only injecting data
-                 * like this, may prevent other systems to catch summaries of a correct order.
-                 */
-                /*
-                $dataPOST = null;
-                if ($_SERVER['CONTENT_LENGTH'] > 0) {
-                    $dataPOST = @json_decode(trim(file_get_contents('php://input')));
-                }
-                if (isset($dataPOST->addedPaymentSpecificationLines)) {
-                    foreach ($dataPOST->addedPaymentSpecificationLines as $addedArticle) {
-                        // artNo, description, quantity, unitAmountWithoutVat, vatPct, totalVatAmount
-                        $item = array(
-                            'order_item_name' => $addedArticle->artNo,
-                            'order_item_type' => 'line_item'
-                        );
-                        $item_id = wc_add_order_item($orderId, $item);
-                        wc_add_order_item_meta( $item_id, '_qty', $addedArticle->quantity);
-                        wc_add_order_item_meta( $item_id, '_line_subtotal', $addedArticle->unitAmountWithoutVat*$addedArticle->quantity);
-                        wc_add_order_item_meta( $item_id, '_line_total', $addedArticle->unitAmountWithoutVat);
-                        wc_add_order_item_meta( $item_id, '_line_subtotal_tax', $addedArticle->totalVatAmount);
-                        wc_add_order_item_meta( $item_id, '_line_tax', $addedArticle->totalVatAmount);
-                        $tax_data             = array();
-                        $tax_data['total']    = wc_format_decimal($addedArticle->totalVatAmount);
-                        $tax_data['subtotal'] = wc_format_decimal($addedArticle->totalVatAmount);
-                        $postMeta = get_post_meta($orderId);
-                        $orderTotal = $postMeta['_order_total'][0] + $addedArticle->unitAmountWithoutVat + $addedArticle->totalVatAmount;
-                        wc_add_order_item_meta( $item_id, '_line_tax_data', $tax_data );
-                        update_post_meta( $orderId, '_order_total', $orderTotal);
-                    }
-                }*/
                 case 'UPDATE':
                     $callbackUpdateStatus = $this->updateOrderByResursPaymentStatus(
                         $order,
@@ -3385,17 +3359,6 @@ function woocommerce_gateway_resurs_bank_init()
                         WC()->session->set('order_awaiting_payment', true);
                         $getRedirectUrl = wc_get_cart_url();
                     } else {
-                        $optionReduceOrderStock = getResursOption('reduceOrderStock');
-                        $hasReduceStock = get_post_meta($order_id, 'hasReduceStock');
-                        // While waiting for the order confirmation from Resurs Bank, reducing stock may be necessary, anyway.
-                        if ($optionReduceOrderStock && empty($hasReduceStock)) {
-                            update_post_meta($order_id, 'hasReduceStock', time());
-                            if (isWooCommerce3()) {
-                                wc_reduce_stock_levels($order_id);
-                            } else {
-                                $order->reduce_order_stock();
-                            }
-                        }
                         $getRedirectUrl = $this->get_return_url($order);
 
                         $order->add_order_note(
