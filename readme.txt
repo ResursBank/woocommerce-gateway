@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.5.1
 Requires PHP: 5.4
-Stable tag: 2.2.38
+Stable tag: 2.2.39
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,22 +85,11 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.38 =
+= 2.2.39 =
 
     * [WOO-493] - Still race conditions in BOOKED (reduce order stock issue)? #11902
 
-= 2.2.37 =
-
-    * [WOO-492] - Deprecation: WC_Legacy_Cart::coupons_enabled since 2.5.0
-
-= 2.2.36 =
-
-    * [WOO-490] - Activate WSDL cache for performance
-    * [WOO-491] - Slow responses from API causes timeouts
-    * [WOO-488] - Possible NATURAL vs LEGAL issue, where LEGAL methods won't shop up in checkout
-    * [WOO-489] - Company name is not properly filled in
-
-= 2.2.30 - 2.2.35 =
+= 2.2.30 - 2.2.38 =
 
     * [WOO-477] - 2.2.32 ecomphp+netcurl patch
     * [WOO-478] - WC Tested up to: 4.2.0
@@ -112,6 +101,11 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
     * [WOO-473] - Delivery address  and user-info-change (RCO-535)
     * [WOO-485] - Payment methods are not limited to selected merchant country
     * [WOO-468] - Spinner/Text on simplified "Purchase order"
+    * [WOO-492] - Deprecation: WC_Legacy_Cart::coupons_enabled since 2.5.0
+    * [WOO-490] - Activate WSDL cache for performance
+    * [WOO-491] - Slow responses from API causes timeouts
+    * [WOO-488] - Possible NATURAL vs LEGAL issue, where LEGAL methods won't shop up in checkout
+    * [WOO-489] - Company name is not properly filled in
 
 == Upgrade Notice ==
 
