@@ -4038,10 +4038,7 @@ function woocommerce_gateway_resurs_bank_init()
                         @round($item->get_total_tax() / $item->get_total(), 2) * 100
                     ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
 
-                    // Total price including tax.
-                    $itemTotalOld = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
-                    // Total price excluding tax.
-                    //$itemTotal = preg_replace('/^-/', '', ($item->get_total() - $item->get_total_tax() / $itemQuantity));
+                    $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
                     if ($itemTotal > 0) {
                         $return = true;
                         $resursFlow->addOrderLine(
