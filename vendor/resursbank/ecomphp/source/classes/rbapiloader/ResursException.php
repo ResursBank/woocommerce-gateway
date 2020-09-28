@@ -93,6 +93,7 @@ abstract class RESURS_EXCEPTIONS
     const CREATEPAYMENT_NO_ID_SET = 7011;
     const CREATEPAYMENT_TOO_FAST = 7012;
     const CALLBACK_REGISTRATION_ERROR = 7013;
+    const PAYMENT_METHODS_ERROR = 7014;
 }
 
 /**
@@ -118,14 +119,17 @@ class ResursException extends \Exception
 
     private function setStringifiedCode()
     {
+        $constantName = sprintf('\RESURS_EXCEPTIONS::%s', $this->stringifiedCode);
         if (empty($this->code) && !empty($this->stringifiedCode)) {
             try {
-                $constant = constant('\RESURS_EXCEPTIONS::' . $this->stringifiedCode);
+                if (defined($constantName)) {
+                    $constant = constant($constantName);
+                }
             } catch (\Exception $regularConstantException) {
                 // Ignore this.
             }
             if (!empty($constant)) {
-                $this->code = constant('\RESURS_EXCEPTIONS::' . $this->stringifiedCode);
+                $this->code = constant($constantName);
             } else {
                 $this->code = $this->stringifiedCode;
             }

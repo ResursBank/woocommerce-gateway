@@ -198,12 +198,11 @@ class RESURS_DEPRECATED_FLOW
      * @param string $formFieldName
      * @param $countryCode
      * @param $customerType
-     *
      * @return array
      * @throws \Exception
      * @deprecated Build your own integration
      */
-    public function getRegEx($formFieldName = '', $countryCode, $customerType)
+    public function getRegEx($formFieldName = '', $countryCode = '', $customerType = '')
     {
         //$returnRegEx = array();
 
@@ -212,12 +211,16 @@ class RESURS_DEPRECATED_FLOW
         $returnRegEx = $templateRule['regexp'];
 
         if (empty($countryCode)) {
-            throw new \Exception(__FUNCTION__ . ": Country code is missing in getRegEx-request for form fields",
-                \RESURS_EXCEPTIONS::REGEX_COUNTRYCODE_MISSING);
+            throw new \Exception(
+                __FUNCTION__ . ": Country code is missing in getRegEx-request for form fields",
+                \RESURS_EXCEPTIONS::REGEX_COUNTRYCODE_MISSING
+            );
         }
         if (empty($customerType)) {
-            throw new \Exception(__FUNCTION__ . ": Customer type is missing in getRegEx-request for form fields",
-                \RESURS_EXCEPTIONS::REGEX_CUSTOMERTYPE_MISSING);
+            throw new \Exception(
+                __FUNCTION__ . ": Customer type is missing in getRegEx-request for form fields",
+                \RESURS_EXCEPTIONS::REGEX_CUSTOMERTYPE_MISSING
+            );
         }
 
         if (!empty($countryCode) && isset($returnRegEx[strtoupper($countryCode)])) {
@@ -274,8 +277,10 @@ class RESURS_DEPRECATED_FLOW
         }
 
         if ($canThrow && !$canHideSet) {
-            throw new \Exception(__FUNCTION__ . ": templateFieldsByMethodResponse is empty. You have to run getTemplateFieldsByMethodType first",
-                \RESURS_EXCEPTIONS::FORMFIELD_CANHIDE_EXCEPTION);
+            throw new \Exception(
+                __FUNCTION__ . ": templateFieldsByMethodResponse is empty. You have to run getTemplateFieldsByMethodType first",
+                \RESURS_EXCEPTIONS::FORMFIELD_CANHIDE_EXCEPTION
+            );
         }
 
         return $canHideSet;

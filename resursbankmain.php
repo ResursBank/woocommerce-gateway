@@ -4384,7 +4384,13 @@ function woocommerce_gateway_resurs_bank_init()
                                 true
                             );
                             if ($customCancel) {
-                                $resursFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
+                                $resursFlow->setGetPaymentMatchKeys(
+                                    [
+                                        'artNo',
+                                        'description',
+                                        'unitMeasure',
+                                    ]
+                                );
                             }
                             $resursFlow->paymentCancel($payment_id, null, $customCancel);
                             $order->add_order_note(
@@ -5787,10 +5793,15 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
 
         $invoices = [];
         if (empty($hasError)) {
-            // We no longer use WooCommerce paymentdiffs to decide what's happened to the order as - for example - a
-            // partially debited and annulled order may give a falsely annulled status in the end. Instead,
-            // we ask EComPHP for the most proper, current, status.
-            $currentOrderStatus = ucfirst($rb->getOrderStatusStringByReturnCode($rb->getOrderStatusByPayment($resursPaymentInfo)));
+            $fail = null;
+            try {
+                // We no longer use WooCommerce paymentdiffs to decide what's happened to the order as - for example - a
+                // partially debited and annulled order may give a falsely annulled status in the end. Instead,
+                // we ask EComPHP for the most proper, current, status.
+                $currentOrderStatus = ucfirst($rb->getOrderStatusStringByReturnCode($rb->getOrderStatusByPayment($resursPaymentInfo)));
+            } catch(\Exception $e) {
+                $currentOrderStatus = '<i>' . $e->getMessage() . '</i>';
+            }
 
             if (empty($currentOrderStatus)) {
                 $currentOrderStatus = __('Not set', 'resurs-bank-payment-gateway-for-woocommerce');
