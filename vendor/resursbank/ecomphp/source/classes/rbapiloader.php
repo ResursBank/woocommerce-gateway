@@ -7269,14 +7269,14 @@ class ResursBank
 
                 if (isset($row['artNo'])) {
                     $orderRowArray[$idx]['totalVatAmount'] = $this->getTotalVatAmount(
-                        $row['unitAmountWithoutVat'],
-                        $row['vatPct'],
-                        $row['quantity']
+                        isset($row['unitAmountWithoutVat']) ? $row['unitAmountWithoutVat'] : 0,
+                        isset($row['vatPct']) ? $row['vatPct'] : 0,
+                        isset($row['quantity']) ? $row['quantity'] : 0
                     );
                     $orderRowArray[$idx]['totalAmount'] = $this->getTotalAmount(
-                        $row['unitAmountWithoutVat'],
-                        $row['vatPct'],
-                        $row['quantity']
+                        isset($row['unitAmountWithoutVat']) ? $row['unitAmountWithoutVat'] : 0,
+                        isset($row['vatPct']) ? $row['vatPct'] : 0,
+                        isset($row['quantity']) ? $row['quantity'] : 0
                     );
                 }
             }
@@ -7315,8 +7315,8 @@ class ResursBank
             'artNo' => $artRow['artNo'],
             'description' => $artRow['description'],
             'unitMeasure' => $artRow['unitMeasure'],
-            'unitAmountWithoutVat' => $artRow['unitAmountWithoutVat'],
-            'vatPct' => $artRow['vatPct'],
+            'unitAmountWithoutVat' => isset($artRow['unitAmountWithoutVat']) ? $artRow['unitAmountWithoutVat'] : 0,
+            'vatPct' => isset($artRow['vatPct']) ? $artRow['vatPct'] : 0,
             'AUTHORIZE' => isset($artRow['quantity']) ? $artRow['quantity'] : 0,
             'DEBIT' => isset($debited['quantity']) ? $debited['quantity'] : 0,
             'CREDIT' => isset($credited['quantity']) ? $credited['quantity'] : 0,
