@@ -5372,8 +5372,9 @@ function woocommerce_gateway_resurs_bank_init()
         /** @var WC_Order_Item_Product $refundItems */
         $refundItems = $refundObject->get_items();
 
-        /** @var $refundFlow Resursbank\RBEcomPHP\ResursBank */
+        /** @var $refundFlow ResursBank */
         $refundFlow = initializeResursFlow();
+        $refundFlow->resetPayload();
         $refundFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
 
         $matchGetPaymentKeys = (array)apply_filters('resurs_match_getpayment_keys', []);
