@@ -4098,6 +4098,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             /** @var $resursFlow ResursBank */
             $resursFlow = initializeResursFlow();
+            $resursFlow->resetPayload();
 
             if (isset($_REQUEST['wc-api']) || isset($_REQUEST['cancel_order'])) {
                 if (isset($_REQUEST['isBack'])) {
@@ -4335,6 +4336,8 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     if ($currentRunningUser) {
                         try {
+                            $resursFlow->resetPayload();
+
                             $customCancel = self::getOrderRowsByRefundedDiscountItems(
                                 $order,
                                 $resursFlow,
@@ -6161,6 +6164,7 @@ function resurs_remove_order_item($item_id)
     $resursFlow = null;
     if (hasEcomPHP()) {
         $resursFlow = initializeResursFlow();
+        $resursFlow->resetPayload();
     }
     $clientPaymentSpec = [];
     if (null !== $resursFlow) {
@@ -6551,6 +6555,8 @@ function initializeResursFlow(
 
     $hasResursFlow = true;
     $resursSavedInstance = $initFlow;
+    $initFlow->resetPayload();
+
     return $initFlow;
 }
 
