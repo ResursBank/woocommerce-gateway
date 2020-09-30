@@ -4131,7 +4131,7 @@ function woocommerce_gateway_resurs_bank_init()
                 } catch (Exception $getPaymentException) {
                     return;
                 }
-                if (isset($payment)) {
+                if (isset($payment, $payment->status)) {
                     if (false === is_array($payment->status)) {
                         $status = [$payment->status];
                     } else {
@@ -4197,6 +4197,7 @@ function woocommerce_gateway_resurs_bank_init()
             $currentRunningUser = getResursWordpressUser();
             $currentRunningUsername = getResursWordpressUser('user_login');
             $resursFlow->setLoggedInUser($currentRunningUsername);
+            $returnValue = null;
 
             switch ($new_status_slug) {
                 case 'pending':
@@ -4334,7 +4335,12 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'on-hold':
                     break;
                 case 'cancelled':
-                    if ($currentRunningUser) {
+                    if ($currentRunningUser &&
+                        (
+                                $resursFlow->canCredit($payment_id) ||
+                                $resursFlow->canAnnul($payment_id)
+                        )
+                    ) {
                         try {
                             $resursFlow->resetPayload();
 
@@ -4379,7 +4385,12 @@ function woocommerce_gateway_resurs_bank_init()
                     wp_safe_redirect($url);
                     break;
                 case 'refunded':
-                    if ($currentRunningUser) {
+                    if ($currentRunningUser &&
+                        (
+                            $resursFlow->canCredit($payment_id) ||
+                            $resursFlow->canAnnul($payment_id)
+                        )
+                    ) {
                         try {
                             $customCancel = self::getOrderRowsByRefundedDiscountItems(
                                 $order,
@@ -4395,7 +4406,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     ]
                                 );
                             }
-                            $resursFlow->paymentCancel($payment_id, null, $customCancel);
+                            $returnValue = $resursFlow->paymentCancel($payment_id, null, $customCancel);
                             $order->add_order_note(
                                 __(
                                     'Refunded status set: Resurs Bank API was called for cancellation.',
@@ -4425,13 +4436,17 @@ function woocommerce_gateway_resurs_bank_init()
                         $order->update_status($old_status_slug);
                         throw new Exception($flowErrorMessage);
                     }
-                    wp_safe_redirect($url);
+                    if (!is_ajax()) {
+                        wp_safe_redirect($url);
+                    }
                     break;
                 default:
                     break;
             }
 
-            return;
+            if (null !== $returnValue) {
+                return $returnValue;
+            }
         }
         // Class ends here
     }
@@ -5369,7 +5384,6 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         $refundStatus = false;
-
         $resursOrderId = wc_get_payment_id_by_order_id($orderId);
 
         /** @var WC_Order_Item_Product $refundItems */
@@ -5377,6 +5391,13 @@ function woocommerce_gateway_resurs_bank_init()
 
         /** @var $refundFlow ResursBank */
         $refundFlow = initializeResursFlow();
+
+        if (!$refundFlow->canAnnul($resursOrderId) &&
+            !$refundFlow->canCredit($resursOrderId)
+        ) {
+            return true;
+        }
+
         $refundFlow->resetPayload();
         $refundFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
 
@@ -5461,11 +5482,8 @@ function woocommerce_gateway_resurs_bank_init()
                     $errorString
                 )
             );
-            throw new Exception($errorString, $errorCode);
+            //throw new Exception($errorString, $errorCode);
         }
-
-        // Add order note here of what happened.
-
         return $refundStatus;
     }
 
