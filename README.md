@@ -24,7 +24,7 @@ This is a payment gateway for Resurs Ba2k, that supports three Resurs Bank shopf
 
 The below requisites usually is active in a webserver/phpcore.
 
- * At least PHP 5.4
+ * PHP 7.0 or above
  * [curl](https://curl.haxx.se): For communication via rest (Hosted flow and Resurs Checkout)
  * [PHP streams](http://php.net/manual/en/book.stream.php)
  * [SoapClient](http://php.net/manual/en/class.soapclient.php)

@@ -4,13 +4,12 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.5.1
 Requires PHP: 5.4
-Stable tag: 2.2.39
+Stable tag: 2.2.40
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Resurs Bank Payment Gateway for WooCommerce.
 Maintenance release.
-
 
 == Description ==
 
@@ -18,13 +17,14 @@ Maintenance release.
 
 Official payment gateway for Resurs Bank, with full support for all non-deprecated shop flows.
 SoapClient is required as many of the administrative actions are using SOAP.
+Requires PHP 7.0 or above since WooCommerce requires this.
 
 = Compatibility =
 
 The plugin was once written for WooCommerce v2.6 and up but as of today, we've started to change the requirements. It is no longer guaranteed that this plugin is compatible with such old versions. Ever since WooCommerce [discoverd a file deletion vulnerable (click here)](https://blog.ripstech.com/2018/wordpress-design-flaw-leads-to-woocommerce-rce/) our goal is to patch away deprecated functions.
 
  * Compatibility: WooCommerce - at least 3.x and up to 4.2.x
- * Plugin verified with PHP version 5.6 - 7.4 - avoid running on older PHP releases!
+ * Plugin verified with PHP version 7.0 - 7.4
 
 
 = Upgrade notice =
@@ -85,11 +85,11 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.39 =
+= 2.2.40 =
 
-    * [WOO-493] - Still race conditions in BOOKED (reduce order stock issue)? #11902
+    * [WOO-495] - Unable to credit payments with coupons
 
-= 2.2.30 - 2.2.38 =
+= 2.2.30 - 2.2.39 =
 
     * [WOO-477] - 2.2.32 ecomphp+netcurl patch
     * [WOO-478] - WC Tested up to: 4.2.0
@@ -106,6 +106,7 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
     * [WOO-491] - Slow responses from API causes timeouts
     * [WOO-488] - Possible NATURAL vs LEGAL issue, where LEGAL methods won't shop up in checkout
     * [WOO-489] - Company name is not properly filled in
+    * [WOO-493] - Still race conditions in BOOKED (reduce order stock issue)? #11902
 
 == Upgrade Notice ==
 
