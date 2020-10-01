@@ -65,7 +65,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByComposer(__FILE__));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20200928');
+    define('ECOMPHP_MODIFY_DATE', '20201001');
 }
 
 /**
