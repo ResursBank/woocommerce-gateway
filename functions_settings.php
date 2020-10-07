@@ -264,6 +264,32 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'desc_tip' => true,
                 ],
+                'coupons_ex_tax' => [
+                    'title' => __('Coupon amounts should include the tax amount', 'trbwc'),
+                    'type' => 'checkbox',
+                    'default' => 'true',
+                    'description' => __(
+                        'When order rows are added to Resurs Bank API, discount amounts are by default added ' .
+                        'excluding tax. If you want to include the tax amount in the added discount amount, ' .
+                        'you can enable the feature here.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                ],
+                'coupons_include_vat' => [
+                    'title' => __(
+                        'Coupon order rows should include vat',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'checkbox',
+                    'desc' => __('Yes', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'default' => 'false',
+                    'description' => __(
+                        'When adding coupons/discounts in Resurs Bank orders, the vat is normally set ' .
+                        'to 0 for different kinds of reasons. If you want to add the vat (vatPct), you should ' .
+                        'have this option enabled.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                ],
                 'reduceOrderStock' => [
                     'title' => __(
                         'Handle order stock on payments',
