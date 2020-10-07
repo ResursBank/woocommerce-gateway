@@ -1807,10 +1807,6 @@ function woocommerce_gateway_resurs_bank_init()
             if (wc_coupons_enabled()) {
                 $coupons = $cart->get_coupons();
                 if (is_array($coupons) && count($coupons) > 0) {
-                    // TODO: Deprecated variables
-                    $coupon_values = $cart->coupon_discount_amounts;
-                    $coupon_tax_values = $cart->coupon_discount_tax_amounts;
-
                     /**
                      * @var  $code
                      * @var  $coupon WC_Coupon
@@ -1826,16 +1822,32 @@ function woocommerce_gateway_resurs_bank_init()
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 );
                         }
+
+                        // coupons_ex_tax
+                        // coupons_include_vat
+                        $exTax = $cart->get_coupon_discount_amount($code);
+                        $incTax = $cart->get_coupon_discount_amount($code, false);
+
+                        // Old Setup
+                        //$unitAmountWithoutVat = (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]);
+                        //$totalAmount = (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]);
+
+                        // New Setup
+                        $vatPct = !(bool)getResursOption('coupons_include_vat') ? 0 : ($exTax / $incTax) * 100;
+                        $unitAmountWithoutVat = !(bool)getResursOption('coupons_ex_tax') ? 0 - $incTax : 0 - $exTax;
+                        $totalAmount = !(bool)getResursOption('coupons_ex_tax') ? 0 - $incTax : 0 - $exTax;
+                        $totalVatAmount = (bool)getResursOption('coupons_ex_tax') ? $incTax - $exTax : 0;
+
                         $spec_lines[] = [
                             'id' => $couponId,
                             'artNo' => $couponCode . '_' . 'kupong',
                             'description' => $couponDescription,
                             'quantity' => 1,
                             'unitMeasure' => '',
-                            'unitAmountWithoutVat' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
-                            'vatPct' => 0,
-                            'totalVatAmount' => 0,
-                            'totalAmount' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
+                            'unitAmountWithoutVat' => $unitAmountWithoutVat,
+                            'vatPct' => $vatPct,
+                            'totalVatAmount' => $totalVatAmount,
+                            'totalAmount' => $totalAmount,
                             'type' => 'DISCOUNT',
                         ];
                     }
@@ -2775,10 +2787,6 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if (isset($_REQUEST['updateReference'])) {
-                // For the deprecation in WOO-381, always return true as we moved this process to another
-                // methods.
-                //$this->returnJsonResponse($returnResult, 200);
-
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], 'omnicheckout')) {
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {

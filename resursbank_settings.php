@@ -1434,6 +1434,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Customer and store', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setCheckBox('reduceOrderStock', $namespace);
+                    echo $this->setCheckBox('coupons_ex_tax', $namespace);
+                    echo $this->setCheckBox('coupons_include_vat', $namespace);
+
                     echo $this->setCheckBox('resursOrdersEditable', $namespace);
                     echo $this->setCheckBox('showCheckoutOverlay', $namespace);
                     echo $this->setTextBox('checkoutOverlayMessage', $namespace);
