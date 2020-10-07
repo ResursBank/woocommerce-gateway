@@ -701,10 +701,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                         'description' => $couponDescription,
                         'quantity' => 1,
                         'unitMeasure' => '',
-                        'unitAmountWithoutVat' => $unitAmountWithoutVat,
+                        'unitAmountWithoutVat' => (float)$unitAmountWithoutVat,
                         'vatPct' => $vatPct,
-                        'totalVatAmount' => $totalVatAmount,
-                        'totalAmount' => $totalAmount,
+                        'totalVatAmount' => (float)$totalVatAmount,
+                        'totalAmount' => (float)$totalAmount,
                         'type' => 'DISCOUNT',
                     ];
                 }
