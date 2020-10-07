@@ -1832,11 +1832,14 @@ function woocommerce_gateway_resurs_bank_init()
                         //$unitAmountWithoutVat = (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]);
                         //$totalAmount = (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]);
 
-                        // New Setup
-                        $vatPct = !(bool)getResursOption('coupons_include_vat') ? 0 : ($exTax / $incTax) * 100;
-                        $unitAmountWithoutVat = !(bool)getResursOption('coupons_ex_tax') ? 0 - $incTax : 0 - $exTax;
-                        $totalAmount = !(bool)getResursOption('coupons_ex_tax') ? 0 - $incTax : 0 - $exTax;
-                        $totalVatAmount = (bool)getResursOption('coupons_ex_tax') ? $incTax - $exTax : 0;
+                        // New Setup (Using true booleans instead).
+                        $vatPct = (bool)getResursOption('coupons_include_vat') ? ($exTax / $incTax) * 100 : 0;
+                        $unitAmountWithoutVat = (bool)getResursOption('coupons_ex_tax') ? 0 - $exTax : 0 - $IncTax;
+                        $totalAmount = (bool)getResursOption('coupons_ex_tax') ? 0 - $exTax : 0 - $incTax;
+                        $totalVatAmount = 0;
+                        if ((bool)getResursOption('coupons_include_vat')) {
+                            $totalVatAmount = (bool)getResursOption('coupons_ex_tax') ? 0 : $incTax - $exTax;
+                        }
 
                         $spec_lines[] = [
                             'id' => $couponId,
