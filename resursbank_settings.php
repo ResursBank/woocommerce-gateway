@@ -1438,10 +1438,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('reduceOrderStock', $namespace);
 
                     echo $this->setSeparator(
-                        __('Coupons and discount', 'resurs-bank-payment-gateway-for-woocommerce'),
+                        __('Coupons/discount and VAT', 'resurs-bank-payment-gateway-for-woocommerce'),
                         'configSeparateTitleSmall'
                     );
-                    echo $this->setCheckBox('coupons_ex_tax', $namespace);
                     echo $this->setCheckBox('coupons_include_vat', $namespace);
 
                     echo $this->setSeparator(

@@ -283,4 +283,36 @@ function notify_resurs_admin_parts_disabled()
     }
 }
 
+/**
+ * @param $id
+ * @return array|mixed|string
+ */
+function getResursStoredPaymentVatData($id, $key = '')
+{
+    $storedVatData = [
+        'coupons_include_vat' => getResursOption('coupons_include_vat'),
+        'meta_available' => false,
+    ];
+
+    try {
+        $metaConfiguration = unserialize(getResursPaymentMethodMeta($id, 'resursBankMetaPaymentStoredVatData'));
+    } catch (\Exception $e) {
+        // In case the passed string is not unserializeable, FALSE is returned and E_NOTICE is issued.
+        // And if possible, make silence out of that.
+        $metaConfiguration = null;
+    }
+    if (is_array($metaConfiguration)) {
+        $metaConfiguration['meta_available'] = true;
+        $return = $metaConfiguration;
+    } else {
+        $return = $storedVatData;
+    }
+
+    if (!empty($key) && isset($return[$key])) {
+        return $return[$key];
+    }
+
+    return $return;
+}
+
 add_action('admin_notices', 'notify_resurs_admin_parts_disabled');
