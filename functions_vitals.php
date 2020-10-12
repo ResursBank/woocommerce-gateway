@@ -253,7 +253,6 @@ function isResursDemo()
 
 /**
  * @param string $key
- *
  * @return bool|mixed|void
  */
 function omniOption($key = '')
@@ -284,9 +283,62 @@ function notify_resurs_admin_parts_disabled()
 }
 
 /**
+ * Defines what metadata in the order data section that is protected (= not visible).
+ * @param $protected
+ * @param $metaKey
+ * @param $metaType
+ * @return bool
+ * @since 2.2.41
+ */
+function resurs_protected_meta_data($protected, $metaKey, $metaType)
+{
+    // You may like to fetch this data and display it elsewhere.
+    $protectMeta = getResursProtectedMetaData();
+
+    if (isset($protectMeta[$metaKey])) {
+        $protected = true;
+    }
+
+    return $protected;
+}
+
+/**
+ * What we hide in metadata section.
+ *
+ * @return array
+ * @since 2.2.41
+ */
+function getResursProtectedMetaData()
+{
+    return [
+        'hasCallbackAUTOMATIC_FRAUD_CONTROL' => 'AUTOMATIC_FRAUD_CONTROL',
+        'hasCallbackBOOKED' => 'Callback BOOKED',
+        'hasCallbackUNFREEZE' => 'Callback FREEZE',
+        'hasCallbackUPDATE' => 'Callback UPDATE',
+        'hasCallbackANNULMENT' => 'Callback ANNULMENT',
+        'hasCallbackFINALIZATION' => 'Callback FINALIZATION',
+        'orderBookStatus' => __(
+            'Order status on first bookPayment',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        ),
+        'paymentId' => 'paymentId',
+        'resursBankMetaPaymentMethod' => 'Payment Method',
+        'resursBankMetaPaymentMethodSpecificType' => 'SpecificType',
+        'resursBankMetaPaymentMethodType' => 'Type',
+        'resursBankMetaPaymentStoredVatData' => 'VAT Data',
+        'resursBankPaymentFlow' => __(
+            'Payment flow',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        ),
+        'orderDenied' => 'orderDenied',
+    ];
+}
+
+/**
  * VAT data storage returns information about how a recent order has been handled.
  * @param $id
  * @return array|mixed|string
+ * @since 2.2.41
  */
 function getResursStoredPaymentVatData($id, $key = '')
 {
