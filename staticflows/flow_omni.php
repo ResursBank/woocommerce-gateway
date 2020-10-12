@@ -588,6 +588,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     protected static function get_payment_spec($cart, $specLinesOnly = false)
     {
         global $woocommerce;
+        $flow = initializeResursFlow();
 
         //$payment_fee_tax_pct = 0;   // TODO: Figure out this legacy variable, that was never initialized.
         $spec_lines = self::get_spec_lines($cart->get_cart());
@@ -681,19 +682,12 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                             );
                     }
 
-                    // coupons_ex_tax
-                    // coupons_include_vat
                     $exTax = $cart->get_coupon_discount_amount($code);
                     $incTax = $cart->get_coupon_discount_amount($code, false);
-
-                    // Old Setup
-                    //$unitAmountWithoutVat = (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]);
-                    //$totalAmount = (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]);
-                    // New Setup
-                    $vatPct = !(bool)getResursOption('coupons_include_vat') ? 0 : ($exTax / $incTax) * 100;
-                    $unitAmountWithoutVat = !(bool)getResursOption('coupons_ex_tax') ? 0 - $incTax : 0 - $exTax;
-                    $totalAmount = !(bool)getResursOption('coupons_ex_tax') ? 0 - $incTax : 0 - $exTax;
-                    $totalVatAmount = (bool)getResursOption('coupons_ex_tax') ? $incTax - $exTax : 0;
+                    $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
+                    $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
+                    $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
+                    $totalVatAmount = (bool)getResursOption('coupons_include_vat') ? $flow->getTotalVatAmount($unitAmountWithoutVat, $vatPct, 1) : 0;
 
                     $spec_lines[] = [
                         'id' => $couponId,
