@@ -284,6 +284,7 @@ function notify_resurs_admin_parts_disabled()
 }
 
 /**
+ * VAT data storage returns information about how a recent order has been handled.
  * @param $id
  * @return array|mixed|string
  */

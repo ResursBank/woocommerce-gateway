@@ -682,11 +682,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                             );
                     }
 
-                    // coupons_include_vat
                     $exTax = $cart->get_coupon_discount_amount($code);
                     $incTax = $cart->get_coupon_discount_amount($code, false);
-
-                    // New Setup (Using true booleans instead).
                     $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                     $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                     $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);

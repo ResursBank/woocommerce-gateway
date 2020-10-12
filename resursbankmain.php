@@ -1824,11 +1824,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 );
                         }
 
-                        // coupons_include_vat
                         $exTax = 0-$cart->get_coupon_discount_amount($code);
                         $incTax = 0-$cart->get_coupon_discount_amount($code, false);
-
-                        // New Setup (Using true booleans instead).
                         $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                         $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                         $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
