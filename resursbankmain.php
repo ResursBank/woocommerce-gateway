@@ -1173,7 +1173,7 @@ function woocommerce_gateway_resurs_bank_init()
                             update_post_meta($orderId, 'hasReduceStock', time());
                             $order->add_order_note(
                                 __(
-                                    'Stock reducing requested to be handled by Resurs Bank (Callback).',
+                                    '[Resurs Bank] Stock reducing requested to be handled by Resurs Bank (Callback).',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 )
                             );

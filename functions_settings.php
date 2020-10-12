@@ -275,7 +275,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc' => __('Yes', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'default' => 'no',
                     'description' => __(
-                        'When adding coupons/discounts in Resurs Bank orders, the VAT is - normally in this plugin - ' .
+                        'When adding coupons/discounts in Resurs Bank orders, the VAT is normally - in this plugin - ' .
                         'not included in the discount. If you want to handle discount with VAT (meaning the discount' .
                         'will be handled based on the price excluding tax plus the vat, instead of adding the discount' .
                         'to the price with tax included), you should enable this setting.',
