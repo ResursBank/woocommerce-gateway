@@ -1707,6 +1707,7 @@ function woocommerce_gateway_resurs_bank_init()
         protected static function get_payment_spec($cart, $specLinesOnly = false)
         {
             global $woocommerce;
+            $flow = initializeResursFlow();
 
             //$payment_fee_tax_pct = (float) getResursOption( 'pricePct' );
             /** @var WC_Cart $currentCart */
@@ -1807,10 +1808,6 @@ function woocommerce_gateway_resurs_bank_init()
             if (wc_coupons_enabled()) {
                 $coupons = $cart->get_coupons();
                 if (is_array($coupons) && count($coupons) > 0) {
-                    // TODO: Deprecated variables
-                    $coupon_values = $cart->coupon_discount_amounts;
-                    $coupon_tax_values = $cart->coupon_discount_tax_amounts;
-
                     /**
                      * @var  $code
                      * @var  $coupon WC_Coupon
@@ -1826,16 +1823,24 @@ function woocommerce_gateway_resurs_bank_init()
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 );
                         }
+
+                        $exTax = 0-$cart->get_coupon_discount_amount($code);
+                        $incTax = 0-$cart->get_coupon_discount_amount($code, false);
+                        $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
+                        $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
+                        $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
+                        $totalVatAmount = (bool)getResursOption('coupons_include_vat') ? $flow->getTotalVatAmount($unitAmountWithoutVat, $vatPct, 1) : 0;
+
                         $spec_lines[] = [
                             'id' => $couponId,
                             'artNo' => $couponCode . '_' . 'kupong',
                             'description' => $couponDescription,
                             'quantity' => 1,
                             'unitMeasure' => '',
-                            'unitAmountWithoutVat' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
-                            'vatPct' => 0,
-                            'totalVatAmount' => 0,
-                            'totalAmount' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
+                            'unitAmountWithoutVat' => (float)$unitAmountWithoutVat,
+                            'vatPct' => $vatPct,
+                            'totalVatAmount' => (float)$totalVatAmount,
+                            'totalAmount' => (float)$totalAmount,
                             'type' => 'DISCOUNT',
                         ];
                     }
@@ -2775,10 +2780,6 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if (isset($_REQUEST['updateReference'])) {
-                // For the deprecation in WOO-381, always return true as we moved this process to another
-                // methods.
-                //$this->returnJsonResponse($returnResult, 200);
-
                 if (isset($_REQUEST['omnicheckout_nonce'])) {
                     if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], 'omnicheckout')) {
                         if (isset($_REQUEST['orderRef']) && isset($_REQUEST['orderId'])) {
@@ -4015,12 +4016,14 @@ function woocommerce_gateway_resurs_bank_init()
          * WC orders.
          *
          * @param $order WC_Order
-         * @param $resursFlow Resursbank\RBEcomPHP\ResursBank
+         * @param $resursFlow ResursBank
          * @param bool $isFullOrderHandle Set to true if this is a "handle full order instead of partial" order.
          * @return bool Returns true if this method indicates refunds with discount.
          */
         private static function getOrderRowsByRefundedDiscountItems($order, $resursFlow, $isFullOrderHandle = false)
         {
+            $refundVatSettings = getResursStoredPaymentVatData($order->get_id());
+
             $return = false;
             $discountTotal = $order->get_discount_total();
             if ($discountTotal > 0) {
@@ -4028,7 +4031,6 @@ function woocommerce_gateway_resurs_bank_init()
                 /** @var $item WC_Order_Item_Product */
                 foreach ($orderItems as $item) {
                     $product = new WC_Product($item->get_product_id());
-
                     $orderItemQuantity = $item->get_quantity();
                     $refundedQuantity = $order->get_qty_refunded_for_item($item->get_id());
                     $rowsLeftToHandle = $orderItemQuantity + $refundedQuantity;
@@ -4039,13 +4041,21 @@ function woocommerce_gateway_resurs_bank_init()
                     ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
 
                     $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
+                    $vatPct = 0;
+                    $totalAmount = (float)$itemTotal + (float)$item->get_total_tax();
+
+                    if ($refundVatSettings['coupons_include_vat']) {
+                        $vatPct = $amountPct;
+                        $totalAmount = (float)$itemTotal;
+                    }
+
                     if ($itemTotal > 0) {
                         $return = true;
                         $resursFlow->addOrderLine(
                             $articleId,
                             $product->get_title(),
-                            $itemTotal,
-                            $amountPct,
+                            $totalAmount,
+                            $vatPct,
                             '',
                             'ORDER_LINE',
                             $rowsLeftToHandle
@@ -4078,6 +4088,7 @@ function woocommerce_gateway_resurs_bank_init()
          * @param int $order_id The order id
          * @param string $old_status_slug The old status
          * @param string $new_status_slug The new stauts
+         * @return bool|void
          * @throws Exception
          */
         public static function order_status_changed($order_id, $old_status_slug, $new_status_slug)
@@ -5378,10 +5389,10 @@ function woocommerce_gateway_resurs_bank_init()
     {
         $refundObject = new WC_Order_Refund($refundId);
         $order = new WC_Order($orderId);
-
         if (!isResursBankOrder($order)) {
             return false;
         }
+        $refundVatSettings = getResursStoredPaymentVatData($order->get_id());
 
         $refundStatus = false;
         $resursOrderId = wc_get_payment_id_by_order_id($orderId);
@@ -5423,13 +5434,21 @@ function woocommerce_gateway_resurs_bank_init()
                 $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
                 $articleId = resurs_get_proper_article_number($product);
                 $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
+                $itemTotalTax = preg_replace('/^-/', '', ($item->get_total_tax() / $itemQuantity));
+
+                $realAmount = $itemTotal+$itemTotalTax;
+                $vatPct = 0;
+                if ($refundVatSettings['coupons_include_vat']) {
+                    $vatPct = $amountPct;
+                    $realAmount = (float)$itemTotal;
+                }
 
                 // Regenerate the cancellation orderline with positive decimals.
                 $refundFlow->addOrderLine(
                     $articleId,
                     $product->get_title(),
-                    $itemTotal,
-                    $amountPct,
+                    $realAmount,
+                    $vatPct,
                     '',
                     'ORDER_LINE',
                     $itemQuantity
@@ -7097,6 +7116,10 @@ function getResursUpdatePaymentReferenceResult($id)
 function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMetaPaymentMethod', $value = '')
 {
     if ($id > 0) {
+        $storedVatData = [
+            'coupons_include_vat' => getResursOption('coupons_include_vat')
+        ];
+
         $paymentMethodName = isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : '';
         if (empty($paymentMethodName) && !empty($methodName)) {
             $paymentMethodName = $methodName;
@@ -7128,6 +7151,11 @@ function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMet
             $id,
             'resursBankMetaPaymentMethod',
             $paymentMethodName
+        );
+        update_post_meta(
+            $id,
+            'resursBankMetaPaymentStoredVatData',
+            serialize($storedVatData)
         );
     }
 }

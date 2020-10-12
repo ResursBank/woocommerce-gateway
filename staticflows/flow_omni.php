@@ -588,6 +588,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     protected static function get_payment_spec($cart, $specLinesOnly = false)
     {
         global $woocommerce;
+        $flow = initializeResursFlow();
 
         //$payment_fee_tax_pct = 0;   // TODO: Figure out this legacy variable, that was never initialized.
         $spec_lines = self::get_spec_lines($cart->get_cart());
@@ -665,9 +666,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         if (wc_coupons_enabled()) {
             $coupons = $cart->get_coupons();
             if (is_array($coupons) && count($coupons) > 0) {
-                $coupon_values = $cart->coupon_discount_amounts;
-                $coupon_tax_values = $cart->coupon_discount_tax_amounts;
-
                 /**
                  * @var  $code
                  * @var  WC_Coupon $coupon
@@ -678,19 +676,29 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $couponCode = ($coupon->get_code());
                     $couponDescription = $post->post_excerpt;
                     if (empty($couponDescription)) {
-                        $couponDescription = $couponCode . '_' . __('coupon',
-                                'resurs-bank-payment-gateway-for-woocommerce');
+                        $couponDescription = $couponCode . '_' . __(
+                                'coupon',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            );
                     }
+
+                    $exTax = $cart->get_coupon_discount_amount($code);
+                    $incTax = $cart->get_coupon_discount_amount($code, false);
+                    $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
+                    $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
+                    $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
+                    $totalVatAmount = (bool)getResursOption('coupons_include_vat') ? $flow->getTotalVatAmount($unitAmountWithoutVat, $vatPct, 1) : 0;
+
                     $spec_lines[] = [
                         'id' => $couponId,
                         'artNo' => $couponCode . '_' . 'kupong',
                         'description' => $couponDescription,
                         'quantity' => 1,
                         'unitMeasure' => '',
-                        'unitAmountWithoutVat' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
-                        'vatPct' => 0,
-                        'totalVatAmount' => 0,
-                        'totalAmount' => (0 - (float)$coupon_values[$code]) + (0 - (float)$coupon_tax_values[$code]),
+                        'unitAmountWithoutVat' => (float)$unitAmountWithoutVat,
+                        'vatPct' => $vatPct,
+                        'totalVatAmount' => (float)$totalVatAmount,
+                        'totalAmount' => (float)$totalAmount,
                         'type' => 'DISCOUNT',
                     ];
                 }
