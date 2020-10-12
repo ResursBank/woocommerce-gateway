@@ -1824,12 +1824,13 @@ function woocommerce_gateway_resurs_bank_init()
                                 );
                         }
 
-                        $exTax = 0-$cart->get_coupon_discount_amount($code);
-                        $incTax = 0-$cart->get_coupon_discount_amount($code, false);
+                        $exTax = 0 - $cart->get_coupon_discount_amount($code);
+                        $incTax = 0 - $cart->get_coupon_discount_amount($code, false);
                         $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                         $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                         $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
-                        $totalVatAmount = (bool)getResursOption('coupons_include_vat') ? $flow->getTotalVatAmount($unitAmountWithoutVat, $vatPct, 1) : 0;
+                        $totalVatAmount = (bool)getResursOption('coupons_include_vat') ? $flow->getTotalVatAmount($unitAmountWithoutVat,
+                            $vatPct, 1) : 0;
 
                         $spec_lines[] = [
                             'id' => $couponId,
@@ -4348,8 +4349,8 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'cancelled':
                     if ($currentRunningUser &&
                         (
-                                $resursFlow->canCredit($payment_id) ||
-                                $resursFlow->canAnnul($payment_id)
+                            $resursFlow->canCredit($payment_id) ||
+                            $resursFlow->canAnnul($payment_id)
                         )
                     ) {
                         try {
@@ -5436,7 +5437,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
                 $itemTotalTax = preg_replace('/^-/', '', ($item->get_total_tax() / $itemQuantity));
 
-                $realAmount = $itemTotal+$itemTotalTax;
+                $realAmount = $itemTotal + $itemTotalTax;
                 $vatPct = 0;
                 if ($refundVatSettings['coupons_include_vat']) {
                     $vatPct = $amountPct;
@@ -5581,6 +5582,7 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('manage_shop_order_posts_custom_column', 'resurs_order_column_info');
 
     add_filter('plugin_action_links', 'plugin_page_resurs_bank_for_woocommerce_settings', 10, 2);
+    add_filter('is_protected_meta', 'resurs_protected_meta_data', 10, 3);
 }
 
 function resurs_after_checkout_form()
@@ -5840,7 +5842,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 // partially debited and annulled order may give a falsely annulled status in the end. Instead,
                 // we ask EComPHP for the most proper, current, status.
                 $currentOrderStatus = ucfirst($rb->getOrderStatusStringByReturnCode($rb->getOrderStatusByPayment($resursPaymentInfo)));
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 $currentOrderStatus = '<i>' . $e->getMessage() . '</i>';
             }
 
@@ -6022,6 +6024,21 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             }
 
             $continueView = $resursPaymentInfo;
+            $showMeta = getResursProtectedMetaData();
+
+            if (is_array($showMeta)) {
+                foreach ($showMeta as $metaKey => $metaValueDescription) {
+                    $setValue = getResursPaymentMethodMeta($order->get_id(), $metaKey);
+                    if (empty($setValue)) {
+                        continue;
+                    }
+                    if ((strncmp($metaKey, 'hasCallback', 11) === 0) && is_numeric($setValue)) {
+                        $setValue = strftime('%Y-%m-%d %H:%M:%S', $setValue);
+                    }
+                    $continueView->$metaValueDescription = $setValue;
+                }
+            }
+
             foreach ($continueView as $key => $value) {
                 if (in_array($key, $unsetKeys)) {
                     unset($continueView->$key);
@@ -7117,7 +7134,7 @@ function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMet
 {
     if ($id > 0) {
         $storedVatData = [
-            'coupons_include_vat' => getResursOption('coupons_include_vat')
+            'coupons_include_vat' => getResursOption('coupons_include_vat'),
         ];
 
         $paymentMethodName = isset($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : '';
@@ -7156,6 +7173,11 @@ function setResursPaymentMethodMeta($id, $methodName = '', $key = 'resursBankMet
             $id,
             'resursBankMetaPaymentStoredVatData',
             serialize($storedVatData)
+        );
+        update_post_meta(
+            $id,
+            'resursBankPaymentFlow',
+            getResursOption('flowtype')
         );
     }
 }
