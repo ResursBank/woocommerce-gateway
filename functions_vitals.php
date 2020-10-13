@@ -311,7 +311,7 @@ function resurs_protected_meta_data($protected, $metaKey, $metaType)
 function getResursProtectedMetaData()
 {
     return [
-        'hasCallbackAUTOMATIC_FRAUD_CONTROL' => 'AUTOMATIC_FRAUD_CONTROL',
+        'hasCallbackAUTOMATIC_FRAUD_CONTROL' => 'Callback AUTOMATIC_FRAUD_CONTROL',
         'hasCallbackBOOKED' => 'Callback BOOKED',
         'hasCallbackUNFREEZE' => 'Callback UNFREEZE',
         'hasCallbackUPDATE' => 'Callback UPDATE',
