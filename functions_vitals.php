@@ -318,7 +318,7 @@ function getResursProtectedMetaData()
         'hasCallbackANNULMENT' => 'Callback ANNULMENT',
         'hasCallbackFINALIZATION' => 'Callback FINALIZATION',
         'orderBookStatus' => __(
-            'Order status on the first bookPayment execution',
+            'Initial status retrieved from bookPayment',
             'resurs-bank-payment-gateway-for-woocommerce'
         ),
         'paymentId' => 'paymentId',

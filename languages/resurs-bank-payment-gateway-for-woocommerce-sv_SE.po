@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2020-10-12 13:11+0200\n"
-"PO-Revision-Date: 2020-10-12 13:11+0200\n"
+"POT-Creation-Date: 2020-10-13 10:15+0200\n"
+"PO-Revision-Date: 2020-10-13 10:16+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -390,7 +390,7 @@ msgid ""
 msgstr ""
 "Gör ordrar redigerbara även om de är markerade för behandling. OBS: Denna "
 "inställningen är experimentell och har begränsad redigeringskapacitet. Den "
-"skall normalt sett inte användas"
+"skall normalt sett inte användas!"
 
 #: functions_settings.php:395
 msgid "getAddressBox Enabled"
@@ -934,8 +934,8 @@ msgstr ""
 "Banks admin-konfiguration. Om detta är korrekt, ignorera meddelande."
 
 #: functions_vitals.php:321
-msgid "Order status on the first bookPayment execution"
-msgstr "Orderstatus på första bookPayment-anropet"
+msgid "Initial status retrieved from bookPayment"
+msgstr "Första status som emottogs från bookPayment"
 
 #: functions_vitals.php:330
 msgid "Payment flow"
@@ -2145,6 +2145,9 @@ msgstr "Resurs Bank AB"
 #. Author URI of the plugin/theme
 msgid "https://test.resurs.com/docs/display/ecom/WooCommerce"
 msgstr "https://test.resurs.com/docs/display/ecom/WooCommerce"
+
+#~ msgid "bookPayment initial status"
+#~ msgstr "Första status mottagen från bookPayment"
 
 #, fuzzy
 #~| msgid ""
