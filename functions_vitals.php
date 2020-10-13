@@ -313,7 +313,7 @@ function getResursProtectedMetaData()
     return [
         'hasCallbackAUTOMATIC_FRAUD_CONTROL' => 'AUTOMATIC_FRAUD_CONTROL',
         'hasCallbackBOOKED' => 'Callback BOOKED',
-        'hasCallbackUNFREEZE' => 'Callback FREEZE',
+        'hasCallbackUNFREEZE' => 'Callback UNFREEZE',
         'hasCallbackUPDATE' => 'Callback UPDATE',
         'hasCallbackANNULMENT' => 'Callback ANNULMENT',
         'hasCallbackFINALIZATION' => 'Callback FINALIZATION',
