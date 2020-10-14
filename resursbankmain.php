@@ -4042,8 +4042,9 @@ function woocommerce_gateway_resurs_bank_init()
                     ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
 
                     $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
+                    $itemTotalTax = preg_replace('/^-/', '', ($item->get_total_tax() / $itemQuantity));
                     $vatPct = 0;
-                    $totalAmount = (float)$itemTotal + (float)$item->get_total_tax();
+                    $totalAmount = (float)$itemTotal + (float)$itemTotalTax;
 
                     if ($refundVatSettings['coupons_include_vat']) {
                         $vatPct = $amountPct;
