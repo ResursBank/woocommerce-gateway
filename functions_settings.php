@@ -273,7 +273,7 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'type' => 'checkbox',
                     'desc' => __('Yes', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'default' => 'no',
+                    'default' => 'false',
                     'description' => __(
                         'When adding coupons/discounts in Resurs Bank orders, the VAT is normally - in this plugin - ' .
                         'not included in the discount. If you want to handle discount with VAT (meaning the discount' .
