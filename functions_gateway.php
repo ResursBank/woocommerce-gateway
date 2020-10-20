@@ -37,7 +37,7 @@ if (!function_exists('resurs_refund_shipping')) {
         $shippingTax = $orderData->get_shipping_tax();
         $shippingTotal = $orderData->get_shipping_total();
 
-        if (method_exists($orderData, 'get_total_shipping_refunded')) {
+        if ($orderData !== null && method_exists($orderData, 'get_total_shipping_refunded')) {
             $shippingRefunded = (float)$orderData->get_total_shipping_refunded();
 
             // Check if shipping has been refunded already.
