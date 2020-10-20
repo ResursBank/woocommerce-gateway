@@ -1,5 +1,7 @@
 <?php
 
+use Resursbank\RBEcomPHP\ResursBank;
+
 if (!function_exists('resurs_get_proper_article_number')) {
 
     /**
@@ -22,10 +24,11 @@ if (!function_exists('resurs_get_proper_article_number')) {
 
 if (!function_exists('resurs_refund_shipping')) {
     /**
-     * @param $orderData
-     * @param $resursFlow
+     * @param WC_Order $orderData
+     * @param ResursBank $resursFlow
      * @param bool $dryRun Run through shipping procedure without adding orderlines in ecom on dryRun=true
      * @return bool
+     * @throws Exception
      * @since 2.2.21
      */
     function resurs_refund_shipping($orderData, $resursFlow, $dryRun = false)
@@ -33,6 +36,12 @@ if (!function_exists('resurs_refund_shipping')) {
         $return = false;
         $shippingTax = $orderData->get_shipping_tax();
         $shippingTotal = $orderData->get_shipping_total();
+        $shippingRefunded = (float)$orderData->get_total_shipping_refunded();
+
+        // Check if shipping has been refunded already.
+        if ((float)$shippingTotal === $shippingRefunded) {
+            return $return;
+        }
 
         // Resurs Bank does not like negative values when adding orderrows, so
         // we make them positive. When partially refunding and shipping is left out
