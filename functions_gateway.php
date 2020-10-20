@@ -36,11 +36,14 @@ if (!function_exists('resurs_refund_shipping')) {
         $return = false;
         $shippingTax = $orderData->get_shipping_tax();
         $shippingTotal = $orderData->get_shipping_total();
-        $shippingRefunded = (float)$orderData->get_total_shipping_refunded();
 
-        // Check if shipping has been refunded already.
-        if ((float)$shippingTotal === $shippingRefunded) {
-            return $return;
+        if (method_exists($orderData, 'get_total_shipping_refunded')) {
+            $shippingRefunded = (float)$orderData->get_total_shipping_refunded();
+
+            // Check if shipping has been refunded already.
+            if ((float)$shippingTotal === $shippingRefunded) {
+                return $return;
+            }
         }
 
         // Resurs Bank does not like negative values when adding orderrows, so
