@@ -5428,7 +5428,7 @@ function woocommerce_gateway_resurs_bank_init()
         if (is_array($refundItems) && count($refundItems)) {
             /** @var WC_Order_Item_Product $item */
             foreach ($refundItems as $item) {
-                // Calculate the tax out of the current values.
+                // Calculate the default tax out of the current values.
                 $amountPct = !is_nan(
                     @round($item->get_total_tax() / $item->get_total(), 2) * 100
                 ) ? @round($item->get_total_tax() / $item->get_total(), 2) * 100 : 0;
@@ -5436,7 +5436,7 @@ function woocommerce_gateway_resurs_bank_init()
                 /** @var WC_Product $product */
                 $product = $item->get_product();
 
-                // Positive decimal
+                // Positive decimal.
                 $itemQuantity = preg_replace('/^-/', '', $item->get_quantity());
                 $articleId = resurs_get_proper_article_number($product);
                 $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
