@@ -5420,6 +5420,7 @@ function woocommerce_gateway_resurs_bank_init()
             $refundFlow->setGetPaymentMatchKeys($matchGetPaymentKeys);
         }
         $refundPriceAlwaysOverride = (bool)apply_filters('resurs_refund_price_override', false);
+        $totalDiscount = $order->get_total_discount();
 
         if (is_array($refundItems) && count($refundItems)) {
             /** @var WC_Order_Item_Product $item */
@@ -5461,8 +5462,6 @@ function woocommerce_gateway_resurs_bank_init()
         $errors = false;
         $errorString = null;
         $errorCode = null;
-
-        $totalDiscount = $order->get_total_discount();
         $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);
 
         try {
