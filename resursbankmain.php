@@ -5421,6 +5421,8 @@ function woocommerce_gateway_resurs_bank_init()
         }
         $refundPriceAlwaysOverride = (bool)apply_filters('resurs_refund_price_override', false);
         $totalDiscount = $order->get_total_discount();
+
+        // Refund discount indicator. If above 0, the below actions should honor discount.
         $refundDiscount = $refundObject->get_discount_total();
 
         if (is_array($refundItems) && count($refundItems)) {
@@ -5440,11 +5442,16 @@ function woocommerce_gateway_resurs_bank_init()
                 $itemTotal = preg_replace('/^-/', '', ($item->get_total() / $itemQuantity));
                 $itemTotalTax = preg_replace('/^-/', '', ($item->get_total_tax() / $itemQuantity));
 
-                $realAmount = $itemTotal + $itemTotalTax;
-                $vatPct = 0;
-                if ($refundVatSettings['coupons_include_vat']) {
-                    $vatPct = $amountPct;
+                if ($refundDiscount) {
+                    $realAmount = $itemTotal + $itemTotalTax;
+                    $vatPct = 0;
+                    if ($refundVatSettings['coupons_include_vat']) {
+                        $vatPct = $amountPct;
+                        $realAmount = (float)$itemTotal;
+                    }
+                } else {
                     $realAmount = (float)$itemTotal;
+                    $vatPct = $amountPct;
                 }
 
                 // Regenerate the cancellation orderline with positive decimals.
