@@ -5382,6 +5382,8 @@ function woocommerce_gateway_resurs_bank_init()
      * For example, in this function we also need to figure out how much that is actually left to annul or credit before sending the actions.
      * If we try to credit more than is authorized or credit a part of the payment that is already annulled, the credit will fail.
      *
+     * NOTE: If you ever consider to rewrite this plugin, do it properly. Do not use this method.
+     *
      * @param $orderId
      * @param int $refundId
      * @return bool
