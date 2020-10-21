@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.5.1
 Requires PHP: 5.4
-Stable tag: 2.2.41
+8Stable tag: 2.2.41
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,11 +85,20 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.40 =
+= 2.2.41 =
 
-    * [WOO-495] - Unable to credit payments with coupons
 
-= 2.2.30 - 2.2.39 =
+Releaseinformation - WooCommerce - version 2.2.41
+
+= 2.2.41 =
+
+    * [WOO-496] - Add options for how discounts should be handled (discounts applied without tax amount and proper VAT pct)
+    * [WOO-499] - The amount of metadata in each order may be confusing for merchants
+    * [WOO-502] - creditPayment shipping CC
+    * [WOO-497] - Apply discount settings to order rows
+    * [WOO-500] - Initially apply same setup to aftershop as WOO-497
+
+= 2.2.30 - 2.2.40 =
 
     * [WOO-477] - 2.2.32 ecomphp+netcurl patch
     * [WOO-478] - WC Tested up to: 4.2.0
@@ -107,6 +116,7 @@ For prior versions [look here](https://resursbankplugins.atlassian.net/projects/
     * [WOO-488] - Possible NATURAL vs LEGAL issue, where LEGAL methods won't shop up in checkout
     * [WOO-489] - Company name is not properly filled in
     * [WOO-493] - Still race conditions in BOOKED (reduce order stock issue)? #11902
+    * [WOO-495] - Unable to credit payments with coupons
 
 == Upgrade Notice ==
 

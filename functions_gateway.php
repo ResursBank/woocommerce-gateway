@@ -29,7 +29,7 @@ if (!function_exists('resurs_refund_shipping')) {
      * @param bool $dryRun Run through shipping procedure without adding orderlines in ecom on dryRun=true
      * @return bool
      * @throws Exception
-     * @since 2.2.21
+     * @since 2.2.41
      */
     function resurs_refund_shipping($orderData, $resursFlow, $dryRun = false)
     {
