@@ -5501,18 +5501,6 @@ function woocommerce_gateway_resurs_bank_init()
                     )
                 )
             );
-        } else {
-            $order->add_order_note(
-                sprintf(
-                    __(
-                        '[Resurs Bank] Refund/cancellation sent to API with errors: (%s) %s.',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    $errorCode,
-                    $errorString
-                )
-            );
-            //throw new Exception($errorString, $errorCode);
         }
         return $refundStatus;
     }
