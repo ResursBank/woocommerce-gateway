@@ -5421,6 +5421,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
         $refundPriceAlwaysOverride = (bool)apply_filters('resurs_refund_price_override', false);
         $totalDiscount = $order->get_total_discount();
+        $refundDiscount = $refundObject->get_discount_total();
 
         if (is_array($refundItems) && count($refundItems)) {
             /** @var WC_Order_Item_Product $item */
