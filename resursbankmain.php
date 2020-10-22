@@ -3514,7 +3514,7 @@ function woocommerce_gateway_resurs_bank_init()
                         'error'
                     );
                     $getRedirectUrl = wc_get_cart_url();
-                } elseif ($bookedStatus == 'FAILED') {
+                } elseif ($bookedStatus === 'FAILED') {
                     $order->update_status(
                         'failed',
                         __(
