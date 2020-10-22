@@ -2933,6 +2933,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $wooDeliveryAddress = $wooBillingAddress;
                     }
 
+                    WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', true);
                     define('OMNICHECKOUT_PROCESSPAYMENT', true);
                     if (!$testLocalOrder) {
                         /*
@@ -3378,6 +3379,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $order->add_order_note($e->getMessage());
                         }
                         WC()->cart->empty_cart();
+                        WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', false);
                     }
                     wp_safe_redirect($getRedirectUrl);
 
@@ -3385,7 +3387,7 @@ function woocommerce_gateway_resurs_bank_init()
                 }
             }
 
-            if ($paymentId != $requestedPaymentId && !$isHostedFlow) {
+            if ($paymentId !== $requestedPaymentId && !$isHostedFlow) {
                 $order->update_status('failed');
                 wc_add_notice(
                     __(
@@ -3462,7 +3464,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $bookedStatus = 'DENIED';
                 }
                 /* Continue. */
-                if ($bookedStatus == 'FROZEN') {
+                if ($bookedStatus === 'FROZEN') {
                     $order->update_status(
                         'on-hold',
                         __(
@@ -3470,7 +3472,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
-                } elseif ($bookedStatus == 'BOOKED') {
+                } elseif ($bookedStatus === 'BOOKED') {
                     $order->update_status(
                         'processing',
                         __(
@@ -3478,7 +3480,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
-                } elseif ($bookedStatus == 'FINALIZED') {
+                } elseif ($bookedStatus === 'FINALIZED') {
                     WC()->session->set('order_awaiting_payment', true);
                     try {
                         $order->set_status(
@@ -3503,7 +3505,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
-                } elseif ($bookedStatus == 'DENIED') {
+                } elseif ($bookedStatus === 'DENIED') {
                     $order->update_status('failed');
                     update_post_meta($order_id, 'orderDenied', true);
                     wc_add_notice(
@@ -3514,7 +3516,7 @@ function woocommerce_gateway_resurs_bank_init()
                         'error'
                     );
                     $getRedirectUrl = wc_get_cart_url();
-                } elseif ($bookedStatus == 'FAILED') {
+                } elseif ($bookedStatus === 'FAILED') {
                     $order->update_status(
                         'failed',
                         __(
@@ -3548,8 +3550,6 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             wp_safe_redirect($getRedirectUrl);
-
-            return;
         }
 
         /**
@@ -4571,7 +4571,7 @@ function woocommerce_gateway_resurs_bank_init()
                     'resurs-bank-payment-gateway-for-woocommerce'
                 ),
             ], $checkout->get_value('ssn_field'));
-            if ('SE' == $selectedCountry) {
+            if ('SE' === $selectedCountry) {
                 /*
                  * MarGul change
                  * Take the translation for Get Address.
@@ -4630,13 +4630,14 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $isWooSession = false;
+            $ŋetSession = null;
             if (isset(WC()->session)) {
                 $isWooSession = true;
             }
             if ($isWooSession) {
                 $omniRef = WC()->session->get('omniRef');
                 $omniRefCreated = WC()->session->get('omniRefCreated');
-                $omniRefAge = intval(WC()->session->get('omniRefAge'));
+                $omniRefAge = (int)WC()->session->get('omniRefAge');
             }
 
             $gateways = WC()->payment_gateways()->get_available_payment_gateways();
@@ -4664,17 +4665,17 @@ function woocommerce_gateway_resurs_bank_init()
                 'gatewayCount' => (is_array($gateways) ? count($gateways) : 0),
                 'postidreference' => getResursOption('postidreference'),
             ];
-            $setSessionEnable = true;
             $setSession = isset($_REQUEST['set-no-session']) ? $_REQUEST['set-no-session'] : null;
-            if ($setSession == 1) {
+            if ((int)$setSession === 1) {
                 $setSessionEnable = false;
             } else {
                 $setSessionEnable = true;
             }
 
-            // During the creation of new omnivars, make sure they are not duplicates from older orders.
+            // During the creation of new RCO variables, make sure they are not duplicates from older orders.
             if ($setSessionEnable && function_exists('WC') && $isWooSession) {
                 $currentOmniRef = WC()->session->get('omniRef');
+                $inProcess = (bool)WC()->session->get('OMNICHECKOUT_PROCESSPAYMENT');
                 // The resursCreatePass variable is only set when everything was successful.
                 $resursCreatePass = WC()->session->get('resursCreatePass');
                 $orderControl = wc_get_order_id_by_payment_id($currentOmniRef);
@@ -4691,12 +4692,15 @@ function woocommerce_gateway_resurs_bank_init()
                         $allowCleanupSession = true;
                     }
                     if (($resursCreatePass && $currentOmniRef) || ($allowCleanupSession)) {
-                        $refreshUrl = wc_get_cart_url();
-                        $thisSession = new WC_Session_Handler();
-                        $thisSession->destroy_session();
-                        $thisSession->cleanup_sessions();
-                        wp_destroy_all_sessions();
-                        wp_safe_redirect($refreshUrl);
+                        if ($inProcess) {
+                            WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', false);
+                            $refreshUrl = wc_get_cart_url();
+                            $thisSession = new WC_Session_Handler();
+                            $thisSession->destroy_session();
+                            //$thisSession->cleanup_sessions();
+                            //wp_destroy_all_sessions();
+                            wp_safe_redirect($refreshUrl);
+                        }
                     }
                 }
             }
