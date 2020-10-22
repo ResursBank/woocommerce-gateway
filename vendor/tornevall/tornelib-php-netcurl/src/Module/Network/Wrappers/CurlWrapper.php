@@ -10,6 +10,7 @@ namespace TorneLIB\Module\Network\Wrappers;
 
 use Exception;
 use ReflectionException;
+use TorneLIB\Config\Flag;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\GenericParser;
@@ -36,12 +37,9 @@ try {
  * preferred way to fetch data.
  *
  * @package TorneLIB\Module\Network\Wrappers
- * @version 6.1.1
  */
 class CurlWrapper implements WrapperInterface
 {
-    private $version = '6.1.0';
-
     /**
      * @var WrapperConfig $CONFIG
      * @since 6.1.0
@@ -121,6 +119,13 @@ class CurlWrapper implements WrapperInterface
     private $customPreHeaders = [];
 
     /**
+     * Static headers that will not reset between each request-init.
+     * @var array
+     * @since 6.1.2
+     */
+    private $customPreHeadersStatic = [];
+
+    /**
      * @var array
      * @since 6.1.0
      */
@@ -131,6 +136,12 @@ class CurlWrapper implements WrapperInterface
      * @since 6.1.0
      */
     private $contentType = '';
+
+    /**
+     * @var bool If resources are checked strictly.
+     * @since 6.1.2
+     */
+    private $strictResource = false;
 
     /**
      * CurlWrapper constructor.
@@ -147,7 +158,6 @@ class CurlWrapper implements WrapperInterface
 
         $this->CONFIG = new WrapperConfig();
         $this->CONFIG->setCurrentWrapper(__CLASS__);
-
         $hasConstructorArguments = $this->getPriorCompatibilityArguments(func_get_args());
 
         if ($hasConstructorArguments) {
@@ -480,6 +490,11 @@ class CurlWrapper implements WrapperInterface
      */
     private function setProperCustomHeader()
     {
+        // Merge static header data into customPreHeaders.
+        foreach ($this->customPreHeadersStatic as $headerKey => $headerValue) {
+            $this->customPreHeaders[$headerKey] = $headerValue;
+        }
+
         foreach ($this->customPreHeaders as $headerKey => $headerValue) {
             $testHead = explode(":", $headerValue, 2);
             if (isset($testHead[1])) {
@@ -523,19 +538,14 @@ class CurlWrapper implements WrapperInterface
 
     /**
      * @return string
+     * @throws ExceptionHandler
      * @throws ReflectionException
-     * @noinspection PhpSingleStatementWithBracesInspection
      * @since 6.1.0
      */
     public function getVersion()
     {
-        $return = $this->version;
-
-        if (empty($return)) {
-            $return = (new Generic())->getVersionByClassDoc(__CLASS__);
-        }
-
-        return $return;
+        return isset($this->version) && !empty($this->version) ?
+            $this->version : (new Generic())->getVersionByAny(__DIR__, 3, WrapperConfig::class);
     }
 
     /**
@@ -559,6 +569,8 @@ class CurlWrapper implements WrapperInterface
      */
     private function resetCurlRequest()
     {
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->strictResource = Flag::isFlag('strict_resource');
         $this->customHeaders = [];
         $this->curlResponseHeaders = [];
         $this->curlMultiErrors = null;
@@ -571,22 +583,51 @@ class CurlWrapper implements WrapperInterface
     /**
      * @param mixed $key
      * @param string $value
+     * @param bool $static
      * @return CurlWrapper
      * @since 6.0
      */
-    public function setCurlHeader($key = '', $value = '')
+    public function setCurlHeader($key = '', $value = '', $static = false)
     {
+        if (is_array($key) && empty($value)) {
+            // Handle as bulk if this request (for example) comes from NetWrapper.
+            foreach ($key as $getKey => $getValue) {
+                $this->setCurlHeader($getKey, $getValue);
+            }
+            return $this;
+        }
+
         if (!empty($key)) {
             if (!is_array($key)) {
                 $this->customPreHeaders[$key] = $value;
+                if ($static) {
+                    $this->customPreHeadersStatic[$key] = $value;
+                }
             } else {
                 foreach ($key as $arrayKey => $arrayValue) {
                     $this->customPreHeaders[$arrayKey] = $arrayValue;
+                    if ($static) {
+                        $this->customPreHeadersStatic[$arrayKey] = $arrayValue;
+                    }
                 }
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Same as setCurlHeader but streamlined compatibility.
+     *
+     * @param string $key
+     * @param string $value
+     * @param false $static
+     * @return $this
+     * @since 6.1.2
+     */
+    public function setHeader($key = '', $value = '', $static = false)
+    {
+        return $this->setCurlHeader($key, $value, $static);
     }
 
     /**
@@ -852,7 +893,12 @@ class CurlWrapper implements WrapperInterface
      */
     private function isCurlResource($resource)
     {
-        return is_resource($resource) || is_object($resource);
+        $return = !empty($resource);
+        if ($this->strictResource) {
+            $return = is_resource($resource) || is_object($resource);
+        }
+
+        return $return;
     }
 
     /**
@@ -865,7 +911,6 @@ class CurlWrapper implements WrapperInterface
     public function getCurlHandle()
     {
         $return = null;
-
         if ($this->isCurlResource($this->curlHandle)) {
             $return = $this->curlHandle;
         } elseif ($this->isCurlResource($this->curlMultiHandle) && count($this->curlMultiHandleObjects)) {
@@ -1068,6 +1113,33 @@ class CurlWrapper implements WrapperInterface
 
         return strlen($header);
     }
+
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     * @throws ExceptionHandler
+     * @since 6.1.2
+     */
+    public function __call($name, $arguments)
+    {
+        $return = null;
+
+        $compatibilityMethods = $this->CONFIG->getCompatibilityMethods();
+        if (isset($compatibilityMethods[$name])) {
+            $name = $compatibilityMethods[$name];
+            $return = call_user_func_array([$this, $name], $arguments);
+        }
+
+        if (!is_null($return)) {
+            return $return;
+        }
+        throw new ExceptionHandler(
+            sprintf('Function "%s" not available.', $name),
+            Constants::LIB_METHOD_OR_LIBRARY_UNAVAILABLE
+        );
+    }
+
 
     /**
      * @param $url

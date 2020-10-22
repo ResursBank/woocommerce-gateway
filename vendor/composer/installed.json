@@ -241,17 +241,17 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.1.1",
-        "version_normalized": "6.1.1.0",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
         "source": {
             "type": "git",
             "url": "https://github.com/Tornevall/tornelib-php-netcurl.git",
-            "reference": "d82b11149bd956563672eabe3bff2c4056e9ce9a"
+            "reference": "731f475d1cf8b82b12a4537cfa6a191ab0c286ff"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/d82b11149bd956563672eabe3bff2c4056e9ce9a",
-            "reference": "d82b11149bd956563672eabe3bff2c4056e9ce9a",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/731f475d1cf8b82b12a4537cfa6a191ab0c286ff",
+            "reference": "731f475d1cf8b82b12a4537cfa6a191ab0c286ff",
             "shasum": ""
         },
         "require": {
@@ -262,7 +262,7 @@
             "tornevall/tornelib-php-utils": "6.1.*",
             "tornevall/tornelib-php-version": "6.1.*"
         },
-        "time": "2020-07-24T16:58:14+00:00",
+        "time": "2020-10-22T12:01:48+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -323,24 +323,27 @@
     },
     {
         "name": "tornevall/tornelib-php-network",
-        "version": "6.1.4",
-        "version_normalized": "6.1.4.0",
+        "version": "6.1.2",
+        "version_normalized": "6.1.2.0",
         "source": {
             "type": "git",
             "url": "https://github.com/Tornevall/tornelib-php-network.git",
-            "reference": "075ca7b3b246c9410d6194fe36265102b6ee8f19"
+            "reference": "228c9c43632ae7857834463dbd5e9d9c46d6eb6f"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-network/zipball/075ca7b3b246c9410d6194fe36265102b6ee8f19",
-            "reference": "075ca7b3b246c9410d6194fe36265102b6ee8f19",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-network/zipball/228c9c43632ae7857834463dbd5e9d9c46d6eb6f",
+            "reference": "228c9c43632ae7857834463dbd5e9d9c46d6eb6f",
             "shasum": ""
         },
         "require": {
+            "tornevall/tornelib-php-bitmask": "^6.1",
+            "tornevall/tornelib-php-crypto": "^6.1",
             "tornevall/tornelib-php-errorhandler": "^6.1",
-            "tornevall/tornelib-php-netcurl": "^6.1"
+            "tornevall/tornelib-php-io": "^6.1",
+            "tornevall/tornelib-php-netcurl": "dev-master"
         },
-        "time": "2020-05-26T13:04:17+00:00",
+        "time": "2020-04-27T16:28:43+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

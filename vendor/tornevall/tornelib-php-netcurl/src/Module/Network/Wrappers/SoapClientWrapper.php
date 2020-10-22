@@ -28,7 +28,6 @@ use TorneLIB\Utils\Security;
  * Class SoapClientWrapper
  *
  * @package TorneLIB\Module\Network\Wrappers
- * @version 6.1.1
  */
 class SoapClientWrapper implements WrapperInterface
 {
@@ -162,18 +161,14 @@ class SoapClientWrapper implements WrapperInterface
 
     /**
      * @inheritDoc
+     * @return string
+     * @throws ExceptionHandler
      * @throws ReflectionException
      */
     public function getVersion()
     {
-        /** @noinspection PhpUndefinedFieldInspection */
-        $return = $this->version;
-
-        if (empty($return)) {
-            $return = (new Generic())->getVersionByClassDoc(__CLASS__);
-        }
-
-        return $return;
+        return isset($this->version) && !empty($this->version) ?
+            $this->version : (new Generic())->getVersionByAny(__DIR__, 3, WrapperConfig::class);
     }
 
     /**
@@ -603,7 +598,10 @@ class SoapClientWrapper implements WrapperInterface
             if (!empty($this->soapClient)) {
                 $return = call_user_func_array([$this->soapClient, $name], $arguments);
             } else {
-                throw new ExceptionHandler('SoapClient instance was never initialized.', Constants::LIB_NETCURL_SOAPINSTANCE_MISSING);
+                throw new ExceptionHandler(
+                    'SoapClient instance was never initialized.',
+                    Constants::LIB_NETCURL_SOAPINSTANCE_MISSING
+                );
             }
         } catch (Exception $soapFault) {
             // Public note: Those exceptions may be thrown by the soap-api or when the wsdl is cache and there is

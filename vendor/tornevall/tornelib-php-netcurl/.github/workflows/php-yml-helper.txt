@@ -1,0 +1,75 @@
+--- To run with multiple instances. Below solution does not work properly due to phpunit so this is skipped ---
+
+
+
+name: PHP Composer
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# PHP 7.3-7.4: phpunit-9.x
+jobs:
+  build-unit-9:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.3', '7.4' ]
+    name: PHP ${{ matrix.php-versions }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-versions: ${{ matrix.php-versions }}
+          tools: phpunit
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Install phpunit
+        run: composer require phpunit/phpunit ^9
+      - name: Run test suite
+        run: phpunit
+
+  build-unit-6:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.0', '7.1', '7.2' ]
+    name: PHP ${{ matrix.php-versions }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          tools: phpunit
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Install phpunit
+        run: composer require phpunit/phpunit ^6
+      - name: Run test suite
+        run: phpunit

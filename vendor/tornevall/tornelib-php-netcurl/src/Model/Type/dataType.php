@@ -10,7 +10,6 @@ namespace TorneLIB\Model\Type;
  * Class dataType
  *
  * @package TorneLIB\Model\Type
- * @version 6.1.1
  */
 class dataType
 {

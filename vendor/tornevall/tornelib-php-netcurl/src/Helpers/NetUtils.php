@@ -104,7 +104,6 @@ class NetUtils
      * @return array
      * @throws ExceptionHandler
      * @since 6.0.4 Moved from Network Library.
-     * @noinspection PhpUndefinedMethodInspection
      */
     public function getGitTagsByUrl($url)
     {

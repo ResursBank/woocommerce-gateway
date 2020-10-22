@@ -28,8 +28,8 @@ use TorneLIB\Utils\Ini;
  * Configuration handler. All wrapper services that needs shared configuration like credentials, SSL setup, etc.
  *
  * @package Module\Config
- * @version 6.1.1
  * @since 6.1.0
+ * @version 6.1.2
  */
 class WrapperConfig
 {
@@ -137,6 +137,20 @@ class WrapperConfig
     ];
 
     /**
+     * Static header content. Used to replicate through multiple instances but will never reset between requests.
+     * @var array
+     * @since 6.1.2
+     */
+    private $streamContextStatic = [];
+
+    /**
+     * Stored headers, used to replicate through multiple instances when NetWrapper is in use.
+     * @var array
+     * @since 6.1.2
+     */
+    private $storedHeaders = [];
+
+    /**
      * @var array Authentication data.
      * @since 6.1.0
      */
@@ -205,6 +219,38 @@ class WrapperConfig
     }
 
     /**
+     * @since 6.1.2
+     */
+    public function resetStreamData()
+    {
+        $this->streamOptions = [
+            'exceptions' => true,
+            'trace' => true,
+            'cache_wsdl' => 0,
+            'stream_context' => null,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Returns compatibility functions from for example NetCurl 6.0.
+     * @return array
+     * @since 6.1.2
+     * @noinspection PhpFullyQualifiedNameUsageInspection
+     */
+    public function getCompatibilityMethods()
+    {
+        $return = [];
+        if (class_exists('\TorneLIB\Compatibility\NetCurl\Methods')) {
+            /** @noinspection PhpUndefinedClassInspection */
+            $return = \TorneLIB\Compatibility\NetCurl\Methods::getCompatibilityMethods();
+        }
+
+        return $return;
+    }
+
+    /**
      * Preparing curl defaults in a way we like.
      * @return $this
      * @since 6.1.0
@@ -222,7 +268,7 @@ class WrapperConfig
             'CURLOPT_HTTPHEADER' => ['Accept-Language: en'],
         ]);
 
-        $this->setTimeout(8);
+        $this->setTimeout(10);
 
         return $this;
     }
@@ -677,12 +723,27 @@ class WrapperConfig
     }
 
     /**
+     * @param bool $decoded
      * @return mixed
      * @since 6.1.0
      */
-    public function getStreamContext()
+    public function getStreamContext($decoded = false)
     {
-        return $this->streamOptions['stream_context'];
+        return !$decoded ? $this->streamOptions['stream_context'] : stream_context_get_options($this->streamOptions['stream_context']);
+    }
+
+    /**
+     * @param $contextBlock
+     * @return array|null
+     * @since 6.1.2
+     */
+    public function getContentFromStreamContext($contextBlock)
+    {
+        $return = null;
+        if (is_resource($contextBlock)) {
+            $return = stream_context_get_options($contextBlock);
+        }
+        return $return;
     }
 
     /**
@@ -916,6 +977,51 @@ class WrapperConfig
         $this->setStreamContext($key, $value, 'http');
 
         return $this;
+    }
+
+    /**
+     * @param string $key
+     * @param string $value
+     * @param false $static
+     * @return $this
+     * @since 6.1.2
+     */
+    public function setHeader($key = '', $value = '', $static = false)
+    {
+        $this->setDualStreamHttp('header', sprintf('%s: %s', $key, $value));
+        $this->storedHeaders[$key] = $value;
+
+        if ($static) {
+            $this->streamContextStatic[$key] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * If NetWrapper is the primary engine, we need to extract all headers from this section.
+     *
+     * @return array
+     * @since 6.1.2
+     */
+    public function getHeader()
+    {
+        return array_merge($this->storedHeaders, $this->streamContextStatic);
+    }
+
+    /**
+     * @return array
+     * @since 6.1.2
+     */
+    public function getStreamHeader()
+    {
+        if (is_array($this->streamContextStatic)) {
+            foreach ($this->streamContextStatic as $key => $value) {
+                $this->setHeader($key, $value);
+            }
+        }
+
+        return $this->streamContextStatic;
     }
 
     /**
@@ -1278,17 +1384,20 @@ class WrapperConfig
      *   WSDL_CACHE_BOTH = 3
      *
      * @param int $cacheSet
-     * @param int $ttlCache Cache lifetime. If null, this won't be set.
+     * @param null $ttlCache Cache lifetime. If null, this won't be set.
      * @return WrapperConfig
      * @since 6.1.0
      */
     public function setWsdlCache($cacheSet = 0, $ttlCache = null)
     {
-        $this->streamOptions['cache_wsdl'] = $cacheSet;
-        // Noinspection set to avoid unnecessary setups.
-        if ((int)$ttlCache > 0 &&
-            (new Ini())->getIniSettable('soap.wsdl_cache_ttl')
-        ) {
+        if (PHP_VERSION_ID >= 70000 && PHP_VERSION_ID < 70100) {
+            // PHP 7.0 generates exit code 1 on this row, unless it's a string - don't ask why.
+            $this->streamOptions['cache_wsdl'] = (string)$cacheSet;
+        } else {
+            $this->streamOptions['cache_wsdl'] = $cacheSet;
+        }
+
+        if ((int)$ttlCache > 0 && (new Ini())->getIniSettable('soap.wsdl_cache_ttl')) {
             ini_set('soap.wsdl_cache_ttl', $ttlCache);
         }
 
@@ -1553,7 +1662,6 @@ class WrapperConfig
                 }
 
                 throw new ExceptionHandler('Variable not set.', Constants::LIB_CONFIGWRAPPER_VAR_NOT_SET);
-                break;
             default:
                 break;
         }

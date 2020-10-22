@@ -16,11 +16,13 @@ use TorneLIB\Flags;
  * for curl, etc.
  *
  * @package TorneLIB\Helpers
- * @version 6.1.1
  * @since 6.1.0
  */
 class WrapperSSL
 {
+    /**
+     * @var string
+     */
     private $version = '6.1.0';
 
     /**
@@ -176,7 +178,7 @@ class WrapperSSL
      * @param bool $selfsignedBooleanValue Allow self signed vertificates (default=false, never allow this).
      * @return mixed
      * @link https://www.php.net/manual/en/context.ssl.php
-     * @version 6.1.1
+     * @since 6.1.0
      */
     public function setStrictVerification($verifyBooleanValue = true, $selfsignedBooleanValue = false)
     {
@@ -194,7 +196,7 @@ class WrapperSSL
 
     /**
      * @return $this
-     * @version 6.1.1
+     * @since 6.1.0
      */
     private function setContextUserAgent()
     {
@@ -209,7 +211,7 @@ class WrapperSSL
      * Get prepared stream context array.
      *
      * @return array
-     * @version 6.1.1
+     * @since 6.1.0
      */
     public function getSslStreamContext()
     {
@@ -222,7 +224,7 @@ class WrapperSSL
     /**
      * @param $key
      * @return array
-     * @version 6.1.1
+     * @since 6.1.0
      */
     public function getContext($key = null)
     {
@@ -241,7 +243,7 @@ class WrapperSSL
      * @param $key
      * @param $value
      * @return WrapperSSL
-     * @version 6.1.1
+     * @since 6.1.0
      */
     public function setContext($key, $value)
     {
@@ -252,7 +254,7 @@ class WrapperSSL
 
     /**
      * @return array
-     * @version 6.1.1
+     * @since 6.1.0
      */
     public function getSecurityLevelChanges()
     {

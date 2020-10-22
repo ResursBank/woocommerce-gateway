@@ -26,7 +26,6 @@ use TorneLIB\Utils\Security;
  * Taking over from v6.0 MODULE_CURL.
  *
  * @package TorneLIB\Module\Network
- * @version 6.1.1
  */
 class NetWrapper implements WrapperInterface
 {
@@ -48,12 +47,6 @@ class NetWrapper implements WrapperInterface
      * @since 6.1.0
      */
     private $isSoapRequest = false;
-
-    /**
-     * @var string $version Internal version.
-     * @since 6.1.0
-     */
-    private $version;
 
     /**
      * @var array
@@ -103,19 +96,28 @@ class NetWrapper implements WrapperInterface
     }
 
     /**
+     * @param string $key
+     * @param string $value
+     * @param false $static
+     * @return NetWrapper
+     * @since 6.1.2
+     */
+    public function setHeader($key = '', $value = '', $static = false)
+    {
+        $this->CONFIG->setHeader($key, $value, $static);
+        return $this;
+    }
+
+    /**
      * @return string
+     * @throws ExceptionHandler
      * @throws ReflectionException
      * @since 6.1.0
      */
     public function getVersion()
     {
-        $return = $this->version;
-
-        if (empty($return)) {
-            $return = (new Generic())->getVersionByClassDoc(__CLASS__);
-        }
-
-        return $return;
+        return isset($this->version) && !empty($this->version) ?
+            $this->version : (new Generic())->getVersionByAny(__DIR__, 3, WrapperConfig::class);
     }
 
     /**
@@ -234,11 +236,14 @@ class NetWrapper implements WrapperInterface
      */
     public function getBody($url = '')
     {
-        if (($mInstance = $this->getMultiInstance($url)) && method_exists($mInstance, __FUNCTION__)) {
+        if (($mInstance = $this->getMultiInstance($url)) &&
+            !empty($mInstance) &&
+            method_exists($mInstance, __FUNCTION__)
+        ) {
             return $mInstance->{__FUNCTION__}();
         }
 
-        if (method_exists($this->instance, __FUNCTION__)) {
+        if (!empty($this->instance) && method_exists($this->instance, __FUNCTION__)) {
             return $this->instance->{__FUNCTION__}();
         }
 
@@ -260,11 +265,14 @@ class NetWrapper implements WrapperInterface
      */
     public function getParsed($url = '')
     {
-        if (($mInstance = $this->getMultiInstance($url)) && method_exists($mInstance, 'getParsed')) {
+        if (($mInstance = $this->getMultiInstance($url)) &&
+            !empty($mInstance) &&
+            method_exists($mInstance, 'getParsed')
+        ) {
             return $mInstance->getParsed();
         }
 
-        if (method_exists($this->instance, 'getBody')) {
+        if (!empty($this->instance) && method_exists($this->instance, 'getBody')) {
             return $this->instance->getParsed();
         }
 
@@ -300,14 +308,20 @@ class NetWrapper implements WrapperInterface
      * @return mixed
      * @throws ExceptionHandler
      * @since 6.1.0
+     * @noinspection DuplicatedCode
      */
     public function getCode($url = '')
     {
-        if (($mInstance = $this->getMultiInstance($url)) && method_exists($mInstance, __FUNCTION__)) {
+        if (($mInstance = $this->getMultiInstance($url)) &&
+            !empty($mInstance) &&
+            method_exists($mInstance, __FUNCTION__)
+        ) {
             return $mInstance->{__FUNCTION__}();
         }
 
-        if (method_exists($this->instance, __FUNCTION__)) {
+        if (!empty($this->instance) &&
+            method_exists($this->instance, __FUNCTION__)
+        ) {
             return $this->instance->{__FUNCTION__}();
         }
 
@@ -348,7 +362,7 @@ class NetWrapper implements WrapperInterface
             }
             if (isset($requestData[3]) &&
                 is_object($requestData[3]) &&
-                get_class($requestData[3]) === 'TorneLIB\Module\Config\WrapperConfig'
+                $requestData[3] instanceof WrapperConfig
             ) {
                 $this->CONFIG = $requestData[3];
             }
@@ -456,6 +470,10 @@ class NetWrapper implements WrapperInterface
     ) {
         $return = null;
 
+        // Header setup is only supported by internal requests. If external requests are used,
+        // the developer is on her/his own.
+        $headerArray = $this->CONFIG->getHeader();
+
         if (!is_array($url) && (bool)preg_match('/\?wsdl|&wsdl/i', $url)) {
             try {
                 Security::getCurrentClassState('SoapClient');
@@ -482,12 +500,14 @@ class NetWrapper implements WrapperInterface
             $this->instance->setConfig($this->getConfig());
             $return = $this->instance->request($url, $data, $method, $dataType);
         } elseif ($this->getProperInstanceWrapper('CurlWrapper')) {
+            $this->instance->setHeader($headerArray, null, false);
             $this->instance->setConfig($this->getConfig());
             /** @noinspection PhpPossiblePolymorphicInvocationInspection */
             // No inspection since assuming this is always a curl-based call.
             $this->instance->setCurlMultiInstantException($this->instantCurlMultiErrors);
             $return = $this->instance->request($url, $data, $method, $dataType);
         } elseif ($this->getProperInstanceWrapper('SimpleStreamWrapper')) {
+            $this->instance->setHeader($headerArray, null, false);
             $currentConfig = $this->getConfig();
             // Check if auth is properly set, in case default setup is used.
             $currentConfig->setAuthStream();
@@ -613,6 +633,7 @@ class NetWrapper implements WrapperInterface
         $method = requestMethod::METHOD_GET,
         $dataType = dataType::NORMAL
     ) {
+        $this->CONFIG->getStreamHeader();
         $externalHasErrors = false;
         $externalRequestException = null;
         $returnable = null;
@@ -704,6 +725,11 @@ class NetWrapper implements WrapperInterface
      */
     public function __call($name, $arguments)
     {
+        $compatibilityMethods = $this->CONFIG->getCompatibilityMethods();
+        if (isset($compatibilityMethods[$name])) {
+            $name = $compatibilityMethods[$name];
+        }
+
         if ($name === 'setAuth') {
             // Abbreviation for setAuthentication.
             return call_user_func_array([$this, 'setAuthentication'], $arguments);

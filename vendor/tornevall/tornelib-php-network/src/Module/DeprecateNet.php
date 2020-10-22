@@ -24,6 +24,11 @@ class DeprecateNet
     public $isDeprecated = true;
 
     /**
+     * @var $BIT Bit
+     */
+    public $BIT;
+
+    /**
      * @throws ExceptionHandler
      * @since 6.1.2
      */
@@ -80,6 +85,11 @@ class DeprecateNet
             ],
             [$gitUrl, $myVersion]
         );
+    }
+
+    public function __construct()
+    {
+        $this->BIT = new Bit();
     }
 
     public function __call($name, $arguments)

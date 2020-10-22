@@ -10,7 +10,6 @@ namespace TorneLIB\Model\Type;
  * Class requestMethod
  *
  * @package TorneLIB\Model\Type
- * @version 6.1.1
  */
 abstract class requestMethod
 {

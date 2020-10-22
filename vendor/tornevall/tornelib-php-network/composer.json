@@ -1,11 +1,14 @@
 {
     "name": "tornevall/tornelib-php-network",
     "description": "Network related utility/library that handles network related information thas is not pure communication.",
-    "version": "6.1.4",
     "license": "Apache-2.0",
+    "minimum-stability": "dev",
     "require": {
+        "tornevall/tornelib-php-bitmask": "^6.1",
         "tornevall/tornelib-php-errorhandler": "^6.1",
-        "tornevall/tornelib-php-netcurl": "^6.1"
+        "tornevall/tornelib-php-io": "^6.1",
+        "tornevall/tornelib-php-crypto": "^6.1",
+        "tornevall/tornelib-php-netcurl": "dev-master"
     },
     "authors": [
         {
