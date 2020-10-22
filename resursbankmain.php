@@ -3385,7 +3385,7 @@ function woocommerce_gateway_resurs_bank_init()
                 }
             }
 
-            if ($paymentId != $requestedPaymentId && !$isHostedFlow) {
+            if ($paymentId !== $requestedPaymentId && !$isHostedFlow) {
                 $order->update_status('failed');
                 wc_add_notice(
                     __(
@@ -3462,7 +3462,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $bookedStatus = 'DENIED';
                 }
                 /* Continue. */
-                if ($bookedStatus == 'FROZEN') {
+                if ($bookedStatus === 'FROZEN') {
                     $order->update_status(
                         'on-hold',
                         __(
@@ -3470,7 +3470,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
-                } elseif ($bookedStatus == 'BOOKED') {
+                } elseif ($bookedStatus === 'BOOKED') {
                     $order->update_status(
                         'processing',
                         __(
@@ -3478,7 +3478,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
-                } elseif ($bookedStatus == 'FINALIZED') {
+                } elseif ($bookedStatus === 'FINALIZED') {
                     WC()->session->set('order_awaiting_payment', true);
                     try {
                         $order->set_status(
@@ -3503,7 +3503,7 @@ function woocommerce_gateway_resurs_bank_init()
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
-                } elseif ($bookedStatus == 'DENIED') {
+                } elseif ($bookedStatus === 'DENIED') {
                     $order->update_status('failed');
                     update_post_meta($order_id, 'orderDenied', true);
                     wc_add_notice(
@@ -3548,8 +3548,6 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             wp_safe_redirect($getRedirectUrl);
-
-            return;
         }
 
         /**
@@ -3824,7 +3822,7 @@ function woocommerce_gateway_resurs_bank_init()
         {
             $results = [];
             if (isset($_REQUEST) && 'SE' == getResursOption('country')) {
-                $customerType = isset($_REQUEST['customerType']) ? ($_REQUEST['customerType'] != 'LEGAL' ? 'NATURAL' : 'LEGAL') : 'NATURAL';
+                $customerType = isset($_REQUEST['customerType']) ? ($_REQUEST['customerType'] !== 'LEGAL' ? 'NATURAL' : 'LEGAL') : 'NATURAL';
 
                 $serverEnv = getResursOption('serverEnv');
                 /*
@@ -3837,7 +3835,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $disabledProdTests = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
                 if ($getAddressUseProduction &&
                     isResursDemo() &&
-                    $serverEnv == 'test' &&
+                    $serverEnv === 'test' &&
                     !empty($userProd) &&
                     !empty($passProd) &&
                     !$disabledProdTests
@@ -4528,10 +4526,10 @@ function woocommerce_gateway_resurs_bank_init()
                             $legalCount++;
                         }
                     } else {
-                        if ($customerType == 'NATURAL') {
+                        if ($customerType === 'NATURAL') {
                             $naturalCount++;
                         }
-                        if ($customerType == 'LEGAL') {
+                        if ($customerType === 'LEGAL') {
                             $legalCount++;
                         }
                     }
@@ -4571,7 +4569,7 @@ function woocommerce_gateway_resurs_bank_init()
                     'resurs-bank-payment-gateway-for-woocommerce'
                 ),
             ], $checkout->get_value('ssn_field'));
-            if ('SE' == $selectedCountry) {
+            if ('SE' === $selectedCountry) {
                 /*
                  * MarGul change
                  * Take the translation for Get Address.
@@ -4636,7 +4634,7 @@ function woocommerce_gateway_resurs_bank_init()
             if ($isWooSession) {
                 $omniRef = WC()->session->get('omniRef');
                 $omniRefCreated = WC()->session->get('omniRefCreated');
-                $omniRefAge = intval(WC()->session->get('omniRefAge'));
+                $omniRefAge = (int)WC()->session->get('omniRefAge');
             }
 
             $gateways = WC()->payment_gateways()->get_available_payment_gateways();
