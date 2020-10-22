@@ -3824,7 +3824,7 @@ function woocommerce_gateway_resurs_bank_init()
         {
             $results = [];
             if (isset($_REQUEST) && 'SE' == getResursOption('country')) {
-                $customerType = isset($_REQUEST['customerType']) ? ($_REQUEST['customerType'] != 'LEGAL' ? 'NATURAL' : 'LEGAL') : 'NATURAL';
+                $customerType = isset($_REQUEST['customerType']) ? ($_REQUEST['customerType'] !== 'LEGAL' ? 'NATURAL' : 'LEGAL') : 'NATURAL';
 
                 $serverEnv = getResursOption('serverEnv');
                 /*
@@ -3837,7 +3837,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $disabledProdTests = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
                 if ($getAddressUseProduction &&
                     isResursDemo() &&
-                    $serverEnv == 'test' &&
+                    $serverEnv === 'test' &&
                     !empty($userProd) &&
                     !empty($passProd) &&
                     !$disabledProdTests
@@ -4528,10 +4528,10 @@ function woocommerce_gateway_resurs_bank_init()
                             $legalCount++;
                         }
                     } else {
-                        if ($customerType == 'NATURAL') {
+                        if ($customerType === 'NATURAL') {
                             $naturalCount++;
                         }
-                        if ($customerType == 'LEGAL') {
+                        if ($customerType === 'LEGAL') {
                             $legalCount++;
                         }
                     }
