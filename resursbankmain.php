@@ -4630,7 +4630,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $isWooSession = false;
-            $ŋetSession = null;
+            $setSession = null;
             if (isset(WC()->session)) {
                 $isWooSession = true;
             }
