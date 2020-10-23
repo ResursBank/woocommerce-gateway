@@ -4697,8 +4697,6 @@ function woocommerce_gateway_resurs_bank_init()
                             $refreshUrl = wc_get_cart_url();
                             $thisSession = new WC_Session_Handler();
                             $thisSession->destroy_session();
-                            //$thisSession->cleanup_sessions();
-                            //wp_destroy_all_sessions();
                             wp_safe_redirect($refreshUrl);
                         }
                     }
