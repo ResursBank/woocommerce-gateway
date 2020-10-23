@@ -4674,6 +4674,11 @@ function woocommerce_gateway_resurs_bank_init()
 
             // During the creation of new RCO variables, make sure they are not duplicates from older orders.
             if ($setSessionEnable && function_exists('WC') && $isWooSession) {
+                // According to WOO-11 there may still be traces of an old session when
+                // a payment isn't properly fulfilled. The inProcess below is intended
+                // to discover such sessions and clean them up. It is especially important
+                // to get rid of variables like omniRef. If this isn't handled properly
+                // this also affects (for some reason) incognito mode.
                 $currentOmniRef = WC()->session->get('omniRef');
                 $inProcess = (bool)WC()->session->get('OMNICHECKOUT_PROCESSPAYMENT');
                 // The resursCreatePass variable is only set when everything was successful.
