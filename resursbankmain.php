@@ -2933,6 +2933,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $wooDeliveryAddress = $wooBillingAddress;
                     }
 
+                    WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', true);
                     define('OMNICHECKOUT_PROCESSPAYMENT', true);
                     if (!$testLocalOrder) {
                         /*
@@ -3378,6 +3379,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $order->add_order_note($e->getMessage());
                         }
                         WC()->cart->empty_cart();
+                        WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', false);
                     }
                     wp_safe_redirect($getRedirectUrl);
 
@@ -4628,6 +4630,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $isWooSession = false;
+            $setSession = null;
             if (isset(WC()->session)) {
                 $isWooSession = true;
             }
@@ -4662,17 +4665,22 @@ function woocommerce_gateway_resurs_bank_init()
                 'gatewayCount' => (is_array($gateways) ? count($gateways) : 0),
                 'postidreference' => getResursOption('postidreference'),
             ];
-            $setSessionEnable = true;
             $setSession = isset($_REQUEST['set-no-session']) ? $_REQUEST['set-no-session'] : null;
-            if ($setSession == 1) {
+            if ((int)$setSession === 1) {
                 $setSessionEnable = false;
             } else {
                 $setSessionEnable = true;
             }
 
-            // During the creation of new omnivars, make sure they are not duplicates from older orders.
+            // During the creation of new RCO variables, make sure they are not duplicates from older orders.
             if ($setSessionEnable && function_exists('WC') && $isWooSession) {
+                // According to WOO-11 there may still be traces of an old session when
+                // a payment isn't properly fulfilled. The inProcess below is intended
+                // to discover such sessions and clean them up. It is especially important
+                // to get rid of variables like omniRef. If this isn't handled properly
+                // this also affects (for some reason) incognito mode.
                 $currentOmniRef = WC()->session->get('omniRef');
+                $inProcess = (bool)WC()->session->get('OMNICHECKOUT_PROCESSPAYMENT');
                 // The resursCreatePass variable is only set when everything was successful.
                 $resursCreatePass = WC()->session->get('resursCreatePass');
                 $orderControl = wc_get_order_id_by_payment_id($currentOmniRef);
@@ -4689,12 +4697,13 @@ function woocommerce_gateway_resurs_bank_init()
                         $allowCleanupSession = true;
                     }
                     if (($resursCreatePass && $currentOmniRef) || ($allowCleanupSession)) {
-                        $refreshUrl = wc_get_cart_url();
-                        $thisSession = new WC_Session_Handler();
-                        $thisSession->destroy_session();
-                        $thisSession->cleanup_sessions();
-                        wp_destroy_all_sessions();
-                        wp_safe_redirect($refreshUrl);
+                        if ($inProcess) {
+                            WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', false);
+                            $refreshUrl = wc_get_cart_url();
+                            $thisSession = new WC_Session_Handler();
+                            $thisSession->destroy_session();
+                            wp_safe_redirect($refreshUrl);
+                        }
                     }
                 }
             }
