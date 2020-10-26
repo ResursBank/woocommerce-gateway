@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright © Tomas Tornevall / Tornevall Networks. All rights reserved.
- * See LICENSE for license details.
+ * See LICENSE.md for license details.
  */
 
 // Inspections should be ignored here as this is a depending-environment-based class.

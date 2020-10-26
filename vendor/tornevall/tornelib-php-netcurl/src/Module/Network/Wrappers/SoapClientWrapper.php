@@ -2,7 +2,7 @@
 
 /**
  * Copyright © Tomas Tornevall / Tornevall Networks. All rights reserved.
- * See LICENSE for license details.
+ * See LICENSE.md for license details.
  */
 
 namespace TorneLIB\Module\Network\Wrappers;

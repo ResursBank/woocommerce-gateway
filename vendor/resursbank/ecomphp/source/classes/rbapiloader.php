@@ -62,10 +62,10 @@ use TorneLIB\Utils\Generic;
 
 // Globals starts here. But should be deprecated if version tag can be fetched through their doc-blocks.
 if (!defined('ECOMPHP_VERSION')) {
-    define('ECOMPHP_VERSION', (new Generic())->getVersionByComposer(__FILE__));
+    define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20201001');
+    define('ECOMPHP_MODIFY_DATE', '20201026');
 }
 
 /**
@@ -76,6 +76,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
+ * @version 1.3.44
  */
 class ResursBank
 {
@@ -851,11 +852,11 @@ class ResursBank
 
         if (version_compare($this->CURLDRIVER_VERSION, '6.1.0', '>=') && !is_null($this->CURL)) {
             if ($enable) {
-                $this->CURLDRIVER_WSDL_CACHE = WSDL_CACHE_BOTH;
-                $this->CURL->setWsdlCache(WSDL_CACHE_BOTH);
+                $this->CURLDRIVER_WSDL_CACHE = (defined('WSDL_CACHE_BOTH') ? WSDL_CACHE_BOTH : 3);
+                $this->CURL->setWsdlCache((defined('WSDL_CACHE_BOTH') ? WSDL_CACHE_BOTH : 3));
             } else {
-                $this->CURLDRIVER_WSDL_CACHE = WSDL_CACHE_NONE;
-                $this->CURL->setWsdlCache(WSDL_CACHE_NONE);
+                $this->CURLDRIVER_WSDL_CACHE = (defined(WSDL_CACHE_NONE) ? WSDL_CACHE_NONE : 0);
+                $this->CURL->setWsdlCache((defined(WSDL_CACHE_NONE) ? WSDL_CACHE_NONE : 0));
             }
         }
 
@@ -1592,7 +1593,6 @@ class ResursBank
      *
      * @param string $username
      * @param string $password
-     *
      * @param bool $validate
      * @return bool
      * @throws Exception
@@ -1606,11 +1606,11 @@ class ResursBank
 
         $this->username = $username;
         $this->password = $password;
-        if (!is_null($username)) {
+        if ($username !== null) {
             $this->soapOptions['login'] = $username;
             $this->username = $username;
         }
-        if (!is_null($password)) {
+        if ($password !== null) {
             $this->soapOptions['password'] = $password;
             $this->password = $password;
         }
