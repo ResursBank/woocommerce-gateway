@@ -230,7 +230,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             }
 
             $flowBook = $this->flow->createPayment($omniRef, $bookDataOmni);
-            //$ifo = $this->flow->getIframeOrigin();
             $flowFrame = is_string($flowBook) ? $flowBook : "";
             $flowFrame .= '<noscript><b>' .
                 __(

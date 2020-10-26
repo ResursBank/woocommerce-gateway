@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.5.1
 Requires PHP: 5.4
-8Stable tag: 2.2.41
+Stable tag: 2.2.42
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested 
 
 = Requirements and content =
 
- * Required: At least PHP 5.6
+ * Required: At least PHP 7.0
  * Required: [curl](https://curl.haxx.se) or [PHP stream](http://php.net/manual/en/book.stream.php) features active (for REST based actions).
  * Required: [SoapClient](http://php.net/manual/en/class.soapclient.php) with xml drivers.
  * Included: [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
@@ -85,10 +85,9 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
 
-= 2.2.41 =
+= 2.2.42 =
 
-
-Releaseinformation - WooCommerce - version 2.2.41
+    * [WOO-503] - Incomplete payments via RCO causes session conflicts that renders parts of the store "uninloggable".
 
 = 2.2.41 =
 
