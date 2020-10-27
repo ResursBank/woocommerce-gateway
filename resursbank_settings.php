@@ -912,18 +912,24 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                     if (callbackUpdateRequest()) {
                         echo '<div id="callbacksRequireUpdate" style="margin-top: 8px;" class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' .
-                            __('Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...',
-                                'resurs-bank-payment-gateway-for-woocommerce') .
+                            __(
+                                'Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ) .
                             '</div><br><br>';
                     }
 
                     echo '
                             <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' .
-                        __('Callback URLs that is registered at Resurs Bank',
-                            'resurs-bank-payment-gateway-for-woocommerce') .
+                        __(
+                            'Callback URLs that is registered at Resurs Bank',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) .
                         ' ' . (
-                        $this->curlInDebug ? " [" . __('curl module is set to enter debug mode',
-                                'resurs-bank-payment-gateway-for-woocommerce') . "]" : ""
+                        $this->curlInDebug ? " [" . __(
+                                'curl module is set to enter debug mode',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ) . "]" : ""
                         ) . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
@@ -1032,7 +1038,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
                             }
                         }
-                        //generatePaymentMethodHtml($this->paymentMethods); ?>
+                        ?>
                         <table class="wc_gateways widefat" cellspacing="0px" cellpadding="0px"
                                style="width: inherit;">
                             <thead>
@@ -1185,7 +1191,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                         if ($methodArray->type == "REVOLVING_CREDIT" || $methodArray->specificType == "REVOLVING_CREDIT") {
                                             $scriptit = 'resursRemoveAnnuityElements(\'' . $curId . '\')'; ?>
                                             <?php if (strtolower($annuityMethod) == strtolower($curId)) {
-                                                // Clickables must be separated as the selector needs to be editable ?>
+                                                // Clickables must be separated as the selector needs to be editable?>
                                                 <span class="status-enabled tips"
                                                       id="annuityClick_<?php echo $curId; ?>"
                                                       data-tip="<?php echo __('Enabled', 'woocommerce') ?>"
