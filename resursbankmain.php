@@ -6096,7 +6096,13 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
 
                 foreach ($continueView as $key => $value) {
                     // ECom data cache.
-                    if (in_array($key, $dateTimes) || preg_match('/ time /i', $key)) {
+                    $handleAsTime = false;
+                    if (in_array($key, $dateTimes, true) ||
+                        (is_numeric($value) && strlen($value) >= 10)
+                    ) {
+                        $handleAsTime = true;
+                    }
+                    if ($handleAsTime) {
                         $value .= ' (' . strftime('%Y-%m-%d %H:%M:%S', $value) . ')';
                     }
                     if (!is_array($value) && !is_object($value)) {
