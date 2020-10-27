@@ -57,7 +57,7 @@ if (!function_exists('getResursWooFormFields')) {
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         if (empty($section)) {
             $formSectionName = "defaults";
-        } elseif ($section == "shopflow") {
+        } elseif ($section == "fraudcontrol") {
             $formSectionName = "defaults";
         } elseif ($section == "shortcodes") {
             $formSectionName = "defaults";
@@ -966,7 +966,7 @@ if (!function_exists('getResursWooFormFields')) {
             }
         }
 
-        return $returnArray;
+        return apply_filters('resurs_bank_form_fields', $returnArray, $formSectionName);
     }
 }
 
@@ -1006,7 +1006,9 @@ if (is_admin()) {
             $maxLimit = $payment_method->maxLimit;
 
             $isPsp = "false";
-            if ($payment_method->customerType == "PAYMENT_PROVIDER" || $payment_method->type == "PAYMENT_PROVIDER") {
+            if ($payment_method->customerType === "PAYMENT_PROVIDER" ||
+                $payment_method->type === "PAYMENT_PROVIDER"
+            ) {
                 $isPsp = 'true';
             }
             //$allowPsp = (getResursFlag('ALLOW_PSP') ? "true" : "false");

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2020-10-27 10:32+0100\n"
-"PO-Revision-Date: 2020-10-27 10:32+0100\n"
+"POT-Creation-Date: 2020-10-27 11:01+0100\n"
+"PO-Revision-Date: 2020-10-27 11:03+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -56,7 +56,7 @@ msgstr "Aktivera/inaktivera"
 #: functions_settings.php:405 functions_settings.php:422
 #: functions_settings.php:439 functions_settings.php:453
 #: functions_settings.php:470 functions_settings.php:528
-#: functions_settings.php:840 functions_settings.php:1552
+#: functions_settings.php:840 functions_settings.php:1554
 #: resursbank_settings.php:1188 resursbank_settings.php:1271
 #: resursbankmain.php:629 resursbankmain.php:651 staticflows/flow_omni.php:145
 msgid "Enabled"
@@ -144,7 +144,7 @@ msgid "What kind of shop flow you want to use"
 msgstr "Vilken typ av flöde du vill använda"
 
 #: functions_settings.php:170 functions_settings.php:726
-#: functions_settings.php:792 functions_settings.php:1496
+#: functions_settings.php:792 functions_settings.php:1498
 msgid "Title"
 msgstr "Titel"
 
@@ -237,7 +237,7 @@ msgstr ""
 msgid "Coupons should be handled with vat"
 msgstr "Kuponger ska hanteras med moms"
 
-#: functions_settings.php:275 resursbank_settings.php:1538
+#: functions_settings.php:275 resursbank_settings.php:1539
 #: resursbankmain.php:5989 resursbankmain.php:5999
 msgid "Yes"
 msgstr "Ja"
@@ -903,23 +903,23 @@ msgstr ""
 msgid "In payment method list (Deprecated, not recommended to use)"
 msgstr "I lista med betalmetoder (Borttagen, rekommenderas ej)"
 
-#: functions_settings.php:1495
+#: functions_settings.php:1497
 msgid "Method"
 msgstr "Metod"
 
-#: functions_settings.php:1497 resursbank_settings.php:1038
+#: functions_settings.php:1499 resursbank_settings.php:1038
 msgid "ID"
 msgstr "ID"
 
-#: functions_settings.php:1498
+#: functions_settings.php:1500
 msgid "Status"
 msgstr "Status"
 
-#: functions_settings.php:1499
+#: functions_settings.php:1501
 msgid "Process"
 msgstr "Process"
 
-#: functions_settings.php:1544 resursbank_settings.php:1217
+#: functions_settings.php:1546 resursbank_settings.php:1217
 #: resursbank_settings.php:1263 resursbankmain.php:608 resursbankmain.php:645
 #: staticflows/flow_omni.php:145
 msgid "Disabled"
@@ -954,8 +954,8 @@ msgid "Resurs Checkout"
 msgstr "Resurs Checkout"
 
 #: resursbank_settings.php:66
-msgid "Checkout type"
-msgstr "Typ av kassa"
+msgid "Fraud control"
+msgstr "Bedrägerikontroll"
 
 #: resursbank_settings.php:68
 msgid "Advanced settings"
@@ -1055,7 +1055,7 @@ msgstr "Plugin och kassa"
 msgid "API Settings"
 msgstr "API-inställningar"
 
-#: resursbank_settings.php:902 resursbank_settings.php:1417
+#: resursbank_settings.php:902 resursbank_settings.php:1418
 msgid "Callbacks"
 msgstr "Callbacks"
 
@@ -1091,7 +1091,7 @@ msgstr "Aldrig"
 msgid "Responses/last successful test date+time"
 msgstr "Svar/Senaste lyckades testdatumet+tiden"
 
-#: resursbank_settings.php:985 resursbank_settings.php:1483
+#: resursbank_settings.php:985 resursbank_settings.php:1484
 msgid "Payment methods"
 msgstr "Betalningsmetoder"
 
@@ -1163,45 +1163,47 @@ msgstr ""
 
 #: resursbank_settings.php:1304
 msgid ""
-"When all the below settings are unchecked, you are running the plugin with a "
-"Resurs Bank preferred configuration"
+"This section is restricted to the simplified shop flow and hosted flow only. "
+"To run the best practice-configuration, you should keep your settings "
+"unchecked."
 msgstr ""
-"När alla inställningarna nedan är avmarkerade, så använder pluginet en, av "
-"Resurs Bank föredragen, konfiguration"
+"Det här avsnittet är begränsat till det förenklade (simplified shopflow) och "
+"hostade butiksflödet (hosted flow). Om du vill köra den rekommenderade "
+"konfigurationen bör du behålla inställningarna omarkerade."
 
-#: resursbank_settings.php:1312
+#: resursbank_settings.php:1313
 msgid "Next invoice number to use"
 msgstr "Nästa fakturanummer att använda"
 
-#: resursbank_settings.php:1320
+#: resursbank_settings.php:1321
 msgid "Visuals"
 msgstr "Visuellt"
 
-#: resursbank_settings.php:1323
+#: resursbank_settings.php:1324
 msgid "Checkout"
 msgstr "Kassan"
 
-#: resursbank_settings.php:1333
+#: resursbank_settings.php:1334
 msgid "Advanced"
 msgstr "Avancerat"
 
-#: resursbank_settings.php:1340
+#: resursbank_settings.php:1341
 msgid "Part payment widget settings"
 msgstr "Inställningar för delbetalningswidget"
 
-#: resursbank_settings.php:1346
+#: resursbank_settings.php:1347
 msgid "None (default)"
 msgstr "Ingen (Standard)"
 
-#: resursbank_settings.php:1360
+#: resursbank_settings.php:1361
 msgid "Final price to pay including the currency."
 msgstr "Slutliga priset att betala inklusive valuta."
 
-#: resursbank_settings.php:1364
+#: resursbank_settings.php:1365
 msgid "Final price excluding the currency."
 msgstr "Slutliga priset att betala exklusive valuta."
 
-#: resursbank_settings.php:1368
+#: resursbank_settings.php:1369
 msgid ""
 "The minimum price configured from where annuities are shown (Note: When "
 "running in test, this is always set to 1 for debugging)."
@@ -1209,99 +1211,99 @@ msgstr ""
 "Lägsta pris för att faktorerna skall visas (OBS: När test är aktivt så är "
 "denna inställning alltid satt till 1 för debugging)."
 
-#: resursbank_settings.php:1372
+#: resursbank_settings.php:1373
 msgid "Chosen annuity period."
 msgstr "Vald period."
 
-#: resursbank_settings.php:1376
+#: resursbank_settings.php:1377
 msgid "URL to which the cost example are shown."
 msgstr "URL till kostnadsexemplen."
 
-#: resursbank_settings.php:1380
+#: resursbank_settings.php:1381
 msgid ""
 "The default text that is usually shown when annuity factors are available."
 msgstr "Standardtexten som vanligtvis visas när faktorerna är tillgängliga."
 
-#: resursbank_settings.php:1384
+#: resursbank_settings.php:1385
 msgid "Printable version of available annuity factors (for debugging)."
 msgstr "Visningsbar version av tillgängliga annuitetsfaktorer (för debugging)."
 
-#: resursbank_settings.php:1407
+#: resursbank_settings.php:1408
 msgid "Available shortcodes for above view"
 msgstr "Tillgängliga kortkoder för oavstående vy"
 
-#: resursbank_settings.php:1413
+#: resursbank_settings.php:1414
 msgid "URL Settings"
 msgstr "URL-inställningar"
 
-#: resursbank_settings.php:1428
+#: resursbank_settings.php:1429
 msgid "Miscellaneous callback configuration"
 msgstr "Diverse callback-inställningar"
 
-#: resursbank_settings.php:1435
+#: resursbank_settings.php:1436
 msgid "Customer and store"
 msgstr "Kunder och butik"
 
-#: resursbank_settings.php:1441
+#: resursbank_settings.php:1442
 msgid "Coupons/discount and VAT"
 msgstr "Kuponger/rabatt och moms"
 
-#: resursbank_settings.php:1447
+#: resursbank_settings.php:1448
 msgid "Other Customer Settings"
 msgstr "Andra kundinställningar"
 
-#: resursbank_settings.php:1455
+#: resursbank_settings.php:1456
 msgid "Testing and development"
 msgstr "Test och utveckling"
 
-#: resursbank_settings.php:1461
+#: resursbank_settings.php:1462
 msgid "Miscellaneous"
 msgstr "Blandat"
 
-#: resursbank_settings.php:1467
+#: resursbank_settings.php:1468
 msgid "Dynamic Configurables"
 msgstr "Dynamiskt konfigurerbart"
 
-#: resursbank_settings.php:1474
+#: resursbank_settings.php:1475
 msgid "Network"
 msgstr "Nätverk"
 
-#: resursbank_settings.php:1476
+#: resursbank_settings.php:1477
 msgid "Maintenance"
 msgstr "Underhåll"
 
-#: resursbank_settings.php:1477
+#: resursbank_settings.php:1478
 msgid "Clean up "
 msgstr "Städa upp "
 
-#: resursbank_settings.php:1479
+#: resursbank_settings.php:1480
 msgid "Resurs settings"
 msgstr "Resurs inställningar"
 
-#: resursbank_settings.php:1487
+#: resursbank_settings.php:1488
 msgid "Cached data"
 msgstr "Cachelagrad data"
 
-#: resursbank_settings.php:1501
+#: resursbank_settings.php:1502
 msgid "Default title set by Resurs Bank is "
 msgstr "Standardtiteln som satts av Resurs Bank är "
 
-#: resursbank_settings.php:1514
+#: resursbank_settings.php:1515
 msgid ""
 "The payment method editor is not availabe while Resurs Checkout is active"
 msgstr ""
 "Redigeraren för betalningsmetoder är inte tillgänglig när Resurs Checkout är "
 "aktiv"
 
-#: resursbank_settings.php:1520
+#: resursbank_settings.php:1521
 msgid "Save above configuration with the button below"
 msgstr "Spara ovanstående data med hjälp av knappen nedan"
 
-#: resursbank_settings.php:1536
+#: resursbank_settings.php:1537
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
 
-#: resursbank_settings.php:1538 resursbankmain.php:5989 resursbankmain.php:5999
+#: resursbank_settings.php:1539 resursbankmain.php:5989 resursbankmain.php:5999
 msgid "No"
 msgstr "Nej"
 
@@ -2138,6 +2140,16 @@ msgstr "Resurs Bank AB"
 #. Author URI of the plugin/theme
 msgid "https://test.resurs.com/docs/display/ecom/WooCommerce"
 msgstr "https://test.resurs.com/docs/display/ecom/WooCommerce"
+
+#~ msgid ""
+#~ "When all the below settings are unchecked, you are running the plugin "
+#~ "with a Resurs Bank preferred configuration"
+#~ msgstr ""
+#~ "När alla inställningarna nedan är avmarkerade, så använder pluginet en, "
+#~ "av Resurs Bank föredragen, konfiguration"
+
+#~ msgid "Checkout type"
+#~ msgstr "Typ av kassa"
 
 #~ msgid "[Resurs Bank] Refund/cancellation sent to API with errors: (%s) %s."
 #~ msgstr ""

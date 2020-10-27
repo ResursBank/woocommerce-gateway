@@ -63,7 +63,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 'resurs-bank-payment-gateway-for-woocommerce'
             );
         } else {
-            $sections['shopflow'] = __('Checkout type', 'resurs-bank-payment-gateway-for-woocommerce');
+            $sections['fraudcontrol'] = __('Fraud control', 'resurs-bank-payment-gateway-for-woocommerce');
         }
         $sections['advanced'] = __('Advanced settings', 'resurs-bank-payment-gateway-for-woocommerce');
         $sections['shortcodes'] = __('Shortcodes', 'resurs-bank-payment-gateway-for-woocommerce');
@@ -338,9 +338,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $returnTextBox .= '
                 <td style="cursor: pointer;">
                     <span onclick="resursEditProtectedField(this, \'' . $namespace . '\')" id="' . $namespace . '_' . $settingKey . '">' . __(
-                'Click to edit',
-                'resurs-bank-payment-gateway-for-woocommerce'
-            ) . '</span>
+                    'Click to edit',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ) . '</span>
                     <span id="' . $namespace . '_' . $settingKey . '_spinner" style="display:none;"></span>
                     <span id="' . $namespace . '_' . $settingKey . '_hidden" style="display:none;">
                         <input ' . $scriptLoader . ' type="text" id="' . $namespace . '_' . $settingKey . '_value" size="64" value=""> ' . $setLabel . '
@@ -425,9 +425,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     ';
         } else {
             $returnDropDown .= '<div style="font-color:#990000 !important;font-weight: bold;">' . __(
-                'No selectable options are available for this option',
-                'resurs-bank-payment-gateway-for-woocommerce'
-            ) . '</div>
+                    'No selectable options are available for this option',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ) . '</div>
             <br>';
         }
 
@@ -563,9 +563,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $getEnabledCurl = false;
             if ($curlIsHereButDisabled) {
                 $curlWarning = '<br><b><i>' . __(
-                    'Curl seems to be installed but some vital functions may be disabled in php.ini',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . '</i></b>';
+                        'Curl seems to be installed but some vital functions may be disabled in php.ini',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '</i></b>';
             }
         }
         $streamWrappers = @stream_get_wrappers();
@@ -678,9 +678,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
     {
         if (!$this->canWrite()) {
             echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __(
-                'This plugin needs read/write access to the includes directory located in the path of the plugin or it will not be able to save the payment method configuration.',
-                'resurs-bank-payment-gateway-for-woocommerce'
-            ) . '</div>';
+                    'This plugin needs read/write access to the includes directory located in the path of the plugin or it will not be able to save the payment method configuration.',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ) . '</div>';
 
             return;
         }
@@ -820,9 +820,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 );
             } elseif ($errorCode >= 500) {
                 $paymentMethodsError = __(
-                    "Unreachable service, code ",
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . $errorCode . " (" . trim($errorMessage) . ")";
+                        "Unreachable service, code ",
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . $errorCode . " (" . trim($errorMessage) . ")";
             } else {
                 $paymentMethodsError = "Unhandled exception from Resurs: [" . $errorCode . "] - " . $e->getMessage();
             }
@@ -847,29 +847,29 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             <?php
             if ($section == "shopflow") {
                 echo '<h1>' . __(
-                    'Resurs Bank Configuration - Shop flow',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . '</h1>';
+                        'Resurs Bank Configuration - Shop flow',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '</h1>';
             } elseif ($section == "advanced") {
                 echo '<h1>' . __(
-                    'Resurs Bank Configuration - Advanced settings',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . '</h1>';
+                        'Resurs Bank Configuration - Advanced settings',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '</h1>';
             } elseif (preg_match("/^resurs_bank_nr_/i", $section)) {
                 echo '<h1>' . __(
-                    'Resurs Bank Configuration',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . ' - ' . $methodDescription . ' (' . $theMethod . ')</h1>';
+                        'Resurs Bank Configuration',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . ' - ' . $methodDescription . ' (' . $theMethod . ')</h1>';
             } elseif ($section == "shortcodes") {
                 echo '<h1>' . __(
-                    'Resurs Bank Configuration - Shortcodes',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . '</h1>';
+                        'Resurs Bank Configuration - Shortcodes',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '</h1>';
             } else {
                 echo '<h1>' . __(
-                    'Resurs Bank payment gateway configuration',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . '</h1>
+                        'Resurs Bank payment gateway configuration',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . '</h1>
                     v' . rbWcGwVersion() . (defined('PHP_VERSION') ? "/PHP v" . PHP_VERSION : "") . ' ' . (!empty($currentVersion) ? $currentVersion : "");
             } ?>
             <!-- Table layout auto fixes issues for woocom 3.4.0 as it has added a fixed value to it in this version -->
@@ -912,15 +912,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
 
                     if (callbackUpdateRequest()) {
                         echo '<div id="callbacksRequireUpdate" style="margin-top: 8px;" class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' .
-                            __('Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...', 'resurs-bank-payment-gateway-for-woocommerce') .
+                            __('Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading...',
+                                'resurs-bank-payment-gateway-for-woocommerce') .
                             '</div><br><br>';
                     }
 
                     echo '
                             <div class="labelBoot labelBoot-info labelBoot-big labelBoot-nofat labelBoot-center">' .
-                        __('Callback URLs that is registered at Resurs Bank', 'resurs-bank-payment-gateway-for-woocommerce') .
+                        __('Callback URLs that is registered at Resurs Bank',
+                            'resurs-bank-payment-gateway-for-woocommerce') .
                         ' ' . (
-                            $this->curlInDebug ? " [" . __('curl module is set to enter debug mode', 'resurs-bank-payment-gateway-for-woocommerce') . "]" : ""
+                        $this->curlInDebug ? " [" . __('curl module is set to enter debug mode',
+                                'resurs-bank-payment-gateway-for-woocommerce') . "]" : ""
                         ) . '</div>
                             <div id="callbackContent" style="margin-top: 8px;">
                     ';
@@ -946,11 +949,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     </tr>
                     <tr style="vertical-align: top; padding:0px;" valign="top">
                         <td class="lastCbTableStyling" valign="top" width="20%">' . __(
-                        'Last test run',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ) . '</td>
+                            'Last test run',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</td>
                         <td class="lastCbTableStyling" valign="top" id="lastCbRun" width="80%">' . (
-                            $callSent > 0 ? strftime(
+                        $callSent > 0 ? strftime(
                             '%Y-%m-%d (%H:%M:%S)',
                             $callSent
                         ) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')
@@ -962,7 +965,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</td>
                         <td class="lastCbTableStyling" style="border-bottom: 1px dashed gray; margin-bottom: 5px; padding-bottom: 10px;" valign="top" id="lastCbRec" width="80%">' . (
-                            $callRecv > 0 ? strftime(
+                        $callRecv > 0 ? strftime(
                             '%Y-%m-%d (%H:%M:%S)',
                             $callRecv
                         ) : ''
@@ -994,28 +997,28 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         if (empty($paymentMethodsError)) {
                             if (!count($this->paymentMethods)) {
                                 echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __(
-                                    'The list of available payment methods will appear, when credentials has been entered',
-                                    'resurs-bank-payment-gateway-for-woocommerce'
-                                ) . '</div><br><br>';
+                                        'The list of available payment methods will appear, when credentials has been entered',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ) . '</div><br><br>';
                             } else {
                                 if (isResursOmni(true)) {
                                     echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __(
-                                        'Payment method titles/descriptions are not editable when using Resurs Checkout as they are handled by Resurs Bank, server side. Contact support if you want to do any changes',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    ) . '</div><br><br>';
+                                            'Payment method titles/descriptions are not editable when using Resurs Checkout as they are handled by Resurs Bank, server side. Contact support if you want to do any changes',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        ) . '</div><br><br>';
                                 }
                             }
                         } else {
                             echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __(
-                                'The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            ) . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
+                                    'The list of available payment methods is not available due to an error at Resurs Bank! See the error message below.',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ) . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
                         }
                     } else {
                         echo '<div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __(
-                            'To activate this part of the plugin, your credentials to the web services must be entered above',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
+                                'To activate this part of the plugin, your credentials to the web services must be entered above',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ) . '</div><br><br><div class="labelBoot labelBoot-warning labelBoot-big labelBoot-nofat labelBoot-center">' . nl2br($paymentMethodsError) . '</div>';
                     }
 
                     if (isset($this->paymentMethods['error']) && !empty($this->paymentMethods['error'])) {
@@ -1035,21 +1038,21 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             <thead>
                             <tr>
                                 <th class="id"><?php echo __(
-                            'ID',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) ?></th>
+                                        'ID',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ) ?></th>
                                 <th class="name"><?php echo __(
-                                            'Name',
-                                            'resurs-bank-payment-gateway-for-woocommerce'
-                                        ) ?></th>
+                                        'Name',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ) ?></th>
                                 <th class="title"><?php echo __(
-                                            'Checkout title',
-                                            'resurs-bank-payment-gateway-for-woocommerce'
-                                        ) ?></th>
+                                        'Checkout title',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ) ?></th>
                                 <th class="annuityfactor"><?php echo __(
-                                            'AnnuityFactor',
-                                            'resurs-bank-payment-gateway-for-woocommerce'
-                                        ) ?>
+                                        'AnnuityFactor',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    ) ?>
                                     <br><span
                                             style="font-weight:normal !important;font-style: italic; font-size:11px; padding: 0px; margin: 0px;"><?php echo __(
                                             'Activate/disable by clicking the X-boxes',
@@ -1061,9 +1064,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                 if ($hasCountries) {
                                     ?>
                                     <th class="country"><?php echo __(
-                                        'Country',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    ) ?></th>
+                                            'Country',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        ) ?></th>
                                     <?php
                                 } ?>
 
@@ -1073,16 +1076,16 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     if (getResursFlag('FEE_EDITOR')) {
                                         ?>
                                         <th class="fee"><?php echo __(
-                                            'Fee',
-                                            'resurs-bank-payment-gateway-for-woocommerce'
-                                        ) ?></th>
+                                                'Fee',
+                                                'resurs-bank-payment-gateway-for-woocommerce'
+                                            ) ?></th>
                                         <?php
                                     } ?>
                                     <th class="status"><?php echo __(
-                                                    'Enable/Disable',
-                                                    'resurs-bank-payment-gateway-for-woocommerce'
-                                                ) ?></th>
-                                <?php
+                                            'Enable/Disable',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        ) ?></th>
+                                    <?php
                                 } ?>
                                 <th class="process"></th>
                             </tr>
@@ -1091,76 +1094,76 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             <?php
 
                             $sortByDescription = [];
-                        // Sort by description but make all array values unique so that descriptions
-                        // do not collide.
-                        foreach ($this->paymentMethods as $methodArray) {
-                            // Description at this location is only used as an assoc array
-                            // and should not interfere with the listview itself since the listview
-                            // are showing the assoc value.
-                            $description = (string)$methodArray->description . uniqid(microtime(true), true);
+                            // Sort by description but make all array values unique so that descriptions
+                            // do not collide.
+                            foreach ($this->paymentMethods as $methodArray) {
+                                // Description at this location is only used as an assoc array
+                                // and should not interfere with the listview itself since the listview
+                                // are showing the assoc value.
+                                $description = (string)$methodArray->description . uniqid(microtime(true), true);
 
-                            // Choose another sort order by the content.
-                            $anotherValue = apply_filters(
-                                'resurs_admin_sort_methods_by_value',
-                                $description,
-                                $methodArray
-                            );
+                                // Choose another sort order by the content.
+                                $anotherValue = apply_filters(
+                                    'resurs_admin_sort_methods_by_value',
+                                    $description,
+                                    $methodArray
+                                );
 
-                            if (!empty($anotherValue)) {
-                                $description = $anotherValue;
-                            }
-
-                            if (isResursDemo() && isset($methodArray->country)) {
-                                $description .= " [" . $methodArray->country . "]";
-                            }
-                            $sortByDescription[$description] = $methodArray;
-                        }
-                        //ksort($sortByDescription);
-                        $url = admin_url('admin.php');
-                        $url = add_query_arg('page', $_REQUEST['page'], $url);
-                        $url = add_query_arg('tab', $_REQUEST['tab'], $url);
-
-                        $idMerchant = 0;
-                        foreach ($sortByDescription as $methodArray) {
-                            $curId = isset($methodArray->id) ? $methodArray->id : "";
-                            $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                            if (!hasResursOptionValue('enabled', $optionNamespace)) {
-                                $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
-                            }
-                            write_resurs_class_to_file($methodArray, $idMerchant);
-                            $idMerchant++;
-                            $settingsControl = get_option($optionNamespace);
-                            $isEnabled = false;
-                            if (is_array($settingsControl) && count($settingsControl)) {
-                                if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
-                                    $isEnabled = true;
+                                if (!empty($anotherValue)) {
+                                    $description = $anotherValue;
                                 }
-                            }
-                            $annuityMethod = resursOption("resursAnnuityMethod");
-                            $annuityDuration = resursOption("resursAnnuityDuration");
 
-                            $maTitle = $methodArray->description;
-                            // Unacceptable title set (WOO-96)
-                            if (isset($settingsControl['title']) &&
+                                if (isResursDemo() && isset($methodArray->country)) {
+                                    $description .= " [" . $methodArray->country . "]";
+                                }
+                                $sortByDescription[$description] = $methodArray;
+                            }
+                            //ksort($sortByDescription);
+                            $url = admin_url('admin.php');
+                            $url = add_query_arg('page', $_REQUEST['page'], $url);
+                            $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+
+                            $idMerchant = 0;
+                            foreach ($sortByDescription as $methodArray) {
+                                $curId = isset($methodArray->id) ? $methodArray->id : "";
+                                $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
+                                if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                                    $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
+                                }
+                                write_resurs_class_to_file($methodArray, $idMerchant);
+                                $idMerchant++;
+                                $settingsControl = get_option($optionNamespace);
+                                $isEnabled = false;
+                                if (is_array($settingsControl) && count($settingsControl)) {
+                                    if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
+                                        $isEnabled = true;
+                                    }
+                                }
+                                $annuityMethod = resursOption("resursAnnuityMethod");
+                                $annuityDuration = resursOption("resursAnnuityDuration");
+
+                                $maTitle = $methodArray->description;
+                                // Unacceptable title set (WOO-96)
+                                if (isset($settingsControl['title']) &&
                                     strtolower($settingsControl['title']) == "resurs bank"
                                 ) {
-                                // Make sure this will be unset as it's detected
-                                setResursOption('title', '', $optionNamespace);
-                                $settingsControl['title'] = "";
-                            }
-                            if (isset($settingsControl['title']) &&
+                                    // Make sure this will be unset as it's detected
+                                    setResursOption('title', '', $optionNamespace);
+                                    $settingsControl['title'] = "";
+                                }
+                                if (isset($settingsControl['title']) &&
                                     !empty($settingsControl['title']) && !isResursOmni(true)
                                 ) {
-                                $maTitle = $settingsControl['title'];
-                            } ?>
+                                    $maTitle = $settingsControl['title'];
+                                } ?>
                                 <tr>
                                     <td class="id"><?php echo $methodArray->id; ?></td>
                                     <td class="name" width="300px">
                                         <?php if (!isResursOmni(true)) { ?>
                                             <a href="<?php echo $url; ?>&section=resurs_bank_nr_<?php echo $curId ?>"><?php echo $methodArray->description ?></a>
                                         <?php } else {
-                                echo $methodArray->description;
-                            } ?>
+                                            echo $methodArray->description;
+                                        } ?>
                                     </td>
                                     <td class="title" width="300px">
                                         <div style="font-size:15px;"><?php echo $maTitle ?></div>
@@ -1229,7 +1232,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                         <?php
                                     }
 
-                            if (!isResursOmni(true)) { ?>
+                                    if (!isResursOmni(true)) { ?>
                                         <?php
                                         if (getResursFlag('FEE_EDITOR')) {
                                             ?>
@@ -1238,18 +1241,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                                 onclick="changeResursFee(this)">
                                                 <?php
                                                 $priceValue = $this->getOptionByNamespace(
-                                                "price",
-                                                "woocommerce_resurs_bank_nr_" . $curId
-                                            );
-                                            if (empty($priceValue)) {
-                                                // Injecting ourselves in the current structure
-                                                $priceValue = '<img id="fim_' . $methodArray->id . '" onclick="changeResursFee(this)" src="' . plugin_dir_url(__FILE__) . 'img/pen16x.png' . '">';
-                                            } else {
-                                                // Make sure that noone sets wrong values
-                                                $priceValue = preg_replace("/,/", '.', $priceValue);
-                                                $priceValue = doubleval($priceValue);
-                                            }
-                                            echo $priceValue; ?></td>
+                                                    "price",
+                                                    "woocommerce_resurs_bank_nr_" . $curId
+                                                );
+                                                if (empty($priceValue)) {
+                                                    // Injecting ourselves in the current structure
+                                                    $priceValue = '<img id="fim_' . $methodArray->id . '" onclick="changeResursFee(this)" src="' . plugin_dir_url(__FILE__) . 'img/pen16x.png' . '">';
+                                                } else {
+                                                    // Make sure that noone sets wrong values
+                                                    $priceValue = preg_replace("/,/", '.', $priceValue);
+                                                    $priceValue = doubleval($priceValue);
+                                                }
+                                                echo $priceValue; ?></td>
 
                                             <?php
                                         }
@@ -1278,7 +1281,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                     <td id="process_<?php echo $curId; ?>"></td>
                                 </tr>
                                 <?php
-                        } ?>
+                            } ?>
                             </tbody>
                         </table>
                         <?php
@@ -1286,12 +1289,12 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo '</td></tr>';
 
                     echo $this->getPluginInformation();
-                } elseif ($section == "shopflow") {
+                } elseif ($section == "fraudcontrol") {
                     if (isResursOmni(true)) {
                         echo '<br><div class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center labelBoot-border">' . __(
-                            'Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</div><br><br>';
+                                'Shop flow settings are not editable when using Resurs Checkout - Contact support if you want to do any changes',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ) . '</div><br><br>';
                     } else {
                         $styleRecommended = "display: none";
                         $waitForFraud = getResursOption("waitForFraudControl");
@@ -1301,17 +1304,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             $styleRecommended = "";
                         }
                         echo '<div id="shopwFlowRecommendedSettings" style="' . $styleRecommended . '">' . __(
-                            'When all the below settings are unchecked, you are running the plugin with a Resurs Bank preferred configuration',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</div>';
+                                'This section is restricted to the simplified shop flow and hosted flow only. To run the ' .
+                                'best practice-configuration, you should keep your settings unchecked.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ) . '</div>';
                         echo $this->setCheckBox('waitForFraudControl', $namespace, 'onchange="wfcComboControl(this)"');
                         echo $this->setCheckBox('annulIfFrozen', $namespace, 'onchange="wfcComboControl(this)"');
                         echo $this->setCheckBox('finalizeIfBooked', $namespace, 'onchange="wfcComboControl(this)"');
-                        echo $this->setSeparator("Invoice numbering");
-                        echo '<tr><td colspan="2">' . __(
-                            'Next invoice number to use',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . ': <span id="nextInvoiceSequence"><img src="' . $this->spinner . '"></span></td></tr>';
                     }
                 } elseif ($section == "resurs_bank_omnicheckout") {
                     $namespace = "woocommerce_" . $section;
@@ -1404,9 +1403,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     </tr>
                     ',
                         __(
-                        'Available shortcodes for above view',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
+                            'Available shortcodes for above view',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
                         $shortCodeDescriptions
                     );
                 } elseif ($section == "advanced") {
@@ -1450,6 +1449,17 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('resursOrdersEditable', $namespace);
                     echo $this->setCheckBox('showCheckoutOverlay', $namespace);
                     echo $this->setTextBox('checkoutOverlayMessage', $namespace);
+                    echo $this->setSeparator(
+                        __(
+                            'Invoice numbering',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        'configSeparateTitleSmall'
+                    );
+                    echo '<tr><td colspan="2"><b>' . __(
+                            'Next invoice number to use',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '</b> - <span id="nextInvoiceSequence"><img src="' . $this->spinner . '"></span></td></tr>';
 
                     echo $this->setSeparator(
                         __('Testing and development', 'resurs-bank-payment-gateway-for-woocommerce')
@@ -1476,17 +1486,17 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Maintenance', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo '<tr><th>' . __('Clean up ', 'resurs-bank-payment-gateway-for-woocommerce') . '</th><td>';
                     echo '<input id="cleanResursSettings" type="button" value="' . __(
-                        'Resurs settings',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ) . '" onclick="runResursAdminCallback(\'cleanRbSettings\', \'cleanResursSettings\')"> <span id="process_cleanResursSettings"></span><br>';
+                            'Resurs settings',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '" onclick="runResursAdminCallback(\'cleanRbSettings\', \'cleanResursSettings\')"> <span id="process_cleanResursSettings"></span><br>';
                     echo '<input id="cleanResursMethods" type="button" value="' . __(
-                        'Payment methods',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ) . '" onclick="runResursAdminCallback(\'cleanRbMethods\', \'cleanResursMethods\')"> <span id="process_cleanResursMethods"><span><br>';
+                            'Payment methods',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '" onclick="runResursAdminCallback(\'cleanRbMethods\', \'cleanResursMethods\')"> <span id="process_cleanResursMethods"><span><br>';
                     echo '<input id="cleanResursCache" type="button" value="' . __(
-                        'Cached data',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ) . '" onclick="runResursAdminCallback(\'cleanRbCache\', \'cleanResursCache\')"> <span id="process_cleanResursCache"><span>';
+                            'Cached data',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '" onclick="runResursAdminCallback(\'cleanRbCache\', \'cleanResursCache\')"> <span id="process_cleanResursCache"><span>';
                     echo '</td></tr>';
 
                     echo $this->getPluginInformation();
@@ -1498,9 +1508,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         echo $this->setCheckBox('enabled', $namespace);
 
                         $this->methodLabel = '<br>' . __(
-                            'Default title set by Resurs Bank is ',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '<b> ' . $methodDescription . '</b>';
+                                'Default title set by Resurs Bank is ',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ) . '<b> ' . $methodDescription . '</b>';
                         //$curSet            = getResursOption('title', $namespace);
                         echo $this->setTextBox('title', $namespace);
                         echo $this->setTextBox('description', $namespace);
@@ -1511,39 +1521,39 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     } else {
                         echo "<br>";
                         echo '<div id="listUnavailable" class="labelBoot labelBoot-danger labelBoot-big labelBoot-nofat labelBoot-center">' . __(
-                            'The payment method editor is not availabe while Resurs Checkout is active',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</div>';
+                                'The payment method editor is not availabe while Resurs Checkout is active',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ) . '</div>';
                     }
                 }
-        echo $this->setSeparator(__(
-            'Save above configuration with the button below',
-            'resurs-bank-payment-gateway-for-woocommerce'
-        ));
+                echo $this->setSeparator(__(
+                    'Save above configuration with the button below',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ));
 
-        if ($this->curlInDebug) {
-            $getDebugData = $this->flow->getDebug();
-            echo '<tr><td colspan="2">';
-            echo '<pre>';
-            if (method_exists($this->flow, 'getAutoDebitableTypes')) {
-                echo "<b>Payment methods that tend to automatically DEBIT orders as soon as money are transferred to merchant</b>\n";
-                print_r($this->flow->getAutoDebitableTypes());
-                echo '<hr>';
-            }
+                if ($this->curlInDebug) {
+                    $getDebugData = $this->flow->getDebug();
+                    echo '<tr><td colspan="2">';
+                    echo '<pre>';
+                    if (method_exists($this->flow, 'getAutoDebitableTypes')) {
+                        echo "<b>Payment methods that tend to automatically DEBIT orders as soon as money are transferred to merchant</b>\n";
+                        print_r($this->flow->getAutoDebitableTypes());
+                        echo '<hr>';
+                    }
 
-            $sslUnsafe = $this->flow->getSslIsUnsafe();
-            echo __(
-                "During the URL calls, SSL certificate validation has been disabled",
-                'resurs-bank-payment-gateway-for-woocommerce'
-            ) . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";
+                    $sslUnsafe = $this->flow->getSslIsUnsafe();
+                    echo __(
+                            "During the URL calls, SSL certificate validation has been disabled",
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . ": " . ($sslUnsafe ? __("Yes") : __("No")) . "\n";
 
-            echo '<hr>';
+                    echo '<hr>';
 
-            echo "<b>curlmodule debug data</b>\n";
-            print_r($getDebugData);
-            echo '</pre>';
-            echo '</td></tr>';
-        } ?>
+                    echo "<b>curlmodule debug data</b>\n";
+                    print_r($getDebugData);
+                    echo '</pre>';
+                    echo '</td></tr>';
+                } ?>
 
 
             </table>
