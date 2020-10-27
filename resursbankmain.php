@@ -2991,6 +2991,15 @@ function woocommerce_gateway_resurs_bank_init()
                                 $internalErrorMessage = $e->getMessage();
                                 $internalErrorCode = $e->getCode();
                             }
+
+                            if ($order !== null) {
+                                setResursOrderMetaData(
+                                    $order->get_id(),
+                                    'RcoProcessPaymentStart',
+                                    time()
+                                );
+                            }
+
                             WC()->session->set('omniId', $orderId);
                             $returnResult['orderId'] = $orderId;
                             $returnResult['session'] = WC()->session;
@@ -3380,6 +3389,13 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                         WC()->cart->empty_cart();
                         WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', false);
+                        if ($order !== null) {
+                            setResursOrderMetaData(
+                                $order->get_id(),
+                                'RcoProcessPaymentEnd',
+                                time()
+                            );
+                        }
                     }
                     wp_safe_redirect($getRedirectUrl);
 
@@ -4699,6 +4715,13 @@ function woocommerce_gateway_resurs_bank_init()
                     if (($resursCreatePass && $currentOmniRef) || ($allowCleanupSession)) {
                         if ($inProcess) {
                             WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', false);
+                            if ($checkOrder !== null) {
+                                setResursOrderMetaData(
+                                    $checkOrder->get_id(),
+                                    'RcoProcessPaymentStart',
+                                    time()
+                                );
+                            }
                             $refreshUrl = wc_get_cart_url();
                             $thisSession = new WC_Session_Handler();
                             $thisSession->destroy_session();
@@ -5737,6 +5760,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
     $orderId = null;
     $resursPaymentId = get_post_meta($order->get_id(), 'paymentId', true);
     $orderId = $order->get_id();
+    $hasNoResursOrder = false;
     if (!empty($resursPaymentId)) {
         $hasError = '';
         try {
@@ -5800,22 +5824,25 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                         ' . $errorMessage . '<br>
                     </fieldset>
                     </div>
-                </div>
 			    ';
 
-                return;
+                echo '</div>';
+
+                $hasNoResursOrder = true;
             }
 
-            $currentWcStatus = $order->get_status();
-            $notIn = ['completed', 'cancelled', 'refunded'];
-            if (!$rb->canDebit($resursPaymentInfo) &&
-                $rb->getIsDebited($resursPaymentInfo) &&
-                !in_array($currentWcStatus, $notIn)
-            ) {
-                if ($rb->getInstantFinalizationStatus($resursPaymentInfo) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
-                    resurs_no_debit_debited(true);
-                } else {
-                    resurs_no_debit_debited();
+            if (!$hasNoResursOrder) {
+                $currentWcStatus = $order->get_status();
+                $notIn = ['completed', 'cancelled', 'refunded'];
+                if (!$rb->canDebit($resursPaymentInfo) &&
+                    $rb->getIsDebited($resursPaymentInfo) &&
+                    !in_array($currentWcStatus, $notIn)
+                ) {
+                    if ($rb->getInstantFinalizationStatus($resursPaymentInfo) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
+                        resurs_no_debit_debited(true);
+                    } else {
+                        resurs_no_debit_debited();
+                    }
                 }
             }
         } catch (Exception $e) {
@@ -5839,6 +5866,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             }
         }
 
+        $unsetKeys = [];
         $invoices = [];
         if (empty($hasError)) {
             $fail = null;
@@ -5876,162 +5904,167 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 }
             }
 
-            $renderedResursData .= '<div class="resurs_orderinfo_text paymentInfoWrapStatus paymentInfoHead">';
-            $renderedResursData .= sprintf(
-                __(
-                    'Status from Resurs Bank: %s.',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ),
-                $currentOrderStatus
-            );
-            $renderedResursData .= '</div>
+            if (!$hasNoResursOrder) {
+                $renderedResursData .= '<div class="resurs_orderinfo_text paymentInfoWrapStatus paymentInfoHead">';
+                $renderedResursData .= sprintf(
+                    __(
+                        'Status from Resurs Bank: %s.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    $currentOrderStatus
+                );
+                $renderedResursData .= '</div>
                      <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
                 ';
 
-            $addressInfo = '';
-            if (is_object($resursPaymentInfo->customer->address)) {
-                $addressInfo .= isset($resursPaymentInfo->customer->address->addressRow1) && !empty($resursPaymentInfo->customer->address->addressRow1) ? $resursPaymentInfo->customer->address->addressRow1 . "\n" : '';
-                $addressInfo .= isset($resursPaymentInfo->customer->address->addressRow2) && !empty($resursPaymentInfo->customer->address->addressRow2) ? $resursPaymentInfo->customer->address->addressRow2 . "\n" : '';
-                $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : '';
-                $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : '') . ' ' . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : '') . "\n";
-            }
-            ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentId, $order->get_id());
+                $addressInfo = '';
+                if (!empty($resursPaymentInfo) && is_object($resursPaymentInfo->customer->address)) {
+                    $addressInfo .= isset($resursPaymentInfo->customer->address->addressRow1) && !empty($resursPaymentInfo->customer->address->addressRow1) ? $resursPaymentInfo->customer->address->addressRow1 . "\n" : '';
+                    $addressInfo .= isset($resursPaymentInfo->customer->address->addressRow2) && !empty($resursPaymentInfo->customer->address->addressRow2) ? $resursPaymentInfo->customer->address->addressRow2 . "\n" : '';
+                    $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : '';
+                    $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : '') . ' ' . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : '') . "\n";
+                }
+                ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentId, $order->get_id());
 
-            $unsetKeys = [
-                'id',
-                'paymentMethodId',
-                'storeId',
-                'paymentMethodName',
-                'paymentMethodType',
-                'totalAmount',
-                'limit',
-                'fraud',
-                'frozen',
-                'customer',
-                'paymentDiffs',
-            ];
+                $unsetKeys = [
+                    'id',
+                    'paymentMethodId',
+                    'storeId',
+                    'paymentMethodName',
+                    'paymentMethodType',
+                    'totalAmount',
+                    'limit',
+                    'fraud',
+                    'frozen',
+                    'customer',
+                    'paymentDiffs',
+                ];
 
-            $renderedResursData .= '
+                $renderedResursData .= '
                 <br>
                 <fieldset>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Payment ID', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Payment ID', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (isset($resursPaymentInfo->id) && !empty($resursPaymentInfo->id) ? $resursPaymentInfo->id : '') .
-                '</span>
+                    (isset($resursPaymentInfo->id) && !empty($resursPaymentInfo->id) ? $resursPaymentInfo->id : '') .
+                    '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Payment method ID', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Payment method ID', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->paymentMethodId) &&
-                !empty($resursPaymentInfo->paymentMethodId) ? $resursPaymentInfo->paymentMethodId : ''
-                ) . '</span>
+                    (
+                    isset($resursPaymentInfo->paymentMethodId) &&
+                    !empty($resursPaymentInfo->paymentMethodId) ? $resursPaymentInfo->paymentMethodId : ''
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Store ID', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Store ID', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->storeId) &&
-                !empty($resursPaymentInfo->storeId) ? $resursPaymentInfo->storeId : ''
-                ) . '</span>
+                    (
+                    isset($resursPaymentInfo->storeId) &&
+                    !empty($resursPaymentInfo->storeId) ? $resursPaymentInfo->storeId : ''
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Payment method name', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Payment method name', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->paymentMethodName) &&
-                !empty($resursPaymentInfo->paymentMethodName) ? $resursPaymentInfo->paymentMethodName : ''
-                ) . '</span>
+                    (
+                    isset($resursPaymentInfo->paymentMethodName) &&
+                    !empty($resursPaymentInfo->paymentMethodName) ? $resursPaymentInfo->paymentMethodName : ''
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Payment method type', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Payment method type', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->paymentMethodType) &&
-                !empty($resursPaymentInfo->paymentMethodName) ? $resursPaymentInfo->paymentMethodType : ''
-                ) .
-                '</span>
+                    (
+                    isset($resursPaymentInfo->paymentMethodType) &&
+                    !empty($resursPaymentInfo->paymentMethodName) ? $resursPaymentInfo->paymentMethodType : ''
+                    ) .
+                    '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Payment amount', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Payment amount', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->totalAmount) &&
-                !empty($resursPaymentInfo->totalAmount) ? round(
-                    $resursPaymentInfo->totalAmount,
-                    2
-                ) : ''
-                ) . '</span>
+                    (
+                    isset($resursPaymentInfo->totalAmount) &&
+                    !empty($resursPaymentInfo->totalAmount) ? round(
+                        $resursPaymentInfo->totalAmount,
+                        2
+                    ) : ''
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Payment limit', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Payment limit', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->limit) &&
-                !empty($resursPaymentInfo->limit) ? round($resursPaymentInfo->limit, 2) : ''
-                ) . '</span>
+                    (
+                    isset($resursPaymentInfo->limit) &&
+                    !empty($resursPaymentInfo->limit) ? round($resursPaymentInfo->limit, 2) : ''
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Fraud', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Fraud', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->fraud) &&
-                !empty($resursPaymentInfo->fraud) ?
-                    $resursPaymentInfo->fraud ? __('Yes') : __('No') : __('No')
-                ) . '</span>
+                    (
+                    isset($resursPaymentInfo->fraud) &&
+                    !empty($resursPaymentInfo->fraud) ?
+                        $resursPaymentInfo->fraud ? __('Yes') : __('No') : __('No')
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Frozen', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Frozen', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                isset($resursPaymentInfo->frozen) &&
-                !empty($resursPaymentInfo->frozen) ?
-                    $resursPaymentInfo->frozen ? __('Yes') : __('No') : __('No')
-                ) . '</span>
+                    (
+                    isset($resursPaymentInfo->frozen) &&
+                    !empty($resursPaymentInfo->frozen) ?
+                        $resursPaymentInfo->frozen ? __('Yes') : __('No') : __('No')
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __(
-                    'Customer name',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . ':</span>
+                    __(
+                        'Customer name',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ) . ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (
-                is_object($resursPaymentInfo->customer->address) &&
-                !empty($resursPaymentInfo->customer->address->fullName) ?
-                    $resursPaymentInfo->customer->address->fullName : ''
-                ) . '</span>
+                    (
+                    is_object($resursPaymentInfo->customer->address) &&
+                    !empty($resursPaymentInfo->customer->address->fullName) ?
+                        $resursPaymentInfo->customer->address->fullName : ''
+                    ) . '</span>
 
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
-                __('Delivery address', 'resurs-bank-payment-gateway-for-woocommerce') .
-                ':</span>
+                    __('Delivery address', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                (!empty($addressInfo) ? nl2br($addressInfo) : '') . '</span>
+                    (!empty($addressInfo) ? nl2br($addressInfo) : '') . '</span>
             ';
 
-            if (is_array($invoices) && count($invoices)) {
-                $renderedResursData .= '
+                if (is_array($invoices) && count($invoices)) {
+                    $renderedResursData .= '
                             <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">Invoices:</span>
                             <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . implode(
-                        ', ',
-                        $invoices
-                    ) . '</span>
+                            ', ',
+                            $invoices
+                        ) . '</span>
                         ';
+                }
             }
 
             $continueView = $resursPaymentInfo;
             $showMeta = getResursProtectedMetaData();
 
             if (is_array($showMeta)) {
+                if ($hasNoResursOrder) {
+                    $continueView = new stdClass();
+                }
                 foreach ($showMeta as $metaKey => $metaValueDescription) {
                     $setValue = getResursPaymentMethodMeta($order->get_id(), $metaKey);
                     if (empty($setValue)) {
@@ -6045,14 +6078,31 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             }
 
             foreach ($continueView as $key => $value) {
-                if (in_array($key, $unsetKeys)) {
+                if (in_array($key, $unsetKeys) && isset($continueView->$key)) {
                     unset($continueView->$key);
                 }
             }
             if (is_object($continueView)) {
+                if ($hasNoResursOrder) {
+                    $renderedResursData .= '
+                            <span style="font-size: 20px !important;" class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">WooCommerce stored metadata</span>
+                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value"></span>
+                        ';
+                }
+
+                $dateTimes = [
+                    'cached',
+                ];
+
                 foreach ($continueView as $key => $value) {
                     // ECom data cache.
-                    if ($key === 'cached') {
+                    $handleAsTime = false;
+                    if (in_array($key, $dateTimes, true) ||
+                        (is_numeric($value) && strlen($value) >= 10)
+                    ) {
+                        $handleAsTime = true;
+                    }
+                    if ($handleAsTime) {
                         $value .= ' (' . strftime('%Y-%m-%d %H:%M:%S', $value) . ')';
                     }
                     if (!is_array($value) && !is_object($value)) {

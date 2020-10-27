@@ -331,6 +331,22 @@ function getResursProtectedMetaData()
             'resurs-bank-payment-gateway-for-woocommerce'
         ),
         'orderDenied' => 'orderDenied',
+        'omniPaymentMethod' => __(
+            'Resurs Checkout Payment Method',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        ),
+        'paymentIdLast' => __(
+            'Last used payment method',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        ),
+        'RcoProcessPaymentStart' => __(
+            'Start time for RCO purchase',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        ),
+        'RcoProcessPaymentEnd' => __(
+            'End time for RCO purchase',
+            'resurs-bank-payment-gateway-for-woocommerce'
+        ),
     ];
 }
 
