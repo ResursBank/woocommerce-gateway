@@ -499,17 +499,17 @@ function woocommerce_gateway_resurs_bank_init()
                             $failSetup = false;
                             $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
                             $envVal = isset($_REQUEST['e']) ? $_REQUEST['e'] : '';
-                            if ($setType == 'woocommerce_resurs-bank_password') {
+                            if ($setType === 'woocommerce_resurs-bank_password') {
                                 $testUser = $subVal;
                                 $testPass = $setValue;
                                 $flowEnv = getServerEnv();
                                 if (!empty($envVal)) {
                                     if ($envVal === 'test') {
-                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
+                                        $flowEnv = RESURS_ENVIRONMENTS::TEST;
                                     } elseif ($envVal === 'live') {
-                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                                        $flowEnv = RESURS_ENVIRONMENTS::PRODUCTION;
                                     } elseif ($envVal === 'production') {
-                                        $flowEnv = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
+                                        $flowEnv = RESURS_ENVIRONMENTS::PRODUCTION;
                                     }
                                     $newFlow = initializeResursFlow(
                                         $testUser,
