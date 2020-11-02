@@ -138,6 +138,19 @@ function resursEditProtectedField(currentField, ns) {
     });
 }
 
+/**
+ * If the password box is not visible, click it.
+ * @returns {boolean}
+ */
+function resursClickUsername() {
+    var r = false;
+    if (!jQuery('#woocommerce_resurs-bank_password_hidden').is(':visible')) {
+        jQuery('#woocommerce_resurs-bank_password').click();
+        r = true;
+    }
+    return r;
+}
+
 function resursSaveProtectedField(currentFieldId, ns, cb) {
     var processId = $RB('#process_' + currentFieldId);
     if (processId.length > 0) {
@@ -147,7 +160,7 @@ function resursSaveProtectedField(currentFieldId, ns, cb) {
     var subVal;
     var envVal;
 
-    if (currentFieldId == "woocommerce_resurs-bank_password") {
+    if (currentFieldId === "woocommerce_resurs-bank_password") {
         subVal = $RB("#woocommerce_resurs-bank_login").val();
         $RB("#woocommerce_resurs-bank_serverEnv option").each(function (i, d) {
             if (d.selected) {
