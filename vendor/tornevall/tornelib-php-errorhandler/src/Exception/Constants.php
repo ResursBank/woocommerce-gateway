@@ -5,6 +5,7 @@ namespace TorneLIB\Exception;
 /**
  * Class Constants
  * @package TorneLIB\Exception
+ * @version 6.1.12
  */
 abstract class Constants
 {

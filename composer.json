@@ -1,7 +1,9 @@
 {
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "config": {
-        "preferred-install": "dist"
+        "preferred-install": {
+            "*": "dist"
+        }
     },
     "require": {
         "resursbank/ecomphp": "^1.3"

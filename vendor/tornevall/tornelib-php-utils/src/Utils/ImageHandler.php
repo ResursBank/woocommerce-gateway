@@ -148,16 +148,18 @@ class ImageHandler
      */
     private function getAllowedImageType($imageType)
     {
+        $return = null;
+
         $allowedTypes = [
             '1' => 'gif',
             '2' => 'jpg',
             '3' => 'png',
         ];
         if (isset($allowedTypes[$imageType])) {
-            return $allowedTypes[$imageType];
+            $return = $allowedTypes[$imageType];
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -169,6 +171,7 @@ class ImageHandler
     private function getImage($fileName, $fileType)
     {
         $returnWorkFile = null;
+
         if ($fileType == 1) {
             $returnWorkFile = @imagecreatefromgif($fileName);
         } elseif ($fileType == 2) {
@@ -189,6 +192,8 @@ class ImageHandler
      */
     private function setImage($destinationFileHandle, $destinationFileName, $imageType)
     {
+        $return = false;
+
         if ($imageType == 1) {
             @imagegif($destinationFileHandle, $destinationFileName);
         } elseif ($imageType == 2) {
@@ -197,9 +202,9 @@ class ImageHandler
             @imagepng($destinationFileHandle, $destinationFileName, $this->attachmentImageCompressionPng);
         }
         if (file_exists($destinationFileName) && filesize($destinationFileName)) {
-            return true;
+            $return = true;
         }
 
-        return false;
+        return $return;
     }
 }

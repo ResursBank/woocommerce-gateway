@@ -8,7 +8,7 @@ use TorneLIB\IO\Bridge;
 /**
  * Class MODULE_IO
  * @package TorneLIB
- * @version 6.1.0
+ * @version 6.1.4
  * @since 6.0
  * @deprecated Use v6.1 classes instead!!
  */

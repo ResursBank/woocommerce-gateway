@@ -2,15 +2,15 @@
 
 namespace TorneLIB\IO\Data;
 
+use Exception;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
-use TorneLIB\TORNELIB_CRYPTO_TYPES;
 use TorneLIB\Utils\Security;
 
 /**
  * Class Content
  * @package TorneLIB\IO\Data
- * @version 6.1.0
+ * @version 6.1.4
  */
 class Content
 {
@@ -51,14 +51,23 @@ class Content
         'defaultTagName' => null,
     ];
 
+    /**
+     * @var bool
+     */
     private $libXmlInternalErrorsSuppressed = true;
 
+    /**
+     * Content constructor.
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
     public function __construct()
     {
         $this->getAvailableSerializers();
     }
 
     /**
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     private function getAvailableSerializers()
@@ -88,7 +97,6 @@ class Content
      * @param int $returnOptions
      * @param string $expectVariable
      * @return array
-     * @throws ExceptionHandler
      * @since 6.0.5
      */
     public function getFromXml($data, $returnOptions = 1, $expectVariable = '')
@@ -130,12 +138,14 @@ class Content
     {
         $return = '';
 
-        if (is_string($data) && preg_match("/\<(.*?)\>/s", $data)) {
+        if (is_string($data) &&
+            preg_match('/<(.*?)>/s', $data)
+        ) {
             $return = $data;
         } else {
-            if (!preg_match("/^\</", $data) && preg_match("/&\b(.*?)+;(.*)/is", $data)) {
+            if (!preg_match('/^</', $data) && preg_match("/&\b(.*?)+;(.*)/is", $data)) {
                 $dataEntity = trim(html_entity_decode($data));
-                if (preg_match("/^\</", $dataEntity)) {
+                if (preg_match('/^</', $dataEntity)) {
                     $return = $dataEntity;
                 }
             }
@@ -189,6 +199,7 @@ class Content
                     (defined('LIBXML_NOCDATA') ? LIBXML_NOCDATA : 16384) +
                     (defined('LIBXML_NOERROR' ? LIBXML_NOERROR : 32))
                 );
+                /** @noinspection PhpUsageOfSilenceOperatorInspection */
                 $simpleXmlElement = @new \SimpleXMLElement($data, $options);
                 $return = $simpleXmlElement;
 
@@ -245,7 +256,7 @@ class Content
         if (method_exists($simpleXML, 'xpath')) {
             try {
                 $xmlXpath = $simpleXML->xpath("*/*");
-            } catch (\Exception $ignoreErrors) {
+            } catch (Exception $ignoreErrors) {
             }
             $realXmlPath = $xmlXpath;
             if (is_array($xmlXpath)) {
@@ -279,6 +290,7 @@ class Content
      * @param \SimpleXMLElement $xml
      * @return \SimpleXMLElement
      * @since 6.1.0
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     private function getXmlTransformed($data, $xml)
     {
@@ -297,16 +309,18 @@ class Content
     /**
      * @param $data
      * @param string $rootName
-     * @param string $initalTagName
+     * @param string $initialTagName
      * @param bool $toUtf8
      * @return mixed
+     * @noinspection PhpUnusedParameterInspection
      */
-    public function getXmlFromArray($data, $rootName = 'XMLResponse', $initalTagName = 'item', $toUtf8 = true)
+    public function getXmlFromArray($data, $rootName = 'XMLResponse', $initialTagName = 'item', $toUtf8 = true)
     {
         if ($toUtf8) {
             $data = (new Strings())->getUtf8($data);
         }
 
+        /** @noinspection PhpFullyQualifiedNameUsageInspection */
         $xml = new \SimpleXMLElement('<?xml version="1.0"?>' . '<' . $rootName . '></' . $rootName . '>');
         return $this->getXmlTransformed(
             $data,
@@ -323,6 +337,7 @@ class Content
      * @return mixed
      * @since 6.0.1
      * @deprecated From 6.0, use 6.1 getXmlFromArray instead.
+     * @noinspection PhpUnusedParameterInspection
      */
     public function renderXml(
         $contentData = [],
@@ -331,7 +346,7 @@ class Content
         $initialTagName = 'item',
         $rootName = 'XMLResponse'
     ) {
-        return $this->getXmlFromArray($data);
+        return $this->getXmlFromArray($contentData);
     }
 
     public function __call($name, $arguments)

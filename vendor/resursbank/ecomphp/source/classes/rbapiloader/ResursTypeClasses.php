@@ -188,6 +188,15 @@ abstract class RESURS_CALLBACK_REACHABILITY
 }
 
 /**
+ * Class RESURS_GETPAYMENT_REQUESTTYPE
+ * @package Resursbank\RBEcomPHP
+ */
+abstract class RESURS_GETPAYMENT_REQUESTTYPE {
+    const SOAP = 1;
+    const REST = 2;
+}
+
+/**
  * Class RESURS_PAYMENT_STATUS_RETURNCODES Order status return codes
  *
  * Changed values to bitmasked data as of 1.3.14 (1.1.41 + 1.0.41), so we can fetch

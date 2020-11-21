@@ -51,6 +51,7 @@ use Exception;
 use RESURS_EXCEPTIONS;
 use ResursException;
 use stdClass;
+use TorneLIB\Config\Flag;
 use TorneLIB\Data\Compress;
 use TorneLIB\Data\Password;
 use TorneLIB\Helpers\NetUtils;
@@ -65,7 +66,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20201026');
+    define('ECOMPHP_MODIFY_DATE', '20201110');
 }
 
 /**
@@ -76,7 +77,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.44
+ * @version 1.3.45
  */
 class ResursBank
 {
@@ -150,6 +151,12 @@ class ResursBank
      * @var array $paymentMethodsCache
      */
     private $paymentMethodsCache = ['params' => [], 'methods' => []];
+
+    /**
+     * @var int
+     * @since 1.3.45
+     */
+    private $getPaymentRequestMethod = 0;
 
     ///// Shop related
     /**
@@ -1642,8 +1649,6 @@ class ResursBank
      */
     public function validateCredentials($environment = RESURS_ENVIRONMENTS::TEST, $username = '', $password = '')
     {
-        $result = false;
-
         if (empty($username) && empty($password) && empty($this->username) && empty($this->password)) {
             throw new ResursException(
                 'Validating credentials means you have to defined credentials before ' .
@@ -1656,17 +1661,10 @@ class ResursBank
         }
 
         try {
-            $methods = $this->getPaymentMethods([], true);
-            // Extra layer control. If there are no payment methods something is terribly wrong.
-            if (is_array($methods) && count($methods)) {
-                $result = true;
-            } else {
-                throw new ResursException(
-                    'Validating credentials was successful, but not payment methods found.',
-                    417
-                );
-            }
+            $this->getRegisteredEventCallback(RESURS_CALLBACK_TYPES::BOOKED);
+            $result = true;
         } catch (Exception $ignoreMyException) {
+            $result = false;
         }
 
         return $result;
@@ -2034,8 +2032,16 @@ class ResursBank
     public function getCallBacksByRest($ReturnAsArray = false)
     {
         $ResursResponse = [];
+        $hasUpdate = false;
+
         $this->InitializeServices();
         try {
+            if (Flag::isFlag('callback_rest_500')) {
+                throw new Exception(
+                    'This exception is not real and only a part of testings.',
+                    500
+                );
+            }
             $callbackResponse = $this->CURL->getParsed($this->CURL->doGet($this->getCheckoutUrl() . '/callbacks'));
             if (!empty($callbackResponse)) {
                 $ResursResponse = $this->CURL->getParsed();
@@ -2043,20 +2049,44 @@ class ResursBank
         } catch (Exception $restException) {
             $message = $restException->getMessage();
             $code = $restException->getCode();
-            // Special recipes extracted from netcurl-6.1
-            if (method_exists($restException, 'getExtendException')) {
-                $extendedClass = $restException->getExtendException();
-                if (is_object($extendedClass) && method_exists($extendedClass, 'getParsed')) {
-                    $parsedExtended = $extendedClass->getParsed();
-                    if (isset($parsedExtended->description)) {
-                        $message .= ' (' . $parsedExtended->description . ')';
+
+            $failover = false;
+            if ($code >= 500) {
+                try {
+                    $failover = true;
+                    $hasUpdate = true;
+                    $ResursResponse = $this->getRegisteredEventCallback(255);
+                    if (!$ReturnAsArray && is_array($ResursResponse)) {
+                        foreach ($ResursResponse as $callbackKey => $callbackUrl) {
+                            $callbackClass = new stdClass();
+                            $callbackClass->eventType = $callbackKey;
+                            $callbackClass->uriTemplate = $callbackUrl;
+                            $returnObject[] = $callbackClass;
+                        }
+                        if (is_array($returnObject)) {
+                            $ResursResponse = $returnObject;
+                        }
                     }
-                    if (isset($parsedExtended->code) && $parsedExtended->code > 0) {
-                        $code = $parsedExtended->code;
-                    }
+                } catch (Exception $e) {
                 }
             }
-            throw new ResursException($message, $code, $restException);
+
+            if (!$failover) {
+                // Special recipes extracted from netcurl-6.1
+                if (method_exists($restException, 'getExtendException')) {
+                    $extendedClass = $restException->getExtendException();
+                    if (is_object($extendedClass) && method_exists($extendedClass, 'getParsed')) {
+                        $parsedExtended = $extendedClass->getParsed();
+                        if (isset($parsedExtended->description)) {
+                            $message .= ' (' . $parsedExtended->description . ')';
+                        }
+                        if (isset($parsedExtended->code) && $parsedExtended->code > 0) {
+                            $code = $parsedExtended->code;
+                        }
+                    }
+                }
+                throw new ResursException($message, $code, $restException);
+            }
         }
         if ($ReturnAsArray) {
             $ResursResponseArray = [];
@@ -2078,7 +2108,7 @@ class ResursBank
 
             return $ResursResponseArray;
         }
-        $hasUpdate = false;
+
         if (is_array($ResursResponse) || is_object($ResursResponse)) {
             foreach ($ResursResponse as $responseObject) {
                 if (isset($responseObject->eventType) && $responseObject->eventType == 'UPDATE') {
@@ -2101,9 +2131,7 @@ class ResursBank
 
     /**
      * Reimplementation of getRegisteredEventCallback due to #78124
-     *
      * @param int $callbackType
-     *
      * @return mixed
      * @throws Exception
      */
@@ -2111,9 +2139,21 @@ class ResursBank
     {
         $this->InitializeServices();
         $fetchThisCallback = $this->getCallbackTypeString($callbackType);
+
+        if (is_null($fetchThisCallback)) {
+            $returnArray = [];
+            foreach ([1, 2, 4, 8, 16, 32, 64] as $typeBit) {
+                if (($callbackType & $typeBit)) {
+                    $objectResponse = $this->getRegisteredEventCallback($typeBit);
+                    if (isset($objectResponse->uriTemplate)) {
+                        $returnArray[$this->getCallbackTypeString($typeBit)] = $objectResponse->uriTemplate;
+                    }
+                }
+            }
+            return $returnArray;
+        }
+
         $getRegisteredCallbackUrl = $this->getServiceUrl('getRegisteredEventCallback');
-        // We are not using postService here, since we are dependent on the response code
-        // rather than the response itself
         /** @noinspection PhpUndefinedMethodInspection */
         $renderedResponse = $this->CURL->doPost(
             $getRegisteredCallbackUrl
@@ -3011,6 +3051,42 @@ class ResursBank
     }
 
     /**
+     * @param $type
+     * @param string $customerType
+     * @return array
+     * @throws Exception
+     * @since 1.3.45
+     */
+    public function getPaymentMethodsByType($type, $customerType = null)
+    {
+        $return = [];
+        $methodList = $this->getPaymentMethods();
+
+        if (is_array($methodList) && count($methodList)) {
+            foreach ($methodList as $method) {
+                if (isset($method->type) && $method->type === $type) {
+                    $foundMethod = $method;
+                } elseif (isset($method->specificType) && $method->specificType === $type) {
+                    $foundMethod = $method;
+                } else {
+                    $foundMethod = null;
+                }
+                if (!empty($foundMethod)) {
+                    if (empty($customerType)) {
+                        $return[] = $foundMethod;
+                    } else {
+                        if (in_array($customerType, (array)$foundMethod, true)) {
+                            $return[] = $foundMethod;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /**
      * Get list of payment methods (payment method objects), that support annuity factors
      *
      * @param bool $namesOnly
@@ -3329,6 +3405,7 @@ class ResursBank
      * @since 1.3.13
      * @since 1.1.40
      * @since 1.0.40
+     * @deprecated Since 1.3.45, use the auto selective method (getPayment) instead.
      */
     public function getPaymentByRest($paymentId = '')
     {
@@ -3498,7 +3575,9 @@ class ResursBank
             try {
                 $rested = true;
                 $this->lastPaymentStored[$paymentId] = $this->getPaymentByRest($paymentId);
+                $this->getPaymentRequestMethod = RESURS_GETPAYMENT_REQUESTTYPE::REST;
                 $this->lastPaymentStored[$paymentId]->cached = time();
+                $this->lastPaymentStored[$paymentId]->requestMethod = $this->getPaymentRequestMethod;
                 $return = $this->lastPaymentStored[$paymentId];
             } catch (ResursException $e) {
                 // 3 = The order does not exist, default REST error.
@@ -3519,7 +3598,9 @@ class ResursBank
         if (!$rested) {
             try {
                 $this->lastPaymentStored[$paymentId] = $this->getPaymentBySoap($paymentId);
+                $this->getPaymentRequestMethod = RESURS_GETPAYMENT_REQUESTTYPE::SOAP;
                 $this->lastPaymentStored[$paymentId]->cached = time();
+                $this->lastPaymentStored[$paymentId]->requestMethod = $this->getPaymentRequestMethod;
                 $return = $this->lastPaymentStored[$paymentId];
             } catch (Exception $e) {
                 // 8 = REFERENCED_DATA_DONT_EXISTS
@@ -3528,6 +3609,15 @@ class ResursBank
         }
 
         return $return;
+    }
+
+    /**
+     * @return int
+     * @since 1.3.45
+     */
+    public function getGetPaymentRequestMethod()
+    {
+        return $this->getPaymentRequestMethod;
     }
 
     /**

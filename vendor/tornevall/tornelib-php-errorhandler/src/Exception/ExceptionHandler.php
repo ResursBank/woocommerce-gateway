@@ -51,7 +51,7 @@ class ExceptionHandler extends \Exception
             }
         } else {
             if (!empty($code) && is_string($code)) {
-                $code = $this->getConstantedValue($code);
+                $code = $this->getValueConstant($code);
             }
         }
 
@@ -66,19 +66,15 @@ class ExceptionHandler extends \Exception
      * @param $code
      * @return int|mixed
      */
-    private function getConstantedValue($code)
+    private function getValueConstant($code)
     {
-        // Make it possible to push a stringified code into this exceptionhandler.
-        $numericConstant = @constant(sprintf('TorneLIB\Exception\Constants::%s', $code));
-        if ($numericConstant) {
-            $code = $numericConstant;
-        } else {
-            if (!defined('LIB_ERROR_HTTP')) {
-                // Use internal error.
-                $code = Constants::LIB_UNHANDLED;
+        if (!defined('LIB_ERROR_HTTP_CUSTOM')) {
+            // Make it possible to push a stringified code into this exceptionhandler.
+            $numericConstant = @constant(sprintf('TorneLIB\Exception\Constants::%s', $code));
+            if ($numericConstant) {
+                $code = $numericConstant;
             } else {
-                // Use bad request when unknown and LIB_ERROR_HTTP is enabled.
-                $code = 400;
+                $code = !defined('LIB_ERROR_HTTP') ? Constants::LIB_UNHANDLED : 400;
             }
         }
 

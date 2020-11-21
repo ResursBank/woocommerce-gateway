@@ -119,5 +119,7 @@ class Memory
     public function setHaltOnLowMemory($haltOnLowMemory)
     {
         $this->haltOnLowMemory = $haltOnLowMemory;
+
+        return $this;
     }
 }

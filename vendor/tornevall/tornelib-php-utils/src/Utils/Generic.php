@@ -11,7 +11,7 @@ use TorneLIB\Exception\ExceptionHandler;
 /**
  * Class Generic Generic functions
  * @package TorneLIB\Utils
- * @version 6.1.5
+ * @version 6.1.9
  */
 class Generic
 {
@@ -33,6 +33,140 @@ class Generic
      * @since 6.1.6
      */
     private $templateExtension = ['htm', 'html', 'txt', 'php', 'phtml'];
+
+    /**
+     * Check if class files exists somewhere in platform (pear/pecl-based functions).
+     * Initially used to fetch XML-serializers. Returns first successful match.
+     *
+     * @param $classFile
+     * @return string
+     * @since 6.1.0
+     */
+    public function getStreamPath($classFile)
+    {
+        $return = null;
+
+        $checkClassFiles = [
+            $classFile,
+            sprintf('%s.php', $classFile),
+        ];
+
+        $return = false;
+
+        foreach ($checkClassFiles as $classFileName) {
+            $serializerPath = stream_resolve_include_path($classFileName);
+            if (!empty($serializerPath)) {
+                $return = $serializerPath;
+                break;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Using both class and composer.json to discover version (in case that composer.json are removed in a "final").
+     *
+     * @param string $composerLocation
+     * @param int $composerDepth
+     * @param string $className
+     * @return string|null
+     * @throws ExceptionHandler
+     * @throws ReflectionException
+     * @since 6.1.7
+     */
+    public function getVersionByAny($composerLocation = '', $composerDepth = 3, $className = '')
+    {
+        $return = null;
+
+        $byComposer = $this->getVersionByComposer($composerLocation, $composerDepth);
+        $byClass = $this->getVersionByClassDoc($className);
+
+        // Composer always have higher priority.
+        if (!empty($byComposer)) {
+            $return = $byComposer;
+        } elseif (!empty($byClass)) {
+            $return = $byClass;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $location
+     * @param int $maxDepth
+     * @return string
+     * @throws ExceptionHandler
+     * @since 6.1.3
+     */
+    public function getVersionByComposer($location, $maxDepth = 3)
+    {
+        $return = '';
+        if ($maxDepth > 3 || $maxDepth < 1) {
+            $maxDepth = 3;
+        }
+        if (!file_exists($location)) {
+            throw new ExceptionHandler('Invalid path', Constants::LIB_INVALID_PATH);
+        }
+        $startAt = dirname($location);
+        if ($this->getComposerJson($startAt)) {
+            return $this->getComposerTag($startAt, 'version');
+        }
+
+        $composerLocation = null;
+        while ($maxDepth--) {
+            $startAt .= '/..';
+            if ($this->getComposerJson($startAt)) {
+                $composerLocation = $startAt;
+                break;
+            }
+        }
+
+        if (!empty($composerLocation)) {
+            $return = $this->getComposerTag($composerLocation, 'version');
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $location
+     * @return bool
+     * @since 6.1.3
+     */
+    private function getComposerJson($location)
+    {
+        $return = false;
+
+        if (file_exists(sprintf('%s/composer.json', $location))) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $location
+     * @param $tag
+     * @return string
+     * @since 6.1.3
+     */
+    private function getComposerTag($location, $tag)
+    {
+        $return = '';
+
+        $composerData = json_decode(
+            file_get_contents(
+                sprintf('%s/composer.json', $location)
+            )
+        );
+
+        if (isset($composerData->$tag)) {
+            $return = $composerData->$tag;
+        }
+
+        return (string)$return;
+    }
 
     /**
      * @param string $className
@@ -125,140 +259,6 @@ class Generic
     }
 
     /**
-     * @param $location
-     * @param int $maxDepth
-     * @return string
-     * @throws ExceptionHandler
-     * @since 6.1.3
-     */
-    public function getVersionByComposer($location, $maxDepth = 3)
-    {
-        $return = '';
-        if ($maxDepth > 3 || $maxDepth < 1) {
-            $maxDepth = 3;
-        }
-        if (!file_exists($location)) {
-            throw new ExceptionHandler('Invalid path', Constants::LIB_INVALID_PATH);
-        }
-        $startAt = dirname($location);
-        if ($this->getComposerJson($startAt)) {
-            return $this->getComposerTag($startAt, 'version');
-        }
-
-        $composerLocation = null;
-        while ($maxDepth--) {
-            $startAt .= '/..';
-            if ($this->getComposerJson($startAt)) {
-                $composerLocation = $startAt;
-                break;
-            }
-        }
-
-        if (!empty($composerLocation)) {
-            $return = $this->getComposerTag($composerLocation, 'version');
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param $location
-     * @return bool
-     * @since 6.1.3
-     */
-    private function getComposerJson($location)
-    {
-        $return = false;
-
-        if (file_exists(sprintf('%s/composer.json', $location))) {
-            $return = true;
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param $location
-     * @param $tag
-     * @return string
-     * @since 6.1.3
-     */
-    private function getComposerTag($location, $tag)
-    {
-        $return = '';
-
-        $composerData = json_decode(
-            file_get_contents(
-                sprintf('%s/composer.json', $location)
-            )
-        );
-
-        if (isset($composerData->$tag)) {
-            $return = $composerData->$tag;
-        }
-
-        return (string)$return;
-    }
-
-    /**
-     * Check if class files exists somewhere in platform (pear/pecl-based functions).
-     * Initially used to fetch XML-serializers. Returns first successful match.
-     *
-     * @param $classFile
-     * @return string
-     * @since 6.1.0
-     */
-    public function getStreamPath($classFile)
-    {
-        $return = null;
-
-        $checkClassFiles = [
-            $classFile,
-            sprintf('%s.php', $classFile),
-        ];
-
-        $return = false;
-
-        foreach ($checkClassFiles as $classFileName) {
-            $serializerPath = stream_resolve_include_path($classFileName);
-            if (!empty($serializerPath)) {
-                $return = $serializerPath;
-                break;
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * Using both class and composer.json to discover version (in case that composer.json are removed in a "final").
-     *
-     * @param string $composerLocation
-     * @param int $composerDepth
-     * @param string $className
-     * @return string|null
-     * @throws ExceptionHandler
-     * @throws ReflectionException
-     * @since 6.1.7
-     */
-    public function getVersionByAny($composerLocation = '', $composerDepth = 3, $className = '')
-    {
-        $return = null;
-
-        $byComposer = $this->getVersionByComposer($composerLocation, $composerDepth);
-        $byClass = $this->getVersionByClassDoc($className);
-
-        // Composer always have higher priority.
-        if (!empty($byComposer)) {
-            $return = $byComposer;
-        } elseif (!empty($byClass)) {
-            $return = $byClass;
-        }
-
-        return $return;
-    }
-
-    /**
      * @param $templateName
      * @param array $assignedVariables
      * @return false|string
@@ -332,6 +332,8 @@ class Generic
     private function setTemplatePlain($templatePlain)
     {
         $this->templatePlain = $templatePlain;
+
+        return $this;
     }
 
     /**
@@ -361,11 +363,47 @@ class Generic
 
     /**
      * @param string $templatePath
+     * @return Generic
      * @since 6.1.6
      */
     public function setTemplatePath($templatePath)
     {
         $this->templatePath = $templatePath;
+
+        return $this;
+    }
+
+    /**
+     * @param $namespaceClassName
+     * @param null $skipReflection
+     * @return mixed
+     * @throws ReflectionException
+     * @since 6.1.9
+     */
+    public function getShortClassName($namespaceClassName = null, $skipReflection = null)
+    {
+        if (is_null($namespaceClassName)) {
+            $namespaceClassName = self::class;
+        }
+        $return = $namespaceClassName;
+
+        if (class_exists($namespaceClassName)) {
+            if (!class_exists('\ReflectionClass')) {
+                $skipReflection = true;
+            }
+            if (!$skipReflection && class_exists('\ReflectionClass')) {
+                /** @noinspection PhpFullyQualifiedNameUsageInspection */
+                $useReflection = new \ReflectionClass($namespaceClassName);
+                $return = $useReflection->getShortName();
+            } else {
+                $wrapperClassExplode = explode('\\', $namespaceClassName);
+                if (is_array($wrapperClassExplode) && count($wrapperClassExplode)) {
+                    $return = $wrapperClassExplode[count($wrapperClassExplode) - 1];
+                }
+            }
+        }
+
+        return $return;
     }
 
     /**

@@ -6,7 +6,7 @@ namespace TorneLIB\IO\Data;
  * Class Strings
  *
  * @package TorneLIB\IO\Data
- * @version 6.1.0
+ * @version 6.1.4
  */
 class Strings
 {
@@ -17,7 +17,7 @@ class Strings
      */
     public function getCamelCase($string)
     {
-        $return = @lcfirst(@implode(@array_map("ucfirst", preg_split('/\-|_|\s+/', $string))));
+        $return = @lcfirst(@implode(@array_map("ucfirst", preg_split('/-|_|\s+/', $string))));
 
         return $return;
     }
@@ -138,8 +138,10 @@ class Strings
      */
     public function __call($name, $arguments)
     {
+        $return = null;
+
         if (method_exists($this, $this->getCamelCase($name))) {
-            return call_user_func_array(
+            $return = call_user_func_array(
                 [
                     $this,
                     $this->getCamelCase($name),
@@ -147,15 +149,15 @@ class Strings
                 $arguments
             );
         } elseif (method_exists($this, $this->getSnakeCase($name))) {
-            {
-                return call_user_func_array(
-                    [
-                        $this,
-                        $this->getSnakeCase($name),
-                    ],
-                    $arguments
-                );
-            }
+            $return = call_user_func_array(
+                [
+                    $this,
+                    $this->getSnakeCase($name),
+                ],
+                $arguments
+            );
         }
+
+        return $return;
     }
 }

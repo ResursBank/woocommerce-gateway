@@ -13,6 +13,7 @@ use TorneLIB\IO\Data\Strings;
  *
  * @package TorneLIB\IO
  * @deprecated If you ever thinking of using this, please don't. Use direct calls instead.
+ * @version 6.1.4
  */
 class Bridge
 {
@@ -31,6 +32,9 @@ class Bridge
      */
     private $arrays;
 
+    /**
+     * Bridge constructor.
+     */
     public function __construct()
     {
         $this->strings = new Strings();
@@ -38,6 +42,12 @@ class Bridge
         $this->arrays = new Arrays();
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     * @throws ExceptionHandler
+     */
     public function __call($name, $arguments)
     {
         $return = null;
