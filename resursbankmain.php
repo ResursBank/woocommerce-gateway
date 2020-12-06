@@ -14,6 +14,7 @@ use TorneLIB\MODULE_NETWORK;
 
 $resurs_obsolete_coexistence_disable = (bool)apply_filters('resurs_obsolete_coexistence_disable', null);
 if ($resurs_obsolete_coexistence_disable) {
+    $isadmin = is_admin();
     return;
 }
 
