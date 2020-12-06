@@ -156,13 +156,11 @@ function setResursOption($key = "", $value = "", $configurationSpace = "woocomme
 
 function allowPluginToRun()
 {
-    if (!getResursOption('preventGlobalInterference')) {
-        return true;
-    }
+    $isAdmin = is_admin();
+    $allowed = !getResursOption('preventGlobalInterference');
 
     // Initially always allow runs.
-    $allowed = true;
-    if (is_admin()) {
+    if ($isAdmin) {
         // edit-theme-plugin-file has been a problem, however - at this moment we know we're located
         // somewhere in wp-admin, so from here, everything should be disallowed.
 
@@ -174,6 +172,7 @@ function allowPluginToRun()
 
         $allowed = apply_filters('allow_resurs_run', $allowed, $info);
     }
+
     return $allowed;
 }
 

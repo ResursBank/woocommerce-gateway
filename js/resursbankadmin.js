@@ -42,9 +42,11 @@ $RB(document).ready(function ($) {
     }
     if (jQuery('.nav-tab').length > 0) {
         jQuery('.nav-tab').each(function (i, elm) {
-            if (elm.innerHTML == "Resurs Bank") {
-                if (typeof adminJs["resursBankTabLogo"] !== "undefined") {
-                    elm.innerHTML = '<img src="' + adminJs["resursBankTabLogo"] + '">';
+            if (typeof elm.href !== 'undefined') {
+                if (elm.innerHTML === 'Resurs Bank' && elm.href.indexOf('_resursbank') > -1) {
+                    if (typeof adminJs["resursBankTabLogo"] !== "undefined") {
+                        elm.innerHTML = '<img src="' + adminJs["resursBankTabLogo"] + '">';
+                    }
                 }
             }
         });
