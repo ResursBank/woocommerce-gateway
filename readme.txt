@@ -2,7 +2,7 @@
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 5.5.1
+Tested up to: 5.5.3
 Requires PHP: 5.4
 Stable tag: 2.2.42
 License: GPLv2 or later

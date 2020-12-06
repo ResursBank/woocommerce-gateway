@@ -50,6 +50,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         }
     }
 
+    /**
+     * Configurable sections.
+     * @return array|mixed|void
+     */
     public function get_sections()
     {
         $sections = [];    // Adaptive array.
