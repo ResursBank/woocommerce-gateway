@@ -2007,14 +2007,6 @@ function woocommerce_gateway_resurs_bank_init()
                             if ($this->flow->canHideFormField($fieldName)) {
                                 $doDisplay = 'none';
                             }
-                            // When applicant government id and getAddress is enabled so that data can be collected
-                            // from that point, the requrest field is not necessary to be shown
-                            if ($fieldName == 'applicant-government-id') {
-                                $optionGetAddress = getResursOption('getAddress');
-                                if ($optionGetAddress) {
-                                    $doDisplay = 'none';
-                                }
-                            }
                         }
 
                         $setLabel = $this->get_payment_method_form_label($fieldName, $customerType);
