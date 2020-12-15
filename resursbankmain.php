@@ -1983,7 +1983,10 @@ function woocommerce_gateway_resurs_bank_init()
                 $_REQUEST['ssnCustomerType'],
                 (array)$method->customerType
             ) ? $_REQUEST['ssnCustomerType'] : 'NATURAL';
-            $mustShowGov = false;
+            $mustShowGov = apply_filters(
+                'resurs_bank_force_govid_field',
+                (getResursOption('forceGovIdField') ? true : false)
+            );
             if ($type === 'PAYMENT_PROVIDER') {
                 $requiredFormFields = $this->flow->getTemplateFieldsByMethodType(
                     $method,
@@ -1991,10 +1994,10 @@ function woocommerce_gateway_resurs_bank_init()
                     'PAYMENT_PROVIDER'
                 );
             } else {
+                // Always display the field on resurs internals.
                 $mustShowGov = true;
                 $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType, $specificType);
             }
-
             if ($this->getMinMax($paymentSpec['totalAmount'], $method->minLimit, $method->maxLimit)) {
                 $buttonCssClasses = 'btn btn-info active';
                 $ajaxUrl = admin_url('admin-ajax.php');
