@@ -1,3 +1,11 @@
+# 6.1.3
+
+## Updates
+
+* [NETCURL-319](https://tracker.tornevall.net/browse/NETCURL-319) - setSignature may crash setUserAgent if array is sent into merger, [NETCURL-320](https://tracker.tornevall.net/browse/NETCURL-320) opens for overwriting/write protection.
+* [NETCURL-323](https://tracker.tornevall.net/browse/NETCURL-323) - Timeout defaults should be flaggable and support millisec, also should native support for timeouts, visually, be passed through the configuration
+* [NETCURL-324](https://tracker.tornevall.net/browse/NETCURL-324) - Avoid using flaggables for timeouts in tests
+
 # 6.1.2
 
 ## Updates

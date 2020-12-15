@@ -121,6 +121,20 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
+     * Reverse compatibility with v6.0 - returns true if any of the settings here are touched.
+     * Main function as it is duplicated is moved into WrapprConfig->getCompatibilityArguments()
+     *
+     * @param array $funcArgs
+     * @return bool
+     * @throws Exception
+     * @since 6.1.0
+     */
+    private function getPriorCompatibilityArguments($funcArgs = [])
+    {
+        return $this->CONFIG->getCompatibilityArguments($funcArgs);
+    }
+
+    /**
      * If staging is false, we're considering production mode.
      * @param bool $staging
      * @return WrapperConfig
@@ -172,20 +186,6 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
-     * Reverse compatibility with v6.0 - returns true if any of the settings here are touched.
-     * Main function as it is duplicated is moved into WrapprConfig->getCompatibilityArguments()
-     *
-     * @param array $funcArgs
-     * @return bool
-     * @throws Exception
-     * @since 6.1.0
-     */
-    private function getPriorCompatibilityArguments($funcArgs = [])
-    {
-        return $this->CONFIG->getCompatibilityArguments($funcArgs);
-    }
-
-    /**
      * @return mixed
      * @since 6.1.0
      */
@@ -204,24 +204,6 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
-     * @return bool
-     * @since 6.1.0;
-     */
-    public function getLastResponse()
-    {
-        return (string)$this->soapClientContent['lastResponse'];
-    }
-
-    /**
-     * @return string
-     * @since 6.1.0
-     */
-    public function getLastResponseHeaders()
-    {
-        return (string)$this->soapClientContent['lastResponseHeaders'];
-    }
-
-    /**
      * Returns an array of function from the soapcall.
      *
      * @return array
@@ -230,39 +212,6 @@ class SoapClientWrapper implements WrapperInterface
     public function getFunctions()
     {
         return (array)$this->soapClientContent['functions'];
-    }
-
-    /**
-     * @param WrapperConfig $config
-     * @return SoapClientWrapper
-     * @since 6.1.0
-     */
-    public function setConfig($config)
-    {
-        $this->CONFIG = $this->getInheritedConfig($config);
-
-        return $this;
-    }
-
-    /**
-     * @param $config
-     * @return mixed
-     * @since 6.1.0
-     */
-    private function getInheritedConfig($config)
-    {
-        $config->setCurrentWrapper($this->CONFIG->getCurrentWrapper());
-
-        return $config;
-    }
-
-    /**
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    public function getConfig()
-    {
-        return $this->CONFIG;
     }
 
     /**
@@ -289,131 +238,6 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
-     * @throws ExceptionHandler
-     * @throws SoapFault
-     * @since 6.1.0
-     */
-    private function getSoapClient()
-    {
-        $this->CONFIG->getOptions();
-        $this->getSoapInitErrorHandler();
-        $streamOpt = $this->getPreparedProxyOptions($this->getConfig()->getStreamOptions());
-        // version_compare(PHP_VERSION, '7.1.0', '>=')
-        if (PHP_VERSION_ID >= 70100) {
-            $this->soapClient = new SoapClient(
-                $this->getConfig()->getRequestUrl(),
-                $streamOpt
-            );
-        } else {
-            // Suppress fatals in older releases.
-            $this->soapClient = @(new SoapClient(
-                $this->getConfig()->getRequestUrl(),
-                $streamOpt
-            ));
-        }
-    }
-
-    /**
-     * @param $streamOptions
-     * @return mixed
-     * @since 6.1.0
-     */
-    private function getPreparedProxyOptions($streamOptions)
-    {
-        if (!empty($this->soapProxyHost)) {
-            $streamOptions['proxy_host'] = $this->soapProxyHost;
-            $streamOptions['proxy_port'] = $this->soapProxyPort;
-        }
-
-        if (is_array($this->soapProxyOptions)) {
-            /** @noinspection AdditionOperationOnArraysInspection */
-            // + is intended.
-            $streamOptions += $this->soapProxyOptions;
-        }
-
-        return $streamOptions;
-    }
-
-    /**
-     * SOAP initializer.
-     * Formerly known as a simpleSoap getSoap() variant.
-     *
-     * @return $this
-     * @throws ExceptionHandler
-     * @throws Exception
-     * @since 6.1.0
-     */
-    private function getSoapInit()
-    {
-        try {
-            $this->getSoapClient();
-        } catch (Exception $soapException) {
-            if ((int)$soapException->getCode()) {
-                throw $soapException;
-            }
-
-            // Trying to prevent dual requests during a soap-transfer. In v6.0, there was dual initializations of
-            // soapclient when potential authfail errors occurred.
-            if ((int)$this->soapWarningException['code']) {
-                $code = $this->getHttpHead($this->soapWarningException['string']);
-                $message = $this->getHttpHead($this->soapWarningException['string'], 'message');
-
-                $this->CONFIG->getHttpException(
-                    (int)$code > 0 && !empty($message) ? $message : $this->soapWarningException['string'],
-                    (int)$code > 0 ? $code : $this->soapWarningException['code'],
-                    null,
-                    $this,
-                    true
-                );
-            }
-        }
-        // Restore the errorhandler immediately after soaprequest if no exceptions are detected during first request.
-        restore_error_handler();
-
-        return $this;
-    }
-
-    /**
-     * @param $string
-     * @param string $returnData
-     * @return int|string
-     * @since 6.1.0
-     */
-    private function getHttpHead($string, $returnData = 'code')
-    {
-        return GenericParser::getHttpHead($string, $returnData);
-    }
-
-    /**
-     * Initialize SoapExceptions for special occasions.
-     *
-     * @return $this
-     * @since 6.1.0
-     * @noinspection SuspiciousAssignmentsInspection
-     */
-    private function getSoapInitErrorHandler()
-    {
-        // No inspections on this, it is handled properly handled despite the immediate overrider.
-        // The overrider is present as it has to be nulled out after each use.
-        if (!is_null($this->currentErrorHandler)) {
-            restore_error_handler();
-            $this->currentErrorHandler = null;
-            $this->soapWarningException['code'] = null;
-            $this->soapWarningException['string'] = null;
-        }
-        $this->currentErrorHandler = set_error_handler(function ($errNo, $errStr) {
-            if (empty($this->soapWarningException['string'])) {
-                $this->soapWarningException['code'] = $errNo;
-                $this->soapWarningException['string'] = $errStr;
-            }
-            restore_error_handler();
-            return false;
-        }, E_WARNING);
-
-        return $this;
-    }
-
-    /**
      * @return mixed
      * @throws ExceptionHandler
      * @since 6.1.0
@@ -432,6 +256,39 @@ class SoapClientWrapper implements WrapperInterface
         }
 
         return $currentStreamContext;
+    }
+
+    /**
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function getConfig()
+    {
+        return $this->CONFIG;
+    }
+
+    /**
+     * @param WrapperConfig $config
+     * @return SoapClientWrapper
+     * @since 6.1.0
+     */
+    public function setConfig($config)
+    {
+        $this->CONFIG = $this->getInheritedConfig($config);
+
+        return $this;
+    }
+
+    /**
+     * @param $config
+     * @return mixed
+     * @since 6.1.0
+     */
+    private function getInheritedConfig($config)
+    {
+        $config->setCurrentWrapper($this->CONFIG->getCurrentWrapper());
+
+        return $config;
     }
 
     /**
@@ -461,58 +318,281 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
-     * @return SoapClientWrapper
+     * @return int
      * @since 6.1.0
      */
-    private function setMergedSoapResponse()
+    public function getCode()
     {
-        foreach ($this->soapClientContent as $soapMethod => $value) {
-            $methodName = sprintf(
-                '__get%s',
-                ucfirst($soapMethod)
-            );
-            $this->soapClientContent[$soapMethod] = $this->getFromSoap($methodName);
-        }
-
-        return $this;
+        return (int)$this->getHttpHead($this->getHeader('http'));
     }
 
     /**
-     * @param $methodName
-     * @return mixed|null
+     * @param $string
+     * @param string $returnData
+     * @return int|string
      * @since 6.1.0
      */
-    private function getFromSoap($methodName)
+    private function getHttpHead($string, $returnData = 'code')
     {
-        $return = null;
+        return GenericParser::getHttpHead($string, $returnData);
+    }
 
-        if (!empty($this->soapClient) && method_exists($this->soapClient, $methodName)) {
-            $return = call_user_func_array([$this->soapClient, $methodName], []);
+    /**
+     * @param null $key
+     * @return mixed
+     * @since 6.1.0
+     */
+    private function getHeader($key = null)
+    {
+        if (is_null($key)) {
+            $return = $this->getHeaders();
+        } else {
+            $return = $this->getHeaders(true, true);
+        }
+
+        if (isset($return[strtolower($key)])) {
+            $return = $return[strtolower($key)];
         }
 
         return $return;
     }
 
     /**
-     * @param $userAgentString
-     * @return WrapperConfig
+     * @param bool $asArray
+     * @param bool $lCase
+     * @return mixed
      * @since 6.1.0
-     * @noinspection PhpUnusedPrivateMethodInspection
      */
-    private function setUserAgent($userAgentString)
+    public function getHeaders($asArray = false, $lCase = false)
     {
-        return $this->CONFIG->setUserAgent($userAgentString);
+        $return = $this->getLastResponseHeaders();
+
+        if ($asArray) {
+            $return = $this->getHeaderArray($this->getLastResponseHeaders(), $lCase);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return string
+     * @since 6.1.0
+     */
+    public function getLastResponseHeaders()
+    {
+        return (string)$this->soapClientContent['lastResponseHeaders'];
+    }
+
+    /**
+     * @param $header
+     * @param bool $lCase
+     * @return array
+     * @since 6.1.0
+     */
+    private function getHeaderArray($header, $lCase = false)
+    {
+        $this->responseHeaderArray = [];
+
+        if (is_string($header)) {
+            $headerSplit = explode("\n", $header);
+            if (is_array($headerSplit)) {
+                foreach ($headerSplit as $headerRow) {
+                    $this->getHeaderRow($headerRow, $lCase);
+                }
+            }
+        }
+
+        return $this->responseHeaderArray;
+    }
+
+    /**
+     * @param $header
+     * @param bool $lCase
+     * @return int
+     * @since 6.1.0
+     */
+    private function getHeaderRow($header, $lCase = false)
+    {
+        $headSplit = explode(':', $header, 2);
+        $spacedSplit = explode(' ', $header, 2);
+
+        if (count($headSplit) < 2) {
+            if (count($spacedSplit) > 1) {
+                $splitName = !$lCase ? $spacedSplit[0] : strtolower($spacedSplit[0]);
+
+                if ((bool)preg_match('/^http\/(.*?)$/i', $splitName)) {
+                    $httpSplitName = explode("/", $splitName, 2);
+                    $realSplitName = !$lCase ? $httpSplitName[0] : strtolower($httpSplitName[0]);
+
+                    if (!isset($this->responseHeaderArray[$realSplitName])) {
+                        $this->responseHeaderArray[$realSplitName] = trim($spacedSplit[1]);
+                    } else {
+                        $this->responseHeaderArray[$realSplitName][] = trim($spacedSplit[1]);
+                    }
+                }
+
+                $this->responseHeaderArray[$splitName][] = trim($spacedSplit[1]);
+            }
+            return strlen($header);
+        }
+
+        $splitName = !$lCase ? $headSplit[0] : strtolower($headSplit[0]);
+        $this->responseHeaderArray[$splitName][] = trim($headSplit[1]);
+        return strlen($header);
     }
 
     /**
      * @return mixed
-     * @throws ExceptionHandler
      * @since 6.1.0
-     * @noinspection PhpUnusedPrivateMethodInspection
      */
-    private function getUserAgent()
+    public function getParsed()
     {
-        return $this->CONFIG->getUserAgent();
+        return $this->getSoapResponse($this->soapClientResponse);
+    }
+
+    /**
+     * Dynamically fetch responses from a soapClientResponse.
+     * @param $soapClientResponse
+     * @return mixed
+     * @since 6.1.0
+     */
+    private function getSoapResponse($soapClientResponse)
+    {
+        if (isset($soapClientResponse->return)) {
+            $return = $soapClientResponse->return;
+        } else {
+            $return = $soapClientResponse;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getBody()
+    {
+        return $this->getLastResponse();
+    }
+
+    /**
+     * @return bool
+     * @since 6.1.0;
+     */
+    public function getLastResponse()
+    {
+        return (string)$this->soapClientContent['lastResponse'];
+    }
+
+    /**
+     * @param $timeout
+     * @param false $useMillisec
+     * @return $this
+     * @since 6.1.3
+     */
+    public function setTimeout($timeout, $useMillisec = false)
+    {
+        $this->CONFIG->setTimeout($timeout, $useMillisec);
+        return $this;
+    }
+
+    /**
+     * @return array
+     * @since 6.1.3
+     */
+    public function getTimeout()
+    {
+        return $this->CONFIG->getTimeout();
+    }
+
+    /**
+     * @param $proxyAddress
+     * @param array $proxyOptions
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setProxy($proxyAddress, $proxyOptions = [])
+    {
+        $this->CONFIG->setCurrentWrapper(__CLASS__);
+
+        // Add user specific proxy options here as they are not pushed into any stream_context.
+        // This is used for proxy authentications.
+        $this->soapProxyOptions = $proxyOptions;
+
+        $proxyData = explode(':', $proxyAddress);
+        if (isset($proxyData[1])) {
+            // SoapClient does not accept stream_context setups, so we'll split it up here and pushing
+            // the proxy in from another direction.
+            $this->soapProxyHost = $proxyData[0];
+            $this->soapProxyPort = $proxyData[1];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Dynamic SOAP-requests passing through.
+     *
+     * @param $name
+     * @param $arguments
+     * @return SoapClientWrapper
+     * @throws ExceptionHandler
+     * @throws Exception
+     * @since 6.1.0
+     */
+    public function __call($name, $arguments)
+    {
+        if (null !== ($internalResponse = $this->getInternalMagics($name, $arguments))) {
+            return $internalResponse;
+        }
+
+        // Making sure we initialize the soapclient if not already done and only when asked to reuse old sessions.
+        // Set higher priority for internal requests and configuration. If there is no reuse setting active
+        // it has to be reinitialized as there may be several sessions after each other with different credentials
+        // etc.
+        if (is_null($this->soapClient) || !$this->getReuseSoapClient()) {
+            $this->getSoapInit();
+        }
+
+        $this->soapClientResponse = $this->execSoap($name, $arguments);
+        $this->setMergedSoapResponse();
+
+        // Return as the last version, if return exists as a response point, we use this part primarily.
+        return $this->getSoapResponse($this->soapClientResponse);
+    }
+
+    /**
+     * @param $name
+     * @param $arguments
+     * @return $this|mixed|null
+     * @since 6.1.0
+     */
+    private function getInternalMagics($name, $arguments)
+    {
+        $return = null;
+
+        $method = substr($name, 0, 3);
+        $methodContent = (new Strings())->getCamelCase(substr($name, 3));
+
+        switch (strtolower($method)) {
+            case 'get':
+                $getResponse = $this->getMagicGettableCall($methodContent, $name, $arguments);
+                if (!is_null($getResponse)) {
+                    $return = $getResponse;
+                }
+                break;
+            case 'set':
+                $getResponse = $this->getMagicSettableCall($name, $arguments);
+                if (!is_null($getResponse)) {
+                    $return = $getResponse;
+                }
+                break;
+            default:
+                break;
+        }
+
+        return $return;
     }
 
     /**
@@ -577,6 +657,141 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
+     * @return bool
+     * @since 6.1.0
+     */
+    public function getReuseSoapClient()
+    {
+        return $this->reuseSoapClient;
+    }
+
+    /**
+     * @param bool $reuseEnabled
+     * @return SoapClientWrapper
+     * @since 6.1.0
+     */
+    public function setReuseSoapClient($reuseEnabled = false)
+    {
+        $this->reuseSoapClient = $reuseEnabled;
+
+        return $this;
+    }
+
+    /**
+     * SOAP initializer.
+     * Formerly known as a simpleSoap getSoap() variant.
+     *
+     * @return $this
+     * @throws ExceptionHandler
+     * @throws Exception
+     * @since 6.1.0
+     */
+    private function getSoapInit()
+    {
+        try {
+            $this->getSoapClient();
+        } catch (Exception $soapException) {
+            if ((int)$soapException->getCode()) {
+                throw $soapException;
+            }
+
+            // Trying to prevent dual requests during a soap-transfer. In v6.0, there was dual initializations of
+            // soapclient when potential authfail errors occurred.
+            if ((int)$this->soapWarningException['code']) {
+                $code = $this->getHttpHead($this->soapWarningException['string']);
+                $message = $this->getHttpHead($this->soapWarningException['string'], 'message');
+
+                $this->CONFIG->getHttpException(
+                    (int)$code > 0 && !empty($message) ? $message : $this->soapWarningException['string'],
+                    (int)$code > 0 ? $code : $this->soapWarningException['code'],
+                    null,
+                    $this,
+                    true
+                );
+            }
+        }
+        // Restore the errorhandler immediately after soaprequest if no exceptions are detected during first request.
+        restore_error_handler();
+
+        return $this;
+    }
+
+    /**
+     * @throws ExceptionHandler
+     * @throws SoapFault
+     * @since 6.1.0
+     */
+    private function getSoapClient()
+    {
+        $this->CONFIG->getOptions();
+        $this->getSoapInitErrorHandler();
+        $streamOpt = $this->getPreparedProxyOptions($this->getConfig()->getStreamOptions());
+        // version_compare(PHP_VERSION, '7.1.0', '>=')
+        if (PHP_VERSION_ID >= 70100) {
+            $this->soapClient = new SoapClient(
+                $this->getConfig()->getRequestUrl(),
+                $streamOpt
+            );
+        } else {
+            // Suppress fatals in older releases.
+            $this->soapClient = @(new SoapClient(
+                $this->getConfig()->getRequestUrl(),
+                $streamOpt
+            ));
+        }
+    }
+
+    /**
+     * Initialize SoapExceptions for special occasions.
+     *
+     * @return $this
+     * @since 6.1.0
+     * @noinspection SuspiciousAssignmentsInspection
+     */
+    private function getSoapInitErrorHandler()
+    {
+        // No inspections on this, it is handled properly handled despite the immediate overrider.
+        // The overrider is present as it has to be nulled out after each use.
+        if (!is_null($this->currentErrorHandler)) {
+            restore_error_handler();
+            $this->currentErrorHandler = null;
+            $this->soapWarningException['code'] = null;
+            $this->soapWarningException['string'] = null;
+        }
+        $this->currentErrorHandler = set_error_handler(function ($errNo, $errStr) {
+            if (empty($this->soapWarningException['string'])) {
+                $this->soapWarningException['code'] = $errNo;
+                $this->soapWarningException['string'] = $errStr;
+            }
+            restore_error_handler();
+            return false;
+        }, E_WARNING);
+
+        return $this;
+    }
+
+    /**
+     * @param $streamOptions
+     * @return mixed
+     * @since 6.1.0
+     */
+    private function getPreparedProxyOptions($streamOptions)
+    {
+        if (!empty($this->soapProxyHost)) {
+            $streamOptions['proxy_host'] = $this->soapProxyHost;
+            $streamOptions['proxy_port'] = $this->soapProxyPort;
+        }
+
+        if (is_array($this->soapProxyOptions)) {
+            /** @noinspection AdditionOperationOnArraysInspection */
+            // + is intended.
+            $streamOptions += $this->soapProxyOptions;
+        }
+
+        return $streamOptions;
+    }
+
+    /**
      * @param $name
      * @param $arguments
      * @return mixed
@@ -633,251 +848,57 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
-     * Dynamically fetch responses from a soapClientResponse.
-     * @param $soapClientResponse
-     * @return mixed
+     * @return SoapClientWrapper
      * @since 6.1.0
      */
-    private function getSoapResponse($soapClientResponse)
+    private function setMergedSoapResponse()
     {
-        if (isset($soapClientResponse->return)) {
-            $return = $soapClientResponse->return;
-        } else {
-            $return = $soapClientResponse;
+        foreach ($this->soapClientContent as $soapMethod => $value) {
+            $methodName = sprintf(
+                '__get%s',
+                ucfirst($soapMethod)
+            );
+            $this->soapClientContent[$soapMethod] = $this->getFromSoap($methodName);
         }
 
-        return $return;
+        return $this;
     }
 
     /**
-     * @return int
+     * @param $methodName
+     * @return mixed|null
      * @since 6.1.0
      */
-    public function getCode()
-    {
-        return (int)$this->getHttpHead($this->getHeader('http'));
-    }
-
-    /**
-     * @param $name
-     * @param $arguments
-     * @return $this|mixed|null
-     * @since 6.1.0
-     */
-    private function getInternalMagics($name, $arguments)
+    private function getFromSoap($methodName)
     {
         $return = null;
 
-        $method = substr($name, 0, 3);
-        $methodContent = (new Strings())->getCamelCase(substr($name, 3));
-
-        switch (strtolower($method)) {
-            case 'get':
-                $getResponse = $this->getMagicGettableCall($methodContent, $name, $arguments);
-                if (!is_null($getResponse)) {
-                    $return = $getResponse;
-                }
-                break;
-            case 'set':
-                $getResponse = $this->getMagicSettableCall($name, $arguments);
-                if (!is_null($getResponse)) {
-                    $return = $getResponse;
-                }
-                break;
-            default:
-                break;
+        if (!empty($this->soapClient) && method_exists($this->soapClient, $methodName)) {
+            $return = call_user_func_array([$this->soapClient, $methodName], []);
         }
 
         return $return;
     }
 
     /**
-     * @return mixed
+     * @param $userAgentString
+     * @return WrapperConfig
      * @since 6.1.0
+     * @noinspection PhpUnusedPrivateMethodInspection
      */
-    public function getParsed()
+    private function setUserAgent($userAgentString)
     {
-        return $this->getSoapResponse($this->soapClientResponse);
+        return $this->CONFIG->setUserAgent($userAgentString);
     }
 
     /**
      * @return mixed
-     * @since 6.1.0
-     */
-    public function getBody()
-    {
-        return $this->getLastResponse();
-    }
-
-    /**
-     * @param bool $asArray
-     * @param bool $lCase
-     * @return mixed
-     * @since 6.1.0
-     */
-    public function getHeaders($asArray = false, $lCase = false)
-    {
-        $return = $this->getLastResponseHeaders();
-
-        if ($asArray) {
-            $return = $this->getHeaderArray($this->getLastResponseHeaders(), $lCase);
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param $header
-     * @param bool $lCase
-     * @return array
-     * @since 6.1.0
-     */
-    private function getHeaderArray($header, $lCase = false)
-    {
-        $this->responseHeaderArray = [];
-
-        if (is_string($header)) {
-            $headerSplit = explode("\n", $header);
-            if (is_array($headerSplit)) {
-                foreach ($headerSplit as $headerRow) {
-                    $this->getHeaderRow($headerRow, $lCase);
-                }
-            }
-        }
-
-        return $this->responseHeaderArray;
-    }
-
-    /**
-     * @param $header
-     * @param bool $lCase
-     * @return int
-     * @since 6.1.0
-     */
-    private function getHeaderRow($header, $lCase = false)
-    {
-        $headSplit = explode(':', $header, 2);
-        $spacedSplit = explode(' ', $header, 2);
-
-        if (count($headSplit) < 2) {
-            if (count($spacedSplit) > 1) {
-                $splitName = !$lCase ? $spacedSplit[0] : strtolower($spacedSplit[0]);
-
-                if ((bool)preg_match('/^http\/(.*?)$/i', $splitName)) {
-                    $httpSplitName = explode("/", $splitName, 2);
-                    $realSplitName = !$lCase ? $httpSplitName[0] : strtolower($httpSplitName[0]);
-
-                    if (!isset($this->responseHeaderArray[$realSplitName])) {
-                        $this->responseHeaderArray[$realSplitName] = trim($spacedSplit[1]);
-                    } else {
-                        $this->responseHeaderArray[$realSplitName][] = trim($spacedSplit[1]);
-                    }
-                }
-
-                $this->responseHeaderArray[$splitName][] = trim($spacedSplit[1]);
-            }
-            return strlen($header);
-        }
-
-        $splitName = !$lCase ? $headSplit[0] : strtolower($headSplit[0]);
-        $this->responseHeaderArray[$splitName][] = trim($headSplit[1]);
-        return strlen($header);
-    }
-
-    /**
-     * @param $proxyAddress
-     * @param array $proxyOptions
-     * @return $this
-     * @since 6.1.0
-     */
-    public function setProxy($proxyAddress, $proxyOptions = [])
-    {
-        $this->CONFIG->setCurrentWrapper(__CLASS__);
-
-        // Add user specific proxy options here as they are not pushed into any stream_context.
-        // This is used for proxy authentications.
-        $this->soapProxyOptions = $proxyOptions;
-
-        $proxyData = explode(':', $proxyAddress);
-        if (isset($proxyData[1])) {
-            // SoapClient does not accept stream_context setups, so we'll split it up here and pushing
-            // the proxy in from another direction.
-            $this->soapProxyHost = $proxyData[0];
-            $this->soapProxyPort = $proxyData[1];
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param null $key
-     * @return mixed
-     * @since 6.1.0
-     */
-    private function getHeader($key = null)
-    {
-        if (is_null($key)) {
-            $return = $this->getHeaders();
-        } else {
-            $return = $this->getHeaders(true, true);
-        }
-
-        if (isset($return[strtolower($key)])) {
-            $return = $return[strtolower($key)];
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param bool $reuseEnabled
-     * @return SoapClientWrapper
-     * @since 6.1.0
-     */
-    public function setReuseSoapClient($reuseEnabled = false)
-    {
-        $this->reuseSoapClient = $reuseEnabled;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     * @since 6.1.0
-     */
-    public function getReuseSoapClient()
-    {
-        return $this->reuseSoapClient;
-    }
-
-    /**
-     * Dynamic SOAP-requests passing through.
-     *
-     * @param $name
-     * @param $arguments
-     * @return SoapClientWrapper
      * @throws ExceptionHandler
-     * @throws Exception
      * @since 6.1.0
+     * @noinspection PhpUnusedPrivateMethodInspection
      */
-    public function __call($name, $arguments)
+    private function getUserAgent()
     {
-        if (null !== ($internalResponse = $this->getInternalMagics($name, $arguments))) {
-            return $internalResponse;
-        }
-
-        // Making sure we initialize the soapclient if not already done and only when asked to reuse old sessions.
-        // Set higher priority for internal requests and configuration. If there is no reuse setting active
-        // it has to be reinitialized as there may be several sessions after each other with different credentials
-        // etc.
-        if (is_null($this->soapClient) || !$this->getReuseSoapClient()) {
-            $this->getSoapInit();
-        }
-
-        $this->soapClientResponse = $this->execSoap($name, $arguments);
-        $this->setMergedSoapResponse();
-
-        // Return as the last version, if return exists as a response point, we use this part primarily.
-        return $this->getSoapResponse($this->soapClientResponse);
+        return $this->CONFIG->getUserAgent();
     }
 }

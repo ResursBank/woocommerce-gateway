@@ -564,6 +564,24 @@ class CurlWrapper implements WrapperInterface
     }
 
     /**
+     * From PHP 8.0 curl are returned as objects instead of resources (like CurlHandle, CurlMultiHandle, etc).
+     * When investigation started, I did not know how much things was affected so this method was written to
+     * easier change future changes.
+     * @param $resource
+     * @return bool
+     * @since 6.1.1
+     */
+    private function isCurlResource($resource)
+    {
+        $return = !empty($resource);
+        if ($this->strictResource) {
+            $return = is_resource($resource) || is_object($resource);
+        }
+
+        return $return;
+    }
+
+    /**
      * Reset curl on each new curlrequest to make sure old responses is no longer present.
      * @since 6.1.0
      */
@@ -578,6 +596,20 @@ class CurlWrapper implements WrapperInterface
         $this->curlMultiHandle = null;
         $this->curlMultiHandleObjects = [];
         return $this;
+    }
+
+    /**
+     * Same as setCurlHeader but streamlined compatibility.
+     *
+     * @param string $key
+     * @param string $value
+     * @param false $static
+     * @return $this
+     * @since 6.1.2
+     */
+    public function setHeader($key = '', $value = '', $static = false)
+    {
+        return $this->setCurlHeader($key, $value, $static);
     }
 
     /**
@@ -614,20 +646,6 @@ class CurlWrapper implements WrapperInterface
         }
 
         return $this;
-    }
-
-    /**
-     * Same as setCurlHeader but streamlined compatibility.
-     *
-     * @param string $key
-     * @param string $value
-     * @param false $static
-     * @return $this
-     * @since 6.1.2
-     */
-    public function setHeader($key = '', $value = '', $static = false)
-    {
-        return $this->setCurlHeader($key, $value, $static);
     }
 
     /**
@@ -884,24 +902,6 @@ class CurlWrapper implements WrapperInterface
     }
 
     /**
-     * From PHP 8.0 curl are returned as objects instead of resources (like CurlHandle, CurlMultiHandle, etc).
-     * When investigation started, I did not know how much things was affected so this method was written to
-     * easier change future changes.
-     * @param $resource
-     * @return bool
-     * @since 6.1.1
-     */
-    private function isCurlResource($resource)
-    {
-        $return = !empty($resource);
-        if ($this->strictResource) {
-            $return = is_resource($resource) || is_object($resource);
-        }
-
-        return $return;
-    }
-
-    /**
      * Returns simple curl handle only.
      *
      * @return resource
@@ -1078,6 +1078,53 @@ class CurlWrapper implements WrapperInterface
     }
 
     /**
+     * @param $timeout
+     * @param false $useMillisec
+     * @return $this
+     * @since 6.1.3
+     */
+    public function setTimeout($timeout, $useMillisec = false)
+    {
+        $this->CONFIG->setTimeout($timeout, $useMillisec);
+        return $this;
+    }
+
+    /**
+     * @return array
+     * @since 6.1.3
+     */
+    public function getTimeout()
+    {
+        return $this->CONFIG->getTimeout();
+    }
+
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     * @throws ExceptionHandler
+     * @since 6.1.2
+     */
+    public function __call($name, $arguments)
+    {
+        $return = null;
+
+        $compatibilityMethods = $this->CONFIG->getCompatibilityMethods();
+        if (isset($compatibilityMethods[$name])) {
+            $name = $compatibilityMethods[$name];
+            $return = call_user_func_array([$this, $name], $arguments);
+        }
+
+        if (!is_null($return)) {
+            return $return;
+        }
+        throw new ExceptionHandler(
+            sprintf('Function "%s" not available.', $name),
+            Constants::LIB_METHOD_OR_LIBRARY_UNAVAILABLE
+        );
+    }
+
+    /**
      * @param $curlHandle
      * @param $header
      * @return int
@@ -1113,33 +1160,6 @@ class CurlWrapper implements WrapperInterface
 
         return strlen($header);
     }
-
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     * @throws ExceptionHandler
-     * @since 6.1.2
-     */
-    public function __call($name, $arguments)
-    {
-        $return = null;
-
-        $compatibilityMethods = $this->CONFIG->getCompatibilityMethods();
-        if (isset($compatibilityMethods[$name])) {
-            $name = $compatibilityMethods[$name];
-            $return = call_user_func_array([$this, $name], $arguments);
-        }
-
-        if (!is_null($return)) {
-            return $return;
-        }
-        throw new ExceptionHandler(
-            sprintf('Function "%s" not available.', $name),
-            Constants::LIB_METHOD_OR_LIBRARY_UNAVAILABLE
-        );
-    }
-
 
     /**
      * @param $url

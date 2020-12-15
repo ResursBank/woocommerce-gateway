@@ -97,6 +97,36 @@ class SimpleStreamWrapper implements WrapperInterface
     }
 
     /**
+     * @param $timeout
+     * @param false $useMillisec
+     * @return $this
+     * @since 6.1.3
+     */
+    public function setTimeout($timeout, $useMillisec = false)
+    {
+        $this->CONFIG->setTimeout($timeout, $useMillisec);
+        return $this;
+    }
+
+    /**
+     * @return array
+     * @since 6.1.3
+     */
+    public function getTimeout()
+    {
+        return $this->CONFIG->getTimeout();
+    }
+
+    /**
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function getConfig()
+    {
+        return $this->CONFIG;
+    }
+
+    /**
      * @param WrapperConfig $config
      * @return SimpleStreamWrapper
      * @since 6.1.0
@@ -118,15 +148,6 @@ class SimpleStreamWrapper implements WrapperInterface
         $config->setCurrentWrapper($this->CONFIG->getCurrentWrapper());
 
         return $config;
-    }
-
-    /**
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    public function getConfig()
-    {
-        return $this->CONFIG;
     }
 
     /**
@@ -154,14 +175,6 @@ class SimpleStreamWrapper implements WrapperInterface
 
     /**
      * @inheritDoc
-     */
-    public function getBody()
-    {
-        return $this->streamContentResponseRaw;
-    }
-
-    /**
-     * @inheritDoc
      * @throws ExceptionHandler
      */
     public function getParsed()
@@ -175,29 +188,9 @@ class SimpleStreamWrapper implements WrapperInterface
     /**
      * @inheritDoc
      */
-    public function getCode()
+    public function getBody()
     {
-        return $this->getHttpHead($this->getHeader('http'), 'code');
-    }
-
-    /**
-     * @return int|string
-     * @since 6.1.0
-     */
-    public function getHttpMessage()
-    {
-        return $this->getHttpHead($this->getHeader('http'), 'message');
-    }
-
-    /**
-     * @param $string
-     * @param string $returnData
-     * @return int|string
-     * @since 6.1.0
-     */
-    private function getHttpHead($string, $returnData = 'code')
-    {
-        return GenericParser::getHttpHead($string, $returnData);
+        return $this->streamContentResponseRaw;
     }
 
     /**
@@ -229,6 +222,18 @@ class SimpleStreamWrapper implements WrapperInterface
     }
 
     /**
+     * @param string $key
+     * @param string $value
+     * @param false $static
+     * @return WrapperConfig
+     * @since 6.1.2
+     */
+    public function setHeader($key = '', $value = '', $static = false)
+    {
+        return $this->setStreamHeader($key, $value, $static);
+    }
+
+    /**
      * @param mixed $key
      * @param string $value
      * @param false $static
@@ -249,18 +254,6 @@ class SimpleStreamWrapper implements WrapperInterface
     }
 
     /**
-     * @param string $key
-     * @param string $value
-     * @param false $static
-     * @return WrapperConfig
-     * @since 6.1.2
-     */
-    public function setHeader($key = '', $value = '', $static = false)
-    {
-        return $this->setStreamHeader($key, $value, $static);
-    }
-
-    /**
      * @param $proxyAddress
      * @param null $proxyType
      * @return $this
@@ -270,6 +263,38 @@ class SimpleStreamWrapper implements WrapperInterface
     {
         $this->CONFIG->setCurrentWrapper(__CLASS__);
         $this->CONFIG->setProxy($proxyAddress, $proxyType);
+
+        return $this;
+    }
+
+    /**
+     * @param $url
+     * @param array $data
+     * @param int $method
+     * @param int $dataType
+     * @return SimpleStreamWrapper
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public function request($url, $data = [], $method = requestMethod::METHOD_GET, $dataType = dataType::NORMAL)
+    {
+        $this->CONFIG->resetStreamData();
+        if (!empty($url)) {
+            $this->CONFIG->setRequestUrl($url);
+        }
+        if (is_array($data) && count($data)) {
+            $this->CONFIG->setRequestData($data);
+        }
+
+        if ($this->CONFIG->getRequestMethod() !== $method) {
+            $this->CONFIG->setRequestMethod($method);
+        }
+
+        if ($this->CONFIG->getRequestDataType() !== $dataType) {
+            $this->CONFIG->setRequestDataType($dataType);
+        }
+
+        $this->getStreamRequest();
 
         return $this;
     }
@@ -289,6 +314,37 @@ class SimpleStreamWrapper implements WrapperInterface
 
         // Finalize.
         $this->getStreamDataContents();
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @since 6.1.0
+     */
+    private function setStreamRequestMethod()
+    {
+        $requestMethod = $this->CONFIG->getRequestMethod();
+        switch ($requestMethod) {
+            case requestMethod::METHOD_POST:
+                $this->CONFIG->setDualStreamHttp('method', 'POST');
+                break;
+            case requestMethod::METHOD_PUT:
+                $this->CONFIG->setDualStreamHttp('method', 'PUT');
+                break;
+            case requestMethod::METHOD_DELETE:
+                $this->CONFIG->setDualStreamHttp('method', 'DELETE');
+                break;
+            case requestMethod::METHOD_HEAD:
+                $this->CONFIG->setDualStreamHttp('method', 'HEAD');
+                break;
+            case requestMethod::METHOD_REQUEST:
+                $this->CONFIG->setDualStreamHttp('method', 'REQUEST');
+                break;
+            default:
+                $this->CONFIG->setDualStreamHttp('method', 'GET');
+                break;
+        }
 
         return $this;
     }
@@ -371,66 +427,31 @@ class SimpleStreamWrapper implements WrapperInterface
     }
 
     /**
-     * @return $this
+     * @return int|string
      * @since 6.1.0
      */
-    private function setStreamRequestMethod()
+    public function getHttpMessage()
     {
-        $requestMethod = $this->CONFIG->getRequestMethod();
-        switch ($requestMethod) {
-            case requestMethod::METHOD_POST:
-                $this->CONFIG->setDualStreamHttp('method', 'POST');
-                break;
-            case requestMethod::METHOD_PUT:
-                $this->CONFIG->setDualStreamHttp('method', 'PUT');
-                break;
-            case requestMethod::METHOD_DELETE:
-                $this->CONFIG->setDualStreamHttp('method', 'DELETE');
-                break;
-            case requestMethod::METHOD_HEAD:
-                $this->CONFIG->setDualStreamHttp('method', 'HEAD');
-                break;
-            case requestMethod::METHOD_REQUEST:
-                $this->CONFIG->setDualStreamHttp('method', 'REQUEST');
-                break;
-            default:
-                $this->CONFIG->setDualStreamHttp('method', 'GET');
-                break;
-        }
-
-        return $this;
+        return $this->getHttpHead($this->getHeader('http'), 'message');
     }
 
     /**
-     * @param $url
-     * @param array $data
-     * @param int $method
-     * @param int $dataType
-     * @return SimpleStreamWrapper
-     * @throws ExceptionHandler
+     * @param $string
+     * @param string $returnData
+     * @return int|string
      * @since 6.1.0
      */
-    public function request($url, $data = [], $method = requestMethod::METHOD_GET, $dataType = dataType::NORMAL)
+    private function getHttpHead($string, $returnData = 'code')
     {
-        $this->CONFIG->resetStreamData();
-        if (!empty($url)) {
-            $this->CONFIG->setRequestUrl($url);
-        }
-        if (is_array($data) && count($data)) {
-            $this->CONFIG->setRequestData($data);
-        }
+        return GenericParser::getHttpHead($string, $returnData);
+    }
 
-        if ($this->CONFIG->getRequestMethod() !== $method) {
-            $this->CONFIG->setRequestMethod($method);
-        }
-
-        if ($this->CONFIG->getRequestDataType() !== $dataType) {
-            $this->CONFIG->setRequestDataType($dataType);
-        }
-
-        $this->getStreamRequest();
-
-        return $this;
+    /**
+     * @inheritDoc
+     */
+    public function getCode()
+    {
+        return $this->getHttpHead($this->getHeader('http'), 'code');
     }
 
     /**

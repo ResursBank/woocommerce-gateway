@@ -29,34 +29,35 @@ use TorneLIB\Utils\Ini;
  *
  * @package Module\Config
  * @since 6.1.0
- * @version 6.1.2
+ * @version 6.1.3
  */
 class WrapperConfig
 {
+    /**
+     * @var string
+     * @since 6.1.0
+     */
+    private static $userAgentSignature;
     /**
      * @var string Requested URL.
      * @since 6.1.0
      */
     private $requestUrl = '';
-
     /**
      * @var array Postdata.
      * @since 6.1.0
      */
     private $requestData = [];
-
     /**
      * @var
      * @since 6.1.0
      */
     private $requestDataContainer;
-
     /**
      * @var int Default method. Postdata will in the case of GET generate postdata in the link.
      * @since 6.1.0
      */
     private $requestMethod = requestMethod::METHOD_GET;
-
     /**
      * Datatype to post in (default = uses ?key=value for GET and &key=value in body for POST).
      * @var int
@@ -68,25 +69,16 @@ class WrapperConfig
      * @since 6.1.0
      */
     private $options = [];
-
     /**
      * @var string $currentWrapper
      * @since 6.1.0
      */
     private $currentWrapper;
-
     /**
      * @var bool
      * @since 6.1.0
      */
     private $isNetWrapper = false;
-
-    /**
-     * @var string
-     * @since 6.1.0
-     */
-    private static $userAgentSignature;
-
     /**
      * Allow WrapperConfig to push out netcurl identification instead of a spoofed browser.
      * @var bool
@@ -219,6 +211,288 @@ class WrapperConfig
     }
 
     /**
+     * Preparing curl defaults in a way we like.
+     * @return $this
+     * @since 6.1.0
+     */
+    private function setCurlDefaults()
+    {
+        $this->setCurlConstants([
+            'CURLOPT_RETURNTRANSFER' => true,
+            'CURLOPT_SSL_VERIFYPEER' => 1,
+            'CURLOPT_SSL_VERIFYHOST' => 2,
+            'CURLOPT_ENCODING' => 1,
+            'CURLOPT_USERAGENT' => (new Browsers())->getBrowser(),
+            'CURLOPT_SSLVERSION' => WrapperCurlOpt::NETCURL_CURL_SSLVERSION_DEFAULT,
+            'CURLOPT_FOLLOWLOCATION' => false,
+            'CURLOPT_HTTPHEADER' => ['Accept-Language: en'],
+        ]);
+
+        $wrapperDefaultTimeout = (int)Flag::getFlag('WRAPPER_DEFAULT_TIMEOUT') ? Flag::getFlag('WRAPPER_DEFAULT_TIMEOUT') : 10;
+        $wrapperDefaultIsMs = Flag::isFlag('WRAPPER_DEFAULT_TIMEOUT_MS');
+        $this->setTimeout($wrapperDefaultTimeout, $wrapperDefaultIsMs);
+
+        return $this;
+    }
+
+    /**
+     * While setting up curloptions, make sure no warnings leak from the setup if constants are missing in the system.
+     * If the constants are missing, this probably means that curl is not properly installed. We've seen this in prior
+     * versions of netcurl where missing constants either screams about missing constants or makes sites bail out.
+     *
+     * @param mixed $curlOptConstant
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    private function setCurlConstants($curlOptConstant)
+    {
+        if (is_array($curlOptConstant)) {
+            foreach ($curlOptConstant as $curlOptKey => $curlOptValue) {
+                $constantValue = @constant($curlOptKey);
+                if (empty($constantValue)) {
+                    // Fall back to internally stored constants if curl is not there.
+                    $constantValue = @constant('TorneLIB\Module\Config\WrapperCurlOpt::NETCURL_' . $curlOptKey);
+                }
+                $this->options[$constantValue] = $curlOptValue;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param int $timeout Defaults to the default connect timeout in curl (300).
+     * @param bool $useMillisec Set timeouts in milliseconds instead of seconds.
+     * @return $this
+     * @link https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
+     * @since 6.1.0
+     */
+    private function setTimeout($timeout = 300, $useMillisec = false)
+    {
+        /**
+         * CURLOPT_TIMEOUT (Entire request) Everything has to be established and get finished on this time limit.
+         * CURLOPT_CONNECTTIMEOUT (Connection phase) We set this to half the time of the entire timeout request.
+         * CURLOPT_ACCEPTTIMEOUT (Waiting for connect back to be accepted). Defined in MS only.
+         *
+         * @link https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
+         */
+
+        // Using internal WrapperCurlOpts if curl is not a present driver. Otherwise, this
+        // setup may be a showstopper that no other driver can use.
+        if (!$useMillisec) {
+            $this->replaceOption(
+                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT,
+                ceil($timeout / 2),
+                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS
+            );
+            $this->replaceOption(
+                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT,
+                ceil($timeout),
+                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS
+            );
+        } else {
+            $this->replaceOption(
+                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS,
+                ceil($timeout / 2),
+                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT
+            );
+            $this->replaceOption(
+                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS,
+                ceil($timeout),
+                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT
+            );
+        }
+
+        $this->setStreamContext('timeout', (int)ceil($timeout), 'http');
+        $this->setStreamContext('connection_timeout', (int)ceil($timeout / 2), 'http');
+
+        return $this;
+    }
+
+    /**
+     * Replace an option with another.
+     *
+     * @param $key
+     * @param $value
+     * @param $replace
+     * @return $this
+     * @since 6.1.0
+     */
+    public function replaceOption($key, $value, $replace)
+    {
+        $this->deleteOption($replace);
+        $this->setOption($key, $value);
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @return $this
+     * @since 6.1.0
+     */
+    public function deleteOption($key)
+    {
+        $preKey = $this->getOptionCurl($key);
+        if (!empty($preKey)) {
+            $key = $preKey;
+        }
+
+        if (isset($this->options[$key])) {
+            unset($this->options[$key]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Find out if there is a predefined constant for CURL-options and if the curl library actually exists.
+     * If the constants don't exist, fall back to NETCURL constants so that we can still fetch the setup.
+     *
+     * @param $key
+     * @return mixed|null
+     * @since 6.1.0
+     */
+    private function getOptionCurl($key)
+    {
+        $return = null;
+
+        if (false !== strpos($key, 'CURL')) {
+            $constantValue = @constant('TorneLIB\Module\Config\WrapperCurlOpt::NETCURL_' . $key);
+            if (!empty($constantValue)) {
+                $return = $constantValue;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @param bool $isSoap
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setOption($key, $value, $isSoap = false)
+    {
+        $preKey = $this->getOptionCurl($key);
+        if (!empty($preKey)) {
+            $key = $preKey;
+        }
+
+        if (!$isSoap) {
+            $this->options[$key] = $value;
+        } else {
+            $this->streamOptions[$key] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @param null $subKey
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function setStreamContext($key, $value, $subKey = null)
+    {
+        $currentStreamContext = $this->getStreamContext();
+
+        if (is_resource($currentStreamContext)) {
+            $currentStreamContext = stream_context_get_options($currentStreamContext);
+        } else {
+            $currentStreamContext = [];
+        }
+
+        if (is_array($currentStreamContext)) {
+            if (is_null($subKey)) {
+                if (
+                    (isset($currentStreamContext[$key]) && $this->canOverwrite($key)) ||
+                    !isset($currentStreamContext[$key])
+                ) {
+                    $currentStreamContext[$key] = $value;
+                }
+            } else {
+                if (!isset($currentStreamContext[$subKey])) {
+                    $currentStreamContext[$subKey] = [];
+                }
+                if (
+                    (
+                        isset($currentStreamContext[$subKey][$key]) && $this->canOverwrite($key)
+                    ) ||
+                    !isset($currentStreamContext[$subKey][$key])
+                ) {
+                    if (!isset($currentStreamContext[$subKey][$key])) {
+                        $currentStreamContext[$subKey][$key] = $value;
+                    } elseif ($key === 'header') {
+                        $currentStreamContext[$subKey][$key] .= "\r\n" . $value;
+                    } else {
+                        // Overwrite if not header context.
+                        $currentStreamContext[$subKey][$key] = $value;
+                    }
+                }
+            }
+        }
+
+        // This can throw an exception if something is not properly set.
+        // stream_context_create(): options should have the form ["wrappername"]["optionname"] = $value
+        $this->streamOptions['stream_context'] = stream_context_create($currentStreamContext);
+
+        return $this;
+    }
+
+    /**
+     * @param bool $decoded
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getStreamContext($decoded = false)
+    {
+        return !$decoded ? $this->streamOptions['stream_context'] : stream_context_get_options($this->streamOptions['stream_context']);
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     * @since 6.1.0
+     */
+    private function canOverwrite($key)
+    {
+        $dynamicOverwrites = Flag::getFlag('canoverwrite');
+
+        $return = in_array(
+            $key,
+            array_map('strtolower', $this->irreplacable),
+            false
+        ) ? false : true;
+
+        // Dynamic override.
+        if (
+            is_array($dynamicOverwrites) &&
+            in_array(
+                $key,
+                $dynamicOverwrites,
+                false
+            )
+        ) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Remove static useragent.
+     * @since 6.1.0
+     */
+    public static function deleteSignature()
+    {
+        self::$userAgentSignature = null;
+    }
+
+    /**
      * @since 6.1.2
      */
     public function resetStreamData()
@@ -248,46 +522,6 @@ class WrapperConfig
         }
 
         return $return;
-    }
-
-    /**
-     * Preparing curl defaults in a way we like.
-     * @return $this
-     * @since 6.1.0
-     */
-    private function setCurlDefaults()
-    {
-        $this->setCurlConstants([
-            'CURLOPT_RETURNTRANSFER' => true,
-            'CURLOPT_SSL_VERIFYPEER' => 1,
-            'CURLOPT_SSL_VERIFYHOST' => 2,
-            'CURLOPT_ENCODING' => 1,
-            'CURLOPT_USERAGENT' => (new Browsers())->getBrowser(),
-            'CURLOPT_SSLVERSION' => WrapperCurlOpt::NETCURL_CURL_SSLVERSION_DEFAULT,
-            'CURLOPT_FOLLOWLOCATION' => false,
-            'CURLOPT_HTTPHEADER' => ['Accept-Language: en'],
-        ]);
-
-        $this->setTimeout(10);
-
-        return $this;
-    }
-
-    /**
-     * Set up a list of which HTTP error codes that should be throwable (default: >= 400, <= 599).
-     *
-     * @param int $throwableMin Minimum value to throw on (Used with >=)
-     * @param int $throwableMax Maxmimum last value to throw on (Used with <)
-     * @return WrapperConfig
-     * @since 6.0.6
-     */
-    public function setThrowableHttpCodes($throwableMin = 400, $throwableMax = 599)
-    {
-        $throwableMin = (int)$throwableMin > 0 ? $throwableMin : 400;
-        $throwableMax = (int)$throwableMax > 0 ? $throwableMax : 599;
-        $this->throwableHttpCodes[] = [$throwableMin, $throwableMax];
-
-        return $this;
     }
 
     /**
@@ -342,6 +576,23 @@ class WrapperConfig
     }
 
     /**
+     * Set up a list of which HTTP error codes that should be throwable (default: >= 400, <= 599).
+     *
+     * @param int $throwableMin Minimum value to throw on (Used with >=)
+     * @param int $throwableMax Maxmimum last value to throw on (Used with <)
+     * @return WrapperConfig
+     * @since 6.0.6
+     */
+    public function setThrowableHttpCodes($throwableMin = 400, $throwableMax = 599)
+    {
+        $throwableMin = (int)$throwableMin > 0 ? $throwableMin : 400;
+        $throwableMax = (int)$throwableMax > 0 ? $throwableMax : 599;
+        $this->throwableHttpCodes[] = [$throwableMin, $throwableMax];
+
+        return $this;
+    }
+
+    /**
      * Get current list of curlopts, etc.
      *
      * @return array
@@ -350,31 +601,6 @@ class WrapperConfig
     public function getCurlDefaults()
     {
         return $this->options;
-    }
-
-    /**
-     * While setting up curloptions, make sure no warnings leak from the setup if constants are missing in the system.
-     * If the constants are missing, this probably means that curl is not properly installed. We've seen this in prior
-     * versions of netcurl where missing constants either screams about missing constants or makes sites bail out.
-     *
-     * @param mixed $curlOptConstant
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    private function setCurlConstants($curlOptConstant)
-    {
-        if (is_array($curlOptConstant)) {
-            foreach ($curlOptConstant as $curlOptKey => $curlOptValue) {
-                $constantValue = @constant($curlOptKey);
-                if (empty($constantValue)) {
-                    // Fall back to internally stored constants if curl is not there.
-                    $constantValue = @constant('TorneLIB\Module\Config\WrapperCurlOpt::NETCURL_' . $curlOptKey);
-                }
-                $this->options[$constantValue] = $curlOptValue;
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -447,14 +673,17 @@ class WrapperConfig
     }
 
     /**
-     * Entry point.
+     * User input variables.
      *
-     * @return mixed
-     * @since 6.1.1
+     * @param array $requestData
+     * @return WrapperConfig
+     * @since 6.1.0
      */
-    public function getRequestDataContainer()
+    public function setRequestData($requestData)
     {
-        return $this->requestDataContainer;
+        $this->requestData = $requestData;
+
+        return $this;
     }
 
     /**
@@ -481,46 +710,14 @@ class WrapperConfig
     }
 
     /**
-     * User input variables.
+     * Entry point.
      *
-     * @param array $requestData
-     * @return WrapperConfig
-     * @since 6.1.0
+     * @return mixed
+     * @since 6.1.1
      */
-    public function setRequestData($requestData)
+    public function getRequestDataContainer()
     {
-        $this->requestData = $requestData;
-
-        return $this;
-    }
-
-    /**
-     * Set up which method that should be used: POST, GET, DELETE, etc
-     *
-     * @param int $requestMethod
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    public function setRequestMethod($requestMethod)
-    {
-        if (is_numeric($requestMethod)) {
-            $this->requestMethod = $requestMethod;
-        } else {
-            $this->requestMethod = requestMethod::METHOD_GET;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get information about the current request method that is used: POST, GET, DELETE, etc
-     *
-     * @return int
-     * @since 6.1.0
-     */
-    public function getRequestMethod()
-    {
-        return $this->requestMethod;
+        return $this->requestDataContainer;
     }
 
     /**
@@ -536,16 +733,6 @@ class WrapperConfig
     }
 
     /**
-     * @param array $requestFlags
-     * @since 6.1.0
-     */
-    public function setRequestFlags($requestFlags)
-    {
-        /** @noinspection PhpUndefinedMethodInspection */
-        Flags::_setFlags($requestFlags);
-    }
-
-    /**
      * @return array
      * @throws ExceptionHandler
      * @since 6.1.0
@@ -555,6 +742,18 @@ class WrapperConfig
         $this->setHandledUserAgent();
 
         return $this->options;
+    }
+
+    /**
+     * @param array $options
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function setOptions($options)
+    {
+        $this->options = $options;
+
+        return $this;
     }
 
     /**
@@ -586,6 +785,166 @@ class WrapperConfig
     }
 
     /**
+     * @return mixed
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public function getUserAgent()
+    {
+        $globalSignature = self::getSignature();
+        if (!empty($globalSignature)) {
+            return $globalSignature;
+        }
+
+        $return = $this->getOption(WrapperCurlOpt::NETCURL_CURLOPT_USERAGENT);
+
+        if ($this->getSoapRequest() || $this->getStreamRequest()) {
+            $currentStreamContext = $this->getStreamContext();
+            if (!is_null($currentStreamContext)) {
+                $currentStreamContext = stream_context_get_options($currentStreamContext);
+            }
+
+            // If it is already set from another place.
+            if (isset($currentStreamContext['http']['user_agent'])) {
+                $return = $currentStreamContext['http']['user_agent'];
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return string
+     * @since 6.1.0
+     */
+    public static function getSignature()
+    {
+        if (defined('NO_SIGNATURE')) {
+            return null;
+        }
+
+        $return = self::$userAgentSignature;
+
+        if (is_array($return)) {
+            $return = implode('/', $return);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $key
+     * @param bool $isSoap
+     * @return mixed
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public function getOption($key, $isSoap = false)
+    {
+        $preKey = $this->getOptionCurl($key);
+        if (!empty($preKey)) {
+            $key = $preKey;
+        }
+
+        if (!$isSoap) {
+            if (isset($this->options[$key])) {
+                return $this->options[$key];
+            }
+        } elseif (isset($this->streamOptions[$key])) {
+            return $this->streamOptions[$key];
+        }
+
+        throw new ExceptionHandler(
+            sprintf('%s: Option "%s" not set.', __CLASS__, $key),
+            Constants::LIB_UNHANDLED
+        );
+    }
+
+    /**
+     * @return bool
+     * @since 6.1.0
+     */
+    public function getSoapRequest()
+    {
+        return $this->isSoapRequest;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getStreamRequest()
+    {
+        return $this->isStreamRequest;
+    }
+
+    /**
+     * Status of identifierAgent, if enable or not.
+     * @return bool
+     * @since 6.1.0
+     */
+    public function getIdentifiers()
+    {
+        return $this->identifierAgent;
+    }
+
+    /**
+     * @return bool
+     * @since 6.1.0
+     */
+    public function getIsCustomUserAgent()
+    {
+        return $this->isCustomUserAgent;
+    }
+
+    /**
+     * @param bool $short
+     * @return string
+     * @since 6.1.0
+     */
+    public function getCurrentWrapperClass($short = false)
+    {
+        return !$short ? $this->currentWrapper : $this->getShortWrapperClass($this->currentWrapper);
+    }
+
+    /**
+     * @param $namespaceClassName
+     * @return mixed
+     * @since 6.1.0
+     */
+    private function getShortWrapperClass($namespaceClassName)
+    {
+        $return = $namespaceClassName;
+
+        if (!empty($this->currentWrapper)) {
+            $wrapperClassExplode = explode('\\', $this->currentWrapper);
+            if (is_array($wrapperClassExplode) && count($wrapperClassExplode)) {
+                $return = $wrapperClassExplode[count($wrapperClassExplode) - 1];
+            }
+        }
+
+        return $return;
+    }
+
+    private function getNetWrapperString()
+    {
+        return $this->isNetWrapper ? 'NetWrapper' : 'Instant';
+    }
+
+    /**
+     * @return string
+     * @since 6.1.0
+     */
+    private function getPhpString()
+    {
+        if ($this->identifierAgentPhp) {
+            $phpString = sprintf('PHP-%s', PHP_VERSION);
+        } else {
+            $phpString = '';
+        }
+        return $phpString;
+    }
+
+    /**
      * @param $userAgentArray
      * @return string
      * @since 6.1.0
@@ -606,130 +965,20 @@ class WrapperConfig
     }
 
     /**
-     * @return string
+     * @param $userAgentString
+     * @return $this
      * @since 6.1.0
      */
-    private function getPhpString()
+    public function setUserAgent($userAgentString)
     {
-        if ($this->identifierAgentPhp) {
-            $phpString = sprintf('PHP-%s', PHP_VERSION);
-        } else {
-            $phpString = '';
-        }
-        return $phpString;
-    }
+        $this->isCustomUserAgent = true;
 
-    private function getNetWrapperString()
-    {
-        return $this->isNetWrapper ? 'NetWrapper' : 'Instant';
-    }
-
-    /**
-     * Update stream options (which transforms into stream_context).
-     *
-     * @param array $streamOptions
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    public function setStreamOptions($streamOptions)
-    {
-        $this->streamOptions = $streamOptions;
+        $this->setOption(
+            WrapperCurlOpt::NETCURL_CURLOPT_USERAGENT,
+            $userAgentString
+        );
 
         return $this;
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     * @param null $subKey
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    public function setStreamContext($key, $value, $subKey = null)
-    {
-        $currentStreamContext = $this->getStreamContext();
-
-        if (is_resource($currentStreamContext)) {
-            $currentStreamContext = stream_context_get_options($currentStreamContext);
-        } else {
-            $currentStreamContext = [];
-        }
-
-        if (is_array($currentStreamContext)) {
-            if (is_null($subKey)) {
-                if (
-                    (isset($currentStreamContext[$key]) && $this->canOverwrite($key)) ||
-                    !isset($currentStreamContext[$key])
-                ) {
-                    $currentStreamContext[$key] = $value;
-                }
-            } else {
-                if (!isset($currentStreamContext[$subKey])) {
-                    $currentStreamContext[$subKey] = [];
-                }
-                if (
-                    (
-                        isset($currentStreamContext[$subKey][$key]) && $this->canOverwrite($key)
-                    ) ||
-                    !isset($currentStreamContext[$subKey][$key])
-                ) {
-                    if (!isset($currentStreamContext[$subKey][$key])) {
-                        $currentStreamContext[$subKey][$key] = $value;
-                    } elseif ($key === 'header') {
-                        $currentStreamContext[$subKey][$key] .= "\r\n" . $value;
-                    } else {
-                        // Overwrite if not header context.
-                        $currentStreamContext[$subKey][$key] = $value;
-                    }
-                }
-            }
-        }
-
-        // This can throw an exception if something is not properly set.
-        // stream_context_create(): options should have the form ["wrappername"]["optionname"] = $value
-        $this->streamOptions['stream_context'] = stream_context_create($currentStreamContext);
-
-        return $this;
-    }
-
-    /**
-     * @param $key
-     * @return bool
-     * @since 6.1.0
-     */
-    private function canOverwrite($key)
-    {
-        $dynamicOverwrites = Flag::getFlag('canoverwrite');
-
-        $return = in_array(
-            $key,
-            array_map('strtolower', $this->irreplacable),
-            false
-        ) ? false : true;
-
-        // Dynamic override.
-        if (
-            is_array($dynamicOverwrites) &&
-            in_array(
-                $key,
-                $dynamicOverwrites,
-                false
-            )
-        ) {
-            $return = true;
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param bool $decoded
-     * @return mixed
-     * @since 6.1.0
-     */
-    public function getStreamContext($decoded = false)
-    {
-        return !$decoded ? $this->streamOptions['stream_context'] : stream_context_get_options($this->streamOptions['stream_context']);
     }
 
     /**
@@ -762,6 +1011,20 @@ class WrapperConfig
     }
 
     /**
+     * Update stream options (which transforms into stream_context).
+     *
+     * @param array $streamOptions
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function setStreamOptions($streamOptions)
+    {
+        $this->streamOptions = $streamOptions;
+
+        return $this;
+    }
+
+    /**
      * Prepare streamoption array.
      *
      * @return $this
@@ -790,58 +1053,14 @@ class WrapperConfig
     }
 
     /**
-     * @param array $options
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;
-
-        return $this;
-    }
-
-    /**
-     * Find out if there is a predefined constant for CURL-options and if the curl library actually exists.
-     * If the constants don't exist, fall back to NETCURL constants so that we can still fetch the setup.
-     *
-     * @param $key
-     * @return mixed|null
-     * @since 6.1.0
-     */
-    private function getOptionCurl($key)
-    {
-        $return = null;
-
-        if (false !== strpos($key, 'CURL')) {
-            $constantValue = @constant('TorneLIB\Module\Config\WrapperCurlOpt::NETCURL_' . $key);
-            if (!empty($constantValue)) {
-                $return = $constantValue;
-            }
-        }
-
-        return $return;
-    }
-
-    /**
      * @param $key
      * @param $value
-     * @param bool $isSoap
      * @return $this
-     * @since 6.1.0
      */
-    public function setOption($key, $value, $isSoap = false)
+    public function setDualStreamHttp($key, $value)
     {
-        $preKey = $this->getOptionCurl($key);
-        if (!empty($preKey)) {
-            $key = $preKey;
-        }
-
-        if (!$isSoap) {
-            $this->options[$key] = $value;
-        } else {
-            $this->streamOptions[$key] = $value;
-        }
+        $this->setStreamContext($key, $value, 'https');
+        $this->setStreamContext($key, $value, 'http');
 
         return $this;
     }
@@ -893,34 +1112,6 @@ class WrapperConfig
     }
 
     /**
-     * @param $key
-     * @param bool $isSoap
-     * @return mixed
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    public function getOption($key, $isSoap = false)
-    {
-        $preKey = $this->getOptionCurl($key);
-        if (!empty($preKey)) {
-            $key = $preKey;
-        }
-
-        if (!$isSoap) {
-            if (isset($this->options[$key])) {
-                return $this->options[$key];
-            }
-        } elseif (isset($this->streamOptions[$key])) {
-            return $this->streamOptions[$key];
-        }
-
-        throw new ExceptionHandler(
-            sprintf('%s: Option "%s" not set.', __CLASS__, $key),
-            Constants::LIB_UNHANDLED
-        );
-    }
-
-    /**
      * @param $isSoapRequest
      * @since 6.1.0
      */
@@ -936,66 +1127,6 @@ class WrapperConfig
     public function setStreamRequest($isStreamRequest)
     {
         $this->isStreamRequest = $isStreamRequest;
-    }
-
-    /**
-     * @return bool
-     * @since 6.1.0
-     */
-    public function getSoapRequest()
-    {
-        return $this->isSoapRequest;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getStreamRequest()
-    {
-        return $this->isStreamRequest;
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     * @return $this
-     * @since 6.1.0
-     */
-    public function setStreamOption($key, $value)
-    {
-        return $this->setOption($key, $value, true);
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     * @return $this
-     */
-    public function setDualStreamHttp($key, $value)
-    {
-        $this->setStreamContext($key, $value, 'https');
-        $this->setStreamContext($key, $value, 'http');
-
-        return $this;
-    }
-
-    /**
-     * @param string $key
-     * @param string $value
-     * @param false $static
-     * @return $this
-     * @since 6.1.2
-     */
-    public function setHeader($key = '', $value = '', $static = false)
-    {
-        $this->setDualStreamHttp('header', sprintf('%s: %s', $key, $value));
-        $this->storedHeaders[$key] = $value;
-
-        if ($static) {
-            $this->streamContextStatic[$key] = $value;
-        }
-
-        return $this;
     }
 
     /**
@@ -1025,6 +1156,25 @@ class WrapperConfig
     }
 
     /**
+     * @param string $key
+     * @param string $value
+     * @param false $static
+     * @return $this
+     * @since 6.1.2
+     */
+    public function setHeader($key = '', $value = '', $static = false)
+    {
+        $this->setDualStreamHttp('header', sprintf('%s: %s', $key, $value));
+        $this->storedHeaders[$key] = $value;
+
+        if ($static) {
+            $this->streamContextStatic[$key] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
      * @param $key
      * @return mixed
      * @throws ExceptionHandler
@@ -1036,58 +1186,23 @@ class WrapperConfig
     }
 
     /**
-     * @param $key
-     * @return $this
-     * @since 6.1.0
-     */
-    public function deleteOption($key)
-    {
-        $preKey = $this->getOptionCurl($key);
-        if (!empty($preKey)) {
-            $key = $preKey;
-        }
-
-        if (isset($this->options[$key])) {
-            unset($this->options[$key]);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Replace an option with another.
+     * Replace current authdata manually to stream source if the default is set by mistake.
      *
-     * @param $key
-     * @param $value
-     * @param $replace
      * @return $this
      * @since 6.1.0
      */
-    public function replaceOption($key, $value, $replace)
+    public function setAuthStream()
     {
-        $this->deleteOption($replace);
-        $this->setOption($key, $value);
+        if ($this->authSource === authSource::NORMAL) {
+            $this->setAuthentication(
+                $this->authData['username'],
+                $this->authData['password'],
+                $this->authData['type'],
+                authSource::STREAM
+            );
+        }
+
         return $this;
-    }
-
-    /**
-     * Datatype of request (json, etc).
-     * @param $requestDataType
-     * @since 6.1.0
-     */
-    public function setRequestDataType($requestDataType)
-    {
-        $this->requestDataType = $requestDataType;
-    }
-
-    /**
-     * Datatype of request (json, etc).
-     * @return int
-     * @since 6.1.0
-     */
-    public function getRequestDataType()
-    {
-        return $this->requestDataType;
     }
 
     /**
@@ -1138,23 +1253,14 @@ class WrapperConfig
     }
 
     /**
-     * Replace current authdata manually to stream source if the default is set by mistake.
-     *
+     * @param $key
+     * @param $value
      * @return $this
      * @since 6.1.0
      */
-    public function setAuthStream()
+    public function setStreamOption($key, $value)
     {
-        if ($this->authSource === authSource::NORMAL) {
-            $this->setAuthentication(
-                $this->authData['username'],
-                $this->authData['password'],
-                $this->authData['type'],
-                authSource::STREAM
-            );
-        }
-
-        return $this;
+        return $this->setOption($key, $value, true);
     }
 
     /**
@@ -1169,81 +1275,6 @@ class WrapperConfig
     }
 
     /**
-     * @param int $timeout Defaults to the default connect timeout in curl (300).
-     * @param bool $useMillisec Set timeouts in milliseconds instead of seconds.
-     * @return $this
-     * @link https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
-     * @since 6.1.0
-     */
-    private function setTimeout($timeout = 300, $useMillisec = false)
-    {
-        /**
-         * CURLOPT_TIMEOUT (Entire request) Everything has to be established and get finished on this time limit.
-         * CURLOPT_CONNECTTIMEOUT (Connection phase) We set this to half the time of the entire timeout request.
-         * CURLOPT_ACCEPTTIMEOUT (Waiting for connect back to be accepted). Defined in MS only.
-         *
-         * @link https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
-         */
-
-        // Using internal WrapperCurlOpts if curl is not a present driver. Otherwise, this
-        // setup may be a showstopper that no other driver can use.
-        if (!$useMillisec) {
-            $this->replaceOption(
-                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT,
-                ceil($timeout / 2),
-                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS
-            );
-            $this->replaceOption(
-                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT,
-                ceil($timeout),
-                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS
-            );
-        } else {
-            $this->replaceOption(
-                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS,
-                ceil($timeout / 2),
-                WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT
-            );
-            $this->replaceOption(
-                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS,
-                ceil($timeout),
-                WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT
-            );
-        }
-
-        $this->setStreamContext('timeout', (int)ceil($timeout), 'http');
-        $this->setStreamContext('connection_timeout', (int)ceil($timeout / 2), 'http');
-
-        return $this;
-    }
-
-    /**
-     * @param $userAgentString
-     * @return $this
-     * @since 6.1.0
-     */
-    public function setUserAgent($userAgentString)
-    {
-        $this->isCustomUserAgent = true;
-
-        $this->setOption(
-            WrapperCurlOpt::NETCURL_CURLOPT_USERAGENT,
-            $userAgentString
-        );
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     * @since 6.1.0
-     */
-    public function getIsCustomUserAgent()
-    {
-        return $this->isCustomUserAgent;
-    }
-
-    /**
      * Allows strict identification in user-agent header.
      * @param $activate
      * @param bool $allowPhpRelease
@@ -1253,70 +1284,6 @@ class WrapperConfig
     {
         $this->identifierAgent = $activate;
         $this->identifierAgentPhp = $allowPhpRelease;
-    }
-
-    /**
-     * Status of identifierAgent, if enable or not.
-     * @return bool
-     * @since 6.1.0
-     */
-    public function getIdentifiers()
-    {
-        return $this->identifierAgent;
-    }
-
-    /**
-     * @return mixed
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    public function getUserAgent()
-    {
-        $globalSignature = self::getSignature();
-        if (!empty($globalSignature)) {
-            return $globalSignature;
-        }
-
-        $return = $this->getOption(WrapperCurlOpt::NETCURL_CURLOPT_USERAGENT);
-
-        if ($this->getSoapRequest() || $this->getStreamRequest()) {
-            $currentStreamContext = $this->getStreamContext();
-            if (!is_null($currentStreamContext)) {
-                $currentStreamContext = stream_context_get_options($currentStreamContext);
-            }
-
-            // If it is already set from another place.
-            if (isset($currentStreamContext['http']['user_agent'])) {
-                $return = $currentStreamContext['http']['user_agent'];
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param bool $staging
-     * @return WrapperConfig
-     * @since 6.1.0
-     */
-    public function setStaging($staging = true)
-    {
-        $this->staging = $staging;
-        if (!$staging) {
-            $this->setWsdlCache(3);
-        } else {
-            $this->setWsdlCache(0);
-        }
-        return $this;
-    }
-
-    /**
-     * @return bool
-     * @since 6.1.0
-     */
-    public function getStaging()
-    {
-        return $this->staging;
     }
 
     /**
@@ -1340,39 +1307,28 @@ class WrapperConfig
     }
 
     /**
-     * Returns internal information about the configured timeouts.
-     *
-     * @return array
+     * @return bool
      * @since 6.1.0
-     * @noinspection PhpUnusedPrivateMethodInspection
      */
-    private function getTimeout()
+    public function getStaging()
     {
-        $cTimeout = null;
-        $eTimeout = null;
+        return $this->staging;
+    }
 
-        $timeoutIsMillisec = false;
-        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT])) {
-            $cTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT]; // connectTimeout
+    /**
+     * @param bool $staging
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function setStaging($staging = true)
+    {
+        $this->staging = $staging;
+        if (!$staging) {
+            $this->setWsdlCache(3);
+        } else {
+            $this->setWsdlCache(0);
         }
-        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS])) {
-            $cTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS]; // connectTimeout
-            $timeoutIsMillisec = true;
-        }
-
-        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT])) {
-            $eTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT];  // entireTimeout
-        }
-        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS])) {
-            $eTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS];  // entireTimeout
-            $timeoutIsMillisec = true;
-        }
-
-        return [
-            'CONNECT' => $cTimeout,
-            'REQUEST' => $eTimeout,
-            'MILLISEC' => $timeoutIsMillisec,
-        ];
+        return $this;
     }
 
     /**
@@ -1451,6 +1407,16 @@ class WrapperConfig
     }
 
     /**
+     * @param array $requestFlags
+     * @since 6.1.0
+     */
+    public function setRequestFlags($requestFlags)
+    {
+        /** @noinspection PhpUndefinedMethodInspection */
+        Flags::_setFlags($requestFlags);
+    }
+
+    /**
      * @param $isWrapped
      * @return $this
      */
@@ -1459,46 +1425,6 @@ class WrapperConfig
         $this->isNetWrapper = $isWrapped;
 
         return $this;
-    }
-
-    /**
-     * Setting useragent statically and on global level.
-     *
-     * @param $userAgentSignature
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    public static function setSignature($userAgentSignature)
-    {
-        if (defined('WRAPPERCONFIG_NO_SIGNATURE')) {
-            throw new ExceptionHandler(
-                'You are not allowed to set global signature.',
-                Constants::LIB_UNHANDLED
-            );
-        }
-        self::$userAgentSignature = $userAgentSignature;
-    }
-
-    /**
-     * Remove static useragent.
-     * @since 6.1.0
-     */
-    public static function deleteSignature()
-    {
-        self::$userAgentSignature = null;
-    }
-
-    /**
-     * @return string
-     * @since 6.1.0
-     */
-    public static function getSignature()
-    {
-        if (defined('NO_SIGNATURE')) {
-            return null;
-        }
-
-        return self::$userAgentSignature;
     }
 
     /**
@@ -1511,6 +1437,31 @@ class WrapperConfig
     {
         self::setSignature($userAgentSignatureString);
         return $this;
+    }
+
+    /**
+     * Setting useragent statically and on global level.
+     *
+     * @param $userAgentSignature
+     * @param bool $overwrite
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public static function setSignature($userAgentSignature, $overwrite = true)
+    {
+        if (defined('WRAPPERCONFIG_NO_SIGNATURE')) {
+            throw new ExceptionHandler(
+                'You are not allowed to set global signature.',
+                Constants::LIB_UNHANDLED
+            );
+        }
+        if (Flag::isFlag('PROTECT_FIRST_SIGNATURE')) {
+            $overwrite = false;
+        }
+        if (!empty(self::$userAgentSignature) && !$overwrite) {
+            return;
+        }
+        self::$userAgentSignature = $userAgentSignature;
     }
 
     /**
@@ -1546,35 +1497,6 @@ class WrapperConfig
     }
 
     /**
-     * @param bool $short
-     * @return string
-     * @since 6.1.0
-     */
-    public function getCurrentWrapperClass($short = false)
-    {
-        return !$short ? $this->currentWrapper : $this->getShortWrapperClass($this->currentWrapper);
-    }
-
-    /**
-     * @param $namespaceClassName
-     * @return mixed
-     * @since 6.1.0
-     */
-    private function getShortWrapperClass($namespaceClassName)
-    {
-        $return = $namespaceClassName;
-
-        if (!empty($this->currentWrapper)) {
-            $wrapperClassExplode = explode('\\', $this->currentWrapper);
-            if (is_array($wrapperClassExplode) && count($wrapperClassExplode)) {
-                $return = $wrapperClassExplode[count($wrapperClassExplode) - 1];
-            }
-        }
-
-        return $return;
-    }
-
-    /**
      * @param string $url
      * @param array $data
      * @param int $method
@@ -1602,6 +1524,55 @@ class WrapperConfig
         }
 
         return $this;
+    }
+
+    /**
+     * Get information about the current request method that is used: POST, GET, DELETE, etc
+     *
+     * @return int
+     * @since 6.1.0
+     */
+    public function getRequestMethod()
+    {
+        return $this->requestMethod;
+    }
+
+    /**
+     * Set up which method that should be used: POST, GET, DELETE, etc
+     *
+     * @param int $requestMethod
+     * @return WrapperConfig
+     * @since 6.1.0
+     */
+    public function setRequestMethod($requestMethod)
+    {
+        if (is_numeric($requestMethod)) {
+            $this->requestMethod = $requestMethod;
+        } else {
+            $this->requestMethod = requestMethod::METHOD_GET;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Datatype of request (json, etc).
+     * @return int
+     * @since 6.1.0
+     */
+    public function getRequestDataType()
+    {
+        return $this->requestDataType;
+    }
+
+    /**
+     * Datatype of request (json, etc).
+     * @param $requestDataType
+     * @since 6.1.0
+     */
+    public function setRequestDataType($requestDataType)
+    {
+        $this->requestDataType = $requestDataType;
     }
 
     /**
@@ -1667,5 +1638,41 @@ class WrapperConfig
         }
 
         return $this;
+    }
+
+    /**
+     * Returns internal information about the configured timeouts.
+     *
+     * @return array
+     * @since 6.1.0
+     * @noinspection PhpUnusedPrivateMethodInspection
+     */
+    private function getTimeout()
+    {
+        $cTimeout = null;
+        $eTimeout = null;
+
+        $timeoutIsMillisec = false;
+        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT])) {
+            $cTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT]; // connectTimeout
+        }
+        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS])) {
+            $cTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_CONNECTTIMEOUT_MS]; // connectTimeout
+            $timeoutIsMillisec = true;
+        }
+
+        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT])) {
+            $eTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT];  // entireTimeout
+        }
+        if (isset($this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS])) {
+            $eTimeout = $this->options[WrapperCurlOpt::NETCURL_CURLOPT_TIMEOUT_MS];  // entireTimeout
+            $timeoutIsMillisec = true;
+        }
+
+        return [
+            'CONNECT' => $cTimeout,
+            'REQUEST' => $eTimeout,
+            'MILLISEC' => $timeoutIsMillisec,
+        ];
     }
 }

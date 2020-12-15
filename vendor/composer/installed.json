@@ -240,17 +240,17 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.1.2",
-        "version_normalized": "6.1.2.0",
+        "version": "6.1.3",
+        "version_normalized": "6.1.3.0",
         "source": {
             "type": "git",
             "url": "https://github.com/Tornevall/tornelib-php-netcurl.git",
-            "reference": "0f3aa1678a2e27ed75a48ba52072bb8fa13bebe7"
+            "reference": "4f5ff82abf40af76fdba3c0c185ff1e84caa62ca"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/0f3aa1678a2e27ed75a48ba52072bb8fa13bebe7",
-            "reference": "0f3aa1678a2e27ed75a48ba52072bb8fa13bebe7",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/4f5ff82abf40af76fdba3c0c185ff1e84caa62ca",
+            "reference": "4f5ff82abf40af76fdba3c0c185ff1e84caa62ca",
             "shasum": ""
         },
         "require": {
@@ -261,7 +261,7 @@
             "tornevall/tornelib-php-utils": "6.1.*",
             "tornevall/tornelib-php-version": "6.1.*"
         },
-        "time": "2020-10-25T14:11:05+00:00",
+        "time": "2020-12-09T18:08:47+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
