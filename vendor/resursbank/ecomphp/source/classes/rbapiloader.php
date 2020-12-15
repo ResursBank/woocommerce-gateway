@@ -1651,7 +1651,7 @@ class ResursBank
     {
         if (empty($username) && empty($password) && empty($this->username) && empty($this->password)) {
             throw new ResursException(
-                'Validating credentials means you have to defined credentials before ' .
+                'Validating credentials means you have to define credentials before ' .
                 'validating them. Use setAuthentication() or push your credentials into this method directly.',
                 417
             );
@@ -2177,10 +2177,20 @@ class ResursBank
      * If you want to register callbacks through the rest API instead of SOAP, set this to true
      *
      * @param bool $useRest
+     * @return ResursBank
+     * @noinspection ParameterDefaultValueIsNotNullInspection
      */
     public function setRegisterCallbacksViaRest($useRest = true)
     {
         $this->registerCallbacksViaRest = $useRest;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getRegisterCallbacksViaRest() {
+        return $this->registerCallbacksViaRest;
     }
 
     /**
@@ -5527,12 +5537,7 @@ class ResursBank
                 if (isset($parsedResponse->location)) {
                     $this->resetPayload();
 
-                    $returnLocation = $parsedResponse->location;
-                    if ($this->isFlag('HEAL_URL')) {
-                        $returnLocation = preg_replace('/^http:/', 'https:', $returnLocation);
-                    }
-
-                    return $returnLocation;
+                    return $parsedResponse->location;
                 } else {
                     if (isset($parsedResponse->error)) {
                         $error[] = $parsedResponse->error;

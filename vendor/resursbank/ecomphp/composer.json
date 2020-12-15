@@ -8,6 +8,12 @@
         "tornevall/tornelib-php-netcurl-deprecate-60": "^6.0",
         "tornevall/tornelib-php-network": "^6.1"
     },
+    "config": {
+        "preferred-install": {
+            "tornevall/tornelib-php-netcurl-deprecate-60": "dist",
+            "*": "source"
+        }
+    },
     "authors": [
         {
             "name": "Tomas Tornevall",
