@@ -1983,6 +1983,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $_REQUEST['ssnCustomerType'],
                 (array)$method->customerType
             ) ? $_REQUEST['ssnCustomerType'] : 'NATURAL';
+            $mustShowGov = false;
             if ($type === 'PAYMENT_PROVIDER') {
                 $requiredFormFields = $this->flow->getTemplateFieldsByMethodType(
                     $method,
@@ -1990,6 +1991,7 @@ function woocommerce_gateway_resurs_bank_init()
                     'PAYMENT_PROVIDER'
                 );
             } else {
+                $mustShowGov = true;
                 $requiredFormFields = $this->flow->getTemplateFieldsByMethodType($method, $customerType, $specificType);
             }
 
@@ -2006,6 +2008,14 @@ function woocommerce_gateway_resurs_bank_init()
                         if ($streamLineBehaviour) {
                             if ($this->flow->canHideFormField($fieldName)) {
                                 $doDisplay = 'none';
+                            }
+                            // When applicant government id and getAddress is enabled so that data can be collected
+                            // from that point, the request field is not necessary to be shown all the time.
+                            if ($fieldName === 'applicant-government-id') {
+                                $optionGetAddress = getResursOption('getAddress');
+                                if ($optionGetAddress && !$mustShowGov) {
+                                    $doDisplay = 'none';
+                                }
                             }
                         }
 
