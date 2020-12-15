@@ -5527,7 +5527,12 @@ class ResursBank
                 if (isset($parsedResponse->location)) {
                     $this->resetPayload();
 
-                    return $parsedResponse->location;
+                    $returnLocation = $parsedResponse->location;
+                    if ($this->isFlag('HEAL_URL')) {
+                        $returnLocation = preg_replace('/^http:/', 'https:', $returnLocation);
+                    }
+
+                    return $returnLocation;
                 } else {
                     if (isset($parsedResponse->error)) {
                         $error[] = $parsedResponse->error;
