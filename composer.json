@@ -6,6 +6,6 @@
         }
     },
     "require": {
-        "resursbank/ecomphp": "dev-master"
+        "resursbank/ecomphp": "^1.3"
     }
 }
