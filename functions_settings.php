@@ -306,6 +306,17 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'desc_tip' => true,
                 ],
+                'forceGovIdField' => [
+                    'title' => __('Always show govId in simplified flow', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'label' => __('Enabled', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'description' => __(
+                        'Always show government id field in simplified flow, regardless of getAddress settings.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'desc_tip' => true,
+                ],
                 'waitForFraudControl' => [
                     'title' => 'waitForFraudControl',
                     'type' => 'checkbox',

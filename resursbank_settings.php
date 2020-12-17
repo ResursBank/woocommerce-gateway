@@ -1418,7 +1418,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         ),
                         $shortCodeDescriptions
                     );
-                } elseif ($section == "advanced") {
+                } elseif ($section === "advanced") {
                     echo $this->setSeparator(__('URL Settings', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setTextBox('customCallbackUri', $namespace);
                     echo $this->setTextBox('costOfPurchaseCss', $namespace);
@@ -1444,6 +1444,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         __('Customer and store', 'resurs-bank-payment-gateway-for-woocommerce')
                     );
                     echo $this->setCheckBox('getAddress', $namespace);
+                    echo $this->setCheckBox('forceGovIdField', $namespace);
                     echo $this->setCheckBox('reduceOrderStock', $namespace);
 
                     echo $this->setSeparator(
