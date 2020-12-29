@@ -2,7 +2,7 @@
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
-Tested up to: 5.5.3
+Tested up to: 5.6
 Requires PHP: 5.4
 Stable tag: 2.2.42
 License: GPLv2 or later
@@ -84,6 +84,14 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 == Changelog ==
 
 For prior versions [look here](https://resursbankplugins.atlassian.net/projects/WOO?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=released-archived).
+
+= 2.2.43 =
+
+    * [WOO-487] - Fraud & Callbacks descriptions
+    * [WOO-501] - Metadata under the order has been hidden since the tax-on-discount release so the blue box has to show more info
+    * [WOO-506] - Prevent tab-logotype patches on tabs that belongs to other plugins
+    * [WOO-508] - govid should always be shown regardless of fields for getaddress
+    * [WOO-465] - Do not reopen password box if already open on username-click
 
 = 2.2.42 =
 
