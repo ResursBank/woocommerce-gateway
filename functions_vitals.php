@@ -183,6 +183,8 @@ function allowPluginToRun()
  */
 function allowResursRun($allow = null, $informationSet = null)
 {
+    $post = null;
+
     if ($allow === null) {
         $allow = false;
     }
@@ -194,7 +196,7 @@ function allowResursRun($allow = null, $informationSet = null)
     // Since we're in admin this is an option that won't harm very much in frontend and store views.
 
     // Heartbeats are known to pass here. In our case we choose to ignore the heartbeats.
-    $allowFrom = [
+    $allowLocation = [
         'wc-settings',
         'shop_order',
         'edit',
@@ -204,11 +206,14 @@ function allowResursRun($allow = null, $informationSet = null)
 
     // Refunds passing wp-remove-post-lock (ignored).
 
-    if (in_array($informationSet['action'], $allowFrom, true) ||
-        in_array($informationSet['page'], $allowFrom, true) ||
-        in_array($informationSet['post_type'], $allowFrom, true)
+    if (in_array($informationSet['action'], $allowLocation, true) ||
+        in_array($informationSet['page'], $allowLocation, true) ||
+        in_array($informationSet['post_type'], $allowLocation, true)
     ) {
         $allow = true;
+        if (isset($_REQUEST['post']) && is_numeric($_REQUEST['post'])) {
+            $post = get_post($_REQUEST['post']);
+        }
     }
 
     // Normally accept ajax actions. Discovered that "forgotten actions" could fail during this run.
@@ -216,8 +221,25 @@ function allowResursRun($allow = null, $informationSet = null)
         $allow = true;
     }
 
-    if (stripos($informationSet['action'], "woocommerce") !== false) {
+    if (stripos($informationSet['action'], 'woocommerce') !== false) {
         $allow = true;
+    }
+
+    if (isset($post, $post->post_type)) {
+        $allow = apply_filters('prevent_resurs_run_on_post_type', $allow, $post->post_type);
+    }
+
+    return $allow;
+}
+
+/**
+ * @param $allow
+ * @param $postType
+ * @return false|mixed
+ */
+function resursPreventPostType($allow, $postType) {
+    if ($postType === 'product') {
+        $allow = false;
     }
 
     return $allow;
