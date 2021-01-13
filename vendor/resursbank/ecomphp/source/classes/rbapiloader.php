@@ -68,7 +68,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20201215');
+    define('ECOMPHP_MODIFY_DATE', '20210111');
 }
 
 /**
@@ -79,7 +79,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.47
+ * @version 1.3.48
  */
 class ResursBank
 {
@@ -941,7 +941,8 @@ class ResursBank
      * @throws Exception
      * @since 1.3.47
      */
-    public function setTimeout($timeout, $useMillisec = false) {
+    public function setTimeout($timeout, $useMillisec = false)
+    {
         $this->InitializeServices(false);
         return $this->CURL->setTimeout($timeout, $useMillisec);
     }
@@ -957,17 +958,19 @@ class ResursBank
      */
     private function sessionActivate()
     {
-        try {
-            if (!session_id()) {
-                @session_start();
-                $this->ecomSession = session_id();
-                if (!empty($this->ecomSession)) {
-                    return true;
+        if (Flag::isFlag('ALLOW_ECOM_SESSION')) {
+            try {
+                if (session_status() === PHP_SESSION_NONE) {
+                    @session_start();
+                    $this->ecomSession = session_id();
+                    if (!empty($this->ecomSession)) {
+                        return true;
+                    }
+                } else {
+                    $this->ecomSession = session_id();
                 }
-            } else {
-                $this->ecomSession = session_id();
+            } catch (Exception $sessionActivationException) {
             }
-        } catch (Exception $sessionActivationException) {
         }
 
         return false;

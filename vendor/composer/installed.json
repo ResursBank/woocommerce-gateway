@@ -1,17 +1,17 @@
 [
     {
         "name": "resursbank/ecomphp",
-        "version": "1.3.47",
-        "version_normalized": "1.3.47.0",
+        "version": "1.3.48",
+        "version_normalized": "1.3.48.0",
         "source": {
             "type": "git",
             "url": "https://github.com/ResursBank/ecomphp.git",
-            "reference": "aba7d3f2ff5d8267d2c03072e3865b2315a4be0b"
+            "reference": "2b80548200f69dab8f8043fded7ef6a26f03bb27"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/aba7d3f2ff5d8267d2c03072e3865b2315a4be0b",
-            "reference": "aba7d3f2ff5d8267d2c03072e3865b2315a4be0b",
+            "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/2b80548200f69dab8f8043fded7ef6a26f03bb27",
+            "reference": "2b80548200f69dab8f8043fded7ef6a26f03bb27",
             "shasum": ""
         },
         "require": {
@@ -19,7 +19,7 @@
             "tornevall/tornelib-php-netcurl-deprecate-60": "^6.0",
             "tornevall/tornelib-php-network": "^6.1"
         },
-        "time": "2020-12-15T13:51:33+00:00",
+        "time": "2021-01-11T14:38:08+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

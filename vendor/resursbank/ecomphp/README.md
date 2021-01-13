@@ -74,3 +74,9 @@ This is a short example of how to get started, but you can [take a look at our d
 * If you are used to work with the simplified flow and wish to use Hosted/Checkout, you can stick to the use of the older SimplifiedFlow variables, as this library converts what's missing between the different flows.
 * The EComPHP-library takes care of many things that developers usually miss in their development. Especially the payload handling.
 * Both SOAP and REST is supported, under the condition that there are drivers available for it.
+
+# PHP 5.3 and lower versions and some old notes
+
+Guides: https://confluence.atlassian.com/x/e8YWN for more examples.
+- apt-add-repository ppa:sergey-dryabzhinsky/php53
+- apt-add-repository ppa:sergey-dryabzhinsky/packages
