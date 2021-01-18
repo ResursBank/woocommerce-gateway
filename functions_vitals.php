@@ -156,7 +156,7 @@ function setResursOption($key = "", $value = "", $configurationSpace = "woocomme
 
 /**
  * Decide where and what Resurs plugin are allowed to interfere with.
- * 
+ *
  * @return bool|mixed|void
  */
 function allowPluginToRun()
@@ -248,7 +248,8 @@ function allowResursRun($allow = null, $informationSet = null)
  * @param $postType
  * @return false|mixed
  */
-function resursPreventPostType($allow, $postType) {
+function resursPreventPostType($allow, $postType)
+{
     if ($postType === 'product') {
         $allow = false;
     }
