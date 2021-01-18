@@ -162,6 +162,8 @@ function setResursOption($key = "", $value = "", $configurationSpace = "woocomme
 function allowPluginToRun()
 {
     $isAdmin = is_admin();
+    // The intention with the "allowed" switch is that this should be true, when not enabled.
+    // It's obvious that this don't happen sometimes.
     $allowed = !getResursOption('preventGlobalInterference');
 
     // Initially always allow runs.
