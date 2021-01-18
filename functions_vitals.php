@@ -177,6 +177,7 @@ function allowPluginToRun()
 
         $allowed = apply_filters('allow_resurs_run', $allowed, $info);
     } else {
+        // If not in admin, act normally.
         $allowed = true;
     }
 
