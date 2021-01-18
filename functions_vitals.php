@@ -235,10 +235,13 @@ function allowResursRun($allow = null, $informationSet = null)
         $allow = true;
     }
 
+    // This filter allows us to disable the plugin "working" in spaces it shouldn't touch.
+    // For example, we've added an own filter to remove our precense in the product editor.
     if (isset($post, $post->post_type)) {
         $allow = apply_filters('prevent_resurs_run_on_post_type', $allow, $post->post_type);
     }
 
+    // Allow everything during usage of our own backend.
     if (isset($_REQUEST['wc-api']) && !$allow) {
         $allow = true;
     }
