@@ -187,6 +187,9 @@ function allowPluginToRun()
 }
 
 /**
+ * Tells the plugin when it should be active and when it shoudn't. This method can be activated outside the
+ * global interference calls.
+ *
  * @param bool $allow Current inbound allow state.
  * @param array $informationSet Very basic requests from _REQUEST and _POST parameters that could easily be analyzed.
  * @return bool If true, the plugin is allowed to proceed.
