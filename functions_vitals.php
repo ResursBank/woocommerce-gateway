@@ -154,6 +154,11 @@ function setResursOption($key = "", $value = "", $configurationSpace = "woocomme
     return false;
 }
 
+/**
+ * Decide where and what Resurs plugin are allowed to interfere with.
+ * 
+ * @return bool|mixed|void
+ */
 function allowPluginToRun()
 {
     $isAdmin = is_admin();
@@ -171,6 +176,8 @@ function allowPluginToRun()
         ];
 
         $allowed = apply_filters('allow_resurs_run', $allowed, $info);
+    } else {
+        $allowed = true;
     }
 
     return $allowed;
@@ -227,6 +234,10 @@ function allowResursRun($allow = null, $informationSet = null)
 
     if (isset($post, $post->post_type)) {
         $allow = apply_filters('prevent_resurs_run_on_post_type', $allow, $post->post_type);
+    }
+
+    if (isset($_REQUEST['wc-api']) && !$allow) {
+        $allow = true;
     }
 
     return $allow;
