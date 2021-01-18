@@ -156,6 +156,9 @@ function setResursOption($key = "", $value = "", $configurationSpace = "woocomme
 
 /**
  * Decide where and what Resurs plugin are allowed to interfere with.
+ * This control is connected to the initial function of the plugin after plugins_loaded and controls where in
+ * the is_admin structure the plugin should be working or prevented to be present:
+ *      if (allowPluginToRun()) {
  *
  * @return bool|mixed|void
  */
@@ -188,7 +191,11 @@ function allowPluginToRun()
 
 /**
  * Tells the plugin when it should be active and when it shoudn't. This method can be activated outside the
- * global interference calls.
+ * global interference calls. This feature is connected to the filter allow_resurs_run primarily (see below), so
+ * this feature is more sensitive for interference preventions than the global interference check.
+ *
+ * The filter:
+ * add_filter('allow_resurs_run', 'allowResursRun', 10, 2);
  *
  * @param bool $allow Current inbound allow state.
  * @param array $informationSet Very basic requests from _REQUEST and _POST parameters that could easily be analyzed.
