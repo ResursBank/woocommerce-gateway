@@ -154,79 +154,97 @@ function setResursOption($key = "", $value = "", $configurationSpace = "woocomme
     return false;
 }
 
+/**
+ * Decide where and what Resurs plugin are allowed to interfere with.
+ * This control is connected to the initial function of the plugin after plugins_loaded and controls where in
+ * the is_admin structure the plugin should be working or prevented to be present:
+ *      if (allowPluginToRun()) {
+ *
+ * @return bool|mixed|void
+ */
 function allowPluginToRun()
 {
-    $isAdmin = is_admin();
-    $allowed = !getResursOption('preventGlobalInterference');
+    // Always allow this plugin to be alive.
+    $return = true;
 
-    // Initially always allow runs.
-    if ($isAdmin) {
-        // edit-theme-plugin-file has been a problem, however - at this moment we know we're located
-        // somewhere in wp-admin, so from here, everything should be disallowed.
-
+    if (is_admin() && getResursOption('preventGlobalInterference')) {
+        // At this point, we know that we're in wp-admin, so from here we can decide whether the plugin should
+        // be present, regardless of what WooCommerce thinks (mind the edit-theme-plugin-file parts).
         $info = [
             'action' => isset($_REQUEST['action']) ? $_REQUEST['action'] : '',
             'page' => isset($_REQUEST['page']) ? $_REQUEST['page'] : '',
             'post_type' => isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : '',
         ];
 
-        $allowed = apply_filters('allow_resurs_run', $allowed, $info);
+        // From here apply necessary filters, and tell the developer where we are so that presence can be
+        // freely limited by anyone.
+        $return = apply_filters('allow_resurs_run', $return, $info);
     }
 
-    return $allowed;
+    return $return;
 }
 
 /**
- * @param bool $allow Current inbound allow state.
- * @param array $informationSet Very basic requests from _REQUEST and _POST parameters that could easily be analyzed.
- * @return bool If true, the plugin is allowed to proceed.
+ * @return array
  */
-function allowResursRun($allow = null, $informationSet = null)
+function getResursAllowedLocations()
 {
-    $post = null;
-
-    if ($allow === null) {
-        $allow = false;
-    }
-    if (!is_array($informationSet)) {
-        $informationSet = (array)$informationSet;
-    }
-
-    // For this method, $allow above is ignored and considered always off.
-    // Since we're in admin this is an option that won't harm very much in frontend and store views.
-
-    // Heartbeats are known to pass here. In our case we choose to ignore the heartbeats.
-    $allowLocation = [
+    return [
         'wc-settings',
         'shop_order',
         'edit',
         'get_cost_ajax',
         'get_address_customertype',
     ];
+}
 
-    // Refunds passing wp-remove-post-lock (ignored).
+/**
+ * @return array|WP_Post|null
+ */
+function getResursAllowedEditor()
+{
+    $post = null;
+    if (isset($_REQUEST['post']) && is_numeric($_REQUEST['post'])) {
+        $post = get_post($_REQUEST['post']);
+    }
+    return $post;
+}
 
-    if (in_array($informationSet['action'], $allowLocation, true) ||
-        in_array($informationSet['page'], $allowLocation, true) ||
-        in_array($informationSet['post_type'], $allowLocation, true)
+/**
+ * wp-admin interference checks.
+ *
+ * This method tells the plugin when it can skip its own presence in wp-admin. This method is only called with
+ * the setting preventGlobalInterference is active.
+ *
+ * @param bool $allow Current inbound allow state.
+ * @param array $informationSet Very basic requests from _REQUEST and _POST parameters that could easily be analyzed.
+ * @return bool If true, the plugin is allowed to proceed.
+ * @noinspection ParameterDefaultValueIsNotNullInspection
+ */
+function allowResursRun($allow = false, $informationSet = [])
+{
+    if (in_array($informationSet['action'], getResursAllowedLocations(), true) ||
+        in_array($informationSet['page'], getResursAllowedLocations(), true) ||
+        in_array($informationSet['post_type'], getResursAllowedLocations(), true)
     ) {
         $allow = true;
-        if (isset($_REQUEST['post']) && is_numeric($_REQUEST['post'])) {
-            $post = get_post($_REQUEST['post']);
-        }
     }
-
     // Normally accept ajax actions. Discovered that "forgotten actions" could fail during this run.
     if (!empty($informationSet['action'])) {
         $allow = true;
     }
-
     if (stripos($informationSet['action'], 'woocommerce') !== false) {
         $allow = true;
     }
 
-    if (isset($post, $post->post_type)) {
+    $post = getResursAllowedEditor();
+    if (is_object($post) && method_exists($post, 'post_type')) {
+        // Executes our internal filter method, setting $allow to false if in "product"-editor.
         $allow = apply_filters('prevent_resurs_run_on_post_type', $allow, $post->post_type);
+    }
+    // Allow everything during usage of our own backend, if they ever reach this method.
+    if (isset($_REQUEST['wc-api']) && !$allow) {
+        $allow = true;
     }
 
     return $allow;
@@ -237,7 +255,8 @@ function allowResursRun($allow = null, $informationSet = null)
  * @param $postType
  * @return false|mixed
  */
-function resursPreventPostType($allow, $postType) {
+function resursPreventPostType($allow, $postType)
+{
     if ($postType === 'product') {
         $allow = false;
     }
