@@ -20,19 +20,20 @@ require_once(__DIR__ . '/functions_settings.php');
 require_once(__DIR__ . '/functions_vitals.php');
 
 $resurs_obsolete_coexistence_disable = false;
+// Interference filters activated from wp-admin.
+add_filter('allow_resurs_run', 'allowResursRun', 10, 2);
+add_filter('prevent_resurs_run_on_post_type', 'resursPreventPostType', 10, 2);
 
 function activateResursGatewayScripts()
 {
     global $resurs_obsolete_coexistence_disable;
     if (allowPluginToRun()) {
         require_once(__DIR__ . '/resursbankmain.php');
+        // Allow or disallow plugins to exist side by side with similar.
         if (!$resurs_obsolete_coexistence_disable) {
             add_action('admin_notices', 'resurs_bank_admin_notice');
             woocommerce_gateway_resurs_bank_init();
         }
     }
 }
-
-add_filter('allow_resurs_run', 'allowResursRun', 10, 2);
 add_action('plugins_loaded', 'activateResursGatewayScripts');
-add_filter('prevent_resurs_run_on_post_type', 'resursPreventPostType', 10, 2);
