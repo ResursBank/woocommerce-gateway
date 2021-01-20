@@ -586,7 +586,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected static function get_payment_spec($cart, $specLinesOnly = false)
     {
-        global $woocommerce;
+        global $woocommerce, $resurs_is_payment_spec;
         $flow = initializeResursFlow();
 
         //$payment_fee_tax_pct = 0;   // TODO: Figure out this legacy variable, that was never initialized.
@@ -681,8 +681,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                             );
                     }
 
+                    $resurs_is_payment_spec = true;
                     $exTax = $cart->get_coupon_discount_amount($code);
                     $incTax = $cart->get_coupon_discount_amount($code, false);
+                    $resurs_is_payment_spec = false;
                     $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                     $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                     $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
