@@ -68,7 +68,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20210111');
+    define('ECOMPHP_MODIFY_DATE', '20210119');
 }
 
 /**
@@ -79,7 +79,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.48
+ * @version 1.3.49
  */
 class ResursBank
 {
@@ -6463,6 +6463,25 @@ class ResursBank
         }
 
         return $return;
+    }
+
+    /**
+     * @return float
+     * @throws Exception
+     * @since 1.3.49
+     */
+    public function getPayloadTotal()
+    {
+        $return = 0;
+
+        try {
+            $orderData = $this->getOrderData();
+            $return = isset($orderData['totalAmount']) ? $orderData['totalAmount'] : 0;
+        } catch (Exception $e) {
+            // Just ignore this.
+        }
+
+        return (float)$return;
     }
 
     /**
