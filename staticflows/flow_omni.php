@@ -681,10 +681,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                             );
                     }
 
-                    $resurs_is_payment_spec = true;
-                    $exTax = $cart->get_coupon_discount_amount($code);
-                    $incTax = $cart->get_coupon_discount_amount($code, false);
-                    $resurs_is_payment_spec = false;
+                    $discountType = $coupon->get_discount_type();
+                    $exTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code) : ceil($cart->get_coupon_discount_amount($code));
+                    $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code, false) : ceil($cart->get_coupon_discount_amount($code, false));
+                    $exTax = 0 - $exTaxAmount;
+                    $incTax = 0 - $incTaxAmount;
                     $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                     $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                     $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);

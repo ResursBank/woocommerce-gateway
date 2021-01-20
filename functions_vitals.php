@@ -433,9 +433,9 @@ function resurs_order_price_decimals($currentValue)
 {
     global $resurs_is_payment_spec;
 
-    /*if ((bool)$resurs_is_payment_spec === true) {
+    if ((bool)$resurs_is_payment_spec === true) {
         $currentValue = 5;
-    }*/
+    }
 
     return $currentValue;
 }
