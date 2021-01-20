@@ -426,6 +426,7 @@ function getResursStoredPaymentVatData($id, $key = '')
 
 /**
  * Extends number of calculated decimals in a price on demand.
+ * Filter is disabled for the moment, but can be activated if we need to round up differently.
  * @param $currentValue
  * @return mixed
  */
