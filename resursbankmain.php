@@ -1824,10 +1824,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 );
                         }
 
-                        $resurs_is_payment_spec = true;
-                        $exTax = 0 - $cart->get_coupon_discount_amount($code);
-                        $incTax = 0 - $cart->get_coupon_discount_amount($code, false);
-                        $resurs_is_payment_spec = false;
+                        $discountType = $coupon->get_discount_type();
+                        $exTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code) : ceil($cart->get_coupon_discount_amount($code));
+                        $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code, false) : ceil($cart->get_coupon_discount_amount($code, false));
+                        $exTax = 0 - $exTaxAmount;
+                        $incTax = 0 - $incTaxAmount;
                         $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                         $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                         $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
@@ -5584,7 +5585,7 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('woocommerce_before_delete_order_item', 'resurs_remove_order_item');
     add_filter('wc_order_is_editable', 'resurs_order_is_editable', 10, 2);
     add_action('woocommerce_after_checkout_form', 'resurs_after_checkout_form');
-    add_filter('wc_get_price_decimals', 'resurs_order_price_decimals');
+    //add_filter('wc_get_price_decimals', 'resurs_order_price_decimals');
 
     add_filter('woocommerce_get_settings_pages', 'rb_settings_pages');
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_resurs_bank_gateway');

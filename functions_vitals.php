@@ -426,6 +426,7 @@ function getResursStoredPaymentVatData($id, $key = '')
 
 /**
  * Extends number of calculated decimals in a price on demand.
+ * Filter is disabled for the moment, but can be activated if we need to round up differently.
  * @param $currentValue
  * @return mixed
  */
@@ -433,9 +434,9 @@ function resurs_order_price_decimals($currentValue)
 {
     global $resurs_is_payment_spec;
 
-    /*if ((bool)$resurs_is_payment_spec === true) {
+    if ((bool)$resurs_is_payment_spec === true) {
         $currentValue = 5;
-    }*/
+    }
 
     return $currentValue;
 }
