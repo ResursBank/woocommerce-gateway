@@ -23,8 +23,11 @@
     * [WOO-497] - Apply discount settings to order rows
     * [WOO-500] - Initially apply same setup to aftershop as WOO-497
 
-# 2.2.30 - 2.2.40
+# 2.2.30 - 2.2.44
 
+    * [WOO-510] - Prevent plugin to run in product editor
+    * [WOO-515] - Discounts + Hosted, gets errors.
+    * [WOO-517] - When disabling wp-admin-interferences, storefront is also partially disabled
     * [WOO-477] - 2.2.32 ecomphp+netcurl patch
     * [WOO-478] - WC Tested up to: 4.2.0
     * [WOO-467] - Mockfail issue, index event-type not found
