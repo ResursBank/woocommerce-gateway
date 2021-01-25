@@ -595,11 +595,15 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $shipping_tax = (float)$cart->shipping_tax_total;
         $shipping_total = (float)($shipping + $shipping_tax);
 
-        /*
-         * Compatibility.
-         */
-        $shipping_tax_pct = (!is_nan(@round($shipping_tax / $shipping, 2) * 100) ? @round($shipping_tax / $shipping,
-                2) * 100 : 0);
+        $shipping_tax_pct = 0;
+        if ($shipping_tax > 0) {
+            try {
+                $shipping_tax_pct = (
+                !is_nan(round($shipping_tax / $shipping, 2) * 100) ?
+                    @round($shipping_tax / $shipping, 2) * 100 : 0
+                );
+            } catch (Exception $e) {}
+        }
 
         $spec_lines[] = [
             'id' => 'frakt',
