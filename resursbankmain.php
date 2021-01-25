@@ -1721,17 +1721,18 @@ function woocommerce_gateway_resurs_bank_init()
             $shipping = (float)$cart->shipping_total;
             $shipping_tax = (float)$cart->shipping_tax_total;
             $shipping_total = (float)($shipping + $shipping_tax);
-            /*
-             * Compatibility (Discovered in PHP7)
-             */
-            $shipping_tax_pct = (
-            !is_nan(
-                @round(
-                    $shipping_tax / $shipping,
-                    2
-                ) * 100
-            ) ? @round($shipping_tax / $shipping, 2) * 100 : 0
-            );
+            if ($shipping_tax > 0) {
+                $shipping_tax_pct = (
+                !is_nan(
+                    @round(
+                        $shipping_tax / $shipping,
+                        2
+                    ) * 100
+                ) ? @round($shipping_tax / $shipping, 2) * 100 : 0
+                );
+            } else {
+                $shipping_tax_pct = 0;
+            }
 
             $spec_lines[] = [
                 'id' => 'frakt',
