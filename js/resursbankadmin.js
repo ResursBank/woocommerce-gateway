@@ -399,7 +399,7 @@ function showResursCallbackArray(cbArrayResponse) {
                         callbackContent += '</td>';
 
                         callbackContent += '<td width="80%" class="rbCallbackTableStatic rbCallbackStaticRight rbCallbackTableFont" ' + (isCached ? ' style="font-style:italic !important;"' : "") + ' width="75%">';
-                        callbackContent += '<div style="cursor:pointer;" onclick="setCbString(this, \'' + cbObj + '\')">' + cbObjString + '</div>';
+                        callbackContent += '<div style="cursor:pointer;" id="tc_cb_'+cbName+'" onclick="setCbString(this, \'' + cbObj + '\')">' + cbObjString + '</div>';
                         callbackContent += '</td>';
 
                         // Requires at least nonces and a referer check, so this is skipped for now
