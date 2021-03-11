@@ -69,7 +69,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20210121');
+    define('ECOMPHP_MODIFY_DATE', '20210302');
 }
 
 /**
@@ -80,7 +80,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.50
+ * @version 1.3.51
  */
 class ResursBank
 {
@@ -6699,8 +6699,7 @@ class ResursBank
     /**
      * Find out if a payment is creditable
      *
-     * @param array|string $paymentArrayOrPaymentId
-     *
+     * @param array|string|object $paymentArrayOrPaymentId
      * @return bool
      * @throws Exception
      */
@@ -6740,7 +6739,6 @@ class ResursBank
      * will continue to look like one.
      *
      * @param array $paymentArrayOrPaymentId
-     *
      * @return array|mixed|null
      * @throws Exception
      * @since 1.0.2
@@ -6763,8 +6761,7 @@ class ResursBank
     /**
      * A payment is annullable if the payment is debitable
      *
-     * @param array $paymentArrayOrPaymentId
-     *
+     * @param array|string|object $paymentArrayOrPaymentId
      * @return bool
      * @throws Exception
      * @since 1.0.2
@@ -6778,8 +6775,7 @@ class ResursBank
     /**
      * Find out if a payment is debitable
      *
-     * @param array $paymentArrayOrPaymentId
-     *
+     * @param array|string|object $paymentArrayOrPaymentId
      * @return bool
      * @throws Exception
      */
@@ -6798,7 +6794,6 @@ class ResursBank
      * Get each payment diff content count (mostly used for tests)
      *
      * @param $paymentIdOrPaymentObject
-     *
      * @return array
      * @throws Exception
      * @since 1.0.22

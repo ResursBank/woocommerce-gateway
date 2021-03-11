@@ -313,7 +313,8 @@ function notify_resurs_admin_parts_disabled()
     if ((!$simplifiedEnabled || !$omniEnabled)) {
         // Warn about remotely disabled methods.
         echo '<div class="error notice resursAdminPartsDisabled">
-            ' . __(
+            ' .
+            __(
                 'An external plugin has partially disabled information about payment methods in your Resurs ' .
                 'Bank admin console. If this is correct, ignore this message.',
                 'resurs-bank-payment-gateway-for-woocommerce'
