@@ -5804,7 +5804,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
     $orderId = $order->get_id();
     $hasNoResursOrder = false;
     $isResursMethod = $order->get_payment_method();
-    if (0 !== strpos($isResursMethod, "resurs_bank_nr")) {
+    if (0 !== strpos($isResursMethod, "resurs_bank")) {
         unset($resursPaymentId);
     }
     if (!empty($resursPaymentId)) {
