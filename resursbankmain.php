@@ -1982,6 +1982,12 @@ function woocommerce_gateway_resurs_bank_init()
 
             if (!isset($_REQUEST['ssnCustomerType'])) {
                 $_REQUEST['ssnCustomerType'] = 'NATURAL';
+                if (isset($method_class->customerTypes) &&
+                    in_array('LEGAL', (array)$method_class->customerTypes, true) &&
+                    !in_array('NATURAL', (array)$method_class->customerTypes, true)
+                ) {
+                    $_REQUEST['ssnCustomerType'] = 'LEGAL';
+                }
             }
             if (isset($post_data['ssnCustomerType'])) {
                 $_REQUEST['ssnCustomerType'] = $post_data['ssnCustomerType'];
@@ -2058,11 +2064,14 @@ function woocommerce_gateway_resurs_bank_init()
                     // HOSTED
                     $costOfPurchase = $ajaxUrl . '?action=get_cost_ajax';
                     $fieldGenHtml = $this->description . '<br><br>';
-                    if ($specificType != 'CARD') {
-                        $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __(
+                    if ($specificType !== 'CARD') {
+                        $fieldGenHtml .=
+                            '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' .
+                            __(
                                 $read_more,
                                 'resurs-bank-payment-gateway-for-woocommerce'
-                            ) . '</button>';
+                            ) .
+                            '</button>';
                     }
                 }
             }
@@ -2600,7 +2609,8 @@ function woocommerce_gateway_resurs_bank_init()
                 $fetchedGovernmentId = $_REQUEST['ssn_field'];
                 $_REQUEST['applicant-government-id'] = $fetchedGovernmentId;
             }
-            $ssnCustomerType = (isset($_REQUEST['ssnCustomerType']) ? trim($_REQUEST['ssnCustomerType']) : $this->process_payment_get_customer_type($paymentMethodInformation));
+            $ssnCustomerType = (isset($_REQUEST['ssnCustomerType']) ?
+                trim($_REQUEST['ssnCustomerType']) : $this->process_payment_get_customer_type($paymentMethodInformation));
             if ($ssnCustomerType === 'LEGAL' && $paymentMethodInformation->type === 'PAYMENT_PROVIDER') {
                 $fetchedGovernmentId = null;
             }
@@ -3628,6 +3638,11 @@ function woocommerce_gateway_resurs_bank_init()
             $transientMethod = $this->getTransientMethod($methodName);
             $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : '';
             $customerType = isset($_REQUEST['ssnCustomerType']) ? $_REQUEST['ssnCustomerType'] : 'NATURAL';
+            if (in_array('LEGAL', (array)$transientMethod->customerType) &&
+                !in_array('NATURAL', (array)$transientMethod->customerType)
+            ) {
+                $customerType = 'LEGAL';
+            }
 
             /** @var $flow ResursBank */
             $flow = initializeResursFlow();

@@ -25,6 +25,33 @@ $RB(document).on('updated_checkout', function () {
 
 var rbRefUpdated = false;
 
+/**
+ * Special function to look for reverse customer types.
+ * @returns {boolean}
+ */
+function resursIsOnlyLegal() {
+    var returnTheValue = false;
+    if (typeof resursvars["customerTypes"]["hasNatural"] !== 'undefined' &&
+        !resursvars["customerTypes"]["hasNatural"]
+    ) {
+        returnTheValue = true;
+    }
+    return returnTheValue;
+}
+
+/**
+ * @returns {boolean}
+ */
+function resursIsOnlyNatural() {
+    var returnTheValue = false;
+    if (typeof resursvars["customerTypes"]["hasLegal"] !== 'undefined' &&
+        !resursvars["customerTypes"]["hasLegal"]
+    ) {
+        returnTheValue = true;
+    }
+    return returnTheValue;
+}
+
 $RB(document).ready(function ($) {
     var rb_simpl_checkout_form = $RB('form.checkout');
     if (typeof rb_simpl_checkout_form !== 'undefined' &&
@@ -187,6 +214,13 @@ $RB(document).ready(function ($) {
                 });
             }
 
+            if (resursIsOnlyLegal()) {
+                currentCustomerType = 'LEGAL';
+                console.log(
+                    "Reverse getAddress customerType Request. There is no naturals so we can only resolve legals."
+                );
+            }
+
             $.ajax({
                 type: 'GET',
                 url: ajax_object.ajax_url,
@@ -243,6 +277,9 @@ $RB(document).ready(function ($) {
                             customerType = selectedType.val();
                         } else {
                             customerType = 'NATURAL';
+                            if (resursIsOnlyLegal()) {
+                                customerType = 'LEGAL';
+                            }
                         }
                         // Put up as much as possible as default
                         if (typeof info.firstName !== "undefined") {
@@ -408,7 +445,7 @@ function preSetResursMethods(customerType, returnedObjects) {
     getResursMethodList(returnedObjects, hideCustomerType, false);
 
     if (!resursvars["customerTypes"]["hasLegal"]) {
-        console.log("Legal: !hasLegal");
+        //console.log("Legal: !hasLegal");
         $RB('#ssnCustomerRadioNATURAL').remove();
         $RB('#ssnCustomerRadioLEGAL').remove();
     }
@@ -434,6 +471,10 @@ function preSetResursMethods(customerType, returnedObjects) {
 function getResursMethodList(returnedObjects, hideCustomerType, skipDisplay) {
     var shown = 0;
     var hasShown = false;
+
+    if (typeof returnedObjects["hasNatural"] !== 'undefined' && !returnedObjects["hasNatural"]) {
+        hideCustomerType = 'natural';
+    }
 
     $RB('li[class*=payment_method_resurs]').each(function () {
         var showElm = document.getElementsByClassName(this.className);
