@@ -5226,15 +5226,26 @@ function woocommerce_gateway_resurs_bank_init()
     function resurs_order_column_info($column)
     {
         global $post;
+
+        $postMeta = get_post_meta($post->ID);
+        // Overrides the omniPaymentMethod that is only there for backward compatibility
+        $newMethodInfo = getResursPaymentMethodMeta($post->ID);
+        if (isset($postMeta['_payment_method'])) {
+            $metaMethod = $postMeta['_payment_method'];
+            if (is_array($postMeta)) {
+                $metaMethod = array_pop($postMeta['_payment_method']);
+            }
+            if (!preg_match('/^resurs_bank_/', $metaMethod)) {
+                return;
+            }
+        }
+
         if ($column == 'resurs_order_id') {
             $resursId = wc_get_payment_id_by_order_id($post->ID);
             echo $resursId;
         }
         if ($column == 'resurs_payment_method') {
             $omniMethod = get_post_meta($post->ID, 'omniPaymentMethod');
-
-            // Overrides the omniPaymentMethod that is only there for backward compatibility
-            $newMethodInfo = getResursPaymentMethodMeta($post->ID);
             if (!empty($newMethodInfo)) {
                 echo $newMethodInfo;
                 return;
