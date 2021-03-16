@@ -5788,8 +5788,13 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
     $renderedResursData = '';
     $orderId = null;
     $resursPaymentId = get_post_meta($order->get_id(), 'paymentId', true);
+    $resursMethodId = get_post_meta($order->get_id(), 'resursBankMetaPaymentMethod', true);
     $orderId = $order->get_id();
     $hasNoResursOrder = false;
+    $isResursMethod = $order->get_payment_method();
+    if (0 !== strpos($isResursMethod, "resurs_bank_nr")) {
+        unset($resursPaymentId);
+    }
     if (!empty($resursPaymentId)) {
         $hasError = '';
         try {
