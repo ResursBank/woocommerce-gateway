@@ -3638,7 +3638,8 @@ function woocommerce_gateway_resurs_bank_init()
             $transientMethod = $this->getTransientMethod($methodName);
             $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : '';
             $customerType = isset($_REQUEST['ssnCustomerType']) ? $_REQUEST['ssnCustomerType'] : 'NATURAL';
-            if (in_array('LEGAL', (array)$transientMethod->customerType) &&
+            if (isset($transientMethod->customerType) &&
+                in_array('LEGAL', (array)$transientMethod->customerType) &&
                 !in_array('NATURAL', (array)$transientMethod->customerType)
             ) {
                 $customerType = 'LEGAL';
