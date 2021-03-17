@@ -4613,16 +4613,18 @@ function woocommerce_gateway_resurs_bank_init()
                 'Enter your government id (social security number)',
                 'resurs-bank-payment-gateway-for-woocommerce'
             );
+            $govIdLabel = __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce');
             if (!$naturalCount) {
                 $placeHolderField = __(
                     'Enter your company government ID',
                     'resurs-bank-payment-gateway-for-woocommerce'
                 );
+                $govIdLabel = __('Company government id', 'resurs-bank-payment-gateway-for-woocommerce');
             }
             woocommerce_form_field('ssn_field', [
                 'type' => 'text',
                 'class' => ['ssn form-row-wide resurs_ssn_field'],
-                'label' => __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce'),
+                'label' => $govIdLabel,
                 'placeholder' => $placeHolderField,
             ], $checkout->get_value('ssn_field'));
             if ('SE' === $selectedCountry) {
