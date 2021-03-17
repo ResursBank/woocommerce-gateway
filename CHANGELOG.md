@@ -1,3 +1,9 @@
+# 2.2.45 - 2.2.48
+
+    * [WOO-523](https://resursbankplugins.atlassian.net/browse/WOO-523) Resurs Bank payments interferes with other payments if customer "backed out" from payment during payment
+    * [WOO-522](https://resursbankplugins.atlassian.net/browse/WOO-522) One lonely company payment method without naturals may break the natural method flow
+    * [WOO-524](https://resursbankplugins.atlassian.net/browse/WOO-524) "Instant finalized" refuses to update to completed
+
 # 2.2.44
 
     * [WOO-510] - Prevent plugin to run in product editor
