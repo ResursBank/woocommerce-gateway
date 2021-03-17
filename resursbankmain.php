@@ -4333,7 +4333,8 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                     } else {
                         // Generate a notice if the order has been debited from for example payment admin.
-                        // This notice requires that an order is not debitable (if it is, there's more to debit anyway, so in that case the above finalization event will occur)
+                        // This notice requires that an order is not debitable (if it is, there's more to debit anyway,
+                        // so in that case the above finalization event will occur)
                         if ($resursFlow->getIsDebited()) {
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
                                 resursEventLogger($payment_id . ': InstantFinalization/IsDebited detected.');
@@ -4353,8 +4354,9 @@ function woocommerce_gateway_resurs_bank_init()
                                 );
                             }
                         } else {
+                            $alreadyFinalized = false;
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
-                                //resursEventLogger($payment_id . ': InstantFinalization/DebitedNotDetected detected for.');
+                                $alreadyFinalized = true;
                                 $orderNote = __(
                                     'The payment method for this order indicates that the payment has been automatically finalized.',
                                     'resurs-bank-payment-gateway-for-woocommerce'
@@ -4367,7 +4369,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     )
                                 );
                             }
-                            if (!empty($orderNote)) {
+                            if (!$alreadyFinalized && !empty($orderNote)) {
                                 $order->add_order_note($orderNote);
                                 $flowErrorMessage = $orderNote;
                             }
@@ -5714,9 +5716,12 @@ function resurs_order_data_info_after_shipping($order = null)
     resurs_order_data_info($order, 'AS');
 }
 
-function resurs_no_debit_debited($instant = false)
+/**
+ * @param null $instant
+ */
+function resurs_no_debit_debited($instant = null)
 {
-    if (!$instant) {
+    if (!(bool)$instant) {
         $message = __(
             'It seems this order has already been finalized from an external system - if your order is finished you may update it here aswell',
             'resurs-bank-payment-gateway-for-woocommerce'
@@ -5822,7 +5827,8 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $errorMessage = __(
                             'Referenced data don\'t exist',
                             'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . "<br>\n<br>\n";
+                        ) .
+                        "<br>\n<br>\n";
                     $errorMessage .= __(
                         'This error might occur when for example a payment doesn\'t exist at Resurs Bank. Normally this happens when payments have failed or aborted before it can be completed',
                         'resurs-bank-payment-gateway-for-woocommerce'
