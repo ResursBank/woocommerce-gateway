@@ -3666,16 +3666,19 @@ function woocommerce_gateway_resurs_bank_init()
                     $regExString = $regEx[$fieldName];
                     $regExString = str_replace('\\\\', '\\', $regExString);
                     $fieldData = isset($_REQUEST[$fieldName]) ? trim($_REQUEST[$fieldName]) : '';
-                    $invalidFieldError = __(
-                            'The field',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . ' ' . $fieldName . ' ' . __(
-                            'has invalid information',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . ' (' . (!empty($fieldData) ? $fieldData : __(
-                            "It can't be empty",
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        )) . ')';
+                    $fieldNameTranslated = $this->get_payment_method_form_label($fieldName, $customerType);
+                    if (!empty($fieldNameTranslated)) {
+                        $fieldName = $fieldNameTranslated;
+                    }
+                    $invalidFieldError = sprintf(
+                        __(
+                                'The field <b>"%s"</b> has invalid information ("%s") or is missing.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        $fieldName,
+                        $fieldData
+                    );
+
                     if ($fieldName == 'card-number' && empty($fieldData)) {
                         continue;
                     }
