@@ -3665,6 +3665,7 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     $regExString = $regEx[$fieldName];
                     $regExString = str_replace('\\\\', '\\', $regExString);
+                    $fieldNameOriginal = $fieldName;
                     $fieldData = isset($_REQUEST[$fieldName]) ? trim($_REQUEST[$fieldName]) : '';
                     $fieldNameTranslated = $this->get_payment_method_form_label($fieldName, $customerType);
                     if (!empty($fieldNameTranslated)) {
@@ -3679,15 +3680,15 @@ function woocommerce_gateway_resurs_bank_init()
                         $fieldData
                     );
 
-                    if ($fieldName == 'card-number' && empty($fieldData)) {
+                    if ($fieldName === 'card-number' && empty($fieldData)) {
                         continue;
                     }
-                    if (preg_match('/email/', $fieldName)) {
-                        if (!filter_var($_REQUEST[$fieldName], FILTER_VALIDATE_EMAIL)) {
+                    if (preg_match('/email/', $fieldNameOriginal)) {
+                        if (!filter_var($_REQUEST[$fieldNameOriginal], FILTER_VALIDATE_EMAIL)) {
                             wc_add_notice($invalidFieldError, 'error');
                         }
                     } else {
-                        if (!preg_match('/' . $regExString . '/', $_REQUEST[$fieldName])) {
+                        if (!preg_match('/' . $regExString . '/', $_REQUEST[$fieldNameOriginal])) {
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
                         }
