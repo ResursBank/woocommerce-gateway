@@ -105,8 +105,28 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
+                'resursbank_start_session_before' => [
+                    'title' => __('Disable session handling by plugin', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'type' => 'checkbox',
+                    'default' => 'false',
+                    'label' => __('Session handling disabled', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'Disable the way this plugin handles the session. In active state, the plugin will no longer handle the session. Default: Unchecked.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                ],
+                'resursbank_start_session_outside_admin_only' => [
+                    'title' => __('Handle sessions but only outside admin', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => __('Session handling is limited to outside the admin panel.', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'default' => 'false',
+                    'description' => __(
+                        'While the above setting still allows handling session, you can explicitly set the handler to only work outside the admin interface. Default: Unchecked.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                ],
                 'preventGlobalInterference' => [
-                    'title' => __('Prevent performance interferences in wp-admin', 'woocommerce'),
+                    'title' => __('Prevent performance interferences in wp-admin', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(
