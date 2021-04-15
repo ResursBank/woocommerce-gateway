@@ -879,7 +879,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             <!-- Table layout auto fixes issues for woocom 3.4.0 as it has added a fixed value to it in this version -->
             <table class="form-table" style="table-layout: auto !important;">
                 <?php
-
                 if (empty($section)) {
                     echo $this->setSeparator(__('Plugin and checkout', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setCheckBox('enabled', $namespace);
@@ -1267,7 +1266,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                                             <?php
                                         }
                                         ?>
-
                                         <?php if (!$isEnabled) { ?>
                                             <td id="status_<?php echo $curId; ?>" class="status"
                                                 style="cursor: pointer;"
@@ -1472,6 +1470,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</b> - <span id="nextInvoiceSequence"><img src="' . $this->spinner . '"></span></td></tr>';
 
+                    echo $this->setSeparator(
+                        __('Session handling', 'resurs-bank-payment-gateway-for-woocommerce')
+                    );
+                    echo $this->setCheckBox('resursbank_start_session_before', $namespace);
+                    echo $this->setCheckBox('resursbank_start_session_outside_admin_only', $namespace);
                     echo $this->setSeparator(
                         __('Testing and development', 'resurs-bank-payment-gateway-for-woocommerce')
                     );

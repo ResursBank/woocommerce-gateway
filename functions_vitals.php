@@ -443,3 +443,22 @@ function resurs_order_price_decimals($currentValue)
 }
 
 add_action('admin_notices', 'notify_resurs_admin_parts_disabled');
+
+/**
+ * @return bool|null
+ */
+function resurs20StartSession()
+{
+    return getResursOption('resursbank_start_session_before');
+}
+
+/**
+ * @return bool|null
+ */
+function resurs20StartSessionAdmin()
+{
+    return getResursOption('resursbank_start_session_outside_admin_only');
+}
+
+add_filter('resursbank_start_session_before', 'resurs20StartSession');
+add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');

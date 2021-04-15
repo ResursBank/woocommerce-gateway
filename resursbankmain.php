@@ -5083,10 +5083,12 @@ function woocommerce_gateway_resurs_bank_init()
             if ((bool)$session_outside_admin) {
                 if (!is_admin() && session_status() === PHP_SESSION_ACTIVE) {
                     session_destroy();
+                    session_write_close();
                 }
             } else {
                 if (session_status() === PHP_SESSION_ACTIVE) {
                     session_destroy();
+                    session_write_close();
                 }
             }
         }
