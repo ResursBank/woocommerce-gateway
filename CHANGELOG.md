@@ -1,3 +1,15 @@
+# 2.2.51
+
+    * [WOO-527](https://resursbankplugins.atlassian.net/browse/WOO-527) Optionize the session handling filter
+
+# 2.2.50
+
+    * [WOO-526](https://resursbankplugins.atlassian.net/browse/WOO-526) WOO-525 invalidates form validation
+
+# 2.2.49
+
+    * [WOO-525](https://resursbankplugins.atlassian.net/browse/WOO-525) Which error messages is shown on screen?
+
 # 2.2.45 - 2.2.48
 
     * [WOO-523](https://resursbankplugins.atlassian.net/browse/WOO-523) Resurs Bank payments interferes with other payments if customer "backed out" from payment during payment

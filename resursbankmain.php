@@ -5055,15 +5055,13 @@ function woocommerce_gateway_resurs_bank_init()
         /** @var bool $session_outside_admin Disable session creation when in admin if true. */
         $session_outside_admin = (bool)apply_filters('resursbank_start_session_outside_admin_only', null);
 
-        if (!(bool)$do_not_start_session) {
-            if ((bool)$session_outside_admin) {
+        if (!$do_not_start_session) {
+            if ($session_outside_admin) {
                 if (!is_admin() && session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
-            } else {
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
-                }
+            } elseif (session_status() === PHP_SESSION_NONE) {
+                session_start();
             }
         }
     }
@@ -5079,16 +5077,14 @@ function woocommerce_gateway_resurs_bank_init()
         /** @var bool $session_outside_admin Disable session creation when in admin if true. */
         $session_outside_admin = (bool)apply_filters('resursbank_start_session_outside_admin_only', null);
 
-        if (!(bool)$do_not_start_session) {
-            if ((bool)$session_outside_admin) {
+        if (!$do_not_start_session) {
+            if ($session_outside_admin) {
                 if (!is_admin() && session_status() === PHP_SESSION_ACTIVE) {
                     session_destroy();
-                    session_write_close();
                 }
             } else {
                 if (session_status() === PHP_SESSION_ACTIVE) {
                     session_destroy();
-                    session_write_close();
                 }
             }
         }
