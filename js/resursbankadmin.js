@@ -74,7 +74,7 @@ var currentFlowCollection = [];
 var sessionWarnCount = 0;
 var flowRules = {
     "se": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
-    "dk": ["resurs_bank_hosted"],
+    "dk": ["simplifiedshopflow", "resurs_bank_hosted"],
     "no": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
     "fi": ["simplifiedshopflow", "resurs_bank_hosted", "resurs_bank_omnicheckout"],
 };
