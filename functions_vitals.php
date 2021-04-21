@@ -406,7 +406,7 @@ function getResursStoredPaymentVatData($id, $key = '')
 
     try {
         $metaConfiguration = unserialize(getResursPaymentMethodMeta($id, 'resursBankMetaPaymentStoredVatData'));
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         // In case the passed string is not unserializeable, FALSE is returned and E_NOTICE is issued.
         // And if possible, make silence out of that.
         $metaConfiguration = null;
@@ -460,5 +460,69 @@ function resurs20StartSessionAdmin()
     return getResursOption('resursbank_start_session_outside_admin_only');
 }
 
+/**
+ * @param \Resursbank\RBEcomPHP\ResursBank $theFlow
+ * @param $order
+ * @return mixed|null
+ */
+function getResursUnpaidCancellationOrder($theFlow, $order)
+{
+    $rPayment = null;
+    try {
+        $ref = wc_get_payment_id_by_order_id($order->get_id());
+        if (!getResursOption('postidreference')) {
+            $rPayment = $theFlow->getPayment($ref);
+        } else {
+            $rPayment = $theFlow->getPayment($order->get_id());
+        }
+    } catch (Exception $e) {
+        // Ignore and proceed.
+    }
+
+    return $rPayment;
+}
+
+/**
+ * @param $checkout_order_get_created_via
+ * @param WC_Order $order
+ * @return mixed
+ * @throws Exception
+ */
+function getResursUnpaidCancellationControl($checkout_order_get_created_via, $order)
+{
+    $canCancelMeta = $order->get_meta('ResursUnpaidCancellationControl');
+
+    if (empty($canCancelMeta)) {
+        $theFlow = initializeResursFlow();
+        $rPayment = getResursUnpaidCancellationOrder($theFlow, $order);
+
+        // Only add metadata once.
+        setResursOrderMetaData(
+            $order->get_id(),
+            'ResursUnpaidCancellationControl',
+            $checkout_order_get_created_via
+        );
+
+        // Only add notes once.
+        if ($rPayment !== null && $theFlow->canDebit($rPayment)) {
+            $checkout_order_get_created_via = 0;
+            try {
+                $order->update_status(
+                    'on-hold',
+                    __(
+                        'woocommerce_cancel_unpaid_order passed and discovered an active order at Resurs Bank.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    true
+                );
+            } catch (Exception $e) {
+            }
+        }
+    }
+
+    return $checkout_order_get_created_via;
+}
+
+add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);
 add_filter('resursbank_start_session_before', 'resurs20StartSession');
 add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');
