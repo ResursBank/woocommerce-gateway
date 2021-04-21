@@ -297,7 +297,9 @@ $RB(document).ready(function ($) {
                         $("#billing_city").val(typeof info.postalArea !== "undefined" ? info.postalArea : "");
 
                         $("#applicant-government-id").val($('#ssn_field').val());
-
+                        if (typeof info.country !== 'undefined' && $('#billing_country').length > 0) {
+                            $("#billing_country").val(info.country).change();
+                        }
                         if (customerType !== "NATURAL") {
                             $("#billing_company").val(info["fullName"]);
                         } else {

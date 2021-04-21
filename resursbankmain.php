@@ -3882,6 +3882,7 @@ function woocommerce_gateway_resurs_bank_init()
                  */
                 $userProd = getResursOption('ga_login');
                 $passProd = getResursOption('ga_password');
+                //$selectedCountry = getResursOption('country');
                 $getAddressUseProduction = getResursOption('getAddressUseProduction');
                 $disabledProdTests = true;      // TODO: Set this to false in future, when we're ready again (https://resursbankplugins.atlassian.net/browse/WOO-44)
                 if ($getAddressUseProduction &&
