@@ -3504,13 +3504,13 @@ function woocommerce_gateway_resurs_bank_init()
                 }
                 /* Continue. */
                 if ($bookedStatus === 'FROZEN') {
-                    /*$order->update_status(
+                    $order->update_status(
                         'on-hold',
                         __(
                             'The payment are frozen, while waiting for manual control',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
-                    );*/
+                    );
                 } elseif ($bookedStatus === 'BOOKED') {
                     $order->update_status(
                         'processing',
