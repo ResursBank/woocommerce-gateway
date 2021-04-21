@@ -6870,7 +6870,7 @@ function getResursWooCustomerId($order = null)
 /**
  * @param string $key
  * @param bool $popOnArray
- * @return array|int|mixed|null
+ * @return mixed
  */
 function getResursWordpressUser($key = 'userid', $popOnArray = true)
 {
