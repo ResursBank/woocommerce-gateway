@@ -980,7 +980,6 @@ function woocommerce_gateway_resurs_bank_init()
 
             $orderId = wc_get_order_id_by_payment_id($request['paymentId']);
             $order = new WC_Order($orderId);
-
             $currentValidation = $this->validateCallback($request);
             // SKIP_DIGEST_VALIDATION is for test purposes only.
             if (empty($currentValidation) && !getResursFlag('SKIP_DIGEST_VALIDATION')) {
@@ -1830,7 +1829,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                         $discountType = $coupon->get_discount_type();
                         $exTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code) : ceil($cart->get_coupon_discount_amount($code));
-                        $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code, false) : ceil($cart->get_coupon_discount_amount($code, false));
+                        $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code,
+                            false) : ceil($cart->get_coupon_discount_amount($code, false));
                         $exTax = 0 - $exTaxAmount;
                         $incTax = 0 - $incTaxAmount;
                         $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
@@ -1838,7 +1838,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
                         $totalVatAmount = (bool)getResursOption('coupons_include_vat') ?
                             $flow->getTotalVatAmount($unitAmountWithoutVat,
-                            $vatPct, 1) : 0;
+                                $vatPct, 1) : 0;
 
                         $spec_lines[] = [
                             'id' => $couponId,
@@ -3673,8 +3673,8 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     $invalidFieldError = sprintf(
                         __(
-                                'The field <b>"%s"</b> has invalid information ("%s") or is missing.',
-                                'resurs-bank-payment-gateway-for-woocommerce'
+                            'The field <b>"%s"</b> has invalid information ("%s") or is missing.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         $fieldName,
                         $fieldData
@@ -6867,6 +6867,11 @@ function getResursWooCustomerId($order = null)
     return $return;
 }
 
+/**
+ * @param string $key
+ * @param bool $popOnArray
+ * @return mixed
+ */
 function getResursWordpressUser($key = 'userid', $popOnArray = true)
 {
     $wpUserId = get_current_user_id();
@@ -6882,7 +6887,7 @@ function getResursWordpressUser($key = 'userid', $popOnArray = true)
         }
     }
 
-    if (is_array($uMeta) && !count($uMeta) && $wpUserId) {
+    if (isset($uMeta) && is_array($uMeta) && !count($uMeta) && $wpUserId) {
         /** @var WP_User $wpUserData */
         $wpUserData = get_userdata($wpUserId);
         $wpUserDataReturn = $wpUserData->get($key);
@@ -6895,7 +6900,7 @@ function getResursWordpressUser($key = 'userid', $popOnArray = true)
         }
     }
 
-    if ($popOnArray && is_array($uMeta) && count($uMeta)) {
+    if ($popOnArray && isset($uMeta) && is_array($uMeta) && count($uMeta)) {
         return array_pop($uMeta);
     }
 }
