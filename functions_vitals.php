@@ -1,5 +1,7 @@
 <?php
 
+use Resursbank\RBEcomPHP\ResursBank;
+
 /**
  * Get specific options from the Resurs configuration set
  *
@@ -461,7 +463,9 @@ function resurs20StartSessionAdmin()
 }
 
 /**
- * @param \Resursbank\RBEcomPHP\ResursBank $theFlow
+ * Fetch a "correct" order from Resurs Bank during cancellation checks depending on settings.
+ *
+ * @param ResursBank $theFlow
  * @param $order
  * @return mixed|null
  */
@@ -483,6 +487,8 @@ function getResursUnpaidCancellationOrder($theFlow, $order)
 }
 
 /**
+ * Make the plugin NOT cancel active orders during checks for stock reservations that should be cancelled.
+ *
  * @param $checkout_order_get_created_via
  * @param WC_Order $order
  * @return mixed
