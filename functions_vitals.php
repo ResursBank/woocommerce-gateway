@@ -516,7 +516,10 @@ function getResursUnpaidCancellationControl($checkout_order_get_created_via, $or
                 $order->update_status(
                     'on-hold',
                     __(
-                        'woocommerce_cancel_unpaid_order passed and discovered an active order at Resurs Bank.',
+                        '[Resurs Bank] A process that handles stock reservations and automatic cancellation of ' .
+                        'unhandled orders has discovered that this order is active at Resurs Bank. It should ' .
+                        'probably not be cancelled even if WooCommerce suggested this, so it has been placed ' .
+                        'in On-Hold for you.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     true
