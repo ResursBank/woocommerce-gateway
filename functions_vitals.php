@@ -489,7 +489,7 @@ function getResursUnpaidCancellationOrder($theFlow, $order)
 /**
  * Make the plugin NOT cancel active orders during checks for stock reservations that should be cancelled.
  *
- * @param $checkout_order_get_created_via
+ * @param int $checkout_order_get_created_via
  * @param WC_Order $order
  * @return mixed
  * @throws Exception
