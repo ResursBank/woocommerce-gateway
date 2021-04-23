@@ -1164,7 +1164,6 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'BOOKED':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    //if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
                     if ($currentStatus !== 'cancelled') {
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
                         $hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
