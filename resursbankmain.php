@@ -1207,7 +1207,7 @@ function woocommerce_gateway_resurs_bank_init()
                     } else {
                         $order->add_order_note(
                             __(
-                                '[Resurs Bank] The order was placed in status cancelled so the BOOKED callback will remain unhandled..',
+                                '[Resurs Bank] The order was placed in status cancelled when BOOKED arrived so the callback will remain unhandled.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
                             )
                         );
