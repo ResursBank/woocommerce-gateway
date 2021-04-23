@@ -1019,7 +1019,7 @@ function woocommerce_gateway_resurs_bank_init()
             $order->add_order_note(
                 sprintf(
                     __(
-                        '[Resurs Bank] The event %s received (Method %s). Additional result flag: %s.',
+                        '[Resurs Bank] Unhandled callback %s received (Method %s). Additional result flag: %s.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     $event_type,
@@ -1204,6 +1204,13 @@ function woocommerce_gateway_resurs_bank_init()
                         }
 
                         ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
+                    } else {
+                        $order->add_order_note(
+                            __(
+                                '[Resurs Bank] The order was placed in status cancelled so the BOOKED callback will remain unhandled..',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
                     }
                     break;
                 case 'UPDATE':
