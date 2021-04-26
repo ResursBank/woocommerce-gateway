@@ -1,3 +1,8 @@
+# 2.2.52
+
+    * [WOO-530](https://resursbankplugins.atlassian.net/browse/WOO-530) Using getaddress should render setting country if exists, based on the country set for the plugin
+    * [WOO-531](https://resursbankplugins.atlassian.net/browse/WOO-531) Woocommerce cancellation schedule should not cancel orders that is active in Resurs but "waiting for payment" in WooCommerce
+
 # 2.2.51
 
     * [WOO-527](https://resursbankplugins.atlassian.net/browse/WOO-527) Optionize the session handling filter
