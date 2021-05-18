@@ -46,3 +46,4 @@ function activateResursGatewayScripts()
 add_filter('allow_resurs_run', 'allowResursRun', 10, 2);
 add_filter('prevent_resurs_run_on_post_type', 'resursPreventPostType', 10, 2);
 add_action('plugins_loaded', 'activateResursGatewayScripts');
+add_action('admin_notices', 'getRbAdminNotices');

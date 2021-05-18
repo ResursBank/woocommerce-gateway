@@ -532,6 +532,34 @@ function getResursUnpaidCancellationControl($checkout_order_get_created_via, $or
     return $checkout_order_get_created_via;
 }
 
+/**
+ * Generic admin notices.
+ */
+function getRbAdminNotices()
+{
+    if (!isset($_SESSION['rb2'])) {
+        $_SESSION['rb2']['exception'] = [];
+    } elseif (!isset($_SESSION['rb2']['exception'])) {
+        $_SESSION['rb2']['exception'] = [];
+    }
+
+    if (is_admin() && !getResursOption('enabled')) {
+        $_SESSION['rb2']['exception']['plugin_disabled'] = sprintf(
+            __(
+                'The plugin <i>"%s"</i> is currently <b>set to disabled</b> in the Resurs Bank WooCommerce' .
+                'Control panel. This means that the plugin may not function properly. If you need it, make sure ' .
+                'it is properly enabled before start using it.'
+            ),
+            'resurs-bank-payment-gateway-for-woocommerce'
+        );
+    }
+
+    foreach ($_SESSION['rb2']['exception'] as $exceptionType => $exceptionString) {
+        $class = 'notice notice-error is-dismissible';
+        printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), $exceptionString);
+    }
+}
+
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);
 add_filter('resursbank_start_session_before', 'resurs20StartSession');
 add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');
