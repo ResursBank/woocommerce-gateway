@@ -261,17 +261,29 @@ function woocommerce_gateway_resurs_bank_init()
                                     'verified' => false,
                                     'hasOrder' => false,
                                     'resursData' => [],
+                                    'denied' => isset($_REQUEST['purchaseDenied']) ? (bool)$_REQUEST['purchaseDenied'] : false,
                                 ];
                                 if (isset($_GET['pRef'])) {
                                     $purchaseFailOrderId = wc_get_order_id_by_payment_id($_GET['pRef']);
                                     $purchareFailOrder = new WC_Order($purchaseFailOrderId);
-                                    $purchareFailOrder->update_status(
-                                        'failed',
-                                        __(
-                                            'Resurs Bank denied purchase',
-                                            'resurs-bank-payment-gateway-for-woocommerce'
-                                        )
-                                    );
+                                    if (!$returnResult['denied']) {
+                                        $purchareFailOrder->update_status(
+                                            'failed',
+                                            __(
+                                                'Resurs Bank denied purchase',
+                                                'resurs-bank-payment-gateway-for-woocommerce'
+                                            )
+                                        );
+                                    } else {
+                                        update_post_meta($purchaseFailOrderId, 'soft_purchase_denied', true);
+                                        $purchareFailOrder->update_status(
+                                            'failed: denied',
+                                            __(
+                                                'Resurs Bank denied purchase',
+                                                'resurs-bank-payment-gateway-for-woocommerce'
+                                            )
+                                        );
+                                    }
                                     update_post_meta($purchaseFailOrderId, 'soft_purchase_fail', true);
                                     WC()->session->set('resursCreatePass', 0);
                                     $returnResult['success'] = true;
@@ -4836,6 +4848,10 @@ function woocommerce_gateway_resurs_bank_init()
             ),
             'purchaseAjaxInternalFailure' => __(
                 'The purchase has failed, due to an internal server error: The shop could not properly update the order.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
+            'purchaseAjaxInternalDenied' => __(
+                'The purchase was denied: The shop could not properly update the order. Please contact support for more information.',
                 'resurs-bank-payment-gateway-for-woocommerce'
             ),
             'updatePaymentReferenceFailure' => __(
