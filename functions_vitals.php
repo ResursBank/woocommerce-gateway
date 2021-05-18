@@ -558,6 +558,9 @@ function getRbAdminNotices()
         $class = 'notice notice-error is-dismissible';
         printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), $exceptionString);
     }
+    if (isset($_SESSION['rb2']['exception']['plugin_disabled'])) {
+        unset($_SESSION['rb2']['exception']['plugin_disabled']);
+    }
 }
 
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);
