@@ -15,7 +15,9 @@ Maintenance release.
 
 = About =
 
-Official payment gateway for Resurs Bank, with full support for all non-deprecated shop flows.
+Official payment gateway for Resurs Bank.
+Maintenance version.
+Full support for all non-deprecated shop flows.
 SoapClient is required as many of the administrative actions are using SOAP.
 Requires PHP 7.0 or above since WooCommerce requires this.
 
