@@ -6694,8 +6694,6 @@ function initializeResursFlow(
         }
     }
 
-    $allowCompressedUserAgent = (bool)apply_filters('resursbank_compress_agent', null);
-
     $userAgent = sprintf(
         '%s-%s-flow-%s-WC-%s',
         RB_WOO_CLIENTNAME,
