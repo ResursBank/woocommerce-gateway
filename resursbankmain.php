@@ -6694,12 +6694,16 @@ function initializeResursFlow(
         }
     }
 
-    $initFlow->setUserAgent(sprintf(
-        '%s-%s-with-woocommerce-%s',
+    $allowCompressedUserAgent = (bool)apply_filters('resursbank_compress_agent', null);
+
+    $userAgent = sprintf(
+        '%s-%s-flow-%s-WC-%s',
         RB_WOO_CLIENTNAME,
         RB_WOO_VERSION,
+        preg_replace('/resurs_bank_/', '', getResursOption('flowtype')),
         $woocommerce->version
-    ));
+    );
+    $initFlow->setUserAgent($userAgent);
     $initFlow->setEnvironment($useEnvironment);
     $initFlow->setDefaultUnitMeasure();
     if (isset($_REQUEST['testurl'])) {
