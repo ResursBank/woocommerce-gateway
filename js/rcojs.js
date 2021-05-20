@@ -38,6 +38,7 @@ $RB(document).ready(function ($) {
                 iframeElement.setAttribute('style', omnivars["iframeShape"]);
             });
         }
+
         resursCheckout.setPurchaseFailCallback(function () {
             // OmniRef.
             var omniRef;
@@ -57,6 +58,27 @@ $RB(document).ready(function ($) {
                 ).fail(
                     function (x, y) {
                         handleResursCheckoutError(getResursPhrase("purchaseAjaxInternalFailure"));
+                    }
+                );
+            }
+            handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
+        });
+        resursCheckout.setPurchaseDeniedCallback(function () {
+            var omniRef;
+            if (typeof omnivars.OmniRef !== "undefined") {
+                omniRef = omnivars.OmniRef;
+                var preBookUrl = omnivars.OmniPreBookUrl + "&pRef=" + omniRef + "&purchaseFail=1&set-no-session=1&purchaseDenied=1";
+                $RB.ajax(
+                    {
+                        url: preBookUrl,
+                        type: "GET"
+                    }
+                ).success(
+                    function (successData) {
+                    }
+                ).fail(
+                    function (x, y) {
+                        handleResursCheckoutError(getResursPhrase("purchaseAjaxInternalDenied"));
                     }
                 );
             }

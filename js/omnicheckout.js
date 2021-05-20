@@ -1,13 +1,16 @@
-/*! ResursCheckoutJS v0.09 - Generic Reurs Bank iFrame-driver for Resurs Checkout, for catching events in the Resurs Checkout iFrame */
+/*!
+ * ResursCheckoutJS v0.10
+ *  Generic Resurs Bank iFrame-driver for Resurs Checkout, for catching events in the Resurs Checkout iFrame.
+ *  Used for the older version of RCO-Interceptor, maintenance only!
+ *  Docs and info-urls resides in the non-minified version.
+ *  Maintained by Resurs Bank: onboarding@resurs.se
+ *
+ */
 
 /*
- * CHANGELOG
- *
- * The changelog has moved to https://test.resurs.com/docs/x/5ABV
- *
  * DOCS
  *
- * Also located at https://test.resurs.com/docs/x/5ABV (You can also look att README.md in the repo)
+ * Located at https://test.resurs.com/docs/x/5ABV with changelog.
  *
  * Usage example:
  *
@@ -32,11 +35,12 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
         var currentResursEventNamePrefix = "checkout";
         var resursCheckoutElement = "";     // defined element for where Resurs Checkout iframe is (or should be) located
         var resursCheckoutFrame = "";
-        var resursCheckoutVersion = "0.09";
+        var resursCheckoutVersion = "0.10";
         var resursCheckoutData = {"paymentMethod": "", "customerData": {}};
         var resursCheckoutDebug = false;
         var resursCheckoutBookingCallback = null;
         var resursCheckoutPurchaseFail = null;
+        var resursCheckoutPurchaseDenied = null;
         var resursCheckoutCustomerChange = null;
         var resursCheckoutIframeReady = null;
         var resursPostMessageElement = null;
@@ -124,6 +128,9 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
             setPurchaseFailCallback: function (eventCallbackSet) {
                 resursCheckoutPurchaseFail = eventCallbackSet;
             },
+            setPurchaseDeniedCallback: function (eventCallbackSet) {
+                resursCheckoutPurchaseDenied = eventCallbackSet;
+            },
             setCustomerChangedEventCallback: function (eventCallbackSet) {
                 resursCheckoutCustomerChange = eventCallbackSet;
             },
@@ -173,7 +180,6 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                         return;
                     }
                     if (eventDataObject.hasOwnProperty('eventType') && typeof eventDataObject.eventType === 'string') {
-                        console.log("Event", eventDataObject.eventType);
                         switch (eventDataObject.eventType) {
                             case currentResursEventNamePrefix + ":loaded":
                                 postMessage({
@@ -198,7 +204,6 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                                     } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":user-info-change") {
                                         if (resursCheckoutDebug) {
                                             console.log("ResursCheckoutJS: [Inbound] user-info-change");
-                                            console.log(eventDataObject);
                                         }
                                         resursCheckoutData.customerData = {
                                             "address": (typeof eventDataObject.address !== "undefined" ? eventDataObject.address : {}),
@@ -212,9 +217,17 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                                     } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":purchase-failed") {
                                         if (typeof resursCheckoutPurchaseFail === "function") {
                                             resursCheckoutPurchaseFail();
-                                        } else if (resursCheckoutPurchaseFail === "string") {
+                                        } else if (typeof resursCheckoutPurchaseFail === "string") {
                                             if (typeof window[resursCheckoutPurchaseFail] === "function") {
                                                 window[resursCheckoutPurchaseFail]();
+                                            }
+                                        }
+                                    } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":purchase-denied") {
+                                        if (typeof resursCheckoutPurchaseDenied === "function") {
+                                            resursCheckoutPurchaseDenied();
+                                        } else if (typeof resursCheckoutPurchaseDenied === "string") {
+                                            if (typeof window[resursCheckoutPurchaseDenied] === "function") {
+                                                window[resursCheckoutPurchaseDenied]();
                                             }
                                         }
                                     } else if (eventDataObject.eventType == currentResursEventNamePrefix + ":puchase-button-clicked") {
