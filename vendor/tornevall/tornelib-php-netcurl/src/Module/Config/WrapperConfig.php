@@ -17,10 +17,10 @@ use TorneLIB\Flags;
 use TorneLIB\Helpers\Browsers;
 use TorneLIB\IO\Data\Content;
 use TorneLIB\IO\Data\Strings;
-use TorneLIB\Model\Type\authSource;
-use TorneLIB\Model\Type\authType;
-use TorneLIB\Model\Type\dataType;
-use TorneLIB\Model\Type\requestMethod;
+use TorneLIB\Model\Type\AuthSource;
+use TorneLIB\Model\Type\AuthType;
+use TorneLIB\Model\Type\DataType;
+use TorneLIB\Model\Type\RequestMethod;
 use TorneLIB\Utils\Ini;
 
 /**
@@ -29,7 +29,7 @@ use TorneLIB\Utils\Ini;
  *
  * @package Module\Config
  * @since 6.1.0
- * @version 6.1.3
+ * @version 6.1.4
  */
 class WrapperConfig
 {
@@ -57,13 +57,13 @@ class WrapperConfig
      * @var int Default method. Postdata will in the case of GET generate postdata in the link.
      * @since 6.1.0
      */
-    private $requestMethod = requestMethod::METHOD_GET;
+    private $requestMethod = RequestMethod::GET;
     /**
      * Datatype to post in (default = uses ?key=value for GET and &key=value in body for POST).
      * @var int
      * @since 6.1.0
      */
-    private $requestDataType = dataType::NORMAL;
+    private $requestDataType = DataType::NORMAL;
     /**
      * @var array Options that sets up each request engine. On curl, it is CURLOPT.
      * @since 6.1.0
@@ -267,7 +267,7 @@ class WrapperConfig
      * @link https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
      * @since 6.1.0
      */
-    private function setTimeout($timeout = 300, $useMillisec = false)
+    public function setTimeout($timeout = 300, $useMillisec = false)
     {
         /**
          * CURLOPT_TIMEOUT (Entire request) Everything has to be established and get finished on this time limit.
@@ -631,33 +631,45 @@ class WrapperConfig
     /**
      * Transform requested data into a proper format based on the content-type.
      *
+     * @param null $dataType
+     * @param null $requestData
+     * @param null $requestMethod
      * @return array
      * @since 6.1.0
      */
-    public function getRequestData()
+    public function getRequestData($dataType = null, $requestData = null, $requestMethod = null)
     {
-        $return = $this->requestData;
+        if (is_null($dataType)) {
+            $dataType = $this->requestDataType;
+        }
+        if (is_null($requestData)) {
+            $requestData = $this->requestData;
+        }
+        if (is_null($requestMethod)) {
+            $requestMethod = $this->requestMethod;
+        }
+        $return = $requestData;
 
         // Return as is on string.
         if (!is_string($return)) {
-            switch ($this->requestDataType) {
-                case dataType::XML:
+            switch ($dataType) {
+                case DataType::XML:
                     $this->requestDataContainer = (new Content())->getXmlFromArray($return);
                     $return = $this->requestDataContainer;
                     break;
-                case dataType::JSON:
+                case DataType::JSON:
                     $this->requestDataContainer = $this->getJsonData($return);
                     $return = $this->requestDataContainer;
                     break;
-                case dataType::NORMAL:
+                case DataType::NORMAL:
                     $requestQuery = '';
-                    if ($this->requestMethod === requestMethod::METHOD_GET && !empty($this->requestData)) {
+                    if ($requestMethod === RequestMethod::GET && !empty($requestData)) {
                         // Add POST data to request if anything else follows.
                         $requestQuery = '&';
                     }
-                    $this->requestDataContainer = $this->requestData;
-                    if (is_array($this->requestData) || is_object($this->requestData)) {
-                        $httpQuery = http_build_query($this->requestData);
+                    $this->requestDataContainer = $requestData;
+                    if ($this->hasData($requestData)) {
+                        $httpQuery = http_build_query($requestData);
                         if (!empty($httpQuery)) {
                             $this->requestDataContainer = $requestQuery . $httpQuery;
                         }
@@ -707,6 +719,24 @@ class WrapperConfig
         }
 
         return (string)$return;
+    }
+
+    /**
+     * @param $arrayObject
+     * @return bool
+     * @since 6.1.4
+     */
+    public function hasData($arrayObject)
+    {
+        $return = false;
+
+        if (is_object($arrayObject)) {
+            $return = true;
+        } elseif (is_array($arrayObject) && count($arrayObject)) {
+            $return = true;
+        }
+
+        return $return;
     }
 
     /**
@@ -1193,12 +1223,12 @@ class WrapperConfig
      */
     public function setAuthStream()
     {
-        if ($this->authSource === authSource::NORMAL) {
+        if ($this->authSource === AuthSource::NORMAL) {
             $this->setAuthentication(
                 $this->authData['username'],
                 $this->authData['password'],
                 $this->authData['type'],
-                authSource::STREAM
+                AuthSource::STREAM
             );
         }
 
@@ -1210,29 +1240,29 @@ class WrapperConfig
      *
      * @param $username
      * @param $password
-     * @param int $authType
-     * @param int $authSource
+     * @param int|AuthType $authType
+     * @param int|AuthSource $authSource
      * @return WrapperConfig
      * @since 6.1.0
      */
     public function setAuthentication(
         $username,
         $password,
-        $authType = authType::BASIC,
-        $authSource = authSource::NORMAL
+        $authType = AuthType::BASIC,
+        $authSource = AuthSource::NORMAL
     ) {
         $this->authSource = $authSource;
 
         switch ($authSource) {
-            case authSource::STREAM:
-                if ($authType === authType::BASIC) {
+            case AuthSource::STREAM:
+                if ($authType === AuthType::BASIC) {
                     $this->setDualStreamHttp(
                         'header',
                         'Authorization: Basic ' . base64_encode("$username:$password")
                     );
                 }
                 break;
-            case authSource::SOAP:
+            case AuthSource::SOAP:
                 $this->authData['login'] = $username;
                 $this->authData['password'] = $password;
                 $this->setStreamOption('login', $this->authData['login']);
@@ -1504,7 +1534,7 @@ class WrapperConfig
      * @return $this
      * @since 6.1.0
      */
-    public function request($url = '', $data = [], $method = requestMethod::METHOD_GET, $dataType = dataType::NORMAL)
+    public function request($url = '', $data = [], $method = RequestMethod::GET, $dataType = DataType::NORMAL)
     {
         if (!empty($url)) {
             $this->setRequestUrl($url);
@@ -1549,7 +1579,7 @@ class WrapperConfig
         if (is_numeric($requestMethod)) {
             $this->requestMethod = $requestMethod;
         } else {
-            $this->requestMethod = requestMethod::METHOD_GET;
+            $this->requestMethod = RequestMethod::GET;
         }
 
         return $this;
@@ -1647,7 +1677,7 @@ class WrapperConfig
      * @since 6.1.0
      * @noinspection PhpUnusedPrivateMethodInspection
      */
-    private function getTimeout()
+    public function getTimeout()
     {
         $cTimeout = null;
         $eTimeout = null;

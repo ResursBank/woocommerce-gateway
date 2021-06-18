@@ -1,34 +1,33 @@
 [
     {
         "name": "resursbank/ecomphp",
-        "version": "1.3.51",
-        "version_normalized": "1.3.51.0",
+        "version": "1.3.54",
+        "version_normalized": "1.3.54.0",
         "source": {
             "type": "git",
             "url": "https://github.com/ResursBank/ecomphp.git",
-            "reference": "6614868fab1ed9968c340e2cbb02cf7dbef6c29a"
+            "reference": "9406be4b0645084cc4dfa9b6fbfabb45e1a876a6"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/6614868fab1ed9968c340e2cbb02cf7dbef6c29a",
-            "reference": "6614868fab1ed9968c340e2cbb02cf7dbef6c29a",
+            "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/9406be4b0645084cc4dfa9b6fbfabb45e1a876a6",
+            "reference": "9406be4b0645084cc4dfa9b6fbfabb45e1a876a6",
             "shasum": ""
         },
         "require": {
-            "tornevall/tornelib-php-bitmask": "^6.1",
-            "tornevall/tornelib-php-netcurl-deprecate-60": "^6.0",
+            "resursbank/ecomphp-deprecated": ">=0",
+            "tornevall/tornelib-php-netcurl": "^6.1",
             "tornevall/tornelib-php-network": "^6.1"
         },
-        "time": "2021-03-02T15:36:23+00:00",
+        "time": "2021-05-27T12:25:32+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
             "files": [
-                "source/classes/ecomhooks.php",
                 "source/classes/rbapiloader.php"
             ],
             "psr-4": {
-                "Resursbank\\RBEcomPHP\\": "source/classes/rbapiloader.php"
+                "Resursbank\\Ecommerce\\": "src"
             }
         },
         "notification-url": "https://packagist.org/downloads/",
@@ -44,26 +43,29 @@
         "description": "Resurs Bank AB ecommerce library for PHP."
     },
     {
-        "name": "tornevall/tornelib-php-bitmask",
-        "version": "6.1.0",
-        "version_normalized": "6.1.0.0",
+        "name": "resursbank/ecomphp-deprecated",
+        "version": "0.0.6",
+        "version_normalized": "0.0.6.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/Tornevall/tornelib-php-bitmask.git",
-            "reference": "6e529d8c9a47752a0b99845a048c3dc9a4dff6bc"
+            "url": "https://github.com/ResursBank/ecomphp-deprecated.git",
+            "reference": "86e182686e6f91720fcf1f286d4bafdac3b96d9c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-bitmask/zipball/6e529d8c9a47752a0b99845a048c3dc9a4dff6bc",
-            "reference": "6e529d8c9a47752a0b99845a048c3dc9a4dff6bc",
+            "url": "https://api.github.com/repos/ResursBank/ecomphp-deprecated/zipball/86e182686e6f91720fcf1f286d4bafdac3b96d9c",
+            "reference": "86e182686e6f91720fcf1f286d4bafdac3b96d9c",
             "shasum": ""
         },
-        "time": "2020-04-12T17:31:09+00:00",
+        "time": "2021-05-26T15:49:03+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
+            "psr-0": {
+                "": "src/"
+            },
             "psr-4": {
-                "TorneLIB\\": "src"
+                "Resursbank\\RBEcomPHP\\": "src/"
             }
         },
         "notification-url": "https://packagist.org/downloads/",
@@ -73,12 +75,10 @@
         "authors": [
             {
                 "name": "Tomas Tornevall",
-                "email": "thorne@tornevall.net",
-                "homepage": "https://tornevall.net",
-                "role": "Developer"
+                "email": "tomas.tornevall@resurs.se"
             }
         ],
-        "description": "Library that handles bitmasking issues"
+        "description": "Support for deprecated code within the EComPHP Library."
     },
     {
         "name": "tornevall/tornelib-php-crypto",
@@ -240,17 +240,17 @@
     },
     {
         "name": "tornevall/tornelib-php-netcurl",
-        "version": "6.1.3",
-        "version_normalized": "6.1.3.0",
+        "version": "6.1.4",
+        "version_normalized": "6.1.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/Tornevall/tornelib-php-netcurl.git",
-            "reference": "4f5ff82abf40af76fdba3c0c185ff1e84caa62ca"
+            "reference": "174ef32a35ae38e21d6393b27eb682216b5bcec3"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/4f5ff82abf40af76fdba3c0c185ff1e84caa62ca",
-            "reference": "4f5ff82abf40af76fdba3c0c185ff1e84caa62ca",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/174ef32a35ae38e21d6393b27eb682216b5bcec3",
+            "reference": "174ef32a35ae38e21d6393b27eb682216b5bcec3",
             "shasum": ""
         },
         "require": {
@@ -261,7 +261,7 @@
             "tornevall/tornelib-php-utils": "6.1.*",
             "tornevall/tornelib-php-version": "6.1.*"
         },
-        "time": "2020-12-09T18:08:47+00:00",
+        "time": "2021-05-27T12:09:07+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -282,43 +282,6 @@
             }
         ],
         "description": "Yet another Curl Library to handling web calls"
-    },
-    {
-        "name": "tornevall/tornelib-php-netcurl-deprecate-60",
-        "version": "6.0.2",
-        "version_normalized": "6.0.2.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/Tornevall/tornelib-php-netcurl-deprecate-60.git",
-            "reference": "7303791e68caf07e2a9bf9eba18e7826ba79fac7"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl-deprecate-60/zipball/7303791e68caf07e2a9bf9eba18e7826ba79fac7",
-            "reference": "7303791e68caf07e2a9bf9eba18e7826ba79fac7",
-            "shasum": ""
-        },
-        "time": "2020-10-14T07:34:43+00:00",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "TorneLIB\\": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "Apache-2.0"
-        ],
-        "authors": [
-            {
-                "name": "Tomas Tornevall",
-                "email": "thorne@tornevall.net",
-                "homepage": "https://www.tornevall.net",
-                "role": "Developer"
-            }
-        ],
-        "description": "netcurl-6.0 deprecation library"
     },
     {
         "name": "tornevall/tornelib-php-network",
@@ -366,24 +329,24 @@
     },
     {
         "name": "tornevall/tornelib-php-utils",
-        "version": "6.1.9",
-        "version_normalized": "6.1.9.0",
+        "version": "6.1.10",
+        "version_normalized": "6.1.10.0",
         "source": {
             "type": "git",
             "url": "https://github.com/Tornevall/tornelib-php-utils.git",
-            "reference": "05ec3433f1c5d61ce7e389c6ac6e0aa5ef81f1f6"
+            "reference": "b4151dfc0e107606c776c691ca61ee4aa480f1e7"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/05ec3433f1c5d61ce7e389c6ac6e0aa5ef81f1f6",
-            "reference": "05ec3433f1c5d61ce7e389c6ac6e0aa5ef81f1f6",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/b4151dfc0e107606c776c691ca61ee4aa480f1e7",
+            "reference": "b4151dfc0e107606c776c691ca61ee4aa480f1e7",
             "shasum": ""
         },
         "require": {
             "tornevall/tornelib-php-errorhandler": "^6.1",
             "tornevall/tornelib-php-flags": "^6.1"
         },
-        "time": "2020-10-28T14:08:53+00:00",
+        "time": "2021-05-25T12:46:09+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

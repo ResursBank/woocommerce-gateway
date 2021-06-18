@@ -13,10 +13,10 @@ use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\GenericParser;
 use TorneLIB\Helpers\Version;
 use TorneLIB\Model\Interfaces\WrapperInterface;
-use TorneLIB\Model\Type\authSource;
-use TorneLIB\Model\Type\authType;
-use TorneLIB\Model\Type\dataType;
-use TorneLIB\Model\Type\requestMethod;
+use TorneLIB\Model\Type\AuthSource;
+use TorneLIB\Model\Type\AuthType;
+use TorneLIB\Model\Type\DataType;
+use TorneLIB\Model\Type\RequestMethod;
 use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Utils\Generic;
 use TorneLIB\Utils\Security;
@@ -157,9 +157,9 @@ class SimpleStreamWrapper implements WrapperInterface
      * @return SimpleStreamWrapper
      * @since 6.1.0
      */
-    public function setAuthentication($username, $password, $authType = authType::BASIC)
+    public function setAuthentication($username, $password, $authType = AuthType::BASIC)
     {
-        $this->CONFIG->setAuthentication($username, $password, $authType, authSource::STREAM);
+        $this->CONFIG->setAuthentication($username, $password, $authType, AuthSource::STREAM);
 
         return $this;
     }
@@ -276,7 +276,7 @@ class SimpleStreamWrapper implements WrapperInterface
      * @throws ExceptionHandler
      * @since 6.1.0
      */
-    public function request($url, $data = [], $method = requestMethod::METHOD_GET, $dataType = dataType::NORMAL)
+    public function request($url, $data = [], $method = RequestMethod::GET, $dataType = DataType::NORMAL)
     {
         $this->CONFIG->resetStreamData();
         if (!empty($url)) {
@@ -326,20 +326,23 @@ class SimpleStreamWrapper implements WrapperInterface
     {
         $requestMethod = $this->CONFIG->getRequestMethod();
         switch ($requestMethod) {
-            case requestMethod::METHOD_POST:
+            case RequestMethod::POST:
                 $this->CONFIG->setDualStreamHttp('method', 'POST');
                 break;
-            case requestMethod::METHOD_PUT:
+            case RequestMethod::PUT:
                 $this->CONFIG->setDualStreamHttp('method', 'PUT');
                 break;
-            case requestMethod::METHOD_DELETE:
+            case RequestMethod::DELETE:
                 $this->CONFIG->setDualStreamHttp('method', 'DELETE');
                 break;
-            case requestMethod::METHOD_HEAD:
+            case RequestMethod::HEAD:
                 $this->CONFIG->setDualStreamHttp('method', 'HEAD');
                 break;
-            case requestMethod::METHOD_REQUEST:
+            case RequestMethod::REQUEST:
                 $this->CONFIG->setDualStreamHttp('method', 'REQUEST');
+                break;
+            case RequestMethod::PATCH:
+                $this->CONFIG->setDualStreamHttp('method', 'PATCH');
                 break;
             default:
                 $this->CONFIG->setDualStreamHttp('method', 'GET');
@@ -363,10 +366,10 @@ class SimpleStreamWrapper implements WrapperInterface
         );
 
         switch ($this->CONFIG->getRequestDataType()) {
-            case dataType::XML:
+            case DataType::XML:
                 $this->setStreamContentType('text/xml');
                 break;
-            case dataType::JSON:
+            case DataType::JSON:
                 $this->setStreamContentType('application/json; charset=utf-8');
                 break;
             default:

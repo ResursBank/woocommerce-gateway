@@ -13,9 +13,9 @@ use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\IO\Data\Arrays;
 use TorneLIB\IO\Data\Content;
 use TorneLIB\Model\Interfaces\WrapperInterface;
-use TorneLIB\Model\Type\authType;
-use TorneLIB\Model\Type\dataType;
-use TorneLIB\Model\Type\requestMethod;
+use TorneLIB\Model\Type\AuthType;
+use TorneLIB\Model\Type\DataType;
+use TorneLIB\Model\Type\RequestMethod;
 use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Module\Config\WrapperDriver;
 use TorneLIB\Utils\Generic;
@@ -88,8 +88,8 @@ class NetWrapper implements WrapperInterface
 
     /**
      * Allows strict identification in user-agent header.
-     * @param $activation
-     * @param $allowPhpRelease
+     * @param bool $activation
+     * @param bool $allowPhpRelease
      * @return NetWrapper
      * @since 6.1.0
      */
@@ -122,14 +122,15 @@ class NetWrapper implements WrapperInterface
     public function getVersion()
     {
         return isset($this->version) && !empty($this->version) ?
-            $this->version : (new Generic())->getVersionByAny(__DIR__, 3, WrapperConfig::class);
+            $this->version : (string)(new Generic())->getVersionByAny(__DIR__, 3, WrapperConfig::class);
     }
 
     /**
-     * @param $timeout
+     * @param int $timeout
      * @param false $useMillisec
      * @return $this
      * @since 6.1.3
+     * @noinspection SpellCheckingInspection
      */
     public function setTimeout($timeout, $useMillisec = false)
     {
@@ -167,15 +168,15 @@ class NetWrapper implements WrapperInterface
     }
 
     /**
-     * @param $username
-     * @param $password
-     * @param int $authType
+     * @param string $username
+     * @param string $password
+     * @param AuthType|int $authType
      * @return NetWrapper
      * @since 6.1.0
      */
-    public function setAuthentication($username, $password, $authType = authType::BASIC)
+    public function setAuthentication($username, $password, $authType = AuthType::BASIC)
     {
-        $this->CONFIG->setAuthentication($username, $password, $authType);
+        $this->CONFIG->setAuthentication($username, $password, (int)$authType);
 
         return $this;
     }
@@ -453,8 +454,8 @@ class NetWrapper implements WrapperInterface
             $return[$currentRequestUrl] = $this->request(
                 $currentRequestUrl,
                 isset($requestData[0]) ? $requestData[0] : [],
-                isset($requestData[1]) ? $requestData[1] : requestMethod::METHOD_GET,
-                isset($requestData[2]) ? $requestData[2] : dataType::NORMAL
+                isset($requestData[1]) ? $requestData[1] : RequestMethod::GET,
+                isset($requestData[2]) ? $requestData[2] : DataType::NORMAL
             );
         }
         return $return;
@@ -465,7 +466,7 @@ class NetWrapper implements WrapperInterface
      * @throws ExceptionHandler
      * @since 6.1.0
      */
-    public function request($url, $data = [], $method = requestMethod::METHOD_GET, $dataType = dataType::NORMAL)
+    public function request($url, $data = [], $method = RequestMethod::GET, $dataType = DataType::NORMAL)
     {
         if (is_array($url)) {
             // If url list an associative array or allowed to run arrays that is not associative, run this
@@ -561,8 +562,8 @@ class NetWrapper implements WrapperInterface
     private function requestExternalExecute(
         $url,
         $data = [],
-        $method = requestMethod::METHOD_GET,
-        $dataType = dataType::NORMAL
+        $method = RequestMethod::GET,
+        $dataType = DataType::NORMAL
     ) {
         $this->CONFIG->getStreamHeader();
         $externalHasErrors = false;
@@ -607,8 +608,8 @@ class NetWrapper implements WrapperInterface
     private function requestExternal(
         $url,
         $data = [],
-        $method = requestMethod::METHOD_GET,
-        $dataType = dataType::NORMAL
+        $method = RequestMethod::GET,
+        $dataType = DataType::NORMAL
     ) {
         $return = null;
         $hasInternalSuccess = false;
@@ -661,8 +662,8 @@ class NetWrapper implements WrapperInterface
     private function getResultFromInternals(
         $url,
         $data = [],
-        $method = requestMethod::METHOD_GET,
-        $dataType = dataType::NORMAL
+        $method = RequestMethod::GET,
+        $dataType = DataType::NORMAL
     ) {
         $return = null;
 
@@ -673,10 +674,10 @@ class NetWrapper implements WrapperInterface
         if (!is_array($url) && (bool)preg_match('/\?wsdl|&wsdl/i', $url)) {
             try {
                 Security::getCurrentClassState('SoapClient');
-                $dataType = dataType::SOAP;
+                $dataType = DataType::SOAP;
             } catch (ExceptionHandler $e) {
-                $method = requestMethod::METHOD_POST;
-                $dataType = dataType::XML;
+                $method = RequestMethod::POST;
+                $dataType = DataType::XML;
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 if (!is_string($data) && !empty($data)) {
                     $data = (new Content())->getXmlFromArray($data);
@@ -688,11 +689,11 @@ class NetWrapper implements WrapperInterface
         // This allows us to add internal supported drivers without including them in this specific package.
         //$testWrapper = WrapperDriver::getWrapperAllowed('myNameSpace\myDriver');
 
-        if ($dataType === dataType::SOAP && ($this->getProperInstanceWrapper('SoapClientWrapper'))) {
+        if ($dataType === DataType::SOAP && ($this->getProperInstanceWrapper('SoapClientWrapper'))) {
             $this->isSoapRequest = true;
             $this->instance->setConfig($this->getConfig());
             $return = $this->instance->request($url, $data, $method, $dataType);
-        } elseif ($dataType === dataType::RSS_XML && $this->getProperInstanceWrapper('RssWrapper')) {
+        } elseif ($dataType === DataType::RSS_XML && $this->getProperInstanceWrapper('RssWrapper')) {
             $this->instance->setConfig($this->getConfig());
             $return = $this->instance->request($url, $data, $method, $dataType);
         } elseif ($this->getProperInstanceWrapper('CurlWrapper')) {

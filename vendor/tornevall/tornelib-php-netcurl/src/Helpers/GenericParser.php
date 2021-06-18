@@ -42,11 +42,7 @@ class GenericParser
             $headContent = explode(' ', $headString, 2);
 
             // Make sure there is no extras when starting to extract this data.
-            if (
-                (
-                    $returnData === 'code' &&
-                    (int)$headContent[1] > 0
-                ) ||
+            if (($returnData === 'code' && (int)$headContent[1] > 0) ||
                 (
                     !is_numeric($headContent[0]) &&
                     0 === stripos($headContent[0], "http") &&
@@ -82,7 +78,6 @@ class GenericParser
      * @param $content
      * @param $contentType
      * @return array|mixed
-     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public static function getParsed($content, $contentType)

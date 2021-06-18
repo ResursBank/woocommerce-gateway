@@ -13,7 +13,9 @@ use TorneLIB\Exception\ExceptionHandler;
  */
 class Memory
 {
+    public static $Memory;
     private $INI;
+    private $haltOnLowMemory = false;
 
     /**
      * Memory constructor.
@@ -24,7 +26,16 @@ class Memory
         $this->INI = new Ini();
     }
 
-    private $haltOnLowMemory = false;
+    /**
+     * Static function for setMemoryLimit.
+     * @param $newLimitValue
+     * @return bool
+     * @since 6.1.10
+     */
+    public static function setMemory($newLimitValue)
+    {
+        return self::getMemoryClass()->setMemoryLimit($newLimitValue);
+    }
 
     /**
      * Set new memory limit for PHP.
@@ -45,6 +56,63 @@ class Memory
         }
 
         return $return;
+    }
+
+    /**
+     * WP Style byte conversion for memory limits. To avoid circular dependencies of IO, we've put a local copy
+     * here, so we don't need to require the IO library.
+     *
+     * @param $value
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getBytes($value)
+    {
+        $value = strtolower(trim($value));
+        $bytes = (int)$value;
+
+        if (false !== strpos($value, 't')) {
+            $bytes *= 1024 * 1024 * 1024 * 1024;
+        } elseif (false !== strpos($value, 'g')) {
+            $bytes *= 1024 * 1024 * 1024;
+        } elseif (false !== strpos($value, 'm')) {
+            $bytes *= 1024 * 1024;
+        } elseif (false !== strpos($value, 'k')) {
+            $bytes *= 1024;
+        } elseif (false !== strpos($value, 'b')) {
+            $bytes *= 1;
+        }
+
+        // Deal with large (float) values which run into the maximum integer size.
+        return min($bytes, PHP_INT_MAX);
+    }
+
+    /**
+     * Instantiate and return Memory, but statically.
+     *
+     * @return Memory
+     * @since 6.1.10
+     */
+    private static function getMemoryClass()
+    {
+        if (empty(self::$Memory)) {
+            self::$Memory = new Memory();
+        }
+
+        return self::$Memory;
+    }
+
+    /**
+     * Static function for internal getMemoryLimitAdjusted.
+     * @param string $minLimit
+     * @param string $maxLimit
+     * @return bool
+     * @throws Exception
+     * @since 6.1.10
+     */
+    public static function getMemoryAdjusted($minLimit = '256M', $maxLimit = '-1')
+    {
+        return self::getMemoryClass()->getMemoryLimitAdjusted($minLimit, $maxLimit);
     }
 
     /**
@@ -73,34 +141,6 @@ class Memory
         }
 
         return $return;
-    }
-
-    /**
-     * WP Style byte conversion for memory limits. To avoid circular dependencies of IO, we've put a local copy
-     * here, so we don't need to require the IO library.
-     *
-     * @param $value
-     * @return mixed
-     */
-    public function getBytes($value)
-    {
-        $value = strtolower(trim($value));
-        $bytes = (int)$value;
-
-        if (false !== strpos($value, 't')) {
-            $bytes *= 1024 * 1024 * 1024 * 1024;
-        } elseif (false !== strpos($value, 'g')) {
-            $bytes *= 1024 * 1024 * 1024;
-        } elseif (false !== strpos($value, 'm')) {
-            $bytes *= 1024 * 1024;
-        } elseif (false !== strpos($value, 'k')) {
-            $bytes *= 1024;
-        } elseif (false !== strpos($value, 'b')) {
-            $bytes *= 1;
-        }
-
-        // Deal with large (float) values which run into the maximum integer size.
-        return min($bytes, PHP_INT_MAX);
     }
 
     /**

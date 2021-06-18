@@ -63,7 +63,7 @@ $RB(document).ready(function ($) {
             }
             handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
         });
-        resursCheckout.setPurchaseDeniedCallback(function () {
+        /*resursCheckout.setPurchaseDeniedCallback(function () {
             var omniRef;
             if (typeof omnivars.OmniRef !== "undefined") {
                 omniRef = omnivars.OmniRef;
@@ -83,7 +83,7 @@ $RB(document).ready(function ($) {
                 );
             }
             handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
-        });
+        });*/
         resursCheckout.setCustomerChangedEventCallback(function (customerData) {
             if (omnivars["useStandardFieldsForShipping"] == "1") {
                 console.log("ResursCheckoutJS: [ClientSide] Received customer data update from iframe");

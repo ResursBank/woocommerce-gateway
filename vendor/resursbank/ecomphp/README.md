@@ -29,10 +29,8 @@ EComPHP is tested within a few different suites. Due to the lack of "test time",
 Take a look at [this page](https://www.php.net/supported-versions.php) if you're unsure which PHP versions that are still supported by the PHP team.
 As of february 2020, only 7.3 and 7.4 have full support open. 7.2 still do have security patch support, but is on deprecation. All older versions are completely unsupported and should probably get upgrade by you also.
 
-    7.3 - 8.0 - Supported.
-    5.6 - 7.2 - Inofficially supported.
-    5.6       - Partially tested.
-    <= 5.5    - Nope.
+    7.3 - 8.0 - Supported, autotests active.
+    5.6 - 7.2 - SUpported, no autotests, [EOL by PHP](https://www.php.net/supported-versions.php).
 
 ## Installing
 
@@ -74,9 +72,3 @@ This is a short example of how to get started, but you can [take a look at our d
 * If you are used to work with the simplified flow and wish to use Hosted/Checkout, you can stick to the use of the older SimplifiedFlow variables, as this library converts what's missing between the different flows.
 * The EComPHP-library takes care of many things that developers usually miss in their development. Especially the payload handling.
 * Both SOAP and REST is supported, under the condition that there are drivers available for it.
-
-# PHP 5.3 and lower versions and some old notes
-
-Guides: https://confluence.atlassian.com/x/e8YWN for more examples.
-- apt-add-repository ppa:sergey-dryabzhinsky/php53
-- apt-add-repository ppa:sergey-dryabzhinsky/packages
