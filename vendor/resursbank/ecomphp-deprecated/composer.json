@@ -1,0 +1,21 @@
+{
+    "name": "resursbank/ecomphp-deprecated",
+    "description": "Support for deprecated code within the EComPHP Library.",
+    "license": "Apache-2.0",
+    "require": {
+    },
+    "authors": [
+        {
+            "name": "Tomas Tornevall",
+            "email": "tomas.tornevall@resurs.se"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "": "src/"
+        },
+        "psr-4": {
+            "Resursbank\\RBEcomPHP\\": "src/"
+        }
+    }
+}
