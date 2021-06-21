@@ -5,9 +5,9 @@ require_once(__DIR__ . '/v3core.php');
 require_once(__DIR__ . '/functions_settings.php');
 require_once(__DIR__ . '/functions_gateway.php');
 
-use Resursbank\Ecommerce\Types\Callback;
-use Resursbank\Ecommerce\Types\CheckoutType;
-use Resursbank\Ecommerce\Types\OrderStatus;
+use Resursbank\RBEcomPHP\RESURS_CALLBACK_TYPES;
+use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
+use Resursbank\RBEcomPHP\RESURS_FLOW_TYPES;
 use Resursbank\RBEcomPHP\RESURS_PAYMENT_STATUS_RETURNCODES;
 use Resursbank\RBEcomPHP\ResursBank;
 use TorneLIB\MODULE_NETWORK;
@@ -505,8 +505,8 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                     } elseif (!empty($setType)) {
                         // Prevent weird errors with nonces.
-                        $skipNonceErrors = (bool)getResursFlag('SKIP_NONCE_ERRORS') ? true : false;
-                        if ($skipNonceErrors || wp_verify_nonce($reqNonce, 'requestResursAdmin')) {
+                        $hasNonceErrors = (bool)getResursFlag('NONCE_ERRORS') ? true : false;
+                        if ($hasNonceErrors || wp_verify_nonce($reqNonce, 'requestResursAdmin')) {
                             $mySession = true;
                             $failSetup = false;
                             $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
@@ -517,11 +517,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 $flowEnv = getServerEnv();
                                 if (!empty($envVal)) {
                                     if ($envVal === 'test') {
-                                        $flowEnv = 1;
+                                        $flowEnv = RESURS_ENVIRONMENTS::TEST;
                                     } elseif ($envVal === 'live') {
-                                        $flowEnv = 0;
+                                        $flowEnv = RESURS_ENVIRONMENTS::PRODUCTION;
                                     } elseif ($envVal === 'production') {
-                                        $flowEnv = 0;
+                                        $flowEnv = RESURS_ENVIRONMENTS::PRODUCTION;
                                     }
                                     $newFlow = initializeResursFlow(
                                         $testUser,
@@ -535,7 +535,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     $newFlow = initializeResursFlow(
                                         $testUser,
                                         $testPass,
-                                        1,
+                                        RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
                                         true
                                     );
                                 }
@@ -552,10 +552,6 @@ function woocommerce_gateway_resurs_bank_init()
                                     if (!empty($prevError)) {
                                         $errorMessage = $prevError->getMessage();
                                     }
-                                }
-                                if ((bool)getResursFlag('FORCE_USER')) {
-                                    $myBool = true;
-                                    $failSetup = false;
                                 }
                             }
                             if (isset($newPaymentMethodsList['error']) && !empty($newPaymentMethodsList['error'])) {
@@ -1054,9 +1050,9 @@ function woocommerce_gateway_resurs_bank_init()
                         $order,
                         $currentStatus,
                         $request['paymentId'],
-                        Callback::UNFREEZE
+                        RESURS_CALLBACK_TYPES::UNFREEZE
                     );
-                    if (!(bool)$statusValue & OrderStatus::ERROR) {
+                    if (!(bool)$statusValue & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
                         $order->add_order_note(
                             sprintf(
                                 __(
@@ -1077,7 +1073,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $order,
                         $currentStatus,
                         $request['paymentId'],
-                        Callback::AUTOMATIC_FRAUD_CONTROL,
+                        RESURS_CALLBACK_TYPES::AUTOMATIC_FRAUD_CONTROL,
                         $request['result']
                     );
 
@@ -1142,7 +1138,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $order,
                         $currentStatus,
                         $request['paymentId'],
-                        Callback::FINALIZATION
+                        RESURS_CALLBACK_TYPES::FINALIZATION
                     );
 
                     if ($finalizationStatus & (RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_AUTOMATICALLY_DEBITED)) {
@@ -1201,7 +1197,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $order,
                             $currentStatus,
                             $request['paymentId'],
-                            Callback::BOOKED
+                            RESURS_CALLBACK_TYPES::BOOKED
                         );
 
                         if (!(bool)$statusValue) {
@@ -1233,7 +1229,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $order,
                         $currentStatus,
                         $request['paymentId'],
-                        Callback::UPDATE
+                        RESURS_CALLBACK_TYPES::CALLBACK_TYPE_UPDATE
                     );
 
                     if (!(bool)$callbackUpdateStatus & RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET) {
@@ -1452,10 +1448,10 @@ function woocommerce_gateway_resurs_bank_init()
             $woocommerceOrder,
             $currentWcStatus = '',
             $paymentIdOrPaymentObject = '',
-            $byCallbackEvent = 0,
+            $byCallbackEvent = RESURS_CALLBACK_TYPES::NOT_SET,
             $callbackEventDataArrayOrString = []
         ) {
-            $return = OrderStatus::ERROR;
+            $return = RESURS_PAYMENT_STATUS_RETURNCODES::PAYMENT_STATUS_COULD_NOT_BE_SET;
 
             try {
                 /** @var $suggestedStatus RESURS_PAYMENT_STATUS_RETURNCODES */
@@ -5524,7 +5520,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         $refundFlow->resetPayload();
-        $refundFlow->setPreferredPaymentFlowService(CheckoutType::SIMPLIFIED_FLOW);
+        $refundFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::SIMPLIFIED_FLOW);
 
         $matchGetPaymentKeys = (array)apply_filters('resurs_match_getpayment_keys', []);
         if (is_array($matchGetPaymentKeys) && count($matchGetPaymentKeys)) {
@@ -6639,14 +6635,14 @@ function getResursInternalRcoUrl($username, $flow)
 function initializeResursFlow(
     $overrideUser = '',
     $overridePassword = '',
-    $setEnvironment = 1,
+    $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
     $requireNewFlow = false
 ) {
     global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance, $woocommerce;
     $username = getResursOption('login');
     $password = getResursOption('password');
     $useEnvironment = getServerEnv();
-    if ($setEnvironment !== 1) {
+    if ($setEnvironment !== RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET) {
         $useEnvironment = $setEnvironment;
     }
     if (!empty($overrideUser)) {
@@ -6685,7 +6681,7 @@ function initializeResursFlow(
     $initFlow->setRealClientName('Woo');
 
     if (isResursHosted()) {
-        $initFlow->setPreferredPaymentFlowService(CheckoutType::HOSTED_FLOW);
+        $initFlow->setPreferredPaymentFlowService(RESURS_FLOW_TYPES::FLOW_HOSTED_FLOW);
     }
 
     $sslHandler = getResursFlag('DISABLE_SSL_VALIDATION');
@@ -6772,13 +6768,13 @@ function initializeResursFlow(
 function getAddressProd($ssn = '', $customerType = '', $ip = '')
 {
     global $current_user;
-    $username = getResursOption('ga_login');
-    $password = getResursOption('ga_password');
+    $username = resursOption('ga_login');
+    $password = resursOption('ga_password');
     if (!empty($username) && !empty($password)) {
         /** @var ResursBank $initFlow */
         $initFlow = new ResursBank($username, $password);
         $initFlow->setUserAgent(RB_WOO_CLIENTNAME . '-' . RB_WOO_VERSION);
-        $initFlow->setEnvironment(1);
+        $initFlow->setEnvironment(RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION);
         try {
             $getResponse = $initFlow->getAddress($ssn, $customerType, $ip);
 
@@ -6799,19 +6795,19 @@ function getAddressProd($ssn = '', $customerType = '', $ip = '')
  */
 function getServerEnv()
 {
-    $useEnvironment = 1;
+    $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
 
     $serverEnv = getResursOption('serverEnv');
     $demoshopMode = getResursOption('demoshopMode');
 
     if ($serverEnv == 'live') {
-        $useEnvironment = 0;
+        $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
     }
     /*
      * Prohibit production mode if this is a demoshop
      */
     if ($serverEnv == 'test' || $demoshopMode == 'true') {
-        $useEnvironment = 1;
+        $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
     }
 
     return $useEnvironment;
@@ -6825,7 +6821,7 @@ function getServerEnv()
 function isResursTest()
 {
     $currentEnv = getServerEnv();
-    if ($currentEnv === 1) {
+    if ($currentEnv === RESURS_ENVIRONMENTS::ENVIRONMENT_TEST) {
         return true;
     }
 

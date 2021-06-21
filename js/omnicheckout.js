@@ -180,7 +180,6 @@ if (typeof ResursCheckout !== "function" && typeof ResursCheckout === "undefined
                         return;
                     }
                     if (eventDataObject.hasOwnProperty('eventType') && typeof eventDataObject.eventType === 'string') {
-                        console.log(eventDataObject.eventType);
                         switch (eventDataObject.eventType) {
                             case currentResursEventNamePrefix + ":loaded":
                                 postMessage({
