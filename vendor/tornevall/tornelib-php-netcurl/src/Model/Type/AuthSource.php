@@ -11,7 +11,7 @@ namespace TorneLIB\Model\Type;
  *
  * @package TorneLIB\Model\Type
  */
-class authSource
+class AuthSource
 {
     const NORMAL = 0;
     const SOAP = 1;

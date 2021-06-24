@@ -3,13 +3,12 @@
     "description": "Resurs Bank AB ecommerce library for PHP.",
     "license": "Apache-2.0",
     "require": {
-        "tornevall/tornelib-php-bitmask": "^6.1",
-        "tornevall/tornelib-php-netcurl-deprecate-60": "^6.0",
-        "tornevall/tornelib-php-network": "^6.1"
+        "tornevall/tornelib-php-netcurl": "^6.1",
+        "tornevall/tornelib-php-network": "^6.1",
+        "resursbank/ecomphp-deprecated": ">=0"
     },
     "config": {
         "preferred-install": {
-            "tornevall/tornelib-php-netcurl-deprecate-60": "dist",
             "*": "source"
         }
     },
@@ -21,11 +20,10 @@
     ],
     "autoload": {
         "files": [
-            "source/classes/ecomhooks.php",
             "source/classes/rbapiloader.php"
         ],
         "psr-4": {
-            "Resursbank\\RBEcomPHP\\": "source/classes/rbapiloader.php"
+            "Resursbank\\Ecommerce\\": "src"
         }
     }
 }

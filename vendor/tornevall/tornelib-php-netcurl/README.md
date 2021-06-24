@@ -2,11 +2,13 @@
 
 ## Installation
 
-Recommended solution: Composer.
+Recommended installation method: composer install/require. See below.
+
 
 ### Install as standalone
 
     require tornevall/tornevall/tornelib-php-netcurl:^6.1
+
 
 ### Install with the entire networking suite
 
@@ -26,16 +28,17 @@ Depending on your needs, you can start with nothing in your hands. Curl is the p
 * CURL (if you prefer curl before streams).
 * allow_url_fopen (if you have no access to curl, this has to be enabled).
 
-
 ## Packages
 
 Source code can be found at [bitbucket repository](https://bitbucket.tornevall.net/projects/LIB/repos/tornelib-php-netcurl/browse), to make upgrading more stable. It is mirrored to [github](https://github.com/Tornevall/tornelib-php-netcurl) but new releases and tags are submitted (when ready) to [github](https://github.com/Tornevall/tornelib-php-netcurl) to maintain maximum stability (do we trust bitbucket? yes - our own server).
+
 
 ## Contact, information and documents
 
 Documentation for v6.1 is located [here](https://docs.tornevall.net/display/TORNEVALL/NETCURLv6.1).
 There's a [Mailinglist](https://lists.tornevall.net/pipermail/netcurl/) put up for everything concerning netcurl. That's also where you can find release information (for now). You can subscribe to the list [here](https://lists.tornevall.net/mailman/listinfo/netcurl).
 Feel free to join the project from [JIRA](https://tracker.tornevall.net/projects/NETCURL). And don't be afraid of leaving feedback!
+
 
 # Getting started
 
@@ -44,25 +47,22 @@ Feel free to join the project from [JIRA](https://tracker.tornevall.net/projects
 
 Installing the network module instead will make features such as getGitTagsByUrl fully available.
 
+
 ## Compatibility
 
 This library do support PHP 5.6 (not lower). However, you should [check here](https://www.php.net/supported-versions.php) to ensure your compatiblity yourself).
+
 
 ## Testing: Bamboo, github actions and bitbucket pipelines
 
 NetCURL is tested within a few different suites. Due to the lack of "test time", tests are not entirely fulfilled in the Bitbucket cloud, which is why tests also are executed from other places on commits. Below is a list of those instances.
 
-* [Atlassian Bamboo (5.6 - 8.0)](https://bamboo.tornevall.net/browse/TOR-NC60)
-* [GitHub Actions (5.6 + 7.3 - 8.0)](https://github.com/Tornevall/tornelib-php-netcurl/actions)
-* [Bitbucket Pipelines 7.3 - 8.0](https://bitbucket.org/tornevallnetworks/tornelib-php-netcurl/addon/pipelines/home)
+* [Atlassian Bamboo - 5.6 - 8.0](https://bamboo.tornevall.net/browse/TOR-NC60)
+* [GitHub Actions - 5.6 + 7.3 - 8.0](https://github.com/Tornevall/tornelib-php-netcurl/actions)
+* [Bitbucket Pipelines - 5.6 + 7.3 - 8.0](https://bitbucket.org/tornevallnetworks/tornelib-php-netcurl/addon/pipelines/home)
 
 The [Bamboo-server](https://bamboo.tornevall.net) has a history which makes many older PHP versions available. But as of mid-summer 2020, all tests with old versions have been removed. This is also a work that continues. Github tests are only running with non-outdated versions (exception for 5.6) and so are bitbucked targeted. Since bamboo is the flagship of tests, old versions are currently not removed there.
 
-### What about 6.0?
-
-Do not use 6.0 - it's obsolete and barely maintained.
-To keep compatibility with v6.0 the plan is to keep the primary class MODULE_CURL callable from a root space.
-But as said, do not use it. Upgrade!
 
 ### Other Requirements and dependencies
   
@@ -91,9 +91,11 @@ You can request RSS feeds without laminas, however you're kind of on your own by
 * SoapClient
 * RSS feeds
 
+
 #### Will you support sockets?
 
 Not yet. This driver requires more, so this is put on hold.
+
 
 ## Will something break if I upgrade?
 

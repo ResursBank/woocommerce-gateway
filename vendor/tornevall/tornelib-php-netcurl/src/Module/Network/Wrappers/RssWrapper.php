@@ -17,9 +17,9 @@ use Exception;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
 use TorneLIB\Model\Interfaces\WrapperInterface;
-use TorneLIB\Model\Type\authType;
-use TorneLIB\Model\Type\dataType;
-use TorneLIB\Model\Type\requestMethod;
+use TorneLIB\Model\Type\AuthType;
+use TorneLIB\Model\Type\DataType;
+use TorneLIB\Model\Type\RequestMethod;
 use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Module\Network\NetWrapper;
 use TorneLIB\Utils\Generic;
@@ -107,7 +107,7 @@ class RssWrapper implements WrapperInterface
      * @return RssWrapper
      * @since 6.1.0
      */
-    public function setAuthentication($username, $password, $authType = authType::BASIC)
+    public function setAuthentication($username, $password, $authType = AuthType::BASIC)
     {
         $this->CONFIG->setAuthentication($username, $password, $authType);
 
@@ -170,8 +170,8 @@ class RssWrapper implements WrapperInterface
     public function request(
         $url,
         $data = [],
-        $method = requestMethod::METHOD_GET,
-        $dataType = dataType::NORMAL
+        $method = RequestMethod::GET,
+        $dataType = DataType::NORMAL
     ) {
         // Laminas requires two classes if url should be handled.
         if (class_exists('Laminas\Feed\Reader\Reader') && class_exists('Laminas\Http\Client')) {
@@ -184,8 +184,8 @@ class RssWrapper implements WrapperInterface
                 ->request(
                     $url,
                     [],
-                    requestMethod::METHOD_GET,
-                    dataType::NORMAL
+                    RequestMethod::GET,
+                    DataType::NORMAL
                 )->getBody();
             $this->requestResponse = \Laminas\Feed\Reader\Reader::importString($this->requestResponseRaw);
         } else {
@@ -193,8 +193,8 @@ class RssWrapper implements WrapperInterface
                 ->request(
                     $url,
                     [],
-                    requestMethod::METHOD_GET,
-                    dataType::NORMAL
+                    RequestMethod::GET,
+                    DataType::NORMAL
                 );
             $this->requestResponseRaw = $naturalRequest->getBody();
             $this->requestResponse = $naturalRequest->getParsed();

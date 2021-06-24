@@ -11,7 +11,7 @@ namespace TorneLIB\Model\Type;
  *
  * @package TorneLIB\Model\Type
  */
-class authType
+class AuthType
 {
     const HTTPAUTH = 107;
     const BASIC = 1;

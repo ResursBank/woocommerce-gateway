@@ -17,6 +17,46 @@ use TorneLIB\Module\Network\NetWrapper;
 class NetUtils
 {
     /**
+     * @param string $giturl
+     * @param string $version1
+     * @param string $version2
+     * @return array
+     * @throws ExceptionHandler
+     */
+    public function getGitTagsByVersion($giturl, $version1, $version2)
+    {
+        $return = [];
+        $versionList = $this->getGitTagsByUrl($giturl);
+        if (is_array($versionList) && count($versionList)) {
+            foreach ($versionList as $versionNum) {
+                if (version_compare($versionNum, $version1, '>=') &&
+                    version_compare($versionNum, $version2, '<=') &&
+                    !in_array($versionNum, $return, false)
+                ) {
+                    $return[] = $versionNum;
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * getGitTagsByUrl (From 6.1, the $keepCredentials has no effect).
+     *
+     * @param $url
+     * @return array
+     * @throws ExceptionHandler
+     * @since 6.0.4 Moved from Network Library.
+     */
+    public function getGitTagsByUrl($url)
+    {
+        $url .= "/info/refs?service=git-upload-pack";
+        $gitRequest = (new NetWrapper())->request($url);
+        return $this->getGitsTagsRegEx($gitRequest->getBody());
+    }
+
+    /**
      * @param $gitRequest
      * @param bool $numericsOnly
      * @param bool $numericsSanitized
@@ -32,7 +72,8 @@ class NetUtils
             foreach ($tagList as $tag) {
                 if (!(bool)preg_match("/\^/", $tag)) {
                     if ($numericsOnly) {
-                        if (($currentTag = $this->getGitTagsSanitized($tag, $numericsSanitized))) {
+                        $currentTag = $this->getGitTagsSanitized($tag, $numericsSanitized);
+                        if ($currentTag) {
                             $return[] = $currentTag;
                         }
                     } elseif (!isset($return[$tag])) {
@@ -43,29 +84,6 @@ class NetUtils
         }
 
         return $this->getGitTagsUnAssociated($return);
-    }
-
-    /**
-     * @param array $return
-     * @return array
-     * @since 6.1.0
-     */
-    private function getGitTagsUnAssociated($return = [])
-    {
-        $newArray = [];
-        if (count($return)) {
-            asort($return, SORT_NATURAL);
-            $newArray = [];
-            foreach ($return as $arrayKey => $arrayValue) {
-                $newArray[] = $arrayValue;
-            }
-        }
-
-        if (count($newArray)) {
-            $return = $newArray;
-        }
-
-        return $return;
     }
 
     /**
@@ -98,43 +116,44 @@ class NetUtils
     }
 
     /**
-     * getGitTagsByUrl (From 6.1, the $keepCredentials has no effect).
-     *
-     * @param $url
+     * @param array $return
      * @return array
-     * @throws ExceptionHandler
-     * @since 6.0.4 Moved from Network Library.
+     * @since 6.1.0
      */
-    public function getGitTagsByUrl($url)
+    private function getGitTagsUnAssociated($return = [])
     {
-        $url .= "/info/refs?service=git-upload-pack";
-        $gitRequest = (new NetWrapper())->request($url);
-        return $this->getGitsTagsRegEx($gitRequest->getBody());
-    }
-
-    /**
-     * @param $giturl
-     * @param $version1
-     * @param $version2
-     * @return array
-     * @throws ExceptionHandler
-     */
-    public function getGitTagsByVersion($giturl, $version1, $version2)
-    {
-        $return = [];
-        $versionList = $this->getGitTagsByUrl($giturl);
-        if (is_array($versionList) && count($versionList)) {
-            foreach ($versionList as $versionNum) {
-                if (version_compare($versionNum, $version1, '>=') &&
-                    version_compare($versionNum, $version2, '<=') &&
-                    !in_array($versionNum, $return, false)
-                ) {
-                    $return[] = $versionNum;
-                }
+        $newArray = [];
+        if (count($return)) {
+            asort($return, SORT_NATURAL);
+            $newArray = [];
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            foreach ($return as $arrayKey => $arrayValue) {
+                $newArray[] = $arrayValue;
             }
         }
 
+        if (count($newArray)) {
+            $return = $newArray;
+        }
+
         return $return;
+    }
+
+    /**
+     * Checks if requested version is the latest compared to the git repo.
+     *
+     * @param $gitUrl
+     * @param string $yourVersion
+     * @return bool
+     * @throws ExceptionHandler
+     */
+    public function getVersionLatest($gitUrl, $yourVersion = '')
+    {
+        if (!count($this->getHigherVersions($gitUrl, $yourVersion))) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -154,22 +173,5 @@ class NetUtils
         }
 
         return $versionsHigher;
-    }
-
-    /**
-     * Checks if requested version is the latest compared to the git repo.
-     *
-     * @param $gitUrl
-     * @param string $yourVersion
-     * @return bool
-     * @throws ExceptionHandler
-     */
-    public function getVersionLatest($gitUrl, $yourVersion = '')
-    {
-        if (!count($this->getHigherVersions($gitUrl, $yourVersion))) {
-            return true;
-        }
-
-        return false;
     }
 }

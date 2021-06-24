@@ -11,7 +11,7 @@ namespace TorneLIB\Model\Type;
  *
  * @package TorneLIB\Model\Type
  */
-class dataType
+class DataType
 {
     const NORMAL = 0;
     const JSON = 1;

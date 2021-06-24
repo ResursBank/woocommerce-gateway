@@ -16,10 +16,10 @@ use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\GenericParser;
 use TorneLIB\IO\Data\Strings;
 use TorneLIB\Model\Interfaces\WrapperInterface;
-use TorneLIB\Model\Type\authSource;
-use TorneLIB\Model\Type\authType;
-use TorneLIB\Model\Type\dataType;
-use TorneLIB\Model\Type\requestMethod;
+use TorneLIB\Model\Type\AuthSource;
+use TorneLIB\Model\Type\AuthType;
+use TorneLIB\Model\Type\DataType;
+use TorneLIB\Model\Type\RequestMethod;
 use TorneLIB\Module\Config\WrapperConfig;
 use TorneLIB\Utils\Generic;
 use TorneLIB\Utils\Security;
@@ -221,9 +221,9 @@ class SoapClientWrapper implements WrapperInterface
      * @return SoapClientWrapper
      * @since 6.1.0
      */
-    public function setAuthentication($username, $password, $authType = authType::ANY)
+    public function setAuthentication($username, $password, $authType = AuthType::ANY)
     {
-        $this->CONFIG->setAuthentication($username, $password, $authType, authSource::SOAP);
+        $this->CONFIG->setAuthentication($username, $password, $authType, AuthSource::SOAP);
 
         return $this;
     }
@@ -301,7 +301,7 @@ class SoapClientWrapper implements WrapperInterface
      * @return $this|mixed
      * @since 6.1.0
      */
-    public function request($url, $data = [], $method = requestMethod::METHOD_GET, $dataType = dataType::SOAP)
+    public function request($url, $data = [], $method = RequestMethod::GET, $dataType = DataType::SOAP)
     {
         if (!empty($url)) {
             $this->CONFIG->setRequestUrl($url);
@@ -881,12 +881,12 @@ class SoapClientWrapper implements WrapperInterface
     }
 
     /**
-     * @param $userAgentString
+     * @param string $userAgentString
      * @return WrapperConfig
      * @since 6.1.0
      * @noinspection PhpUnusedPrivateMethodInspection
      */
-    private function setUserAgent($userAgentString)
+    public function setUserAgent($userAgentString)
     {
         return $this->CONFIG->setUserAgent($userAgentString);
     }
@@ -897,7 +897,7 @@ class SoapClientWrapper implements WrapperInterface
      * @since 6.1.0
      * @noinspection PhpUnusedPrivateMethodInspection
      */
-    private function getUserAgent()
+    public function getUserAgent()
     {
         return $this->CONFIG->getUserAgent();
     }

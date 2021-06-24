@@ -68,27 +68,6 @@ class WrapperSSL
     }
 
     /**
-     * Checks if system has SSL capabilities.
-     *
-     * Replaces getCurlSslAvailable from v6.0 where everything is checked in the same method.
-     *
-     * @return bool
-     * @throws Exception
-     * @since 6.1.0
-     */
-    public function getSslCapabilities()
-    {
-        if (!($return = $this->capable)) {
-            throw new ExceptionHandler(
-                'NETCURL Exception: SSL capabilities is missing.',
-                Constants::LIB_SSL_UNAVAILABLE
-            );
-        }
-
-        return $return;
-    }
-
-    /**
      * @return bool
      * @since 6.1.0
      */
@@ -125,7 +104,7 @@ class WrapperSSL
     {
         $return = false;
 
-        $streamWrappers = @stream_get_wrappers();
+        $streamWrappers = stream_get_wrappers();
         if (!is_array($streamWrappers)) {
             $streamWrappers = [];
             $this->capabilities[] = 'stream';
@@ -152,6 +131,41 @@ class WrapperSSL
             if (isset($curlVersionRequest['features'])) {
                 $return = ((bool)($curlVersionRequest['features'] & CURL_VERSION_SSL));
             }
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return $this
+     * @since 6.1.0
+     */
+    private function setContextUserAgent()
+    {
+        $this->context['http'] = [
+            'user-agent' => sprintf('NETCURL/SSL-%s', $this->version),
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Checks if system has SSL capabilities.
+     *
+     * Replaces getCurlSslAvailable from v6.0 where everything is checked in the same method.
+     *
+     * @return bool
+     * @throws Exception
+     * @since 6.1.0
+     */
+    public function getSslCapabilities()
+    {
+        $return = $this->capable;
+        if (!$return) {
+            throw new ExceptionHandler(
+                'NETCURL Exception: SSL capabilities is missing.',
+                Constants::LIB_SSL_UNAVAILABLE
+            );
         }
 
         return $return;
@@ -190,19 +204,6 @@ class WrapperSSL
         if (!$verifyBooleanValue || $selfsignedBooleanValue) {
             $this->securityLevelChanges[microtime(true)] = $this->context;
         }
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     * @since 6.1.0
-     */
-    private function setContextUserAgent()
-    {
-        $this->context['http'] = [
-            'user-agent' => sprintf('NETCURL/SSL-%s', $this->version),
-        ];
 
         return $this;
     }
