@@ -548,6 +548,10 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 } else {
                     if (isset($_REQUEST['run'])) {
+                        // If there is complications with nonce checking, the flag ADMIN_NONCE_IGNORE makes it possible
+                        // for admins to disable this check temporarily, since there has been problems with it
+                        // recently.
+                        $nonceIsFailing = (bool)getResursFlag('ADMIN_NONCE_IGNORE');
                         // Since our tests with WP 4.7.5, the nonce control seems to not work properly even if the nonce is actually
                         // are calculated correctly. This is a very temporary fix for that problem.
                         if (wp_verify_nonce($reqNonce, 'requestResursAdmin') || $nonceIsFailing) {
@@ -565,7 +569,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 }
                             } elseif ($_REQUEST['run'] == 'annuityDuration') {
                                 $data = isset($_REQUEST['data']) ? $_REQUEST['data'] : null;
-                                if (!empty($data)) {
+                                // Making sure we only accept numeric requests on annuity.
+                                if (!empty($data) && is_numeric($data)) {
                                     setResursOption('resursAnnuityDuration', $data);
                                 }
                             } elseif ($_REQUEST['run'] == 'annuityToggle') {
