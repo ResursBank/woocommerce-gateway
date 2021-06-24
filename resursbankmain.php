@@ -550,7 +550,6 @@ function woocommerce_gateway_resurs_bank_init()
                     if (isset($_REQUEST['run'])) {
                         // Since our tests with WP 4.7.5, the nonce control seems to not work properly even if the nonce is actually
                         // are calculated correctly. This is a very temporary fix for that problem.
-                        $nonceIsFailing = true;
                         if (wp_verify_nonce($reqNonce, 'requestResursAdmin') || $nonceIsFailing) {
                             $mySession = true;
                             $arg = null;
