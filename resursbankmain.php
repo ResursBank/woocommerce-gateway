@@ -36,32 +36,6 @@ function woocommerce_gateway_resurs_bank_init()
         return;
     }
 
-    // (Very) Simplified locale and country enforcer. Do not use unless necessary, since it may break something.
-    if (isset($_GET['forcelanguage']) && isset($_SERVER['HTTP_REFERER'])) {
-        $languages = [
-            'sv_SE' => 'SE',
-            'nb_NO' => 'NO',
-            'da_DK' => 'DK',
-            'fi' => 'FI',
-        ];
-        $setLanguage = $_GET['forcelanguage'];
-        if (isset($languages[$setLanguage])) {
-            $sellTo = [$languages[$setLanguage]];
-            $wooSpecific = get_option('woocommerce_specific_allowed_countries');
-            // Follow woocommerce options. A little.
-            if (is_array($wooSpecific) && count($wooSpecific)) {
-                update_option('woocommerce_specific_allowed_countries', $sellTo);
-            } else {
-                update_option('woocommerce_specific_allowed_countries', []);
-            }
-            setResursOption('country', $languages[$setLanguage]);
-            update_option('WPLANG', $setLanguage);
-            update_option('woocommerce_default_country', $languages[$setLanguage]);
-        }
-        wp_safe_redirect($_SERVER['HTTP_REFERER']);
-        exit;
-    }
-
     // Localization
     load_plugin_textdomain(
         'resurs-bank-payment-gateway-for-woocommerce',
@@ -586,9 +560,10 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                 } else {
                     if (isset($_REQUEST['run'])) {
-                        // Since our tests with WP 4.7.5, the nonce control seems to not work properly even if the nonce is actually
-                        // are calculated correctly. This is a very temporary fix for that problem.
-                        $nonceIsFailing = true;
+                        // If there is complications with nonce checking, the flag ADMIN_NONCE_IGNORE makes it possible
+                        // for admins to disable this check temporarily, since there has been problems with it
+                        // recently.
+                        $nonceIsFailing = (bool)getResursFlag('ADMIN_NONCE_IGNORE');
                         if (wp_verify_nonce($reqNonce, 'requestResursAdmin') || $nonceIsFailing) {
                             $mySession = true;
                             $arg = null;
@@ -604,7 +579,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 }
                             } elseif ($_REQUEST['run'] == 'annuityDuration') {
                                 $data = isset($_REQUEST['data']) ? $_REQUEST['data'] : null;
-                                if (!empty($data)) {
+                                // Making sure we only accept numeric requests on annuity.
+                                if (!empty($data) && is_numeric($data)) {
                                     setResursOption('resursAnnuityDuration', $data);
                                 }
                             } elseif ($_REQUEST['run'] == 'annuityToggle') {
