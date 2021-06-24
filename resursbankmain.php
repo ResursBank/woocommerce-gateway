@@ -552,8 +552,6 @@ function woocommerce_gateway_resurs_bank_init()
                         // for admins to disable this check temporarily, since there has been problems with it
                         // recently.
                         $nonceIsFailing = (bool)getResursFlag('ADMIN_NONCE_IGNORE');
-                        // Since our tests with WP 4.7.5, the nonce control seems to not work properly even if the nonce is actually
-                        // are calculated correctly. This is a very temporary fix for that problem.
                         if (wp_verify_nonce($reqNonce, 'requestResursAdmin') || $nonceIsFailing) {
                             $mySession = true;
                             $arg = null;
