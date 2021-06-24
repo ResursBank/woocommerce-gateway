@@ -36,32 +36,6 @@ function woocommerce_gateway_resurs_bank_init()
         return;
     }
 
-    // (Very) Simplified locale and country enforcer. Do not use unless necessary, since it may break something.
-    if (isset($_GET['forcelanguage']) && isset($_SERVER['HTTP_REFERER'])) {
-        $languages = [
-            'sv_SE' => 'SE',
-            'nb_NO' => 'NO',
-            'da_DK' => 'DK',
-            'fi' => 'FI',
-        ];
-        $setLanguage = $_GET['forcelanguage'];
-        if (isset($languages[$setLanguage])) {
-            $sellTo = [$languages[$setLanguage]];
-            $wooSpecific = get_option('woocommerce_specific_allowed_countries');
-            // Follow woocommerce options. A little.
-            if (is_array($wooSpecific) && count($wooSpecific)) {
-                update_option('woocommerce_specific_allowed_countries', $sellTo);
-            } else {
-                update_option('woocommerce_specific_allowed_countries', []);
-            }
-            setResursOption('country', $languages[$setLanguage]);
-            update_option('WPLANG', $setLanguage);
-            update_option('woocommerce_default_country', $languages[$setLanguage]);
-        }
-        wp_safe_redirect($_SERVER['HTTP_REFERER']);
-        exit;
-    }
-
     // Localization
     load_plugin_textdomain(
         'resurs-bank-payment-gateway-for-woocommerce',
