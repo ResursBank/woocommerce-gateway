@@ -102,7 +102,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             /*
              * The flow configurator is only available in demo mode.
-             * 170203: Do not remove this since it is internally used (not only i demoshop).
+             * 170203: Do not remove this since it is internally used (not only in the demoshop).
              */
             if (isset($_REQUEST['flowconfig'])) {
                 if (isResursDemo()) {
@@ -7182,7 +7182,9 @@ function getResursPaymentMethodModelPath()
 
     if (!file_exists($modelPath)) {
         // Silently prepare for sub-includes.
-        @mkdir($modelPath);
+        if (!mkdir($modelPath) && !is_dir($modelPath)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $modelPath));
+        }
         @file_put_contents($modelPath . '.htaccess', 'Options -indexes');
     }
 
