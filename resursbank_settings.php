@@ -1479,8 +1479,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         __('Testing and development', 'resurs-bank-payment-gateway-for-woocommerce')
                     );
                     echo $this->setCheckBox('logResursEvents', $namespace);
-                    echo $this->setCheckBox('devResursSimulation', $namespace);
-                    echo $this->setTextBox('devSimulateSuccessUrl', $namespace);
                     echo $this->setCheckBox('showResursCheckoutStandardFieldsTest', $namespace);
                     echo $this->setSeparator(__('Miscellaneous', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setCheckBox('preventGlobalInterference', $namespace);

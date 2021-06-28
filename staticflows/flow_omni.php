@@ -362,9 +362,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     private function createResursOmniSuccessUrl($isFailing = false)
     {
         $this->omniSuccessUrl = home_url('/');
-        if (isResursSimulation()) {
-            $this->omniSuccessUrl = getResursOption("devSimulateSuccessUrl");
-        }
         $omniRef = WC()->session->get('omniRef');
         $this->omniSuccessUrl = add_query_arg('wc-api', 'WC_Resurs_Bank', $this->omniSuccessUrl);
         $this->omniSuccessUrl = add_query_arg('utm_nooverride', '1', $this->omniSuccessUrl);
