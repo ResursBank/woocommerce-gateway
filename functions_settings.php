@@ -539,18 +539,6 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'default' => 'false',
                 ],
-                'devResursSimulation' => [
-                    'title' => __(
-                        'Resurs developer mode for simulations',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    'description' => __(
-                        'Enable this feature and things may go wrong (this is automatically disabled in production)',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    'type' => 'checkbox',
-                    'default' => 'false',
-                ],
                 'includeEmptyTaxClasses' => [
                     'title' => __(
                         'Include empty tax classes in admin config',
@@ -563,18 +551,6 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'type' => 'checkbox',
                     'default' => 'false',
-                ],
-                'devSimulateSuccessUrl' => [
-                    'title' => __(
-                        'SuccessUrl-simulation',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    'description' => __(
-                        'If you are in simulation mode, you can enter your own successurl here, for which Resurs Checkout is sending you to, during a purchase',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    'type' => 'text',
-                    'default' => 'https://google.com/?test+landingpage',
                 ],
                 'devFlags' => [
                     'title' => __(

@@ -78,7 +78,6 @@ function woocommerce_gateway_resurs_bank_init()
             );
 
             hasResursOmni();
-            isResursSimulation(); // Make sure settings are properly set each round
 
             //$this->title = "Resurs Bank";
             $this->id = 'resurs-bank';
@@ -103,7 +102,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             /*
              * The flow configurator is only available in demo mode.
-             * 170203: Do not remove this since it is internally used (not only i demoshop).
+             * 170203: Do not remove this since it is internally used (not only in the demoshop).
              */
             if (isset($_REQUEST['flowconfig'])) {
                 if (isResursDemo()) {
@@ -6805,42 +6804,6 @@ function isResursTest()
 }
 
 /**
- * Payment gateway destroyer.
- *
- * Only enabled in very specific environments.
- *
- * @return bool
- */
-function isResursSimulation()
-{
-    if (!isResursTest()) {
-        return repairResursSimulation();
-    }
-    $devResursSimulation = getResursOption('devResursSimulation');
-    if ($devResursSimulation) {
-        if (isset($_SERVER['HTTP_HOST'])) {
-            $mustContain = ['.loc$', '.local$', '^localhost$', '.localhost$'];
-            $hasRequiredEnvironment = false;
-            foreach ($mustContain as $hostContainer) {
-                if (preg_match("/$hostContainer/", $_SERVER['HTTP_HOST'])) {
-                    return true;
-                }
-            }
-            /*
-             * If you really want to force this, use one of the following variables from a define or, if in .htaccess:
-             * SetEnv FORCE_RESURS_SIMULATION "true"
-             * As this is invoked, only if really set to test mode, this should not be able to destroy anything in production.
-             */
-            if ((defined('FORCE_RESURS_SIMULATION') && FORCE_RESURS_SIMULATION === true) || (isset($_SERVER['FORCE_RESURS_SIMULATION']) && $_SERVER['FORCE_RESURS_SIMULATION'] == 'true')) {
-                return true;
-            }
-        }
-    }
-
-    return repairResursSimulation();
-}
-
-/**
  * Get current customer id
  *
  * @param WC_Order $order
@@ -6861,7 +6824,7 @@ function getResursWooCustomerId($order = null)
     }
 
     // Created orders has higher priority since this id might have been created during order processing
-    if (!is_null($order)) {
+    if ($order !== null) {
         $return = $order->get_user_id();
     }
 
@@ -6905,19 +6868,6 @@ function getResursWordpressUser($key = 'userid', $popOnArray = true)
         return array_pop($uMeta);
     }
 }
-
-/**
- * @param bool $returnRepairState
- *
- * @return bool
- */
-function repairResursSimulation($returnRepairState = false)
-{
-    setResursOption('devSimulateErrors', $returnRepairState);
-
-    return $returnRepairState;
-}
-
 /********************** OMNICHECKOUT RELATED STARTS HERE ******************/
 
 /**
@@ -7232,7 +7182,9 @@ function getResursPaymentMethodModelPath()
 
     if (!file_exists($modelPath)) {
         // Silently prepare for sub-includes.
-        @mkdir($modelPath);
+        if (!mkdir($modelPath) && !is_dir($modelPath)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $modelPath));
+        }
         @file_put_contents($modelPath . '.htaccess', 'Options -indexes');
     }
 
@@ -7343,5 +7295,3 @@ function getResursRequireSession()
         session_start();
     }
 }
-
-isResursSimulation();
