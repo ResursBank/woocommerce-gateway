@@ -34,9 +34,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         }
 
         $this->flow = initializeResursFlow();
-        $this->omniSuccessUrl = "";
+        $this->omniSuccessUrl = '';
 
-        $icon_name = "resurs-standard";
+        $icon_name = 'resurs-standard';
         $this->icon = apply_filters(
             'woocommerce_resurs_bank_checkout_icon',
             $this->plugin_url() . '/img/' . $icon_name . '.png'
