@@ -66,7 +66,6 @@ use TorneLIB\Module\Network\Domain;
 use TorneLIB\Module\Network\NetWrapper;
 use TorneLIB\MODULE_NETWORK;
 use TorneLIB\Utils\Generic;
-use TorneLIB\Utils\Memory;
 use TorneLIB\Utils\Security;
 
 // Globals starts here. But should be deprecated if version tag can be fetched through their doc-blocks.
@@ -790,12 +789,12 @@ class ResursBank
             $this->preSetEarlyFlags($paramFlagSet);
         }
 
-/*        $memSafeLimit = -1;
-        if (defined('MEMORY_SAFE_LIMIT')) {
-            $memSafeLimit = MEMORY_SAFE_LIMIT;
-        }
-        $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
-        Memory::getMemoryAdjusted('128M', $memoryLimit);*/
+        /*        $memSafeLimit = -1;
+                if (defined('MEMORY_SAFE_LIMIT')) {
+                    $memSafeLimit = MEMORY_SAFE_LIMIT;
+                }
+                $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
+                Memory::getMemoryAdjusted('128M', $memoryLimit);*/
 
         if (is_bool($debug) && $debug) {
             $this->debug = $debug;
@@ -8222,7 +8221,6 @@ class ResursBank
      *
      * This method only returns the current status code for automatically finalized payments, if the payment method
      * is matched with an "instant finalization"-type (like SWISH). If not, ERROR (
-
      * 128) will
      * be used, which also (if you so wish) matches with false. If this method returns false, you might consider
      * the payment not instantly finalized.
