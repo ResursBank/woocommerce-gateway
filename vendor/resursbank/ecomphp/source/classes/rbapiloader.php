@@ -789,12 +789,13 @@ class ResursBank
             $this->preSetEarlyFlags($paramFlagSet);
         }
 
-        /*        $memSafeLimit = -1;
-                if (defined('MEMORY_SAFE_LIMIT')) {
-                    $memSafeLimit = MEMORY_SAFE_LIMIT;
-                }
-                $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
-                Memory::getMemoryAdjusted('128M', $memoryLimit);*/
+        $memSafeLimit = -1;
+        if (defined('MEMORY_SAFE_LIMIT')) {
+            $memSafeLimit = MEMORY_SAFE_LIMIT;
+        }
+        $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
+        Memory::getMemoryAdjusted('128M', $memoryLimit);
+        *
 
         if (is_bool($debug) && $debug) {
             $this->debug = $debug;
