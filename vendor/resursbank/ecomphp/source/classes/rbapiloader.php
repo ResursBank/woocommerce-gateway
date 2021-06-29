@@ -66,6 +66,7 @@ use TorneLIB\Module\Network\Domain;
 use TorneLIB\Module\Network\NetWrapper;
 use TorneLIB\MODULE_NETWORK;
 use TorneLIB\Utils\Generic;
+use TorneLIB\Utils\Memory;
 use TorneLIB\Utils\Security;
 
 // Globals starts here. But should be deprecated if version tag can be fetched through their doc-blocks.
@@ -789,12 +790,15 @@ class ResursBank
             $this->preSetEarlyFlags($paramFlagSet);
         }
 
-        /*$memSafeLimit = -1;
-        if (defined('MEMORY_SAFE_LIMIT')) {
-            $memSafeLimit = MEMORY_SAFE_LIMIT;
+        // Avoid conflicts with missing class.
+        if (class_exists('TorneLIB\Utils\Memory')) {
+            $memSafeLimit = -1;
+            if (defined('MEMORY_SAFE_LIMIT')) {
+                $memSafeLimit = MEMORY_SAFE_LIMIT;
+            }
+            $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
+            Memory::getMemoryAdjusted('128M', $memoryLimit);
         }
-        $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
-        Memory::getMemoryAdjusted('128M', $memoryLimit);*/
 
         if (is_bool($debug) && $debug) {
             $this->debug = $debug;
