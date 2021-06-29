@@ -1,9 +1,8 @@
 <?php
 
 /**
+ * Class WC_Gateway_ResursBank_Omni
  * Static Payment Flow: OmniCheckout
- *
- * Class WC_Resurs_Bank_Omni
  */
 class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 {
