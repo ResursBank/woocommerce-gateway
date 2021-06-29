@@ -795,7 +795,6 @@ class ResursBank
         }
         $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
         Memory::getMemoryAdjusted('128M', $memoryLimit);
-        *
 
         if (is_bool($debug) && $debug) {
             $this->debug = $debug;
