@@ -57,10 +57,13 @@ function woocommerce_gateway_resurs_bank_init()
         private $serverEnv;
 
         /**
-         * Constructor method for Resurs Bank plugin
+         * Constructor method for Resurs Bank plugin.
          *
-         * This method initializes various properties and fetches payment methods, either from the tranient API or from Resurs Bank API.
-         * It is also responsible for calling generate_payment_gateways, if these need to be refreshed.
+         * This method initializes various properties and fetches payment
+         * methods, either from the transient API or from Resurs Bank API.
+         * It is also responsible for calling generate_payment_gateways,
+         * if these need to be refreshed.
+         *
          */
         public function __construct()
         {
