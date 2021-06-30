@@ -1,5 +1,6 @@
 <?php
 
+use Resursbank\Ecommerce\Types\CheckoutType;
 use Resursbank\RBEcomPHP\ResursBank;
 
 /**
@@ -8,7 +9,9 @@ use Resursbank\RBEcomPHP\ResursBank;
  */
 class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 {
-    /** @var $flow Resursbank\RBEcomPHP\ResursBank */
+    /**
+     * @var ResursBank $flow
+     */
     protected $flow;
     private $omniSuccessUrl;
 
@@ -216,7 +219,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected function resurs_omnicheckout_create_frame()
     {
-        $this->flow->setPreferredPaymentFlowService(\Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT);
+        $this->flow->setPreferredPaymentFlowService(CheckoutType::RESURS_CHECKOUT);
         $bookDataOmni = self::createResursOmniOrder();
         $omniRef = WC()->session->get('omniRef');
         try {
@@ -598,7 +601,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         if ($shipping_tax > 0) {
             try {
                 $shipping_tax_pct = (
-                    !is_nan(round($shipping_tax / $shipping, 2) * 100) ?
+                !is_nan(round($shipping_tax / $shipping, 2) * 100) ?
                     @round($shipping_tax / $shipping, 2) * 100 : 0
                 );
             } catch (Exception $e) {
@@ -680,9 +683,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $couponDescription = $post->post_excerpt;
                     if (empty($couponDescription)) {
                         $couponDescription = $couponCode . '_' . __(
-                            'coupon',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        );
+                                'coupon',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            );
                     }
 
                     $discountType = $coupon->get_discount_type();
