@@ -1266,9 +1266,9 @@ function woocommerce_gateway_resurs_bank_init()
                 $woocommerceOrder->update_status($newStatus);
 
                 if (
-                        !is_null($resursOrderObject) &&
-                        $suggestedStatusCode === OrderStatus::ERROR &&
-                        $this->flow->isFrozen($resursOrderObject)
+                    !is_null($resursOrderObject) &&
+                    $suggestedStatusCode === OrderStatus::ERROR &&
+                    $this->flow->isFrozen($resursOrderObject)
                 ) {
                     $suggestedString = __(
                         '[Resurs Bank] On-Hold: Detected frozen order',
@@ -1313,7 +1313,7 @@ function woocommerce_gateway_resurs_bank_init()
                 OrderStatus::PROCESSING => 'processing',
                 OrderStatus::CREDITED => 'refunded',
                 OrderStatus::COMPLETED => 'completed',
-                OrderStatus::COMPLETED => 'on-hold',
+                OrderStatus::PENDING => 'on-hold',
                 OrderStatus::ANNULLED => 'cancelled',
                 OrderStatus::ERROR => 'on-hold',
             ];
