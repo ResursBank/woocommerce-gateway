@@ -1,6 +1,7 @@
 <?php
 
 use Resursbank\Ecommerce\Types\CheckoutType;
+use Resursbank\RBEcomPHP\ResursBank;
 
 /**
  * Class WC_Gateway_ResursBank_Omni
@@ -126,7 +127,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      * There is a slight different design for this method since it's enabled through the choice of flow from Resurs primary configuration.
      * Very few settings are configured from here.
      */
-    function admin_options()
+    public function admin_options()
     {
         // The WOO-48 should expire this section.
         $_REQUEST['tab'] = "tab_resursbank";
@@ -136,20 +137,17 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $url = add_query_arg('tab', $_REQUEST['tab'], $url);
         $url = add_query_arg('section', $_REQUEST['section'], $url);
         wp_safe_redirect($url);
-        die("Deprecated space");
-
-        ?>
+        die("Deprecated space"); ?>
         <table class="form-table">
             <h2>Custom shopFlow - <?php echo $this->method_title; ?></h2>
             <h3>Status: <?php echo hasResursOmni() ? __("Enabled") : __("Disabled"); ?></h3>
             <?php
-            $this->generate_settings_html();
-            ?>
+            $this->generate_settings_html(); ?>
         </table>
         <?php
     }
 
-    function init_form_fields()
+    public function init_form_fields()
     {
         $this->form_fields = getResursWooFormFields(null, 'resurs_bank_omnicheckout');
     }
@@ -304,7 +302,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $loggedInBilling,
                     'first_name'
                 ) . ' ' . $this->getDataFromCustomerObject(
-                    $loggedInBilling, 'last_name'
+                    $loggedInBilling,
+                    'last_name'
                 ),
                 $this->getDataFromCustomerObject($loggedInBilling, 'first_name'),
                 $this->getDataFromCustomerObject($loggedInBilling, 'last_name'),
@@ -346,7 +345,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 'backUrl' => $omniBack,
             ];
         } catch (Exception $e) {
-
         }
 
         return $returnArray;
@@ -368,8 +366,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $this->omniSuccessUrl = add_query_arg('set-no-session', '1', $this->omniSuccessUrl);
         $this->omniSuccessUrl = add_query_arg('flow-type', 'check_omni_response', $this->omniSuccessUrl);
         $this->omniSuccessUrl = add_query_arg('failInProgress', $isFailing ? 1 : 0, $this->omniSuccessUrl);
-        $omniSuccessNonce = wp_nonce_url($this->omniSuccessUrl, "omnicheckout_callback_mode",
-            "omnicheckout_callback_nonce");
+        $omniSuccessNonce = wp_nonce_url(
+            $this->omniSuccessUrl,
+            "omnicheckout_callback_mode",
+            "omnicheckout_callback_nonce"
+        );
         $omniSuccessUrl = $omniSuccessNonce;
         $this->omniSuccessUrl = $omniSuccessUrl;
 
@@ -416,8 +417,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         // from a layout, we can not rebuild the array either. In such cases, when arrays are broken, wooCommerce can in this moment
         // render foreach-warnings. The patch here, will try to fix this, by at least create some default array-fields without any data.
 
-        $keepFieldsHidden = getResursOption("useStandardFieldsForShipping",
-            "woocommerce_resurs_bank_omnicheckout_settings");
+        $keepFieldsHidden = getResursOption(
+            "useStandardFieldsForShipping",
+            "woocommerce_resurs_bank_omnicheckout_settings"
+        );
         if (isResursOmni() && hasResursOmni()) {
             if (!defined('OMNICHECKOUT_PROCESSPAYMENT')) {
                 if (!$keepFieldsHidden) {
@@ -482,7 +485,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
             if (isset($paymentSpec['totalAmount']) && $doUpdateIframe) {
                 $paymentSpecAmount = $paymentSpec['totalAmount'];
-                /** @var \Resursbank\RBEcomPHP\ResursBank $flow */
+                /** @var ResursBank $flow */
                 $flow = initializeResursFlow();
                 $omniUpdateResponse = $flow->updateCheckoutOrderLines($currentOmniRef, $paymentSpec['specLines']);
                 if (omniOption('omniFrameNotReloading')) {
@@ -525,7 +528,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     /**
      * Get specLines for startPaymentSession
      *
-     * @param  array $cart WooCommerce cart containing order items
+     * @param array $cart WooCommerce cart containing order items
      * @return array       The specLines for startPaymentSession
      * @throws Exception
      */
@@ -556,8 +559,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $spec_lines[] = [
                 'id' => $bookArtId,
                 'artNo' => $bookArtId,
-                'description' => (empty($postTitle) ? __('Article description missing',
-                    'resurs-bank-payment-gateway-for-woocommerce') : $postTitle),
+                'description' => (empty($postTitle) ? __(
+                    'Article description missing',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ) : $postTitle),
                 'quantity' => $item['quantity'],
                 'unitMeasure' => '',
                 'unitAmountWithoutVat' => $priceExTax,
@@ -594,10 +599,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         if ($shipping_tax > 0) {
             try {
                 $shipping_tax_pct = (
-                !is_nan(round($shipping_tax / $shipping, 2) * 100) ?
+                    !is_nan(round($shipping_tax / $shipping, 2) * 100) ?
                     @round($shipping_tax / $shipping, 2) * 100 : 0
                 );
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
         }
 
         $spec_lines[] = [
@@ -675,20 +681,27 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     $couponDescription = $post->post_excerpt;
                     if (empty($couponDescription)) {
                         $couponDescription = $couponCode . '_' . __(
-                                'coupon',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            );
+                            'coupon',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        );
                     }
 
                     $discountType = $coupon->get_discount_type();
                     $exTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code) : ceil($cart->get_coupon_discount_amount($code));
-                    $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code, false) : ceil($cart->get_coupon_discount_amount($code, false));
+                    $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount(
+                        $code,
+                        false
+                    ) : ceil($cart->get_coupon_discount_amount($code, false));
                     $exTax = 0 - $exTaxAmount;
                     $incTax = 0 - $incTaxAmount;
                     $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                     $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                     $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
-                    $totalVatAmount = (bool)getResursOption('coupons_include_vat') ? $flow->getTotalVatAmount($unitAmountWithoutVat, $vatPct, 1) : 0;
+                    $totalVatAmount = (bool)getResursOption('coupons_include_vat') ? $flow->getTotalVatAmount(
+                        $unitAmountWithoutVat,
+                        $vatPct,
+                        1
+                    ) : 0;
 
                     $spec_lines[] = [
                         'id' => $couponId,
@@ -788,7 +801,8 @@ if (hasResursOmni()) {
     add_filter(
         'woocommerce_update_order_review_fragments',
         'WC_Gateway_ResursBank_Omni::interfere_update_order_review',
-        0, 1
+        0,
+        1
     );
 
     // need filter or action for pre update_order_review

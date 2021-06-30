@@ -6793,6 +6793,7 @@ function getResursWordpressUser($key = 'userid', $popOnArray = true)
         return array_pop($uMeta);
     }
 }
+
 /********************** OMNICHECKOUT RELATED STARTS HERE ******************/
 
 /**
