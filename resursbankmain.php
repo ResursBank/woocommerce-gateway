@@ -1411,8 +1411,7 @@ function woocommerce_gateway_resurs_bank_init()
                             $return = $suggestedStatus;
                         }
                         break;
-                    case $suggestedStatus & (OrderStatus::COMPLETED | OrderStatus::PAYMENT_AUTOMATICALLY_DEBITED):
-
+                    case $suggestedStatus & (OrderStatus::COMPLETED | OrderStatus::AUTO_DEBITED):
                         if ($suggestedStatus & (OrderStatus::AUTO_DEBITED)) {
                             $autoDebitStatus = getResursOption('autoDebitStatus');
                             if ($autoDebitStatus === 'default' || empty($autoDebitStatus)) {
