@@ -1,5 +1,7 @@
 <?php
 
+use Resursbank\Ecommerce\Types\CheckoutType;
+
 /**
  * Class WC_Gateway_ResursBank_Omni
  * Static Payment Flow: OmniCheckout
@@ -217,7 +219,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected function resurs_omnicheckout_create_frame()
     {
-        $this->flow->setPreferredPaymentFlowService(\Resursbank\RBEcomPHP\RESURS_FLOW_TYPES::RESURS_CHECKOUT);
+        $this->flow->setPreferredPaymentFlowService(CheckoutType::RESURS_CHECKOUT);
         $bookDataOmni = self::createResursOmniOrder();
         $omniRef = WC()->session->get('omniRef');
         try {
