@@ -2211,9 +2211,9 @@ function woocommerce_gateway_resurs_bank_init()
         {
             $useCustomerType = '';
             if (!is_array($paymentMethodData->customerType)) {
-                if ($paymentMethodData->customerType == 'NATURAL') {
+                if ($paymentMethodData->customerType === 'NATURAL') {
                     $useCustomerType = 'NATURAL';
-                } elseif ($paymentMethodData->customerType == 'LEGAL') {
+                } elseif ($paymentMethodData->customerType === 'LEGAL') {
                     $useCustomerType = 'LEGAL';
                 }
             } else {
@@ -2231,12 +2231,10 @@ function woocommerce_gateway_resurs_bank_init()
         public function process_payment_set_card_info($paymentMethodInformation)
         {
             if (isset($paymentMethodInformation->specificType) && ($paymentMethodInformation->specificType == 'REVOLVING_CREDIT' || $paymentMethodInformation->specificType == 'CARD')) {
-                if ($paymentMethodInformation->specificType == 'REVOLVING_CREDIT') {
+                if ($paymentMethodInformation->specificType === 'REVOLVING_CREDIT') {
                     $this->flow->setCardData();
-                } else {
-                    if (isset($_REQUEST['card-number'])) {
-                        $this->flow->setCardData($_REQUEST['card-number']);
-                    }
+                } elseif (isset($_REQUEST['card-number'])) {
+                    $this->flow->setCardData($_REQUEST['card-number']);
                 }
             }
         }
@@ -2272,7 +2270,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $this->flow->setMetaData('CustomerId', $customerId);
             }
 
-            if ($paymentMethodInformation->type == 'PAYMENT_PROVIDER' && !$supportProviderMethods) {
+            if ($paymentMethodInformation->type === 'PAYMENT_PROVIDER' && !$supportProviderMethods) {
                 wc_add_notice(
                     __(
                         'The payment method is not available for the selected payment flow',
@@ -2334,7 +2332,7 @@ function woocommerce_gateway_resurs_bank_init()
             $bookDataArray,
             $order
         ) {
-            if ($paymentMethodInformation->type == 'PAYMENT_PROVIDER' && !$supportProviderMethods) {
+            if ($paymentMethodInformation->type === 'PAYMENT_PROVIDER' && !$supportProviderMethods) {
                 wc_add_notice(
                     __(
                         'The payment method is not available for the selected payment flow',
@@ -2356,7 +2354,8 @@ function woocommerce_gateway_resurs_bank_init()
                     $this->flow->setMetaData('CustomerId', $customerId);
                 }
 
-                // If woocommerce forms do offer phone and email, while our own don't, use them (moved to the section of setCustomer)
+                // If woocommerce forms do offer phone and email, while our own
+                // don't, use them (moved to the section of setCustomer)
                 $bookPaymentResult = $this->flow->createPayment($shortMethodName, $bookDataArray);
             }
 
@@ -2497,8 +2496,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
-         * Proccess the payment
-         *
+         * Process the payment
          * @param int $order_id WooCommerce order ID
          * @return array|void Null on failure, array on success
          * @throws Exception
@@ -2537,9 +2535,9 @@ function woocommerce_gateway_resurs_bank_init()
                 false,
                 $backurl
             );
-            $this->flow->setWaitForFraudControl(resursOption('waitForFraudControl'));
-            $this->flow->setAnnulIfFrozen(resursOption('annulIfFrozen'));
-            $this->flow->setFinalizeIfBooked(resursOption('finalizeIfBooked'));
+            $this->flow->setWaitForFraudControl(getResursOption('waitForFraudControl'));
+            $this->flow->setAnnulIfFrozen(getResursOption('annulIfFrozen'));
+            $this->flow->setFinalizeIfBooked(getResursOption('finalizeIfBooked'));
             $this->flow->setPreferredId($preferredId);
             $cart = $woocommerce->cart;
             // TODO: Old style payment spec generator should be fixed.
@@ -2553,7 +2551,9 @@ function woocommerce_gateway_resurs_bank_init()
             }
             $ssnCustomerType = (isset($_REQUEST['ssnCustomerType']) ?
                 trim($_REQUEST['ssnCustomerType']) : $this->process_payment_get_customer_type($paymentMethodInformation));
-            if ($ssnCustomerType === 'LEGAL' && $paymentMethodInformation->type === 'PAYMENT_PROVIDER') {
+            if ($ssnCustomerType === 'LEGAL' &&
+                $paymentMethodInformation->type === 'PAYMENT_PROVIDER'
+            ) {
                 $fetchedGovernmentId = null;
             }
 
@@ -2633,7 +2633,6 @@ function woocommerce_gateway_resurs_bank_init()
 
         /**
          * @param $error
-         *
          * @return mixed
          */
         public function error_prepare_omni_order($error)
@@ -2662,7 +2661,7 @@ function woocommerce_gateway_resurs_bank_init()
             } catch (Exception $e) {
                 $returnResult['success'] = false;
                 $code = $e->getCode();
-                if (!intval($code)) {
+                if (!(int)$code) {
                     $code = 500;
                 }
 
@@ -2901,10 +2900,9 @@ function woocommerce_gateway_resurs_bank_init()
                     WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', true);
                     define('OMNICHECKOUT_PROCESSPAYMENT', true);
                     if (!$testLocalOrder) {
-                        /*
-                         * WooCommerce POST-helper. Since we force removal of required fields in woocommerce, we need to help wooCommerce
-                         * adding the correct fields at this level to possibly pass through the internal field validation.
-                         */
+                        // WooCommerce POST-helper. Since we force removal of required fields in woocommerce, we need
+                        // to help wooCommerce to adding the correct fields at this level to possibly pass through
+                        // the internal field validation.
                         foreach ($wooBillingAddress as $billingKey => $billingValue) {
                             if (!isset($_POST[$billingKey])) {
                                 $_POST['billing_' . $billingKey] = $billingValue;
@@ -2923,7 +2921,6 @@ function woocommerce_gateway_resurs_bank_init()
                         try {
                             // As we work with the session, we'd try to get the current order that way.
                             // process_checkout() does a lot of background work for this.
-
                             $internalErrorMessage = '';
                             $internalErrorCode = 0;
                             try {
