@@ -1354,7 +1354,7 @@ function woocommerce_gateway_resurs_bank_init()
             $return = OrderStatus::ERROR;
 
             try {
-                /** @var $suggestedStatus OrderStatus */
+                /** @var int $suggestedStatus */
                 $suggestedStatus = $this->flow->getOrderStatusByPayment(
                     $paymentIdOrPaymentObject
                 );
