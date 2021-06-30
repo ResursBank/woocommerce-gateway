@@ -1367,9 +1367,20 @@ function woocommerce_gateway_resurs_bank_init()
                 resursEventLogger(print_r($paymentIdOrPaymentObject, true));
                 resursEventLogger('Current Status: ' . $currentWcStatus);
                 if (isset($paymentStatus[$suggestedStatus])) {
-                    resursEventLogger('Suggested status: ' . $suggestedStatus . ' (' . $paymentStatus[$suggestedStatus] . ')');
+                    resursEventLogger(
+                        sprintf(
+                            'Suggested status: %s (%s)',
+                            $suggestedStatus,
+                            $paymentStatus[$suggestedStatus]
+                        )
+                    );
                 } else {
-                    resursEventLogger('Suggested status: ' . $suggestedStatus . ' (bitwise setup defines dynamically chosen status)');
+                    resursEventLogger(
+                        sprintf(
+                            'Suggested status: %s (bitwise setup defines dynamically chosen status).',
+                            $suggestedStatus
+                        )
+                    );
                 }
 
                 resursEventLogger('Stored statuses listed.');
