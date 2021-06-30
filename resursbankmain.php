@@ -1506,7 +1506,7 @@ function woocommerce_gateway_resurs_bank_init()
                 foreach ($options['uri_components'] as $key => $value) {
                     $uriTemplate .= '&' . $key . '=' . '{' . $value . '}';
                 }
-                if ($type == 'TEST') {
+                if ($type === 'TEST') {
                     $uriTemplate .= '&thisRandomValue=' . rand(10000, 32000);
                 } else {
                     $uriTemplate .= '&digest={digest}';
@@ -1548,11 +1548,9 @@ function woocommerce_gateway_resurs_bank_init()
 
         /**
          * Initialize the web services through EComPHP-Simplified
-         *
          * @param string $username The username for the API, is fetched from options if not specified
          * @param string $password The password for the API, is fetched from options if not specified
-         *
-         * @return boolean          Return whether or not the action succeeded
+         * @return bool
          */
         public function init_webservice($username = '', $password = '')
         {
@@ -1570,10 +1568,8 @@ function woocommerce_gateway_resurs_bank_init()
 
         /**
          * Get specLines for initiated payment session
-         *
          * @param WC_Cart $cart WooCommerce cart containing order items
-         *
-         * @return array       The specLines for startPaymentSession
+         * @return array The specLines for startPaymentSession
          */
         protected static function get_spec_lines($cart)
         {
@@ -1623,10 +1619,10 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
-         * Get and convert payment spec from cart, convert it to Resurs Specrows
+         * Get and convert payment spec from cart, convert it to Resurs SpecRows
          *
          * @param WC_Cart $cart Order items
-         * @param bool $specLinesOnly Return only the array of speclines
+         * @param bool $specLinesOnly Return only the array of SpecLines
          *
          * @return array The paymentSpec for startPaymentSession
          * @throws Exception
@@ -1681,7 +1677,9 @@ function woocommerce_gateway_resurs_bank_init()
             $payment_fee = (float)(isset($payment_fee) ? $payment_fee : '0');
             $payment_fee_tax_class = getResursOption('priceTaxClass');
             if (!hasWooCommerce('2.3', '>=')) {
-                $payment_fee_tax_class_rates = $cart->tax->get_rates($payment_fee_tax_class);
+                $payment_fee_tax_class_rates = $cart->tax->get_rates(
+                    $payment_fee_tax_class
+                );
                 $payment_fee_tax = $cart->tax->calc_tax(
                     $payment_fee,
                     $payment_fee_tax_class_rates,
@@ -1749,28 +1747,45 @@ function woocommerce_gateway_resurs_bank_init()
                         $couponCode = $coupon->get_code();
                         $couponDescription = $post->post_excerpt;
                         if (empty($couponDescription)) {
-                            $couponDescription = $couponCode . '_' . __(
+                            $couponDescription = sprintf(
+                                '%s_%s',
+                                $couponCode,
+                                __(
                                     'coupon',
                                     'resurs-bank-payment-gateway-for-woocommerce'
-                                );
+                                )
+                            );
                         }
 
                         $discountType = $coupon->get_discount_type();
                         $exTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code) : ceil($cart->get_coupon_discount_amount($code));
-                        $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount($code,
-                            false) : ceil($cart->get_coupon_discount_amount($code, false));
+                        $incTaxAmount = $discountType !== 'fixed_cart' ? $cart->get_coupon_discount_amount(
+                            $code,
+                            false
+                        ) : ceil($cart->get_coupon_discount_amount($code, false));
                         $exTax = 0 - $exTaxAmount;
                         $incTax = 0 - $incTaxAmount;
                         $vatPct = (bool)getResursOption('coupons_include_vat') ? (($incTax - $exTax) / $exTax) * 100 : 0;
                         $unitAmountWithoutVat = (bool)getResursOption('coupons_include_vat') ? $exTax : $incTax;
                         $totalAmount = $flow->getTotalAmount($unitAmountWithoutVat, $vatPct, 1);
                         $totalVatAmount = (bool)getResursOption('coupons_include_vat') ?
-                            $flow->getTotalVatAmount($unitAmountWithoutVat,
-                                $vatPct, 1) : 0;
+                            $flow->getTotalVatAmount(
+                                $unitAmountWithoutVat,
+                                $vatPct, 1
+                            ) : 0;
+
+                        $couponArtNo = sprintf(
+                            '%s_%s',
+                            $couponCode,
+                            __(
+                                'coupon',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            )
+                        );
 
                         $spec_lines[] = [
                             'id' => $couponId,
-                            'artNo' => $couponCode . '_' . 'kupong',
+                            'artNo' => $couponArtNo,
                             'description' => $couponDescription,
                             'quantity' => 1,
                             'unitMeasure' => '',
@@ -1784,14 +1799,14 @@ function woocommerce_gateway_resurs_bank_init()
                 }
             }
             $ourPaymentSpecCalc = self::calculateSpecLineAmount($spec_lines);
-            if (!$specLinesOnly) {
+            if ($specLinesOnly) {
+                return $spec_lines;
+            } else {
                 $payment_spec = [
                     'specLines' => $spec_lines,
                     'totalAmount' => $ourPaymentSpecCalc['totalAmount'],
                     'totalVatAmount' => $ourPaymentSpecCalc['totalVatAmount'],
                 ];
-            } else {
-                return $spec_lines;
             }
 
             return $payment_spec;
@@ -1799,7 +1814,6 @@ function woocommerce_gateway_resurs_bank_init()
 
         /**
          * @param array $specLine
-         *
          * @return array
          */
         protected static function calculateSpecLineAmount($specLine = [])
