@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20210526');
+    define('ECOMPHP_MODIFY_DATE', '20210629');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.53
+ * @version 1.3.55
  */
 class ResursBank
 {
@@ -779,7 +779,7 @@ class ResursBank
      * @param array $paramFlagSet
      * @throws Exception
      */
-    function __construct(
+    public function __construct(
         $login = '',
         $password = '',
         $targetEnvironment = RESURS_ENVIRONMENTS::TEST,
@@ -8225,6 +8225,7 @@ class ResursBank
      *
      * This method only returns the current status code for automatically finalized payments, if the payment method
      * is matched with an "instant finalization"-type (like SWISH). If not, ERROR (
+
      * 128) will
      * be used, which also (if you so wish) matches with false. If this method returns false, you might consider
      * the payment not instantly finalized.
