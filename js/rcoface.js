@@ -5,8 +5,9 @@ var $RB = jQuery.noConflict();
 
 // Do not set rcoFacelift to true, until there is something to handle.
 $RB(document).ready(function ($) {
-    if (typeof window.RCO !== 'undefined') {
+    if (typeof $ResursCheckout !== 'undefined') {
         // Set rcoFacelift to true if the new rco interface is available.
-        //rcoFacelift = true;
+        rcoFacelift = true;
+        getRcoFieldSetup();
     }
 });

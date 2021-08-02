@@ -1,5 +1,27 @@
 var $RB = jQuery.noConflict();
 
+/**
+ * Billing fields handling.
+ */
+function getRcoFieldSetup() {
+    if (omnivars["useStandardFieldsForShipping"] == "1") {
+        console.log("ResursCheckout: useStandardFieldsForShipping (Experimental) is active, so customer fields are hidden rather than removed");
+        if (omnivars["showResursCheckoutStandardFieldsTest"] !== "1") {
+            jQuery('.woocommerce-billing-fields').hide();
+            jQuery('.woocommerce-shipping-fields').hide();
+        } else {
+            if (omnivars["isResursTest"] !== "1") {
+                // useStandardFieldsForShipping is active, but we are running production - so the display fields are overruled.
+                jQuery('.woocommerce-billing-fields').hide();
+                jQuery('.woocommerce-shipping-fields').hide();
+            }
+        }
+    } else {
+        jQuery('div').remove('.woocommerce-billing-fields');
+        jQuery('div').remove('.woocommerce-shipping-fields');
+    }
+}
+
 $RB(document).ready(function ($) {
     // rcoFacelift back-compatible checkout.
     // The part below is set to run if rcoFacelift is not available.
@@ -8,22 +30,7 @@ $RB(document).ready(function ($) {
         typeof omnivars !== "undefined" &&
         omnivars !== null
     ) {
-        if (omnivars["useStandardFieldsForShipping"] == "1") {
-            console.log("ResursCheckout: useStandardFieldsForShipping (Experimental) is active, so customer fields are hidden rather than removed");
-            if (omnivars["showResursCheckoutStandardFieldsTest"] !== "1") {
-                jQuery('.woocommerce-billing-fields').hide();
-                jQuery('.woocommerce-shipping-fields').hide();
-            } else {
-                if (omnivars["isResursTest"] !== "1") {
-                    // useStandardFieldsForShipping is active, but we are running production - so the display fields are overruled.
-                    jQuery('.woocommerce-billing-fields').hide();
-                    jQuery('.woocommerce-shipping-fields').hide();
-                }
-            }
-        } else {
-            jQuery('div').remove('.woocommerce-billing-fields');
-            jQuery('div').remove('.woocommerce-shipping-fields');
-        }
+        getRcoFieldSetup();
         var resursCheckout = ResursCheckout('#resurs-checkout-container');
         /*
          * Automatically raise debugging if in test mode (= Disabled for production)
