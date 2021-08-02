@@ -1995,7 +1995,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $translation = [];
                     }
                     $costOfPurchase = $ajaxUrl . '?action=get_cost_ajax';
-                    if ($specificType != 'CARD' && $type != 'PAYMENT_PROVIDER') {
+                    if ($specificType !== 'CARD' && $type != 'PAYMENT_PROVIDER') {
                         $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __(
                                 $read_more,
                                 'resurs-bank-payment-gateway-for-woocommerce'
@@ -2230,7 +2230,9 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function process_payment_set_card_info($paymentMethodInformation)
         {
-            if (isset($paymentMethodInformation->specificType) && ($paymentMethodInformation->specificType == 'REVOLVING_CREDIT' || $paymentMethodInformation->specificType == 'CARD')) {
+            if (isset($paymentMethodInformation->specificType) &&
+                ($paymentMethodInformation->specificType === 'REVOLVING_CREDIT' ||
+                    $paymentMethodInformation->specificType === 'CARD')) {
                 if ($paymentMethodInformation->specificType === 'REVOLVING_CREDIT') {
                     $this->flow->setCardData();
                 } elseif (isset($_REQUEST['card-number'])) {
@@ -3590,6 +3592,18 @@ function woocommerce_gateway_resurs_bank_init()
             // TODO: Leave the oldFlowSimulator/regex behind and replace with own field generators.
             $methodFieldsRequest = $flow->getTemplateFieldsByMethodType($transientMethod, $customerType);
             $methodFields = $methodFieldsRequest['fields'];
+            if (isset($transientMethod->specificType) &&
+                $transientMethod->specificType === 'CARD' &&
+                isset($methodFields) &&
+                in_array('card-number', $methodFields, true)
+            ) {
+                foreach ($methodFields as $idx => $fld) {
+                    if ($fld === 'card-number') {
+                        unset($methodFields[$idx]);
+                        break;
+                    }
+                }
+            }
 
             $fetchedGovernmentId = (isset($_REQUEST['applicant-government-id']) ? trim($_REQUEST['applicant-government-id']) : '');
             if (empty($fetchedGovernmentId) && isset($_REQUEST['ssn_field']) && !empty($_REQUEST['ssn_field'])) {
@@ -3599,7 +3613,9 @@ function woocommerce_gateway_resurs_bank_init()
             $validationFail = false;
             foreach ($methodFields as $fieldName) {
                 if (isset($_REQUEST[$fieldName]) && isset($regEx[$fieldName])) {
-                    if ($fieldName == 'applicant-government-id' && empty($_REQUEST[$fieldName]) && $flow->getCanSkipGovernmentIdValidation()) {
+                    if ($fieldName == 'applicant-government-id' &&
+                        empty($_REQUEST[$fieldName]) &&
+                        $flow->getCanSkipGovernmentIdValidation()) {
                         continue;
                     }
                     $regExString = $regEx[$fieldName];
@@ -3619,7 +3635,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $fieldData
                     );
 
-                    if ($fieldName === 'card-number' && empty($fieldData)) {
+                    if ($fieldNameOriginal === 'card-number' && empty($fieldData)) {
                         continue;
                     }
                     if (preg_match('/email/', $fieldNameOriginal)) {
