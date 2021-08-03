@@ -1244,7 +1244,8 @@ function woocommerce_gateway_resurs_bank_init()
             $woocommerceOrder,
             $suggestedStatusCode,
             $resursOrderObject = null
-        ) {
+        )
+        {
             resursEventLogger("SynchronizeResursOrderStatus $currentStatus -> $newStatus");
 
             $updateStatus = true;
@@ -1350,7 +1351,8 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentIdOrPaymentObject = '',
             $byCallbackEvent = 0,
             $callbackEventDataArrayOrString = []
-        ) {
+        )
+        {
             $return = OrderStatus::ERROR;
 
             try {
@@ -2262,7 +2264,8 @@ function woocommerce_gateway_resurs_bank_init()
             $supportProviderMethods,
             $bookDataArray,
             $urlFail
-        ) {
+        )
+        {
             $hostedFlowBookingFailure = false;
             $hostedFlowUrl = null;
             $hostedBookPayment = null;
@@ -2333,7 +2336,8 @@ function woocommerce_gateway_resurs_bank_init()
             $supportProviderMethods,
             $bookDataArray,
             $order
-        ) {
+        )
+        {
             if ($paymentMethodInformation->type === 'PAYMENT_PROVIDER' && !$supportProviderMethods) {
                 wc_add_notice(
                     __(
@@ -4906,12 +4910,16 @@ function woocommerce_gateway_resurs_bank_init()
                 $resursMethod = true;
                 $resursPayment = wc_get_payment_id_by_order_id($post->ID);
             } else {
-                $flow = initializeResursFlow();
-                $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
-                $resursMeta = isset($methodInfo->type) ? $methodInfo->type : '';
-                $resursMetaSpecific = isset($methodInfo->specificType) ? $methodInfo->specificType : '';
-                setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodType', $resursMeta);
-                setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodSpecificType', $resursMetaSpecific);
+                $username = getResursOption('login');
+                // No username configured?
+                if (!empty($username)) {
+                    $flow = initializeResursFlow();
+                    $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
+                    $resursMeta = isset($methodInfo->type) ? $methodInfo->type : '';
+                    $resursMetaSpecific = isset($methodInfo->specificType) ? $methodInfo->specificType : '';
+                    setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodType', $resursMeta);
+                    setResursOrderMetaData($post->ID, 'resursBankMetaPaymentMethodSpecificType', $resursMetaSpecific);
+                }
             }
         }
 
@@ -6574,7 +6582,8 @@ function initializeResursFlow(
     $overridePassword = '',
     $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
     $requireNewFlow = false
-) {
+)
+{
     global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance, $woocommerce;
     $username = getResursOption('login');
     $password = getResursOption('password');
