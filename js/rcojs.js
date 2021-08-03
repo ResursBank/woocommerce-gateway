@@ -1,7 +1,7 @@
 var $RB = jQuery.noConflict();
 
 /**
- * Billing fields handling.
+ * Preconfigure how to handle billing- and shipping address fields depending on configuration.
  */
 function getRcoFieldSetup() {
     if (omnivars["useStandardFieldsForShipping"] == "1") {
@@ -31,6 +31,7 @@ $RB(document).ready(function ($) {
         omnivars !== null
     ) {
         getRcoFieldSetup();
+        // "Instantiate" Legacy RCO System here.
         var resursCheckout = ResursCheckout('#resurs-checkout-container');
         /*
          * Automatically raise debugging if in test mode (= Disabled for production)
@@ -39,6 +40,8 @@ $RB(document).ready(function ($) {
         if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest !== null && omnivars.isResursTest == "1") {
             resursCheckout.setDebug(1);
         }
+
+        // Initialize RCO Legacy here.
         resursCheckout.init();
         if (typeof omnivars["iframeShape"] != "undefined" && omnivars["iframeShape"] != "") {
             resursCheckout.setOnIframeReady(function (iframeElement) {
@@ -46,6 +49,7 @@ $RB(document).ready(function ($) {
             });
         }
 
+        // Set up handler for purchase fail.
         resursCheckout.setPurchaseFailCallback(function () {
             // OmniRef.
             var omniRef;
@@ -70,6 +74,8 @@ $RB(document).ready(function ($) {
             }
             handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
         });
+
+        // Set up handler for purchase denied.
         resursCheckout.setPurchaseDeniedCallback(function () {
             var omniRef;
             if (typeof omnivars.OmniRef !== "undefined") {
@@ -91,6 +97,8 @@ $RB(document).ready(function ($) {
             }
             handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
         });
+
+        // Set up handler for handling customer.
         resursCheckout.setCustomerChangedEventCallback(function (customerData) {
             if (omnivars["useStandardFieldsForShipping"] == "1") {
                 console.log("ResursCheckoutJS: [ClientSide] Received customer data update from iframe");
@@ -110,6 +118,7 @@ $RB(document).ready(function ($) {
                     "postcode": "postal",
                     "phone": "telephone"
                 };
+
                 // Check if there is a shipping set up on screen
                 if ($RB('#ship-to-different-address-checkbox').length > 0) {
                     if (typeof delivery["firstname"] !== "undefined") {
@@ -126,6 +135,8 @@ $RB(document).ready(function ($) {
                         }
                     }
                 }
+
+                // Billing address filler (if fields are present).
                 $RB("[id^=billing_]").each(function (i, f) {
                     if (typeof f.type === "string" && (f.type == "text" || f.type == "email" || f.type == "tel")) {
                         var b_name = f.id.substr(f.id.indexOf("_") + 1);
@@ -138,6 +149,8 @@ $RB(document).ready(function ($) {
                         }
                     }
                 });
+
+                // Shipping address filler (if fields are present).
                 if (useShipping) {
                     console.log("ResursCheckout: [ClientSide] Shipping is now included!");
                     triggerUpdateCheckout = false;
@@ -161,13 +174,14 @@ $RB(document).ready(function ($) {
                 }
             }
         });
+
+        // Handle the payment (create it) when customer is ready.
         resursCheckout.setBookingCallback(function (omniJsObject) {
             var omniRef = omnivars.OmniRef;
             var currentResursCheckoutFrame = document.getElementsByTagName("iframe")[0];
             var postData = {};
-            /*
-             * Merge the rest
-             */
+            // Fetch other fields found in the checkout form and merge the data, so it can be
+            // sent with the rest of the order handling.
             $RB('[name*="checkout"] input,textarea').each(
                 function (i, e) {
                     if (typeof e.name !== "undefined") {
@@ -185,11 +199,14 @@ $RB(document).ready(function ($) {
                     }
                 }
             );
+
+            // Make sure the iframe is present before we start backend comms.
             if (typeof currentResursCheckoutFrame !== "undefined" && typeof currentResursCheckoutFrame.src !== "undefined") {
                 var errorString = "";
                 // Prepare order and make it annullable on errors.
-                console.log("[Resurs Bank/Plugin] Backend PreOrder Execute.");
                 if (omniRef != "" && typeof omnivars.OmniPreBookUrl !== "undefined") {
+
+                    // Create order via backend url helper.
                     var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omniRef;
                     $RB.ajax(
                         {
