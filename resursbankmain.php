@@ -4912,7 +4912,7 @@ function woocommerce_gateway_resurs_bank_init()
             } else {
                 $username = getResursOption('login');
                 // No username configured?
-                if (!empty($username)) {
+                if (!empty($username) || !getResursOption('enabled')) {
                     $flow = initializeResursFlow();
                     $methodInfo = $flow->getPaymentMethodSpecific($methodInfoMeta);
                     $resursMeta = isset($methodInfo->type) ? $methodInfo->type : '';
