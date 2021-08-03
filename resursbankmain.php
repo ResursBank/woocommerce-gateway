@@ -4849,16 +4849,11 @@ function woocommerce_gateway_resurs_bank_init()
             ['jquery'],
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
-        wp_enqueue_script(
-            'rcoface',
-            plugin_dir_url(__FILE__) . 'js/rcoface.js' . $oneRandomValue,
-            ['jquery'],
-            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
-        );
+        // Legacy RCOJS is depending on rcoface, due to auto detection.
         wp_enqueue_script(
             'rcojs',
             plugin_dir_url(__FILE__) . 'js/rcojs.js' . $oneRandomValue,
-            ['jquery'],
+            ['jquery', 'rcoface'],
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
         wp_localize_script('resursbankmain', 'rb_getaddress_fields', $resursLanguageLocalization);

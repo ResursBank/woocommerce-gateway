@@ -2,6 +2,7 @@
 
 use Resursbank\Ecommerce\Types\CheckoutType;
 use Resursbank\RBEcomPHP\ResursBank;
+use TorneLIB\Module\Network\Domain;
 
 /**
  * Class WC_Gateway_ResursBank_Omni
@@ -14,6 +15,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected $flow;
     private $omniSuccessUrl;
+    protected $renderedIframe;
 
     /**
      * WC_Gateway_ResursBank_Omni constructor.
@@ -22,6 +24,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     public function __construct()
     {
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_script'], 0);
+
         $this->resetOmniCustomerFields = [];
         $this->id = "resurs_bank_omnicheckout";
         $this->method_title = "Resurs Bank Checkout";
@@ -79,6 +83,49 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                     'resurs_omnicheckout_form_location',
                 ]);
             }
+        }
+    }
+
+    /**
+     * Legacy iframe request.
+     * @return string
+     */
+    public function getRenderedIframe() {
+        return (string)$this->renderedIframe;
+    }
+
+    /**
+     * Enqueue scripts for RCO specifics. Iframe data should be prepared at this point instead of inside
+     * the checkout (legacy).
+     */
+    public function enqueue_script()
+    {
+        if (!getResursOption('enabled')) {
+            return;
+        }
+        $oneRandomValue = '?randomizeMe=' . rand(1024, 65535);
+        $this->renderedIframe = $this->resurs_omnicheckout_create_frame();
+        $iframeResponse = $this->flow->getFullCheckoutResponse();
+        $legacy = (bool)(isset($iframeResponse->script) && preg_match('/oc-shop.js/', $iframeResponse->script) ? true : false);
+
+        wp_enqueue_script(
+            'rcoface',
+            plugin_dir_url(__FILE__) . '../js/rcoface.js' . $oneRandomValue,
+            ['jquery'],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
+        );
+        $urlList = (new Domain())->getUrlsFromHtml($iframeResponse->script);
+        if (isset($iframeResponse->script) && !empty($iframeResponse->script) && count($urlList)) {
+            wp_enqueue_script(
+                'rcoremote',
+                array_pop($urlList),
+                [],
+                RB_WOO_VERSION
+            );
+            unset($iframeResponse->customer);
+            $iframeArray = (array)$iframeResponse;
+            $iframeArray['legacy'] = $legacy;
+            wp_localize_script('rcoremote', 'rcoremote', $iframeArray);
         }
     }
 
@@ -214,6 +261,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     }
 
     /**
+     * Creating frame as a html object and returns it. We don't necessarily have to use it at this poing (FL).
      * @return string
      * @throws Exception
      */
@@ -224,11 +272,13 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $omniRef = WC()->session->get('omniRef');
         try {
             $customerId = getResursWooCustomerId();
-            if (!is_null($customerId)) {
+            $noCid = getResursFlag('NO_CUSTOMER_ID');
+            if (!is_null($customerId) && !$noCid) {
                 $this->flow->setMetaData('CustomerId', $customerId);
             }
 
             $flowBook = $this->flow->createPayment($omniRef, $bookDataOmni);
+
             $flowFrame = is_string($flowBook) ? $flowBook : "";
             $flowFrame .= '<noscript><b>' .
                 __(
@@ -381,16 +431,12 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     /**
      * Field removal at omni level
-     *
      * If omnicheckout is enabled all fields should be handled by the iFrame instead.
-     *
      * @param $fields
-     *
      * @return array
      */
     public function resurs_omnicheckout_fields($fields)
     {
-
         // Flow description: During checking - if RCO is enabled - the plugin, will at this place remove all fields from the
         // checkout page, that normally in RCO mode is handled by RCO itself. By removing those fields from the checkout page
         // in woocommerce, there won't be double field of everything. This, however might not work properly, if we need

@@ -25,6 +25,12 @@ function getRcoFieldSetup() {
 $RB(document).ready(function ($) {
     // rcoFacelift back-compatible checkout.
     // The part below is set to run if rcoFacelift is not available.
+    console.log(
+        'RCO Remote Trust (legacy): ',
+        getRcoRemote('legacy') ? true : false,
+        '-- Detection through rcoFace is set to ',
+        rcoFacelift
+    );
     if (!rcoFacelift &&
         typeof ResursCheckout !== "undefined" &&
         typeof omnivars !== "undefined" &&
