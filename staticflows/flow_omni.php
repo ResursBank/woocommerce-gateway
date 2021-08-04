@@ -16,6 +16,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     protected $flow;
     private $omniSuccessUrl;
     protected $renderedIframe;
+    protected $iframeResponse;
 
     /**
      * WC_Gateway_ResursBank_Omni constructor.
@@ -90,8 +91,17 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      * Legacy iframe request.
      * @return string
      */
-    public function getRenderedIframe() {
+    public function getRenderedIframe()
+    {
         return (string)$this->renderedIframe;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLegacyIframe()
+    {
+        return (isset($this->iframeResponse->script) && preg_match('/oc-shop.js/', $this->iframeResponse->script) ? true : false);
     }
 
     /**
@@ -104,9 +114,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             return;
         }
         $oneRandomValue = '?randomizeMe=' . rand(1024, 65535);
-        $this->renderedIframe = $this->resurs_omnicheckout_create_frame();
-        $iframeResponse = $this->flow->getFullCheckoutResponse();
-        $legacy = (bool)(isset($iframeResponse->script) && preg_match('/oc-shop.js/', $iframeResponse->script) ? true : false);
+        $this->resurs_omnicheckout_create_frame();
 
         wp_enqueue_script(
             'rcoface',
@@ -114,17 +122,17 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             ['jquery'],
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
-        $urlList = (new Domain())->getUrlsFromHtml($iframeResponse->script);
-        if (isset($iframeResponse->script) && !empty($iframeResponse->script) && count($urlList)) {
+        $urlList = (new Domain())->getUrlsFromHtml($this->iframeResponse->script);
+        if (isset($this->iframeResponse->script) && !empty($this->iframeResponse->script) && count($urlList)) {
             wp_enqueue_script(
                 'rcoremote',
                 array_pop($urlList),
                 [],
                 RB_WOO_VERSION
             );
-            unset($iframeResponse->customer);
-            $iframeArray = (array)$iframeResponse;
-            $iframeArray['legacy'] = $legacy;
+            unset($this->iframeResponse->customer);
+            $iframeArray = (array)$this->iframeResponse;
+            $iframeArray['legacy'] = $this->isLegacyIframe();
             wp_localize_script('rcoremote', 'rcoremote', $iframeArray);
         }
     }
@@ -142,6 +150,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         echo '<div id="omniActions" class="omniActions" style="display: none;"></div>';
     }
 
+    /**
+     * Display iframe. Eventually.
+     */
     public function resurs_omnicheckout_form_location()
     {
         global $resursIframeCount;
@@ -160,15 +171,24 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
         // Prepare the frame
         try {
-            $frameDisplay .= '<div class="col2-set" id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
+            $iframeData = $this->getRenderedIframe();
+            $frameDisplay .= sprintf(
+                '<div class="col2-set" id="resurs-checkout-container">%s</div>',
+                $this->isLegacyIframe() ? $iframeData : $iframeData
+            );
         } catch (Exception $e) {
             $frameContent = __(
                 'We are unable to load Resurs Checkout for the moment. Please try again later.',
                 'resurs-bank-payment-gateway-for-woocommerce'
             );
-            $frameDisplay .= '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $frameContent . "<!-- \n" . $e->getMessage() . " --></div>";
+            $frameDisplay .= sprintf(
+                '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">%s<!-- %s --></div>',
+                $frameContent,
+                $e->getMessage()
+            );
         }
         $resursIframeCount++;
+        $this->renderedIframe = $frameDisplay;
         echo $frameDisplay;
     }
 
@@ -217,7 +237,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     public function payment_fields()
     {
         if ($this->iFrameLocation == "inMethods") {
-            echo '<div id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
+            sprintf('<div id="resurs-checkout-container">%s</div>', $this->getRenderedIframe());
         } else {
             echo '<div id="resurs-checkout-loader">' . $this->description . '</div>';
         }
@@ -278,7 +298,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             }
 
             $flowBook = $this->flow->createPayment($omniRef, $bookDataOmni);
-
             $flowFrame = is_string($flowBook) ? $flowBook : "";
             $flowFrame .= '<noscript><b>' .
                 __(
@@ -300,9 +319,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 'We are unable to load Resurs Checkout for the moment. Please try again later.',
                 'resurs-bank-payment-gateway-for-woocommerce'
             );
-            $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $errorUnable . "<!-- \n" . $e->getMessage() . " --></div>";
+            $flowFrame = sprintf(
+                    '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container"><!-- %s --></div>',
+                    $errorUnable,
+                    $e->getMessage()
+            );
         }
 
+        $this->iframeResponse = $this->flow->getFullCheckoutResponse();
         return $flowFrame;
     }
 
@@ -509,7 +533,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     /**
      * @param $array
-     *
      * @return mixed
      * @throws Exception
      */
@@ -637,7 +660,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         global $woocommerce, $resurs_is_payment_spec;
         $flow = initializeResursFlow();
 
-        //$payment_fee_tax_pct = 0;   // TODO: Figure out this legacy variable, that was never initialized.
         $spec_lines = self::get_spec_lines($cart->get_cart());
         $shipping = (float)$cart->shipping_total;
         $shipping_tax = (float)$cart->shipping_tax_total;

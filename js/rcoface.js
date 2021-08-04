@@ -10,5 +10,18 @@ $RB(document).ready(function ($) {
         rcoFacelift = true;
         console.log('Elements for RCO Facelift present. Not using RCO Legacy.');
         getRcoFieldSetup();
+
+        $ResursCheckout.create({
+            paymentSessionId: getRcoRemote('paymentSessionId'),
+            baseUrl: getRcoRemote('baseUrl'),
+            hold: true,
+            containerId: 'resurs-checkout-container'
+        });
+
+        // purchasefail
+        // purchasedenied
+        // customerchange
+        // setbooking (create)
+
     }
 });
