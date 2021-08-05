@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20210629');
+    define('ECOMPHP_MODIFY_DATE', '20210805');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.55
+ * @version 1.3.57
  */
 class ResursBank
 {
@@ -765,6 +765,10 @@ class ResursBank
      * @var object
      */
     private $autoDebitablePaymentMethod;
+    /**
+     * @var bool
+     */
+    private $finalizeWithoutOrderRows;
 
     /**
      * Constructor method for Resurs Bank WorkFlows
@@ -788,16 +792,6 @@ class ResursBank
     ) {
         if (is_array($paramFlagSet) && count($paramFlagSet)) {
             $this->preSetEarlyFlags($paramFlagSet);
-        }
-
-        // Avoid conflicts with missing class.
-        if (class_exists('TorneLIB\Utils\Memory')) {
-            $memSafeLimit = -1;
-            if (defined('MEMORY_SAFE_LIMIT')) {
-                $memSafeLimit = MEMORY_SAFE_LIMIT;
-            }
-            $memoryLimit = defined('MEMORY_SAFE_LIMIT') && !empty($memSafeLimit) ? $memSafeLimit : -1;
-            Memory::getMemoryAdjusted('128M', $memoryLimit);
         }
 
         if (is_bool($debug) && $debug) {
@@ -7355,6 +7349,14 @@ class ResursBank
     }
 
     /**
+     * @return $this
+     */
+    public function setFinalizeWithoutSpec() {
+        $this->finalizeWithoutOrderRows = true;
+        return $this;
+    }
+
+    /**
      * Aftershop Payment Finalization (DEBIT)
      *
      * @param $paymentId
@@ -7414,6 +7416,15 @@ class ResursBank
         }
         $this->aftershopPrepareMetaData($paymentId);
         try {
+            if ($this->finalizeWithoutOrderRows) {
+                if (isset($afterShopObject['specLines'])) {
+                    unset($afterShopObject['specLines']);
+                }
+                if (isset($afterShopObject['partPaymentSpec']['specLines'])) {
+                    unset($afterShopObject['partPaymentSpec']['specLines']);
+                    unset($afterShopObject['partPaymentSpec']['totalVatAmount']);
+                }
+            }
             $afterShopResponseCode = $this->postService('finalizePayment', $afterShopObject, true);
             if ($afterShopResponseCode >= 200 && $afterShopResponseCode < 300) {
                 $this->resetPayload();

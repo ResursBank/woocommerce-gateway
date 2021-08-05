@@ -2,6 +2,8 @@
 
 namespace Resursbank\RBEcomPHP;
 
+use RESURS_EXCEPTIONS;
+
 /**
  * Class RESURS_DEPRECATED_FLOW Thing with relation to Resurs Bank deprecated flow
  * WARNING: Use this class at your own risk as it may contain glitches. Maintenance is only done
@@ -71,13 +73,13 @@ class RESURS_DEPRECATED_FLOW
         if (empty($countryCode)) {
             throw new \Exception(
                 __FUNCTION__ . ": Country code is missing in getRegEx-request for form fields",
-                \RESURS_EXCEPTIONS::REGEX_COUNTRYCODE_MISSING
+                RESURS_EXCEPTIONS::REGEX_COUNTRYCODE_MISSING
             );
         }
         if (empty($customerType)) {
             throw new \Exception(
                 __FUNCTION__ . ": Customer type is missing in getRegEx-request for form fields",
-                \RESURS_EXCEPTIONS::REGEX_CUSTOMERTYPE_MISSING
+                RESURS_EXCEPTIONS::REGEX_CUSTOMERTYPE_MISSING
             );
         }
 
@@ -126,7 +128,6 @@ class RESURS_DEPRECATED_FLOW
                     ],
                     'CARD' => [
                         'applicant-government-id',
-                        'card-number',
                     ],
                     'PAYMENT_PROVIDER' => [
                         'applicant-government-id',
@@ -280,7 +281,7 @@ class RESURS_DEPRECATED_FLOW
         if ($canThrow && !$canHideSet) {
             throw new \Exception(
                 __FUNCTION__ . ": templateFieldsByMethodResponse is empty. You have to run getTemplateFieldsByMethodType first",
-                \RESURS_EXCEPTIONS::FORMFIELD_CANHIDE_EXCEPTION
+                RESURS_EXCEPTIONS::FORMFIELD_CANHIDE_EXCEPTION
             );
         }
 
