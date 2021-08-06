@@ -2804,8 +2804,9 @@ function woocommerce_gateway_resurs_bank_init()
             if ($legacy) {
                 $omniPaymentMethod = isset($_REQUEST['paymentMethod']) && !empty($_REQUEST['paymentMethod']) ? $_REQUEST['paymentMethod'] : 'resurs_bank_omnicheckout';
             } else {
-                $omniPaymentMethod = isset($faceliftPayment['id']) && !empty($faceliftPaymentT['id']) ? $faceliftPayment['id'] : 'resurs_bank_omnicheckout';
+                $omniPaymentMethod = isset($faceliftPayment['id']) && !empty($faceliftPayment['id']) ? $faceliftPayment['id'] : 'resurs_bank_omnicheckout';
                 // Restore postdata from the request.
+
                 foreach ($faceliftWc as $itemKey => $itemValue) {
                     $_POST[$itemKey] = $itemValue;
                     $_REQUEST[$itemKey] = $_POST[$itemKey];
