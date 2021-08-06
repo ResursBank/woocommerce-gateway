@@ -133,7 +133,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             unset($this->iframeResponse->customer);
             $iframeArray = (array)$this->iframeResponse;
             $iframeArray['legacy'] = $this->isLegacyIframe();
-            WC()->session->set('rcoLegacy', $this->isLegacyIframe());
             wp_localize_script('rcoremote', 'rcoremote', $iframeArray);
         }
     }

@@ -2894,8 +2894,6 @@ function woocommerce_gateway_resurs_bank_init()
             if (isset($_REQUEST['omnicheckout_nonce'])) {
                 // Debugging only.
                 $debugWithoutNonceProblems = false;
-                // rcoLegacy is not defined by session but by the POST content.
-                //$rcoLegacy = WC()->session->get('rcoLegacy');
                 if (wp_verify_nonce($_REQUEST['omnicheckout_nonce'], 'omnicheckout') || $debugWithoutNonceProblems) {
                     $hasInternalErrors = false;
                     $returnResult['verified'] = true;
