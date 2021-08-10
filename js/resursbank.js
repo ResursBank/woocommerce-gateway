@@ -5,6 +5,14 @@ var $RB = jQuery.noConflict();
 var resursReloadRequired = false;
 var rcoFacelift = false;
 
+function getRcoRemote(key) {
+    let returnData;
+    if (typeof rcoremote !== 'undefined' && typeof rcoremote[key] !== 'undefined') {
+        returnData = rcoremote[key];
+    }
+    return returnData;
+}
+
 // Things below wants to be loaded first and not wait for readiness
 if (null !== omnivars) {
     var RESURSCHECKOUT_IFRAME_URL = omnivars.RESURSCHECKOUT_IFRAME_URL;

@@ -1,13 +1,151 @@
 var $RB = jQuery.noConflict();
 
-// RCO Facelift Handler. If you are looking for the prior framework handler, it is available via rcojs.js - however,
-// those scripts are disabled as we set rcoFacelift to true below.
+/**
+ * Customer data container for the RCO.
+ * @type {{payment: null, customer: null}}
+ */
+var rcoContainer = {
+    customer: {},
+    payment: {},
+    wooCommerce: {}
+};
 
-// Do not set rcoFacelift to true, until there is something to handle.
+/**
+ * Render and return the rest of the checkout form to engines that requires it.
+ * @returns {{}}
+ */
+function getRbPostData() {
+    var postData = {};
+    $RB('[name*="checkout"] input,textarea').each(
+        function (i, e) {
+            if (typeof e.name !== "undefined") {
+                if (e.type === "checkbox") {
+                    if (e.checked === true) {
+                        postData[e.name] = e.value;
+                    } else {
+                        postData[e.name] = 0;
+                    }
+                } else if (e.type === "radio") {
+                    postData[e.name] = $RB('[name="' + e.name + '"]:checked').val();
+                } else {
+                    postData[e.name] = e.value;
+                }
+            }
+        }
+    );
+    return postData;
+}
+
+/**
+ * Parse and return static data that never change.
+ * @param successData
+ * @returns {{errorString: (string), success: (*|boolean), errorCode: (*|number)}}
+ */
+function getRcoSuccessData(successData) {
+    return {
+        success: typeof successData.success !== 'undefined' ? successData.success : false,
+        errorCode: typeof successData.errorCode !== 'undefined' ? successData.errorCode : 0,
+        errorString: typeof successData.errorString !== 'undefined' ? successData.errorString : ''
+    };
+}
+
+/**
+ * Handle failures and denies.
+ * @param eventData
+ * @param rejectType
+ */
+function getRcoRejectPayment(eventData, rejectType) {
+    var preBookUrl = omnivars.OmniPreBookUrl + "&pRef=" + omniRef + "&purchaseFail=1&set-no-session=1";
+    if (rejectType === 'deny') {
+        preBookUrl += '&purchaseDenied=1';
+    }
+    $RB.ajax(
+        {
+            url: preBookUrl,
+            type: "GET"
+        }
+    ).success(
+        function (successData) {
+            // Do nothing, as we actually only touch the status.
+            //console.log(successData);
+        }
+    ).fail(
+        function (x, y) {
+            handleResursCheckoutError(getResursPhrase("purchaseAjaxInternalFailure"));
+        }
+    );
+    handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
+}
+
+// RCO Facelift Handler. If you are looking for the prior framework handler, it is available via rcojs.js - however,
+// those scripts are disabled as soon as the flag rcoFacelift (legacy checking) is set to true.
 $RB(document).ready(function ($) {
-    if (typeof $ResursCheckout !== 'undefined') {
+    var rcoLegacy = getRcoRemote('legacy');
+    if (typeof $ResursCheckout !== 'undefined' || !rcoLegacy) {
         // Set rcoFacelift to true if the new rco interface is available.
         rcoFacelift = true;
+        //console.log('Elements for RCO Facelift present. Not using RCO Legacy.');
         getRcoFieldSetup();
+
+        $ResursCheckout.create({
+            paymentSessionId: getRcoRemote('paymentSessionId'),
+            baseUrl: getRcoRemote('baseUrl'),
+            hold: true,
+            containerId: 'resurs-checkout-container'
+        });
+
+        // purchasefail
+        $ResursCheckout.onPaymentFail(function (event) {
+            getRcoRejectPayment(event, 'fail');
+        });
+        // purchasedenied
+        $ResursCheckout.onPaymentDenied(function (event) {
+            getRcoRejectPayment(event, 'deny');
+        });
+
+        // user-info-change => onCustomerChange (setCustomerChangedEventCallback equivalent).
+        $ResursCheckout.onCustomerChange(function (event) {
+            rcoContainer.customer = event
+        });
+
+        // payment-method-change => onPaymentChange (Apparently never used in woocommerce).
+        $ResursCheckout.onPaymentChange(function (event) {
+            rcoContainer.payment = event
+        });
+
+        // onSubmit (CreateOrder -- setBookingCallback equivalent).
+        $ResursCheckout.onSubmit(function (event) {
+            // At this point, we will ajaxify this:
+            // {
+            //     customer: {},   /// Customer data.
+            //     payment: {},    /// Checkout/Payment data.
+            //     wooCommerce: {} /// WooCommerce Request Forms (leftovers that is still not removed).
+            // }
+            rcoContainer.wooCommerce = getRbPostData();
+            var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omnivars.OmniRef;
+            $RB.ajax(
+                {
+                    url: preBookUrl,
+                    type: "POST",
+                    data: rcoContainer
+                }
+            ).success(
+                function (successData) {
+                    var contactUs = getResursPhrase("contactSupport");
+                    var requestResponse = getRcoSuccessData(successData);
+
+                    console.dir(successData);
+                    console.dir(requestResponse);
+                    if (requestResponse.success) {
+                        $ResursCheckout.release();
+                    } else {
+                        handleResursCheckoutError(
+                            requestResponse.errorString + " (" + requestResponse.errorCode + ") " + contactUs
+                        );
+                    }
+                    return false;
+                }
+            )
+        });
     }
 });
