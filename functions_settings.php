@@ -436,6 +436,20 @@ if (!function_exists('getResursWooFormFields')) {
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'true',
                 ],
+                'resursvalidate' => [
+                    'title' => __('Let Resurs validate customer data fields', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'description' => __(
+                        'If enabled, customer forms fields required by Resurs Bank will be validated by Resurs Bank instead of the plugin.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'checkbox',
+                    'options' => [
+                        'true' => 'true',
+                        'false' => 'false',
+                    ],
+                    'label' => __('Enabled', 'woocommerce'),
+                    'default' => 'false',
+                ],
                 'streamlineBehaviour' => [
                     'title' => __(
                         'Streamlined customer field behaviour',

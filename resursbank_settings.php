@@ -1442,6 +1442,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         __('Customer and store', 'resurs-bank-payment-gateway-for-woocommerce')
                     );
                     echo $this->setCheckBox('getAddress', $namespace);
+                    echo $this->setCheckBox('resursvalidate', $namespace);
                     echo $this->setCheckBox('forceGovIdField', $namespace);
                     echo $this->setCheckBox('reduceOrderStock', $namespace);
 
