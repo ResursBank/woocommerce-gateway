@@ -3577,11 +3577,15 @@ function woocommerce_gateway_resurs_bank_init()
         public function validate_fields()
         {
             global $woocommerce;
+            if (getResursOption('resursvalidate')) {
+                return true;
+            }
+
             $className = $_REQUEST['payment_method'];
 
             $methodName = str_replace('resurs_bank_nr_', '', $className);
             $transientMethod = $this->getTransientMethod($methodName);
-            $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : '';
+            $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : getResursOption('country');
             $customerType = isset($_REQUEST['ssnCustomerType']) ? $_REQUEST['ssnCustomerType'] : 'NATURAL';
             if (isset($transientMethod->customerType) &&
                 in_array('LEGAL', (array)$transientMethod->customerType) &&
