@@ -97,7 +97,7 @@ $RB(document).ready(function ($) {
         $ResursCheckout.onPaymentFail(function (event) {
             getRcoRejectPayment(event, 'fail');
         });
-        // purchasedenied, no longer supported by framework.
+        // purchasedenied, no longer supported by framework -- only in postMsg.
         /*$ResursCheckout.onPaymentDenied(function (event) {
             getRcoRejectPayment(event, 'deny');
         });*/
