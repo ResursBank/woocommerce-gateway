@@ -5156,7 +5156,8 @@ function woocommerce_gateway_resurs_bank_init()
         }
     }
 
-    $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*.php');
+    // We do the globbing by a static file to make it more safe.
+    $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*omni.php');
     if (is_array($staticGlob)) {
         foreach ($staticGlob as $filename) {
             if (!in_array($filename, get_included_files())) {

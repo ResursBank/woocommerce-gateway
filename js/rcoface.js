@@ -131,9 +131,6 @@ $RB(document).ready(function ($) {
                 function (successData) {
                     var contactUs = getResursPhrase("contactSupport");
                     var requestResponse = getRcoSuccessData(successData);
-
-                    console.dir(successData);
-                    console.dir(requestResponse);
                     if (requestResponse.success) {
                         $ResursCheckout.release();
                     } else {
