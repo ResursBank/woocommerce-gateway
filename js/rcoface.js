@@ -49,6 +49,34 @@ function getRcoSuccessData(successData) {
     };
 }
 
+/**
+ * Handle failures and denies.
+ * @param eventData
+ * @param rejectType
+ */
+function getRcoRejectPayment(eventData, rejectType) {
+    var preBookUrl = omnivars.OmniPreBookUrl + "&pRef=" + omniRef + "&purchaseFail=1&set-no-session=1";
+    if (rejectType === 'deny') {
+        preBookUrl += '&purchaseDenied=1';
+    }
+    $RB.ajax(
+        {
+            url: preBookUrl,
+            type: "GET"
+        }
+    ).success(
+        function (successData) {
+            // Do nothing, as we actually only touch the status.
+            //console.log(successData);
+        }
+    ).fail(
+        function (x, y) {
+            handleResursCheckoutError(getResursPhrase("purchaseAjaxInternalFailure"));
+        }
+    );
+    handleResursCheckoutError(getResursPhrase("resursPurchaseNotAccepted"));
+}
+
 // RCO Facelift Handler. If you are looking for the prior framework handler, it is available via rcojs.js - however,
 // those scripts are disabled as soon as the flag rcoFacelift (legacy checking) is set to true.
 $RB(document).ready(function ($) {
@@ -67,7 +95,14 @@ $RB(document).ready(function ($) {
         });
 
         // purchasefail
+        $ResursCheckout.onPaymentFail(function (event) {
+            getRcoRejectPayment(event, 'fail');
+        });
         // purchasedenied
+        $ResursCheckout.onPaymentDenied(function (event) {
+            getRcoRejectPayment(event, 'deny');
+        });
+
         // user-info-change => onCustomerChange (setCustomerChangedEventCallback equivalent).
         $ResursCheckout.onCustomerChange(function (event) {
             rcoContainer.customer = event
