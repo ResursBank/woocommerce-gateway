@@ -4,7 +4,7 @@ var $RB = jQuery.noConflict();
  * Preconfigure how to handle billing- and shipping address fields depending on configuration.
  */
 function getRcoFieldSetup() {
-    if (omnivars["useStandardFieldsForShipping"] == "1") {
+    if (omnivars["useStandardFieldsForShipping"] === "1") {
         console.log("ResursCheckout: useStandardFieldsForShipping (Experimental) is active, so customer fields are hidden rather than removed");
         if (omnivars["showResursCheckoutStandardFieldsTest"] !== "1") {
             jQuery('.woocommerce-billing-fields').hide();
@@ -36,20 +36,20 @@ $RB(document).ready(function ($) {
         typeof omnivars !== "undefined" &&
         omnivars !== null
     ) {
+        $RB('#resurs-checkout-container').html(getRcoRemote('html'));
+
         getRcoFieldSetup();
         // "Instantiate" Legacy RCO System here.
         var resursCheckout = ResursCheckout('#resurs-checkout-container');
-        /*
-         * Automatically raise debugging if in test mode (= Disabled for production)
-         *
-         */
-        if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest !== null && omnivars.isResursTest == "1") {
+
+        // Automatically raise debugging if in test mode (= Disabled for production).
+        if (typeof omnivars.isResursTest !== "undefined" && omnivars.isResursTest !== null && omnivars.isResursTest === "1") {
             resursCheckout.setDebug(1);
         }
 
         // Initialize RCO Legacy here.
         resursCheckout.init();
-        if (typeof omnivars["iframeShape"] != "undefined" && omnivars["iframeShape"] != "") {
+        if (typeof omnivars["iframeShape"] !== "undefined" && omnivars["iframeShape"] !== "") {
             resursCheckout.setOnIframeReady(function (iframeElement) {
                 iframeElement.setAttribute('style', omnivars["iframeShape"]);
             });

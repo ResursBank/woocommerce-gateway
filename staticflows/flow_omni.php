@@ -61,7 +61,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
 
-        if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
+        if (defined('WOOCOMMERCE_VERSION') && version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [
                 $this,
                 'process_admin_options',
@@ -75,10 +75,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         add_action('woocommerce_after_checkout_form', [$this, 'resurs_omnicheckout_form_variable']);
 
         if ($this->isResursOmni()) {
-            if ($this->iFrameLocation == "afterCheckoutForm") {
+            if ($this->iFrameLocation === "afterCheckoutForm") {
                 add_action('woocommerce_after_checkout_form', [$this, 'resurs_omnicheckout_form_location']);
             }
-            if ($this->iFrameLocation == "beforeReview") {
+            if ($this->iFrameLocation === "beforeReview") {
                 add_action('woocommerce_checkout_before_order_review', [
                     $this,
                     'resurs_omnicheckout_form_location',

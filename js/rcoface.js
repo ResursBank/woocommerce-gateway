@@ -80,8 +80,7 @@ function getRcoRejectPayment(eventData, rejectType) {
 // RCO Facelift Handler. If you are looking for the prior framework handler, it is available via rcojs.js - however,
 // those scripts are disabled as soon as the flag rcoFacelift (legacy checking) is set to true.
 $RB(document).ready(function ($) {
-    var rcoLegacy = getRcoRemote('legacy');
-    if (typeof $ResursCheckout !== 'undefined' || !rcoLegacy) {
+    if (typeof $ResursCheckout !== 'undefined' || !getRcoRemote('legacy')) {
         // Set rcoFacelift to true if the new rco interface is available.
         rcoFacelift = true;
         getRcoFieldSetup();

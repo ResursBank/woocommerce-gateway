@@ -378,7 +378,7 @@ function woocommerce_gateway_resurs_bank_init()
                 die();
             }
 
-            if ($event_type == 'noevent') {
+            if ($event_type === 'noevent') {
                 $myResponse = null;
                 $myBool = false;
                 $errorMessage = '';
@@ -404,8 +404,8 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                     } elseif (!empty($setType)) {
                         // Prevent weird errors with nonces.
-                        $hasNonceErrors = getResursFlag('NONCE_ERRORS') ? true : false;
-                        if ($hasNonceErrors || wp_verify_nonce($reqNonce, 'requestResursAdmin')) {
+                        $skipNonceErrors = getResursFlag('SKIP_NONCE_ERRORS') ? true : false;
+                        if ($skipNonceErrors || wp_verify_nonce($reqNonce, 'requestResursAdmin')) {
                             $mySession = true;
                             $failSetup = false;
                             $subVal = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
@@ -488,8 +488,8 @@ function woocommerce_gateway_resurs_bank_init()
                         // If there is complications with nonce checking, the flag ADMIN_NONCE_IGNORE makes it possible
                         // for admins to disable this check temporarily, since there has been problems with it
                         // recently.
-                        $nonceIsFailing = (bool)getResursFlag('ADMIN_NONCE_IGNORE');
-                        if (wp_verify_nonce($reqNonce, 'requestResursAdmin') || $nonceIsFailing) {
+                        $adminNonceIgnore = (bool)getResursFlag('ADMIN_NONCE_IGNORE');
+                        if ($adminNonceIgnore || wp_verify_nonce($reqNonce, 'requestResursAdmin')) {
                             $mySession = true;
                             $arg = null;
                             if (isset($_REQUEST['arg'])) {
@@ -2710,6 +2710,39 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
+         * @param $legacy
+         * @return string[]
+         */
+        public function getCustomerWooFormFields($legacy) {
+            if ($legacy) {
+                $return = [
+                    'first_name' => 'firstname',
+                    'last_name' => 'surname',
+                    'address_1' => 'address',
+                    'address_2' => 'addressExtra',
+                    'city' => 'city',
+                    'postcode' => 'postal',
+                    'country' => 'countryCode',
+                    'email' => 'email',
+                    'phone' => 'telephone',
+                ];
+            } else {
+                $return = [
+                    'first_name' => 'firstName',
+                    'last_name' => 'lastName',
+                    'address_1' => 'addressRow1',
+                    'address_2' => 'addressExtra',
+                    'city' => 'city',
+                    'postcode' => 'postalCode',
+                    'country' => 'countryCode',
+                    'email' => 'email',
+                    'phone' => 'phone',
+                ];
+            }
+            return $return;
+        }
+
+        /**
          * Transform RCO order request by its legacy state.
          * @param $resursBillingAddress
          * @param $customerData
@@ -2798,8 +2831,10 @@ function woocommerce_gateway_resurs_bank_init()
             $faceliftCustomer = isset($_POST['customer']) && is_array($_POST['customer']) ? $_POST['customer'] : [];
             $faceliftPayment = isset($_POST['payment']) && is_array($_POST['payment']) ? $_POST['payment'] : [];
             $faceliftWc = isset($_POST['wooCommerce']) && is_array($_POST['wooCommerce']) ? $_POST['wooCommerce'] : [];
-            $customerData = $faceliftCustomer;
             $legacy = is_array($faceliftCustomer) && !count($faceliftCustomer);
+            if (!$legacy) {
+                $customerData = $faceliftCustomer;
+            }
 
             /*
              * Get, if exists, the payment method and use it
@@ -2928,53 +2963,11 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     if (count($resursDeliveryAddress)) {
                         $_POST['ship_to_different_address'] = true;
-                        $wooDeliveryAddress = [
-                            'first_name' => $this->getDeliveryFrom(
-                                'firstname',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'last_name' => $this->getDeliveryFrom(
-                                'surname',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'address_1' => $this->getDeliveryFrom(
-                                'address',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'address_2' => $this->getDeliveryFrom(
-                                'addressExtra',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'city' => $this->getDeliveryFrom(
-                                'city',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'postcode' => $this->getDeliveryFrom(
-                                'postal',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'country' => $this->getDeliveryFrom(
-                                'countryCode',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'email' => $this->getDeliveryFrom(
-                                'email',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                            'phone' => $this->getDeliveryFrom(
-                                'telephone',
-                                $resursDeliveryAddress,
-                                $resursBillingAddress
-                            ),
-                        ];
+
+                        $wooDeliveryAddress = [];
+                        foreach ($this->getCustomerWooFormFields($legacy) as $wooItem=>$wooValue) {
+                            $wooDeliveryAddress[$wooItem] = $this->getDeliveryFrom($wooValue,$resursDeliveryAddress, $wooBillingAddress, $wooItem);
+                        }
                     } else {
                         // Helper for "sameAddress"-cases.
                         $_POST['ship_to_different_address'] = false;
@@ -3183,12 +3176,32 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $billingArray
          * @return string
          */
-        public function getDeliveryFrom($key, $deliveryArray, $billingArray)
+        public function getDeliveryFrom($key, $deliveryArray, $billingArray, $secondKey)
         {
             if (isset($deliveryArray[$key]) && !empty($deliveryArray[$key])) {
-                $return = $deliveryArray[$key];
+                if (is_null($key)) {
+                    $return = $deliveryArray[$key];
+                } else {
+                    $return = $deliveryArray[$key];
+                }
+            } elseif (isset($deliveryArray[$secondKey]) && !empty($deliveryArray[$secondKey])) {
+                if (is_null($secondKey)) {
+                    $return = $deliveryArray[$secondKey];
+                } else {
+                    $return = $deliveryArray[$secondKey];
+                }
             } elseif (isset($billingArray[$key]) && !empty($billingArray[$key])) {
-                $return = $billingArray[$key];
+                if (is_null($key)) {
+                    $return = $billingArray[$key];
+                } else {
+                    $return = $billingArray[$key];
+                }
+            } elseif (isset($billingArray[$secondKey]) && !empty($billingArray[$secondKey])) {
+                if (is_null($secondKey)) {
+                    $return = $billingArray[$secondKey];
+                } else {
+                    $return = $billingArray[$secondKey];
+                }
             } else {
                 $return = '';
             }
