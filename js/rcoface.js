@@ -55,7 +55,7 @@ function getRcoSuccessData(successData) {
  * @param rejectType
  */
 function getRcoRejectPayment(eventData, rejectType) {
-    var preBookUrl = omnivars.OmniPreBookUrl + "&pRef=" + omniRef + "&purchaseFail=1&set-no-session=1";
+    var preBookUrl = omnivars.OmniPreBookUrl + "&pRef=" + omnivars.OmniRef + "&purchaseFail=1&set-no-session=1";
     if (rejectType === 'deny') {
         preBookUrl += '&purchaseDenied=1';
     }
@@ -84,7 +84,6 @@ $RB(document).ready(function ($) {
     if (typeof $ResursCheckout !== 'undefined' || !rcoLegacy) {
         // Set rcoFacelift to true if the new rco interface is available.
         rcoFacelift = true;
-        //console.log('Elements for RCO Facelift present. Not using RCO Legacy.');
         getRcoFieldSetup();
 
         $ResursCheckout.create({
@@ -98,11 +97,10 @@ $RB(document).ready(function ($) {
         $ResursCheckout.onPaymentFail(function (event) {
             getRcoRejectPayment(event, 'fail');
         });
-        // purchasedenied
-        $ResursCheckout.onPaymentDenied(function (event) {
+        // purchasedenied, no longer supported by framework -- only in postMsg.
+        /*$ResursCheckout.onPaymentDenied(function (event) {
             getRcoRejectPayment(event, 'deny');
-        });
-
+        });*/
         // user-info-change => onCustomerChange (setCustomerChangedEventCallback equivalent).
         $ResursCheckout.onCustomerChange(function (event) {
             rcoContainer.customer = event
@@ -133,9 +131,6 @@ $RB(document).ready(function ($) {
                 function (successData) {
                     var contactUs = getResursPhrase("contactSupport");
                     var requestResponse = getRcoSuccessData(successData);
-
-                    console.dir(successData);
-                    console.dir(requestResponse);
                     if (requestResponse.success) {
                         $ResursCheckout.release();
                     } else {

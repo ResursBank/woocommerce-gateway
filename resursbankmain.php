@@ -4699,6 +4699,7 @@ function woocommerce_gateway_resurs_bank_init()
      * Adds Resurs Bank javascript file
      *
      * @return null Returns null if Resurs Bank plugin is not enabled
+     * @throws Exception
      */
     function enqueue_script()
     {
@@ -5159,7 +5160,8 @@ function woocommerce_gateway_resurs_bank_init()
         }
     }
 
-    $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*.php');
+    // We do the globbing by a static file to make it more safe.
+    $staticGlob = glob(plugin_dir_path(__FILE__) . '/staticflows/*omni.php');
     if (is_array($staticGlob)) {
         foreach ($staticGlob as $filename) {
             if (!in_array($filename, get_included_files())) {
