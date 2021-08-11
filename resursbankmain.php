@@ -1245,8 +1245,7 @@ function woocommerce_gateway_resurs_bank_init()
             $woocommerceOrder,
             $suggestedStatusCode,
             $resursOrderObject = null
-        )
-        {
+        ) {
             resursEventLogger("SynchronizeResursOrderStatus $currentStatus -> $newStatus");
 
             $updateStatus = true;
@@ -1352,8 +1351,7 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentIdOrPaymentObject = '',
             $byCallbackEvent = 0,
             $callbackEventDataArrayOrString = []
-        )
-        {
+        ) {
             $return = OrderStatus::ERROR;
 
             try {
@@ -2265,8 +2263,7 @@ function woocommerce_gateway_resurs_bank_init()
             $supportProviderMethods,
             $bookDataArray,
             $urlFail
-        )
-        {
+        ) {
             $hostedFlowBookingFailure = false;
             $hostedFlowUrl = null;
             $hostedBookPayment = null;
@@ -2337,8 +2334,7 @@ function woocommerce_gateway_resurs_bank_init()
             $supportProviderMethods,
             $bookDataArray,
             $order
-        )
-        {
+        ) {
             if ($paymentMethodInformation->type === 'PAYMENT_PROVIDER' && !$supportProviderMethods) {
                 wc_add_notice(
                     __(
@@ -2713,7 +2709,8 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $legacy
          * @return string[]
          */
-        public function getCustomerWooFormFields($legacy) {
+        public function getCustomerWooFormFields($legacy)
+        {
             if ($legacy) {
                 $return = [
                     'first_name' => 'firstname',
@@ -2953,7 +2950,8 @@ function woocommerce_gateway_resurs_bank_init()
                     $failBilling = true;
                     $customerEmail = !empty($resursBillingAddress['email']) ? $resursBillingAddress['email'] : '';
                     if (count($resursBillingAddress)) {
-                        $wooBillingAddress = $this->getCustomerBillingTransformed($resursBillingAddress, $customerData, $legacy);
+                        $wooBillingAddress = $this->getCustomerBillingTransformed($resursBillingAddress, $customerData,
+                            $legacy);
                         $failBilling = false;
                     }
                     if ($failBilling) {
@@ -2965,8 +2963,13 @@ function woocommerce_gateway_resurs_bank_init()
                         $_POST['ship_to_different_address'] = true;
 
                         $wooDeliveryAddress = [];
-                        foreach ($this->getCustomerWooFormFields($legacy) as $wooItem=>$wooValue) {
-                            $wooDeliveryAddress[$wooItem] = $this->getDeliveryFrom($wooValue,$resursDeliveryAddress, $wooBillingAddress, $wooItem);
+                        foreach ($this->getCustomerWooFormFields($legacy) as $wooItem => $wooValue) {
+                            $wooDeliveryAddress[$wooItem] = $this->getDeliveryFrom(
+                                $wooValue,
+                                $resursDeliveryAddress,
+                                $wooBillingAddress,
+                                $wooItem
+                            );
                         }
                     } else {
                         // Helper for "sameAddress"-cases.
@@ -6678,8 +6681,7 @@ function initializeResursFlow(
     $overridePassword = '',
     $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
     $requireNewFlow = false
-)
-{
+) {
     global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance, $woocommerce;
     $username = getResursOption('login');
     $password = getResursOption('password');
