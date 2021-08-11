@@ -1129,7 +1129,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $order,
                         $currentStatus,
                         $request['paymentId'],
-                        Callback::CALLBACK_TYPE_UPDATE
+                        Callback::UPDATE
                     );
 
                     if (!(bool)$callbackUpdateStatus & OrderStatus::ERROR) {
@@ -1145,7 +1145,7 @@ function woocommerce_gateway_resurs_bank_init()
                             )
                         );
 
-                        if ($callbackUpdateStatus & (OrderStatus::PAYMENT_AUTOMATICALLY_DEBITED)) {
+                        if ($callbackUpdateStatus & (OrderStatus::AUTO_DEBITED)) {
                             $order->add_order_note(
                                 __(
                                     '[Resurs Bank] Additional Note: The order seem to be FINALIZED and the payment method this order uses, indicates that it supports instant finalization. If it\'s not already completed you might have to update the order manually.',
