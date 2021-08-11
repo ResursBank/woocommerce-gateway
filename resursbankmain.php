@@ -1130,7 +1130,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $order,
                         $currentStatus,
                         $request['paymentId'],
-                        Callback::CALLBACK_TYPE_UPDATE
+                        Callback::UPDATE
                     );
 
                     if (!(bool)$callbackUpdateStatus & OrderStatus::ERROR) {
@@ -1146,7 +1146,7 @@ function woocommerce_gateway_resurs_bank_init()
                             )
                         );
 
-                        if ($callbackUpdateStatus & (OrderStatus::PAYMENT_AUTOMATICALLY_DEBITED)) {
+                        if ($callbackUpdateStatus & (OrderStatus::AUTO_DEBITED)) {
                             $order->add_order_note(
                                 __(
                                     '[Resurs Bank] Additional Note: The order seem to be FINALIZED and the payment method this order uses, indicates that it supports instant finalization. If it\'s not already completed you might have to update the order manually.',
@@ -3659,11 +3659,15 @@ function woocommerce_gateway_resurs_bank_init()
         public function validate_fields()
         {
             global $woocommerce;
+            if (getResursOption('resursvalidate')) {
+                return true;
+            }
+
             $className = $_REQUEST['payment_method'];
 
             $methodName = str_replace('resurs_bank_nr_', '', $className);
             $transientMethod = $this->getTransientMethod($methodName);
-            $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : '';
+            $countryCode = isset($_REQUEST['billing_country']) ? $_REQUEST['billing_country'] : getResursOption('country');
             $customerType = isset($_REQUEST['ssnCustomerType']) ? $_REQUEST['ssnCustomerType'] : 'NATURAL';
             if (isset($transientMethod->customerType) &&
                 in_array('LEGAL', (array)$transientMethod->customerType) &&
