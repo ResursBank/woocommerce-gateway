@@ -2767,7 +2767,10 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function prepare_omni_order()
         {
-            /** @var WC_Checkout $resursOrder What will be created if successful, and what will report undefined variable if unsuccessful */
+            /**
+             * What will be created if successful, and what will report undefined variable if unsuccessful
+             * @var WC_Checkout $resursOrder
+             */
             $resursOrder = null;
             $updatePaymentReference = false;
 
