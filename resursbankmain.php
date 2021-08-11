@@ -4696,6 +4696,7 @@ function woocommerce_gateway_resurs_bank_init()
      * Adds Resurs Bank javascript file
      *
      * @return null Returns null if Resurs Bank plugin is not enabled
+     * @throws Exception
      */
     function enqueue_script()
     {
