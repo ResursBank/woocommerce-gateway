@@ -1390,7 +1390,18 @@ function woocommerce_gateway_resurs_bank_init()
                 resursEventLogger('Callback EVENT Information End');
 
                 switch (true) {
-                    case $suggestedStatus & (OrderStatus::PROCESSING):
+                    case $suggestedStatus & OrderStatus::PENDING:
+                        if ($this->synchronizeResursOrderStatus(
+                            $currentWcStatus,
+                            $paymentStatus[OrderStatus::PENDING],
+                            $woocommerceOrder,
+                            $suggestedStatus,
+                            $paymentIdOrPaymentObject
+                        )) {
+                            $return = $suggestedStatus;
+                        }
+                        break;
+                    case $suggestedStatus & OrderStatus::PROCESSING:
                         if ($this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[OrderStatus::PROCESSING],
@@ -1402,7 +1413,7 @@ function woocommerce_gateway_resurs_bank_init()
                         }
 
                         break;
-                    case $suggestedStatus & (OrderStatus::CREDITED): // PAYMENT_REFUND
+                    case $suggestedStatus & OrderStatus::CREDITED: // PAYMENT_REFUND
                         if ($this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[OrderStatus::CREDITED],
@@ -1442,7 +1453,7 @@ function woocommerce_gateway_resurs_bank_init()
                         }
 
                         break;
-                    case $suggestedStatus & (OrderStatus::COMPLETED):
+                    case $suggestedStatus & OrderStatus::COMPLETED:
                         if ($this->synchronizeResursOrderStatus(
                             $currentWcStatus,
                             $paymentStatus[OrderStatus::COMPLETED],
@@ -1454,7 +1465,7 @@ function woocommerce_gateway_resurs_bank_init()
                         }
 
                         break;
-                    case $suggestedStatus & (OrderStatus::ANNULLED): // PAYMENT_CANCELLED
+                    case $suggestedStatus & OrderStatus::ANNULLED: // PAYMENT_CANCELLED
                         $woocommerceOrder->update_status($paymentStatus[OrderStatus::ANNULLED]);
                         if (!isWooCommerce3()) {
                             $woocommerceOrder->cancel_order(
