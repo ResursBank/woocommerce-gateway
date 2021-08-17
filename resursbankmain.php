@@ -6671,11 +6671,12 @@ function initializeResursFlow(
         }
     }
 
+    $flowType = str_replace('resurs_bank_', '', getResursOption('flowtype'));
     $userAgent = sprintf(
         '%s-%s-flow-%s-WC-%s',
         RB_WOO_CLIENTNAME,
         RB_WOO_VERSION,
-        preg_replace('/resurs_bank_/', '', getResursOption('flowtype')),
+        $flowType,
         $woocommerce->version
     );
     $initFlow->setUserAgent($userAgent);
