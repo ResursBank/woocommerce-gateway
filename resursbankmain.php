@@ -2396,7 +2396,6 @@ function woocommerce_gateway_resurs_bank_init()
 
             $return = [];
 
-            //update_post_meta($order_id, 'orderBookStatus', $bookedStatus);
             add_post_meta(
                 $order_id,
                 'orderBookStatus',
