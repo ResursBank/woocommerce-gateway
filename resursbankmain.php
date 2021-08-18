@@ -1244,8 +1244,7 @@ function woocommerce_gateway_resurs_bank_init()
             $woocommerceOrder,
             $suggestedStatusCode,
             $resursOrderObject = null
-        )
-        {
+        ) {
             resursEventLogger("SynchronizeResursOrderStatus $currentStatus -> $newStatus");
 
             $updateStatus = true;
@@ -1351,8 +1350,7 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentIdOrPaymentObject = '',
             $byCallbackEvent = 0,
             $callbackEventDataArrayOrString = []
-        )
-        {
+        ) {
             $return = OrderStatus::ERROR;
 
             try {
@@ -2275,8 +2273,7 @@ function woocommerce_gateway_resurs_bank_init()
             $supportProviderMethods,
             $bookDataArray,
             $urlFail
-        )
-        {
+        ) {
             $hostedFlowBookingFailure = false;
             $hostedFlowUrl = null;
             $hostedBookPayment = null;
@@ -2347,8 +2344,7 @@ function woocommerce_gateway_resurs_bank_init()
             $supportProviderMethods,
             $bookDataArray,
             $order
-        )
-        {
+        ) {
             if ($paymentMethodInformation->type === 'PAYMENT_PROVIDER' && !$supportProviderMethods) {
                 wc_add_notice(
                     __(
@@ -2400,7 +2396,16 @@ function woocommerce_gateway_resurs_bank_init()
 
             $return = [];
 
-            update_post_meta($order_id, 'orderBookStatus', $bookedStatus);
+            //update_post_meta($order_id, 'orderBookStatus', $bookedStatus);
+            add_post_meta(
+                $order_id,
+                'orderBookStatus',
+                sprintf(
+                    '%s (%s)',
+                    $bookedStatus,
+                    strftime('%Y-%m-%d %H:%M:%S', time())
+                )
+            );
 
             switch ($bookedStatus) {
                 case 'FINALIZED':
@@ -3458,6 +3463,17 @@ function woocommerce_gateway_resurs_bank_init()
                     /* When things fail, and there is no id available (we should hopefully never get here, since we're making other controls above) */
                     $bookedStatus = 'DENIED';
                 }
+
+                add_post_meta(
+                    $order_id,
+                    'orderBookStatus',
+                    sprintf(
+                        '%s (%s)',
+                        $bookedStatus,
+                        strftime('%Y-%m-%d %H:%M:%S', time())
+                    )
+                );
+
                 /* Continue. */
                 if ($bookedStatus === 'FROZEN') {
                     $order->update_status(
@@ -6597,8 +6613,7 @@ function initializeResursFlow(
     $overridePassword = '',
     $setEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_NOT_SET,
     $requireNewFlow = false
-)
-{
+) {
     global $current_user, $hasResursFlow, $resursInstanceCount, $resursSavedInstance, $woocommerce;
     $username = getResursOption('login');
     $password = getResursOption('password');
@@ -7261,20 +7276,26 @@ function setResursOrderMetaData($id, $key, $value)
 }
 
 /**
- * @param $id
- * @param string $key
+ * @param $id int Most likely the post id as order id.
+ * @param $key string The meta data to retrieve by its key name.
  * @return string
  */
 function getResursPaymentMethodMeta($id, $key = 'resursBankMetaPaymentMethod')
 {
+    $return = '';
     $metaMethodTest = get_post_meta($id, $key);
     if (is_array($metaMethodTest)) {
-        $returnValue = array_pop($metaMethodTest);
-        if (!empty($returnValue)) {
-            return (string)$returnValue;
+        // If metadata contains more than one entry, return them all commaseparated.
+        if (count($metaMethodTest) > 1) {
+            $return = implode(', ', $metaMethodTest);
+        } else {
+            $returnValue = array_pop($metaMethodTest);
+            if (!empty($returnValue)) {
+                $return = $returnValue;
+            }
         }
     }
-    return '';
+    return (string)$return;
 }
 
 function getResursRequireSession()
