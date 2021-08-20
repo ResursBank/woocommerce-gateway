@@ -2042,12 +2042,10 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function getMinMax($totalAmount, $min, $max)
         {
-            $return = false;
-            if ($totalAmount >= $min && $totalAmount <= $max) {
-                $return = true;
-            }
-
-            return $return;
+            return (
+                $totalAmount >= apply_filters('resursbank_min_amount', $min) &&
+                $totalAmount <= apply_filters('resursbank_max_amount', $max)
+            );
         }
 
 
