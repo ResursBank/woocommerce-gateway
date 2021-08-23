@@ -81,65 +81,67 @@ function getRcoRejectPayment(eventData, rejectType) {
 // those scripts are disabled as soon as the flag rcoFacelift (legacy checking) is set to true.
 $RB(document).ready(function ($) {
     if (typeof $ResursCheckout !== 'undefined' || !getRcoRemote('legacy')) {
-        // Set rcoFacelift to true if the new rco interface is available.
-        rcoFacelift = true;
-        getRcoFieldSetup();
+        if (null !== document.getElementById('resurs-checkout-container')) {
+            // Set rcoFacelift to true if the new rco interface is available.
+            rcoFacelift = true;
+            getRcoFieldSetup();
 
-        $ResursCheckout.create({
-            paymentSessionId: getRcoRemote('paymentSessionId'),
-            baseUrl: getRcoRemote('baseUrl'),
-            hold: true,
-            containerId: 'resurs-checkout-container'
-        });
+            $ResursCheckout.create({
+                paymentSessionId: getRcoRemote('paymentSessionId'),
+                baseUrl: getRcoRemote('baseUrl'),
+                hold: true,
+                containerId: 'resurs-checkout-container'
+            });
 
-        // purchasefail
-        $ResursCheckout.onPaymentFail(function (event) {
-            getRcoRejectPayment(event, 'fail');
-        });
-        // purchasedenied, no longer supported by framework -- only in postMsg.
-        /*$ResursCheckout.onPaymentDenied(function (event) {
-            getRcoRejectPayment(event, 'deny');
-        });*/
-        // user-info-change => onCustomerChange (setCustomerChangedEventCallback equivalent).
-        $ResursCheckout.onCustomerChange(function (event) {
-            rcoContainer.customer = event
-        });
+            // purchasefail
+            $ResursCheckout.onPaymentFail(function (event) {
+                getRcoRejectPayment(event, 'fail');
+            });
+            // purchasedenied, no longer supported by framework -- only in postMsg.
+            /*$ResursCheckout.onPaymentDenied(function (event) {
+                getRcoRejectPayment(event, 'deny');
+            });*/
+            // user-info-change => onCustomerChange (setCustomerChangedEventCallback equivalent).
+            $ResursCheckout.onCustomerChange(function (event) {
+                rcoContainer.customer = event
+            });
 
-        // payment-method-change => onPaymentChange (Apparently never used in woocommerce).
-        $ResursCheckout.onPaymentChange(function (event) {
-            rcoContainer.payment = event
-        });
+            // payment-method-change => onPaymentChange (Apparently never used in woocommerce).
+            $ResursCheckout.onPaymentChange(function (event) {
+                rcoContainer.payment = event
+            });
 
-        // onSubmit (CreateOrder -- setBookingCallback equivalent).
-        $ResursCheckout.onSubmit(function (event) {
-            // At this point, we will ajaxify this:
-            // {
-            //     customer: {},   /// Customer data.
-            //     payment: {},    /// Checkout/Payment data.
-            //     wooCommerce: {} /// WooCommerce Request Forms (leftovers that is still not removed).
-            // }
-            rcoContainer.wooCommerce = getRbPostData();
-            var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omnivars.OmniRef;
-            $RB.ajax(
-                {
-                    url: preBookUrl,
-                    type: "POST",
-                    data: rcoContainer
-                }
-            ).success(
-                function (successData) {
-                    var contactUs = getResursPhrase("contactSupport");
-                    var requestResponse = getRcoSuccessData(successData);
-                    if (requestResponse.success) {
-                        $ResursCheckout.release();
-                    } else {
-                        handleResursCheckoutError(
-                            requestResponse.errorString + " (" + requestResponse.errorCode + ") " + contactUs
-                        );
+            // onSubmit (CreateOrder -- setBookingCallback equivalent).
+            $ResursCheckout.onSubmit(function (event) {
+                // At this point, we will ajaxify this:
+                // {
+                //     customer: {},   /// Customer data.
+                //     payment: {},    /// Checkout/Payment data.
+                //     wooCommerce: {} /// WooCommerce Request Forms (leftovers that is still not removed).
+                // }
+                rcoContainer.wooCommerce = getRbPostData();
+                var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omnivars.OmniRef;
+                $RB.ajax(
+                    {
+                        url: preBookUrl,
+                        type: "POST",
+                        data: rcoContainer
                     }
-                    return false;
-                }
-            )
-        });
+                ).success(
+                    function (successData) {
+                        var contactUs = getResursPhrase("contactSupport");
+                        var requestResponse = getRcoSuccessData(successData);
+                        if (requestResponse.success) {
+                            $ResursCheckout.release();
+                        } else {
+                            handleResursCheckoutError(
+                                requestResponse.errorString + " (" + requestResponse.errorCode + ") " + contactUs
+                            );
+                        }
+                        return false;
+                    }
+                )
+            });
+        }
     }
 });
