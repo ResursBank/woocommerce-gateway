@@ -114,7 +114,12 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             return;
         }
         $oneRandomValue = '?randomizeMe=' . rand(1024, 65535);
-        $this->resurs_omnicheckout_create_frame();
+        if (!isset(WC()->cart) || (isset(WC()->cart))) {
+            $currentCart = WC()->cart->get_cart();
+            if (count($currentCart)) {
+                $this->resurs_omnicheckout_create_frame();
+            }
+        }
 
         wp_enqueue_script(
             'rcoface',
@@ -123,7 +128,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
         $urlList = (new Domain())->getUrlsFromHtml($this->iframeResponse->script);
-        if (isset($this->iframeResponse->script) && !empty($this->iframeResponse->script) && count($urlList)) {
+        if (isset($this->iframeResponse) &&
+            !empty($this->iframeResponse) &&
+            isset($this->iframeResponse->script) &&
+            !empty($this->iframeResponse->script) && count($urlList)
+        ) {
             wp_enqueue_script(
                 'rcoremote',
                 array_pop($urlList),
