@@ -1,4 +1,4 @@
-# 2.2.53
+# 2.2.53 - 2.2.57
 
 * [WOO-553](https://resursbankplugins.atlassian.net/browse/WOO-553) Status fryst hos Resurs ger "inväntar betalning" i woo-commerce
 * [WOO-545](https://resursbankplugins.atlassian.net/browse/WOO-545) Plugin could interfere with other parts of the system when not configured
