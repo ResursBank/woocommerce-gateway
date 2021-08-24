@@ -2,6 +2,7 @@
 
 use Resursbank\Ecommerce\Types\CheckoutType;
 use Resursbank\RBEcomPHP\ResursBank;
+use TorneLIB\Module\Network\Domain;
 
 /**
  * Class WC_Gateway_ResursBank_Omni
@@ -14,6 +15,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     protected $flow;
     private $omniSuccessUrl;
+    protected $renderedIframe;
+    protected $iframeResponse;
 
     /**
      * WC_Gateway_ResursBank_Omni constructor.
@@ -22,6 +25,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
      */
     public function __construct()
     {
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_script'], 0);
+
         $this->resetOmniCustomerFields = [];
         $this->id = "resurs_bank_omnicheckout";
         $this->method_title = "Resurs Bank Checkout";
@@ -56,7 +61,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
 
-        if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
+        if (defined('WOOCOMMERCE_VERSION') && version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [
                 $this,
                 'process_admin_options',
@@ -70,15 +75,74 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         add_action('woocommerce_after_checkout_form', [$this, 'resurs_omnicheckout_form_variable']);
 
         if ($this->isResursOmni()) {
-            if ($this->iFrameLocation == "afterCheckoutForm") {
+            if ($this->iFrameLocation === "afterCheckoutForm") {
                 add_action('woocommerce_after_checkout_form', [$this, 'resurs_omnicheckout_form_location']);
             }
-            if ($this->iFrameLocation == "beforeReview") {
+            if ($this->iFrameLocation === "beforeReview") {
                 add_action('woocommerce_checkout_before_order_review', [
                     $this,
                     'resurs_omnicheckout_form_location',
                 ]);
             }
+        }
+    }
+
+    /**
+     * Legacy iframe request.
+     * @return string
+     */
+    public function getRenderedIframe()
+    {
+        return (string)$this->renderedIframe;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLegacyIframe()
+    {
+        return (isset($this->iframeResponse->script) && preg_match('/oc-shop.js/', $this->iframeResponse->script) ? true : false);
+    }
+
+    /**
+     * Enqueue scripts for RCO specifics. Iframe data should be prepared at this point instead of inside
+     * the checkout (legacy).
+     */
+    public function enqueue_script()
+    {
+        if (!getResursOption('enabled')) {
+            return;
+        }
+        $oneRandomValue = '?randomizeMe=' . rand(1024, 65535);
+        if (!isset(WC()->cart) || (isset(WC()->cart))) {
+            $currentCart = WC()->cart->get_cart();
+            if (count($currentCart)) {
+                $this->resurs_omnicheckout_create_frame();
+            }
+        }
+
+        wp_enqueue_script(
+            'rcoface',
+            plugin_dir_url(__FILE__) . '../js/rcoface.js' . $oneRandomValue,
+            ['jquery'],
+            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
+        );
+        $urlList = (new Domain())->getUrlsFromHtml($this->iframeResponse->script);
+        if (isset($this->iframeResponse) &&
+            !empty($this->iframeResponse) &&
+            isset($this->iframeResponse->script) &&
+            !empty($this->iframeResponse->script) && count($urlList)
+        ) {
+            wp_enqueue_script(
+                'rcoremote',
+                array_pop($urlList),
+                [],
+                RB_WOO_VERSION
+            );
+            unset($this->iframeResponse->customer);
+            $iframeArray = (array)$this->iframeResponse;
+            $iframeArray['legacy'] = $this->isLegacyIframe();
+            wp_localize_script('rcoremote', 'rcoremote', $iframeArray);
         }
     }
 
@@ -95,6 +159,9 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         echo '<div id="omniActions" class="omniActions" style="display: none;"></div>';
     }
 
+    /**
+     * Display iframe. Eventually.
+     */
     public function resurs_omnicheckout_form_location()
     {
         global $resursIframeCount;
@@ -113,15 +180,24 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
         // Prepare the frame
         try {
-            $frameDisplay .= '<div class="col2-set" id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
+            $iframeData = $this->getRenderedIframe();
+            $frameDisplay .= sprintf(
+                '<div class="col2-set" id="resurs-checkout-container">%s</div>',
+                $this->isLegacyIframe() ? $iframeData : $iframeData
+            );
         } catch (Exception $e) {
             $frameContent = __(
                 'We are unable to load Resurs Checkout for the moment. Please try again later.',
                 'resurs-bank-payment-gateway-for-woocommerce'
             );
-            $frameDisplay .= '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $frameContent . "<!-- \n" . $e->getMessage() . " --></div>";
+            $frameDisplay .= sprintf(
+                '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">%s<!-- %s --></div>',
+                $frameContent,
+                $e->getMessage()
+            );
         }
         $resursIframeCount++;
+        $this->renderedIframe = $frameDisplay;
         echo $frameDisplay;
     }
 
@@ -170,7 +246,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     public function payment_fields()
     {
         if ($this->iFrameLocation == "inMethods") {
-            echo '<div id="resurs-checkout-container">' . $this->resurs_omnicheckout_create_frame() . "</div>";
+            sprintf('<div id="resurs-checkout-container">%s</div>', $this->getRenderedIframe());
         } else {
             echo '<div id="resurs-checkout-loader">' . $this->description . '</div>';
         }
@@ -214,6 +290,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     }
 
     /**
+     * Creating frame as a html object and returns it. We don't necessarily have to use it at this poing (FL).
      * @return string
      * @throws Exception
      */
@@ -224,7 +301,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         $omniRef = WC()->session->get('omniRef');
         try {
             $customerId = getResursWooCustomerId();
-            if (!is_null($customerId)) {
+            $noCid = getResursFlag('NO_CUSTOMER_ID');
+            if (!is_null($customerId) && !$noCid) {
                 $this->flow->setMetaData('CustomerId', $customerId);
             }
 
@@ -250,9 +328,14 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 'We are unable to load Resurs Checkout for the moment. Please try again later.',
                 'resurs-bank-payment-gateway-for-woocommerce'
             );
-            $flowFrame = '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container">' . $errorUnable . "<!-- \n" . $e->getMessage() . " --></div>";
+            $flowFrame = sprintf(
+                    '<div class="col2-set label-warning" style="border:1px solid red; text-align: center;" id="resurs-checkout-container"><!-- %s --></div>',
+                    $errorUnable,
+                    $e->getMessage()
+            );
         }
 
+        $this->iframeResponse = $this->flow->getFullCheckoutResponse();
         return $flowFrame;
     }
 
@@ -381,16 +464,12 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     /**
      * Field removal at omni level
-     *
      * If omnicheckout is enabled all fields should be handled by the iFrame instead.
-     *
      * @param $fields
-     *
      * @return array
      */
     public function resurs_omnicheckout_fields($fields)
     {
-
         // Flow description: During checking - if RCO is enabled - the plugin, will at this place remove all fields from the
         // checkout page, that normally in RCO mode is handled by RCO itself. By removing those fields from the checkout page
         // in woocommerce, there won't be double field of everything. This, however might not work properly, if we need
@@ -463,7 +542,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
 
     /**
      * @param $array
-     *
      * @return mixed
      * @throws Exception
      */
@@ -591,7 +669,6 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         global $woocommerce, $resurs_is_payment_spec;
         $flow = initializeResursFlow();
 
-        //$payment_fee_tax_pct = 0;   // TODO: Figure out this legacy variable, that was never initialized.
         $spec_lines = self::get_spec_lines($cart->get_cart());
         $shipping = (float)$cart->shipping_total;
         $shipping_tax = (float)$cart->shipping_tax_total;
