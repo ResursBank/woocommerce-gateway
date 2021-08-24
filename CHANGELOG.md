@@ -1,3 +1,8 @@
+# 2.2.58
+
+* [WOO-558](https://resursbankplugins.atlassian.net/browse/WOO-558) Pluginet renderar iframe även på success-sidan
+* [WOO-479](https://resursbankplugins.atlassian.net/browse/WOO-479) rcojs-facelift
+
 # 2.2.53 - 2.2.57
 
 * [WOO-553](https://resursbankplugins.atlassian.net/browse/WOO-553) Status fryst hos Resurs ger "inväntar betalning" i woo-commerce
