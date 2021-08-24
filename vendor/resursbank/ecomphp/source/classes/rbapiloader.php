@@ -62,11 +62,10 @@ use TorneLIB\Helpers\NetUtils;
 use TorneLIB\IO\Data\Strings;
 use TorneLIB\Model\Type\DataType;
 use TorneLIB\Model\Type\RequestMethod;
+use TorneLIB\Module\Network;
 use TorneLIB\Module\Network\Domain;
 use TorneLIB\Module\Network\NetWrapper;
-use TorneLIB\MODULE_NETWORK;
 use TorneLIB\Utils\Generic;
-use TorneLIB\Utils\Memory;
 use TorneLIB\Utils\Security;
 
 // Globals starts here. But should be deprecated if version tag can be fetched through their doc-blocks.
@@ -74,7 +73,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20210805');
+    define('ECOMPHP_MODIFY_DATE', '20210818');
 }
 
 /**
@@ -85,7 +84,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.57
+ * @version 1.3.59
  */
 class ResursBank
 {
@@ -358,7 +357,7 @@ class ResursBank
     /**
      * Class for handling Network related checks
      *
-     * @var MODULE_NETWORK
+     * @var Network
      * @since 1.0.1
      * @since 1.1.1
      */
@@ -1595,7 +1594,7 @@ class ResursBank
     {
         // Import driver on demand.
         if ($this->NETWORK === null) {
-            $this->NETWORK = new MODULE_NETWORK();
+            $this->NETWORK = new Network();
         }
     }
 
@@ -7351,7 +7350,8 @@ class ResursBank
     /**
      * @return $this
      */
-    public function setFinalizeWithoutSpec() {
+    public function setFinalizeWithoutSpec()
+    {
         $this->finalizeWithoutOrderRows = true;
         return $this;
     }
@@ -7497,7 +7497,7 @@ class ResursBank
     private function getAfterShopObjectByPayload(
         $paymentId = '',
         $customPayloadItemList = [],
-        $payloadType
+        $payloadType = ''
     ) {
         $finalAfterShopSpec = [
             'paymentId' => $paymentId,
@@ -7770,7 +7770,7 @@ class ResursBank
      */
     public function sanitizeAfterShopSpec(
         $paymentIdOrPaymentObjectData = '',
-        $renderType
+        $renderType = 0
     ) {
 
         $returnSpecObject = [];
@@ -8236,7 +8236,6 @@ class ResursBank
      *
      * This method only returns the current status code for automatically finalized payments, if the payment method
      * is matched with an "instant finalization"-type (like SWISH). If not, ERROR (
-
      * 128) will
      * be used, which also (if you so wish) matches with false. If this method returns false, you might consider
      * the payment not instantly finalized.
