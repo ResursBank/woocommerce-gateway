@@ -944,6 +944,8 @@ function woocommerce_gateway_resurs_bank_init()
                 )
             );
 
+            updateResursOrderBillingData($order, $request['paymentId']);
+
             switch ($event_type) {
                 case 'UNFREEZE':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
@@ -2967,8 +2969,11 @@ function woocommerce_gateway_resurs_bank_init()
                     $failBilling = true;
                     $customerEmail = !empty($resursBillingAddress['email']) ? $resursBillingAddress['email'] : '';
                     if (count($resursBillingAddress)) {
-                        $wooBillingAddress = $this->getCustomerBillingTransformed($resursBillingAddress, $customerData,
-                            $legacy);
+                        $wooBillingAddress = $this->getCustomerBillingTransformed(
+                            $resursBillingAddress,
+                            $customerData,
+                            $legacy
+                        );
                         $failBilling = false;
                     }
                     if ($failBilling) {
@@ -2996,6 +3001,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                     WC()->session->set('OMNICHECKOUT_PROCESSPAYMENT', true);
                     define('OMNICHECKOUT_PROCESSPAYMENT', true);
+
                     if (!$testLocalOrder) {
                         // WooCommerce POST-helper. Since we force removal of required fields in woocommerce, we need
                         // to help wooCommerce to adding the correct fields at this level to possibly pass through
@@ -5926,6 +5932,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
             try {
                 $rb->setFlag('GET_PAYMENT_BY_SOAP');
                 $resursPaymentInfo = getPaymentInfo($order, $resursPaymentId);
+                //$customerUpdated = updateResursOrderBillingData($order, $resursPaymentInfo);
             } catch (Exception $e) {
                 $errorMessage = $e->getMessage();
                 if ($e->getCode() === 8) {
@@ -6082,6 +6089,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : '';
                     $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : '') . ' ' . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : '') . "\n";
                 }
+
                 ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentId, $order->get_id());
 
                 $unsetKeys = [
@@ -6307,6 +6315,47 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
     }
     //}
     echo $renderedResursData;
+}
+
+/**
+ * @param WC_Order $order
+ * @param $resursPaymentRequest
+ * @return bool
+ */
+function updateResursOrderBillingData($order, $resursPaymentRequest)
+{
+    $return = false;
+    $orderId = $order->get_id();
+    try {
+        $flow = initializeResursFlow();
+        $resursPayment = $flow->getPayment($resursPaymentRequest);
+    } catch (Exception $e) {
+    }
+    if (!empty($resursPayment)) {
+        $billingAddress = $order->get_address('billing');
+        if ($orderId && isset($resursPayment->customer->address)) {
+            $addressTranslation = [
+                'first_name' => 'firstName',
+                'last_name' => 'lastName',
+                'address_1' => 'addressRow1',
+                'address_2' => 'addressRow2',
+                'city' => 'postalArea',
+                'postcode' => 'postalCode',
+                'country' => 'country',
+            ];
+            foreach ($addressTranslation as $item => $value) {
+                if (isset($billingAddress[$item]) &&
+                    isset($resursPayment->customer->address->{$value}) &&
+                    $billingAddress[$item] !== $resursPayment->customer->address->{$value}
+                ) {
+                    update_post_meta($orderId, sprintf('_billing_%s', $item),
+                        $resursPayment->customer->address->{$value});
+                    $return = true;
+                }
+            }
+        }
+    }
+    return $return;
 }
 
 /**
