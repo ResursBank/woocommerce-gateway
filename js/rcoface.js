@@ -1,4 +1,5 @@
 var $RB = jQuery.noConflict();
+var rcoDebug = false;
 
 /**
  * Customer data container for the RCO.
@@ -9,6 +10,23 @@ var rcoContainer = {
     payment: {},
     wooCommerce: {}
 };
+
+/**
+ * Debugging in RCOv2 or higher.
+ * @param noticeText
+ */
+function rcoDebugNote(noticeText) {
+    if (rcoDebug) {
+        console.log(
+            '[RCOv2+] ',
+            noticeText
+        );
+        if (typeof arguments[1] !== "undefined") {
+            console.log(arguments[1]);
+        }
+    }
+}
+
 
 /**
  * Render and return the rest of the checkout form to engines that requires it.
@@ -93,21 +111,21 @@ $RB(document).ready(function ($) {
                 containerId: 'resurs-checkout-container'
             });
 
+            // purchasedenied is no longer supported by framework -- only in postMsg.
             // purchasefail
             $ResursCheckout.onPaymentFail(function (event) {
+                rcoDebugNote('onPaymentFail Triggered.', event);
                 getRcoRejectPayment(event, 'fail');
             });
-            // purchasedenied, no longer supported by framework -- only in postMsg.
-            /*$ResursCheckout.onPaymentDenied(function (event) {
-                getRcoRejectPayment(event, 'deny');
-            });*/
             // user-info-change => onCustomerChange (setCustomerChangedEventCallback equivalent).
             $ResursCheckout.onCustomerChange(function (event) {
+                rcoDebugNote('onCustomerChange Triggered.', event);
                 rcoContainer.customer = event
             });
 
             // payment-method-change => onPaymentChange (Apparently never used in woocommerce).
             $ResursCheckout.onPaymentChange(function (event) {
+                rcoDebugNote('onPaymentChange Triggered.', event);
                 rcoContainer.payment = event
             });
 
@@ -119,6 +137,7 @@ $RB(document).ready(function ($) {
                 //     payment: {},    /// Checkout/Payment data.
                 //     wooCommerce: {} /// WooCommerce Request Forms (leftovers that is still not removed).
                 // }
+                rcoDebugNote('onSubmit Triggered.', event);
                 rcoContainer.wooCommerce = getRbPostData();
                 var preBookUrl = omnivars.OmniPreBookUrl + "&orderRef=" + omnivars.OmniRef;
                 $RB.ajax(
