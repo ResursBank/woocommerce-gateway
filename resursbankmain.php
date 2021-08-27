@@ -947,11 +947,9 @@ function woocommerce_gateway_resurs_bank_init()
             if (updateResursOrderBillingData($order, $request['paymentId'])) {
                 update_post_meta($order->get_id(), 'customerSynchronization', time());
                 $order->add_order_note(
-                    sprintf(
-                        __(
-                            '[Resurs Bank] Billing Address mismatched with customer data in getPayment. Customer has been updated.',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ),
+                    __(
+                        '[Resurs Bank] Billing Address mismatched with customer data in getPayment. Customer has been updated.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
                     )
                 );
             }
