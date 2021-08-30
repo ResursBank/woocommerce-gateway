@@ -127,22 +127,24 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             ['jquery'],
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
-        $urlList = (new Domain())->getUrlsFromHtml($this->iframeResponse->script);
-        if (isset($this->iframeResponse) &&
-            !empty($this->iframeResponse) &&
-            isset($this->iframeResponse->script) &&
-            !empty($this->iframeResponse->script) && count($urlList)
-        ) {
-            wp_enqueue_script(
-                'rcoremote',
-                array_pop($urlList),
-                [],
-                RB_WOO_VERSION
-            );
-            unset($this->iframeResponse->customer);
-            $iframeArray = (array)$this->iframeResponse;
-            $iframeArray['legacy'] = $this->isLegacyIframe();
-            wp_localize_script('rcoremote', 'rcoremote', $iframeArray);
+        if (isset($this->iframeResponse->script)) {
+            $urlList = (new Domain())->getUrlsFromHtml($this->iframeResponse->script);
+            if (isset($this->iframeResponse) &&
+                !empty($this->iframeResponse) &&
+                isset($this->iframeResponse->script) &&
+                !empty($this->iframeResponse->script) && count($urlList)
+            ) {
+                wp_enqueue_script(
+                    'rcoremote',
+                    array_pop($urlList),
+                    [],
+                    RB_WOO_VERSION
+                );
+                unset($this->iframeResponse->customer);
+                $iframeArray = (array)$this->iframeResponse;
+                $iframeArray['legacy'] = $this->isLegacyIframe();
+                wp_localize_script('rcoremote', 'rcoremote', $iframeArray);
+            }
         }
     }
 

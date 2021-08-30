@@ -112,7 +112,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                     $setSessionEnable = true;
                     $setSession = isset($_REQUEST['set-no-session']) ? $_REQUEST['set-no-session'] : null;
-                    if ($setSession == 1) {
+                    if ($setSession === 1) {
                         $setSessionEnable = false;
                     } else {
                         $setSessionEnable = true;
@@ -140,6 +140,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                         $omniRefCreated = WC()->session->get('omniRefCreated');
                         $currentOmniRefAge = time() - $omniRefCreated;
+                        // $currentOmniRefAge > 900
                         if (empty($currentOmniRef)) {
                             // Create by empty references.
                             WC()->session->set('omniRef', $omniRef);
@@ -3127,6 +3128,10 @@ function woocommerce_gateway_resurs_bank_init()
                         // If the order already exists, continue without errors (if we reached this code,
                         // it has been because of the nonce which should be considered safe enough)
                         $order = new WC_Order($testLocalOrder);
+                        // Making sure this data follows.
+                        $omniClass = new WC_Gateway_ResursBank_Omni();
+                        $order->set_payment_method($omniClass);
+                        update_post_meta($order->get_id(), 'omniPaymentMethod', $omniPaymentMethod);
                         setResursPaymentMethodMeta($order->get_id());
                         $currentOrderStatus = $order->get_status();
                         // Going generic response, to make it possible to updateOrderReference on fly
@@ -5360,11 +5365,11 @@ function woocommerce_gateway_resurs_bank_init()
             }
         }
 
-        if ($column == 'resurs_order_id') {
+        if ($column === 'resurs_order_id') {
             $resursId = wc_get_payment_id_by_order_id($post->ID);
             echo $resursId;
         }
-        if ($column == 'resurs_payment_method') {
+        if ($column === 'resurs_payment_method') {
             $omniMethod = get_post_meta($post->ID, 'omniPaymentMethod');
             if (!empty($newMethodInfo)) {
                 echo $newMethodInfo;
@@ -6326,6 +6331,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
  * @param WC_Order $order
  * @param $resursPaymentRequest
  * @return bool
+ * @throws WC_Data_Exception
  */
 function updateResursOrderBillingData($order, $resursPaymentRequest)
 {
@@ -6336,7 +6342,15 @@ function updateResursOrderBillingData($order, $resursPaymentRequest)
         $resursPayment = $flow->getPayment($resursPaymentRequest);
     } catch (Exception $e) {
     }
+
     if (!empty($resursPayment)) {
+        // Enable second resynch if anything fails during payment process.
+        /*
+        $paymentMethod = $order->get_payment_method();
+        if ($paymentMethod === 'resurs_bank_omnicheckout') {
+            $order->set_payment_method('resurs_bank_nr_' . $resursPayment->paymentMethodId);
+        }
+        */
         $billingAddress = $order->get_address('billing');
         if ($orderId && isset($resursPayment->customer->address)) {
             $addressTranslation = [
