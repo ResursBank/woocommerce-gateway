@@ -50,8 +50,13 @@ function rb_option_update_watch($option, $old, $new)
         $oldFlow = $old['flowtype'];
         $newFlow = $new['flowtype'];
         if ($oldFlow !== $newFlow) {
-            global $wpdb;
-            $wpdb->query("TRUNCATE {$wpdb->prefix}woocommerce_sessions");
+            // This option is unexistent in the configuration as it is currently more safe to not clean up
+            // paying sessions than doing it - since there may be customers in the middle of a signing procedure
+            // that may loose their sessions on their way back to the landing page.
+            if (getResursOption('clearSessionsOnUpdate')) {
+                global $wpdb;
+                $wpdb->query("TRUNCATE {$wpdb->prefix}woocommerce_sessions");
+            }
         }
     }
 }
