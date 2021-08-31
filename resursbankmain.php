@@ -5201,7 +5201,8 @@ function woocommerce_gateway_resurs_bank_init()
     }
 
     /**
-     * Used to enable wp_safe_redirect in ceratin situations
+     * Used to enable wp_safe_redirect in certain situations
+     * @todo Is this really doing something?
      */
     function app_output_buffer()
     {
