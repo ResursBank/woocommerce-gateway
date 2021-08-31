@@ -96,16 +96,16 @@ function getResursOption($key = "", $namespace = "woocommerce_resurs-bank_settin
     if (empty($response)) {
         $response = get_option($key);
     }
-    if ($response === "true") {
+    if ($response === 'true') {
         return true;
     }
-    if ($response === "false") {
+    if ($response === 'false') {
         return false;
     }
-    if ($response === "yes") {
+    if ($response === 'yes') {
         return true;
     }
-    if ($response === "no") {
+    if ($response === 'no') {
         return false;
     }
 
