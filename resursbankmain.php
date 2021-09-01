@@ -4912,9 +4912,9 @@ function woocommerce_gateway_resurs_bank_init()
                 'resurs-bank-payment-gateway-for-woocommerce'
             ),
             'theAjaxWentWrongWithThisMessage' => __(
-                    'An internal error occured while trying to book the order:',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . ' ',
+                'An internal error occurred while trying to book the order: ',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
             'contactSupport' => __(
                 'Please contact customer support for more information.',
                 'resurs-bank-payment-gateway-for-woocommerce'
