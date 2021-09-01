@@ -252,7 +252,7 @@ $RB(document).ready(function ($) {
                             console.log("Resurs Bank preBook failed.");
                             console.dir(x);
 
-                            handleResursCheckoutError(partialError + errorString + " - " + contactUs);
+                            handleResursCheckoutError(partialError + ' ' + errorString + ' - ' + contactUs);
                             return false;
                         }
                     );
