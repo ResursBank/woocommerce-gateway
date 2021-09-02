@@ -6893,15 +6893,14 @@ function getServerEnv()
     $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
 
     $serverEnv = getResursOption('serverEnv');
-    $demoshopMode = getResursOption('demoshopMode');
 
-    if ($serverEnv == 'live') {
+    if ($serverEnv === 'live') {
         $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
     }
     /*
      * Prohibit production mode if this is a demoshop
      */
-    if ($serverEnv == 'test' || $demoshopMode == 'true') {
+    if ($serverEnv === 'test') {
         $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
     }
 
