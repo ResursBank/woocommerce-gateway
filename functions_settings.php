@@ -505,20 +505,6 @@ if (!function_exists('getResursWooFormFields')) {
                     'label' => __('Enabled', 'woocommerce'),
                     'default' => 'false',
                 ],
-                'demoshopMode' => [
-                    'title' => __('Demoshopläge', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'description' => __(
-                        'Define if this shop is a demo store or not, which opens for more functionality (This option also forces the use of test environment)',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    'type' => 'checkbox',
-                    'options' => [
-                        'true' => 'true',
-                        'false' => 'false',
-                    ],
-                    'label' => __('Enabled', 'woocommerce'),
-                    'default' => 'false',
-                ],
                 'getAddressUseProduction' => [
                     'title' => __(
                         'Make getAddress fetch live data while in test mode',

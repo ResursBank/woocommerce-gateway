@@ -270,27 +270,11 @@ function resursPreventPostType($allow, $postType)
  * Returns true if demoshop-mode is enabled.
  *
  * @return bool
+ * @deprecated Do not use this!
  */
 function isResursDemo()
 {
-    $return = false;
-
-    $resursSettings = get_option('woocommerce_resurs-bank_settings');
-    $demoshopMode = isset($resursSettings['demoshopMode']) ? $resursSettings['demoshopMode'] : false;
-    if ($demoshopMode === "true") {
-        $return = true;
-    }
-    if ($demoshopMode === "yes") {
-        $return = true;
-    }
-    if ($demoshopMode === "false") {
-        $return = false;
-    }
-    if ($demoshopMode === "no") {
-        $return = false;
-    }
-
-    return $return;
+    return false;
 }
 
 /**

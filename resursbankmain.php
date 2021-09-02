@@ -2014,15 +2014,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $fieldGenHtml .= '</div>';
                     }
 
-                    /*
-                     * MarGul Change
-                     * Use translations for the Read More Button. Also added a fixed width and height on the onClick button.
-                     */
-                    if (class_exists('CountryHandler')) {
-                        $translation = CountryHandler::getDictionary();
-                    } else {
-                        $translation = [];
-                    }
+                    $translation = [];
                     $costOfPurchase = $ajaxUrl . '?action=get_cost_ajax';
                     if ($specificType !== 'CARD' && $type != 'PAYMENT_PROVIDER') {
                         $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __(
@@ -4654,15 +4646,6 @@ function woocommerce_gateway_resurs_bank_init()
         $private = __('Private', 'resurs-bank-payment-gateway-for-woocommerce');
         $company = __('Company', 'resurs-bank-payment-gateway-for-woocommerce');
         if ($optionGetAddress && !isResursOmni()) {
-            /*
-             * MarGul change
-             * If it's demoshop get the translation.
-             */
-            if (isResursDemo() && class_exists('CountryHandler')) {
-                $translation = CountryHandler::getDictionary();
-                $private = $translation['private'];
-                $company = $translation['company'];
-            }
             // Here we use the translated or not translated values for Private and Company radiobuttons
             $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
             $timeDiff = apply_filters('resurs_methodlist_timediff', time() - $resursTemporaryPaymentMethodsTime);
@@ -4749,15 +4732,8 @@ function woocommerce_gateway_resurs_bank_init()
                 'placeholder' => $placeHolderField,
             ], $checkout->get_value('ssn_field'));
             if ('SE' === $selectedCountry) {
-                /*
-                 * MarGul change
-                 * Take the translation for Get Address.
-                 */
-                if (class_exists('CountryHandler')) {
-                    $translation = CountryHandler::getDictionary();
-                } else {
-                    $translation = [];
-                }
+                $translation = [];
+
                 $get_address = (!empty($translation)) ? $translation['get_address'] : __(
                     'Get address',
                     'resurs-bank-payment-gateway-for-woocommerce'
@@ -4913,29 +4889,6 @@ function woocommerce_gateway_resurs_bank_init()
             ),
         ];
 
-        // Country language overrider - MarGul
-        if (isResursDemo() && class_exists('CountryHandler')) {
-            $translation = CountryHandler::getDictionary();
-            $resursLanguageLocalization = [
-                'getAddressEnterGovernmentId' => __(
-                    $translation['enter_ssn_num'],
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ),
-                'getAddressEnterCompany' => __(
-                    $translation['enter_gov_id'],
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ),
-                'labelGovernmentId' => __(
-                    $translation['gov_id'],
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ),
-                'labelCompanyId' => __(
-                    $translation['corp_gov_id'],
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ),
-            ];
-        }
-
         $generalJsTranslations = [
             'deliveryRequiresSigning' => __(
                 'Changing delivery address requires signing',
@@ -4970,9 +4923,9 @@ function woocommerce_gateway_resurs_bank_init()
                 'resurs-bank-payment-gateway-for-woocommerce'
             ),
             'theAjaxWentWrongWithThisMessage' => __(
-                    'An internal error occured while trying to book the order:',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ) . ' ',
+                'An internal error occurred while trying to book the order:',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            ),
             'contactSupport' => __(
                 'Please contact customer support for more information.',
                 'resurs-bank-payment-gateway-for-woocommerce'
@@ -6951,15 +6904,14 @@ function getServerEnv()
     $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
 
     $serverEnv = getResursOption('serverEnv');
-    $demoshopMode = getResursOption('demoshopMode');
 
-    if ($serverEnv == 'live') {
+    if ($serverEnv === 'live') {
         $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_PRODUCTION;
     }
     /*
      * Prohibit production mode if this is a demoshop
      */
-    if ($serverEnv == 'test' || $demoshopMode == 'true') {
+    if ($serverEnv === 'test') {
         $useEnvironment = RESURS_ENVIRONMENTS::ENVIRONMENT_TEST;
     }
 
