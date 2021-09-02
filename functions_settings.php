@@ -133,8 +133,10 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                 ],
                 'preventGlobalInterference' => [
-                    'title' => __('Prevent performance interferences in wp-admin',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Prevent performance interferences in wp-admin',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(
@@ -152,7 +154,8 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(
-                        'This function tries to use the internal post id as orderid instead of the references created by the plugin.',
+                        'This function tries to use the internal post id as orderid instead of the ' .
+                        'references created by the plugin.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
@@ -173,7 +176,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'flowtype' => [
-                    'title' => __('Checkout handling', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __('Set checkout type', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'select',
                     'options' => [
                         'resurs_bank_omnicheckout' => __(
@@ -191,7 +194,9 @@ if (!function_exists('getResursWooFormFields')) {
                     ],
                     'default' => 'resurs_bank_omnicheckout',
                     'description' => __(
-                        'What kind of shop flow you want to use',
+                        'What kind of shop flow you want to use.<br>' .
+                        '<b>Caution: If you change and save this data, all ongoing customer sessions in the checkout ' .
+                        'will be cleaned up, to prevent broken orders due to the switchover.</b>',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
@@ -337,8 +342,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'forceGovIdField' => [
-                    'title' => __('Always show govId in simplified flow',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Always show govId in simplified flow',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'label' => __('Enabled', 'woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
@@ -448,8 +455,10 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'true',
                 ],
                 'resursvalidate' => [
-                    'title' => __('Let Resurs validate customer data fields',
-                        'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Let Resurs validate customer data fields',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'description' => __(
                         'If enabled, customer forms fields required by Resurs Bank will be validated by Resurs Bank instead of the plugin.',
                         'resurs-bank-payment-gateway-for-woocommerce'
