@@ -1,6 +1,15 @@
 # 2.2.58
 
+* [WOO-565](https://resursbankplugins.atlassian.net/browse/WOO-565) Byte mellan simpla och rco gör att fler formulär dyker upp i kassan än vad som behövs
+* [WOO-564](https://resursbankplugins.atlassian.net/browse/WOO-564) Byta flöde i "prod" kan orsaka problem för slutkund
+* [WOO-561](https://resursbankplugins.atlassian.net/browse/WOO-561) Fel efter nekat köp när man byter personnummer
+* [WOO-560](https://resursbankplugins.atlassian.net/browse/WOO-560) Efter ett denied-köp blir det fel betalmetod i wc
+* [WOO-549](https://resursbankplugins.atlassian.net/browse/WOO-549) Read more not showing in hosted
 * [WOO-558](https://resursbankplugins.atlassian.net/browse/WOO-558) Pluginet renderar iframe även på success-sidan
+* [WOO-563](https://resursbankplugins.atlassian.net/browse/WOO-563) setStoreId filter should not be an integer \(prepare for future api's\)
+* [WOO-562](https://resursbankplugins.atlassian.net/browse/WOO-562) Synkronisera billing-address med getPayment
+* [WOO-544](https://resursbankplugins.atlassian.net/browse/WOO-544) Remove margul entries \(demoshop\)
+* [WOO-513](https://resursbankplugins.atlassian.net/browse/WOO-513) Clean up old demoshop content
 * [WOO-479](https://resursbankplugins.atlassian.net/browse/WOO-479) rcojs-facelift
 
 # 2.2.53 - 2.2.57
