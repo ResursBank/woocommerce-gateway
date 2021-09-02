@@ -409,7 +409,8 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
             $getUrls['backUrl']
         );
 
-        $storeId = apply_filters("resursbank_set_storeid", null);
+        $storeIdTest = !getResursFlag('STORE_ID') ? null : getResursFlag('STORE_ID');
+        $storeId = apply_filters('resursbank_set_storeid', $storeIdTest);
         if (!empty($storeId)) {
             $bookDataOmni['storeId'] = $storeId;
         }
