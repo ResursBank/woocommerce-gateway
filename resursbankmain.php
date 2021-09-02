@@ -2363,7 +2363,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                 return;
             } else {
-                $storeId = apply_filters('resursbank_set_storeid', null);
+                $storeIdTest = !getResursFlag('STORE_ID') ? null : getResursFlag('STORE_ID');
+                $storeId = apply_filters('resursbank_set_storeid', $storeIdTest);
                 if (!empty($storeId)) {
                     $this->flow->setStoreId($storeId);
                     update_post_meta($order_id, 'resursStoreId', $storeId);
@@ -3442,7 +3443,8 @@ function woocommerce_gateway_resurs_bank_init()
                     $order_id = wc_get_order_id_by_payment_id($paymentId);
                     $order = new WC_Order($order_id);
 
-                    $storeId = apply_filters('resursbank_set_storeid', null);
+                    $storeIdTest = !getResursFlag('STORE_ID') ? null : getResursFlag('STORE_ID');
+                    $storeId = apply_filters('resursbank_set_storeid', $storeIdTest);
                     if (!empty($storeId)) {
                         update_post_meta($order_id, 'resursStoreId', $storeId);
                     }
