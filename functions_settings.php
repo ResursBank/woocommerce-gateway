@@ -56,15 +56,15 @@ if (!function_exists('getResursWooFormFields')) {
 
         $section = isset($_REQUEST['section']) ? $_REQUEST['section'] : "";
         if (empty($section)) {
-            $formSectionName = "defaults";
-        } elseif ($section == "fraudcontrol") {
-            $formSectionName = "defaults";
-        } elseif ($section == "shortcodes") {
-            $formSectionName = "defaults";
-        } elseif ($section == "advanced") {
-            $formSectionName = "defaults";
+            $formSectionName = 'defaults';
+        } elseif ($section === 'fraudcontrol') {
+            $formSectionName = 'defaults';
+        } elseif ($section === 'shortcodes') {
+            $formSectionName = 'defaults';
+        } elseif ($section === 'advanced') {
+            $formSectionName = 'defaults';
         } elseif (preg_match("/^resurs_bank_nr_(.*?)$/i", $section)) {
-            $formSectionName = "paymentmethods";
+            $formSectionName = 'paymentmethods';
         } else {
             $formSectionName = $section;
         }
@@ -94,7 +94,7 @@ if (!function_exists('getResursWooFormFields')) {
             $rate_name = ucwords($rate_name);
             $rate_select[$rate->tax_rate_class] = $rate_name;
         }
-        if ($formSectionName === "defaults") {
+        if ($formSectionName === 'defaults' || $formSectionName === 'woocommerce_resurs-bank_settings') {
             $returnArray = [
                 'enabled' => [
                     'title' => __('Enable/Disable', 'woocommerce'),
@@ -116,21 +116,31 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                 ],
                 'resursbank_start_session_outside_admin_only' => [
-                    'title' => __('Handle sessions but only outside admin', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __(
+                        'Handle sessions but only outside admin',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'type' => 'checkbox',
-                    'label' => __('Session handling is limited to outside the admin panel.', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'label' => __(
+                        'Session handling is limited to outside the admin panel.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
                     'default' => 'false',
                     'description' => __(
-                        'While the above setting still allows handling session, you can explicitly set the handler to only work outside the admin interface. Default: Unchecked.',
+                        'While the above setting still allows handling session, you can explicitly set the handler ' .
+                        'to only work outside the admin interface. Default: Unchecked.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
                 'preventGlobalInterference' => [
-                    'title' => __('Prevent performance interferences in wp-admin', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __('Prevent performance interferences in wp-admin',
+                        'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(
-                        'If you experience very high pressure from the plugin when it is enabled, this setting tries to prevent its own precense on pages where it normally should not interfere with the platform.<br><b>This setting is experimental!</b>',
+                        'If you experience very high pressure from the plugin when it is enabled, this setting tries ' .
+                        'to prevent its own precense on pages where it normally should not interfere with the ' .
+                        'platform.<br><b>This setting is experimental!</b>',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
@@ -327,7 +337,8 @@ if (!function_exists('getResursWooFormFields')) {
                     'desc_tip' => true,
                 ],
                 'forceGovIdField' => [
-                    'title' => __('Always show govId in simplified flow', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __('Always show govId in simplified flow',
+                        'resurs-bank-payment-gateway-for-woocommerce'),
                     'label' => __('Enabled', 'woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
@@ -437,7 +448,8 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 'true',
                 ],
                 'resursvalidate' => [
-                    'title' => __('Let Resurs validate customer data fields', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'title' => __('Let Resurs validate customer data fields',
+                        'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __(
                         'If enabled, customer forms fields required by Resurs Bank will be validated by Resurs Bank instead of the plugin.',
                         'resurs-bank-payment-gateway-for-woocommerce'
@@ -587,15 +599,32 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => '7',
                 ],
+                'credentialsMaintenanceTimeout' => [
+                    'title' => __(
+                        'Maintenance timeout for hard changes',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'When switching payment flow or webservice credentials, we normally want to be sure that we ' .
+                        'do not break anything for checkout customers. This sets a grace period of how long the site ' .
+                        'will be unavailable due to local maintenance. Default is 20 seconds and occurs when data ' .
+                        'referring to credentials are changed. This is a transient setting so basically, wordpress ' .
+                        'will handle the grace period. Set 0 to disable this feature.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'text',
+                    'default' => '20',
+                ],
                 'callbackUpdateAutomation' => [
                     'title' => __(
                         'Enable automatic callback updates',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'description' => __(
-                        'Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ) . '<br><b>' . __(
+                            'Enabling this, the plugin will update callback urls and salt key, each time entering ' .
+                            'the administration control panel after a specific time',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . '<br><b>' . __(
                             '(It is no longer recommended to actively use this setting)',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</b>',
@@ -735,7 +764,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'fieldtype' => 'string',
                 ],
             ];
-        } elseif ($formSectionName == "paymentmethods") {
+        } elseif ($formSectionName === 'paymentmethods') {
             $icon = "";
             $returnArray = [
                 'enabled' => [
@@ -802,7 +831,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => '',
                 ],
             ];
-        } elseif ($formSectionName == "resurs_bank_omnicheckout") {
+        } elseif ($formSectionName === 'resurs_bank_omnicheckout') {
             $returnArray = [
                 'enabled' => [
                     'title' => __('Enable/Disable', 'woocommerce'),
@@ -1526,32 +1555,32 @@ EOT;
                 <?php
 
                 $sortByDescription = [];
-            foreach ($methodArray as $methodArray) {
-                $description = $methodArray->description;
-                $sortByDescription[$description] = $methodArray;
-            }
-            ksort($sortByDescription);
-            $url = admin_url('admin.php');
-            $url = add_query_arg('page', $_REQUEST['page'], $url);
-            $url = add_query_arg('tab', $_REQUEST['tab'], $url);
-            foreach ($sortByDescription as $methodArray) {
-                $curId = isset($methodArray->id) ? $methodArray->id : "";
-                $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
-                    $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
-                }*/
-                write_resurs_class_to_file($methodArray);
-                $settingsControl = get_option($optionNamespace);
-                $isEnabled = false;
-                if (is_array($settingsControl) && count($settingsControl)) {
-                    if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
-                        $isEnabled = true;
-                    }
+                foreach ($methodArray as $methodArray) {
+                    $description = $methodArray->description;
+                    $sortByDescription[$description] = $methodArray;
                 }
-                $maTitle = $methodArray->description;
-                if (isset($settingsControl['title']) && !empty($settingsControl['title'])) {
-                    $maTitle = $settingsControl['title'];
-                } ?>
+                ksort($sortByDescription);
+                $url = admin_url('admin.php');
+                $url = add_query_arg('page', $_REQUEST['page'], $url);
+                $url = add_query_arg('tab', $_REQUEST['tab'], $url);
+                foreach ($sortByDescription as $methodArray) {
+                    $curId = isset($methodArray->id) ? $methodArray->id : "";
+                    $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
+                    /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
+                        $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
+                    }*/
+                    write_resurs_class_to_file($methodArray);
+                    $settingsControl = get_option($optionNamespace);
+                    $isEnabled = false;
+                    if (is_array($settingsControl) && count($settingsControl)) {
+                        if ($settingsControl['enabled'] == "yes" || $settingsControl == "true" || $settingsControl == "1") {
+                            $isEnabled = true;
+                        }
+                    }
+                    $maTitle = $methodArray->description;
+                    if (isset($settingsControl['title']) && !empty($settingsControl['title'])) {
+                        $maTitle = $settingsControl['title'];
+                    } ?>
                     <tr>
                         <td width="1%">&nbsp;</td>
                         <td class="name" width="300px"><a
@@ -1567,7 +1596,7 @@ EOT;
                                                       data-tip="<?php echo __('Disabled', 'woocommerce') ?>">-</span>
                             </td>
                         <?php } else {
-                    ?>
+                            ?>
                             <td id="status_<?php echo $curId; ?>" class="status"
                                 style="cursor: pointer;"
                                 onclick="runResursAdminCallback('methodToggle', '<?php echo $curId; ?>')">
@@ -1575,11 +1604,11 @@ EOT;
                                                       data-tip="<?php echo __('Enabled', 'woocommerce') ?>">-</span>
                             </td>
                             <?php
-                } ?>
+                        } ?>
                         <td id="process_<?php echo $curId; ?>"></td>
                     </tr>
                     <?php
-            } ?>
+                } ?>
                 </tbody>
             </table>
             <?php
