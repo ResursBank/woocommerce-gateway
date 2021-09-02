@@ -474,6 +474,15 @@ function woocommerce_gateway_resurs_bank_init()
                                 delete_transient('resursTemporaryPaymentMethodsTime');
                                 delete_transient('resursTemporaryPaymentMethods');
 
+                                // Set up a maintenance "grace period" for where the front page is not allowed
+                                // to run entirely, due to the risk of bad orders when changing credentials.
+                                // The grace period is by default 20 sec, but can be changed from configuration.
+                                $gracePeriod = getResursOption('credentialsMaintenanceTimeout');
+                                // Move to the section where we set up stuff.
+                                if ((int)$gracePeriod > 0) {
+                                    set_transient('rb_credentials_update', 1, $gracePeriod);
+                                }
+
                                 $myResponse['element'] = ['currentResursPaymentMethods', 'callbackContent'];
                                 set_transient('resurs_bank_last_callback_setup', 0);
                                 $myResponse['html'] = '<br>' .
@@ -2355,7 +2364,8 @@ function woocommerce_gateway_resurs_bank_init()
 
                 return;
             } else {
-                $storeId = apply_filters('resursbank_set_storeid', null);
+                $storeIdTest = !getResursFlag('STORE_ID') ? null : getResursFlag('STORE_ID');
+                $storeId = apply_filters('resursbank_set_storeid', $storeIdTest);
                 if (!empty($storeId)) {
                     $this->flow->setStoreId($storeId);
                     update_post_meta($order_id, 'resursStoreId', $storeId);
@@ -3434,7 +3444,8 @@ function woocommerce_gateway_resurs_bank_init()
                     $order_id = wc_get_order_id_by_payment_id($paymentId);
                     $order = new WC_Order($order_id);
 
-                    $storeId = apply_filters('resursbank_set_storeid', null);
+                    $storeIdTest = !getResursFlag('STORE_ID') ? null : getResursFlag('STORE_ID');
+                    $storeId = apply_filters('resursbank_set_storeid', $storeIdTest);
                     if (!empty($storeId)) {
                         update_post_meta($order_id, 'resursStoreId', $storeId);
                     }
@@ -7421,3 +7432,30 @@ function getResursRequireSession()
         session_start();
     }
 }
+
+/**
+ * @since 2.2.58
+ */
+function rb_in_maintenance()
+{
+    global $pagenow;
+    if ((is_admin() || is_ajax()) && $pagenow !== 'wp-login.php') {
+        return;
+    }
+
+    $transientPeriod = get_transient('rb_credentials_update');
+    if ($transientPeriod) {
+        printf(
+            '<html><head><title>%s</title></head><body>%s</body></html>',
+            __('System maintenance in progress!', 'resurs-bank-payment-gateway-for-woocommerce'),
+            __(
+                'This store is currently in a temporary maintenance mode. Please wait a minute and try again.',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            )
+        );
+
+        exit;
+    }
+}
+
+add_action('wp_loaded', 'rb_in_maintenance');

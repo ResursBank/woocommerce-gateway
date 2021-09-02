@@ -41,8 +41,27 @@ function activateResursGatewayScripts()
     }
 }
 
+/**
+ * @since 2.2.58
+ */
+function rb_option_update_watch($option, $old, $new)
+{
+    if ($option === 'woocommerce_resurs-bank_settings') {
+        $oldFlow = $old['flowtype'];
+        $newFlow = $new['flowtype'];
+        if ($oldFlow !== $newFlow) {
+            // This option is unexistent in the configuration as it is currently more safe to not clean up
+            // paying sessions than doing it - since there may be customers in the middle of a signing procedure
+            // that may loose their sessions on their way back to the landing page.
+            global $wpdb;
+            $wpdb->query("TRUNCATE {$wpdb->prefix}woocommerce_sessions");
+        }
+    }
+}
+
 // Interference filters activated from wp-admin.
 add_filter('allow_resurs_run', 'allowResursRun', 10, 2);
 add_filter('prevent_resurs_run_on_post_type', 'resursPreventPostType', 10, 2);
 add_action('plugins_loaded', 'activateResursGatewayScripts');
 add_action('admin_notices', 'getRbAdminNotices');
+add_action('updated_option', 'rb_option_update_watch', 10, 3);
