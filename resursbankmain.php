@@ -5368,8 +5368,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $annuityFactorPrice = wc_get_price_to_display($product);
 
                 try {
-                    $methodList = null;
-                        $methodList = $flow->getPaymentMethodSpecific($annuityMethod);
+                    $methodList = $flow->getPaymentMethodSpecific($annuityMethod);
                     if (!is_array($methodList) && !is_object($methodList)) {
                         $methodList = [];
                     }
