@@ -5364,23 +5364,12 @@ function woocommerce_gateway_resurs_bank_init()
                 $customWidgetSetting = 0;
             }
 
-            $annuityFactorsOverride = null;
-            $annuityDurationOverride = null;
-
-            if (isResursDemo() && isset($_SESSION['rb_country']) && class_exists('CountryHandler')) {
-                $countryHandler = new CountryHandler();
-                $annuityFactorsOverride = $countryHandler->getAnnuityFactors();
-                $annuityDurationOverride = $countryHandler->getAnnuityFactorsDuration();
-            }
-
             if (!empty($annuityMethod)) {
                 $annuityFactorPrice = wc_get_price_to_display($product);
 
                 try {
                     $methodList = null;
-                    if (empty($annuityFactorsOverride)) {
                         $methodList = $flow->getPaymentMethodSpecific($annuityMethod);
-                    }
                     if (!is_array($methodList) && !is_object($methodList)) {
                         $methodList = [];
                     }
@@ -5388,18 +5377,9 @@ function woocommerce_gateway_resurs_bank_init()
                     if ((is_array($methodList) && count($methodList)) || is_object($methodList)) {
                         $allowAnnuity = true;
                     }
-                    // Make sure the payment method exists. If there is overriders from the demoshop here, we'd know exists on the hard coded values.
-                    if ($allowAnnuity || !empty($annuityFactorsOverride)) {
-                        if (!empty($annuityFactorsOverride)) {
-                            $annuityFactors = $annuityFactorsOverride;
-                        } else {
-                            $annuityFactors = getResursOption('resursCurrentAnnuityFactors');
-                        }
-                        if (!empty($annuityFactorsOverride)) {
-                            $annuityDuration = $annuityDurationOverride;
-                        } else {
-                            $annuityDuration = getResursOption('resursAnnuityDuration');
-                        }
+                    if ($allowAnnuity) {
+                        $annuityFactors = getResursOption('resursCurrentAnnuityFactors');
+                        $annuityDuration = getResursOption('resursAnnuityDuration');
                         $payFrom = $flow->getAnnuityPriceByDuration(
                             $annuityFactorPrice,
                             $annuityFactors,
@@ -5505,6 +5485,8 @@ function woocommerce_gateway_resurs_bank_init()
                                     )
                                 );
                             }
+
+                            echo $displayAnnuity;
                         }
                     }
                 } catch (Exception $annuityException) {
@@ -5517,7 +5499,6 @@ function woocommerce_gateway_resurs_bank_init()
                 }
             }
         }
-        echo $displayAnnuity;
     }
 
     /**
