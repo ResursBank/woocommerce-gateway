@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2021-09-02 10:39+0200\n"
-"PO-Revision-Date: 2021-09-02 10:39+0200\n"
+"POT-Creation-Date: 2021-09-06 10:18+0200\n"
+"PO-Revision-Date: 2021-09-06 10:18+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -160,7 +160,7 @@ msgstr "Välj det land som betalalternativen skall användas i"
 
 #: functions_settings.php:179
 msgid "Set checkout type"
-msgstr "Vald kassatyp."
+msgstr "Vald kassatyp"
 
 #: functions_settings.php:183
 msgid "Resurs Bank Checkout (RCO)."
