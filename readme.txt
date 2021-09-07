@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.8
 Requires PHP: 5.4
-Stable tag: 2.2.58
+Stable tag: 2.2.59
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.4.1
@@ -23,7 +23,8 @@ Requirements follows WooCommerce requirements, which means (as of june 2021) PHP
 
 = Compatibility =
 
-There are no longer any guarantees that this plugin is compatible with older versions of woocommerce. Our intentions is at least 3.4.0 and up. See the list below.
+There are no longer any guarantees that this plugin is compatible with older versions of woocommerce. Our intentions is
+at least 3.4.0 and up. See the list below.
 
  * Compatibility: WooCommerce - at least 3.4.0
  * Plugin verified with PHP version 7.0 - 8.0
@@ -31,12 +32,15 @@ There are no longer any guarantees that this plugin is compatible with older ver
 
 = Upgrade notice =
 
-When developing the plugin for Woocommerce, we usually follow the versions for WooCommerce and always upgrading when there are new versions out. That said, it is *normally* also safe to upgrade to the latest woocommerce.
+When developing the plugin for Woocommerce, we usually follow the versions for WooCommerce and always upgrading when
+there are new versions out. That said, it is *normally* also safe to upgrade to the latest woocommerce.
 
 
 == Can I upgrade WooCommerce with your plugin installed? ==
 
-If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually changes (after internal tests has been made) to match the base requirements, so you can upgrade without upgrade warnings.
+If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually
+changes (after internal tests has been made) to match the base requirements, so you can upgrade without upgrade
+warnings.
 
 
 = Requirements and content =
