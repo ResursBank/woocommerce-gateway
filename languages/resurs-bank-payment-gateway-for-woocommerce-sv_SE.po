@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2021-09-06 10:18+0200\n"
-"PO-Revision-Date: 2021-09-06 10:18+0200\n"
+"POT-Creation-Date: 2021-09-07 11:44+0200\n"
+"PO-Revision-Date: 2021-09-07 11:44+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -279,7 +279,7 @@ msgid "Coupons should be handled with vat"
 msgstr "Kuponger ska hanteras med moms"
 
 #: functions_settings.php:310 resursbank_settings.php:1561
-#: resursbankmain.php:6159 resursbankmain.php:6169
+#: resursbankmain.php:6142 resursbankmain.php:6152
 msgid "Yes"
 msgstr "Ja"
 
@@ -1402,7 +1402,7 @@ msgstr "Spara ovanstående data med hjälp av knappen nedan"
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
 
-#: resursbank_settings.php:1561 resursbankmain.php:6159 resursbankmain.php:6169
+#: resursbank_settings.php:1561 resursbankmain.php:6142 resursbankmain.php:6152
 msgid "No"
 msgstr "Nej"
 
@@ -1629,7 +1629,7 @@ msgstr "Kortnummer"
 msgid "Company government ID"
 msgstr "Organisationsnummer"
 
-#: resursbankmain.php:1946 resursbankmain.php:5503 resursbankmain.php:6283
+#: resursbankmain.php:1946 resursbankmain.php:5485 resursbankmain.php:6266
 msgid "Read more"
 msgstr "Läs mer"
 
@@ -2050,37 +2050,37 @@ msgstr "Resurs referens"
 msgid "Resurs Method"
 msgstr "Resurs method"
 
-#: resursbankmain.php:5429
+#: resursbankmain.php:5409
 #, php-format
 msgid "Part pay from %s per month"
 msgstr "Delbetala från %s per månad"
 
-#: resursbankmain.php:5490
+#: resursbankmain.php:5470
 #, php-format
 msgid ""
 "Test enabled: In production, this information is shown when the minimum "
-"amount is above <b>%s</b>."
+"payment amount is above <b>%s</b>. Currently the payment amount is %s."
 msgstr ""
-"Test aktiverat: I produktion visas denna information när minsta belopp "
-"överstiger <b>%s</b>."
+"Test aktiverat: I produktion visas denna information när minsta "
+"betalningsbeloppet överstiger <b>%s</b>. Just nu är betalningsbeloppet %s."
 
-#: resursbankmain.php:5514
+#: resursbankmain.php:5498
 msgid "Annuity factors can not be displayed for the moment"
 msgstr "Delbetalningsfaktorerna kan för närvarande inte visas"
 
-#: resursbankmain.php:5658
+#: resursbankmain.php:5641
 msgid "[Resurs Bank] Refund/cancellation sent to API successfully."
 msgstr "[Resurs Bank] updatePaymentReference godkändes efter en omkörning."
 
-#: resursbankmain.php:5750
+#: resursbankmain.php:5733
 msgid "Please wait while we process your order..."
 msgstr "Vänligen vänta medan vi hanterar din order..."
 
-#: resursbankmain.php:5772
+#: resursbankmain.php:5755
 msgid "Settings"
 msgstr "Inställningar"
 
-#: resursbankmain.php:5813
+#: resursbankmain.php:5796
 msgid ""
 "It seems this order has already been finalized from an external system - if "
 "your order is finished you may update it here aswell"
@@ -2088,7 +2088,7 @@ msgstr ""
 "Det ser ut som att ordern redan har blivit debiterad från ett externt system "
 "- om din order är klar kan du uppdatera den härifrån också"
 
-#: resursbankmain.php:5818
+#: resursbankmain.php:5801
 msgid ""
 "It seems this order has been instantly finalized due to the payment method "
 "type. This means that you probably must handle it manually."
@@ -2097,11 +2097,11 @@ msgstr ""
 "betalningsmetodens typ. Detta innebär att du förmodligen måste hantera den "
 "manuellt."
 
-#: resursbankmain.php:5916
+#: resursbankmain.php:5899
 msgid "Referenced data don't exist"
 msgstr "Datat du försöker hämta finns inte"
 
-#: resursbankmain.php:5921
+#: resursbankmain.php:5904
 msgid ""
 "This error might occur when for example a payment doesn't exist at Resurs "
 "Bank. Normally this happens when payments have failed or aborted before it "
@@ -2111,15 +2111,15 @@ msgstr ""
 "Bank. Normalt sker detta när betalningarna har misslyckats eller avbrutits "
 "innan den kan slutföras"
 
-#: resursbankmain.php:5932
+#: resursbankmain.php:5915
 msgid "The order was denied at Resurs Bank and therefore has not been created"
 msgstr "Ordern har nekats hos Resurs Bank och har därför inte skapats"
 
-#: resursbankmain.php:5938
+#: resursbankmain.php:5921
 msgid "This order failed or was cancelled by customer during external actions."
 msgstr "Köpet misslyckades eller avbröts av kund på extern plats."
 
-#: resursbankmain.php:5945
+#: resursbankmain.php:5928
 #, php-format
 msgid ""
 "This order has been cancelled during customer interactions. Returning URL "
@@ -2128,83 +2128,83 @@ msgstr ""
 "Den här ordern avbröts under kundens interaktioner. Return-URL sattes till "
 "%s."
 
-#: resursbankmain.php:5960
+#: resursbankmain.php:5943
 msgid ""
 "Following error ocurred when we tried to fetch information about the payment"
 msgstr "Följande fel uppstod när vi försökte hämta information om betalningen"
 
-#: resursbankmain.php:6003
+#: resursbankmain.php:5986
 #, php-format
 msgid "Incomplete. The fallback tried to use %d."
 msgstr "Inkomplett. Backuplösningen försökte använda %d."
 
-#: resursbankmain.php:6023
+#: resursbankmain.php:6006
 msgid "Not set"
 msgstr "Inte satt"
 
-#: resursbankmain.php:6025 resursbankmain.php:6163
+#: resursbankmain.php:6008 resursbankmain.php:6146
 msgid "Frozen"
 msgstr "Frusen"
 
-#: resursbankmain.php:6051
+#: resursbankmain.php:6034
 #, php-format
 msgid "Status from Resurs Bank: %s."
 msgstr "Status från Resurs Bank: %s."
 
-#: resursbankmain.php:6088
+#: resursbankmain.php:6071
 msgid "Payment ID"
 msgstr "Betalnings-id"
 
-#: resursbankmain.php:6095
+#: resursbankmain.php:6078
 msgid "Payment method ID"
 msgstr "Betalmetodens id"
 
-#: resursbankmain.php:6104
+#: resursbankmain.php:6087
 msgid "Store ID"
 msgstr "Butiks-ID (Store ID)"
 
-#: resursbankmain.php:6113
+#: resursbankmain.php:6096
 msgid "Payment method name"
 msgstr "Betalmetodens namn"
 
-#: resursbankmain.php:6122
+#: resursbankmain.php:6105
 msgid "Payment method type"
 msgstr "Betalmetodens typ"
 
-#: resursbankmain.php:6132
+#: resursbankmain.php:6115
 msgid "Payment amount"
 msgstr "Orderbelopp"
 
-#: resursbankmain.php:6144
+#: resursbankmain.php:6127
 msgid "Payment limit"
 msgstr "Betalningens limit"
 
-#: resursbankmain.php:6153
+#: resursbankmain.php:6136
 msgid "Fraud"
 msgstr "Bedrägeri"
 
-#: resursbankmain.php:6174
+#: resursbankmain.php:6157
 msgid "Customer name"
 msgstr "Kundens namn"
 
-#: resursbankmain.php:6185
+#: resursbankmain.php:6168
 msgid "Delivery address"
 msgstr "Leveransadress"
 
-#: resursbankmain.php:6523
+#: resursbankmain.php:6506
 msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
 msgstr ""
 "Borttagning av orderrad: Resurs Bank API anropades för ta bort orderrader"
 
-#: resursbankmain.php:7161
+#: resursbankmain.php:7144
 msgid "There are currently no payment methods available"
 msgstr "Det finns för närvarande inga betalningsmetoder tillgängliga"
 
-#: resursbankmain.php:7450
+#: resursbankmain.php:7433
 msgid "System maintenance in progress!"
 msgstr "Systemunderhåll pågår!"
 
-#: resursbankmain.php:7452
+#: resursbankmain.php:7435
 msgid ""
 "This store is currently in a temporary maintenance mode. Please wait a "
 "minute and try again."

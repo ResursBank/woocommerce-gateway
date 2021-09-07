@@ -5390,6 +5390,7 @@ function woocommerce_gateway_resurs_bank_init()
                         } else {
                             $paymentLimit = 15;
                         }
+                        $chosenPaymentLimit = $paymentLimit;
 
                         if (isResursTest()) {
                             // Clean out lowest limit in test and always show this.
@@ -5466,9 +5467,11 @@ function woocommerce_gateway_resurs_bank_init()
                                         '<div class="resursAnnuityStyle">%s</div>',
                                         sprintf(
                                             __(
-                                                'Test enabled: In production, this information is shown when the minimum amount is above <b>%s</b>.',
+                                                'Test enabled: In production, this information is shown when the ' .
+                                                'minimum payment amount is above <b>%s</b>. Currently the payment amount is %s.',
                                                 'resurs-bank-payment-gateway-for-woocommerce'
                                             ),
+                                            $chosenPaymentLimit,
                                             $realPaymentLimit
                                         )
                                     );

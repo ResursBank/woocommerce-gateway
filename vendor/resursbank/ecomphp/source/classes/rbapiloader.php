@@ -3225,7 +3225,7 @@ class ResursBank
         }
         if (is_array($factorObject)) {
             foreach ($factorObject as $factorObjectData) {
-                if (isset($factorObjectData->factor) && (int)$factorObjectData->duration === (int)$duration) {
+                if ($factorObjectData->duration === $duration && isset($factorObjectData->factor)) {
                     return (float)$factorObjectData->factor;
                 }
             }
