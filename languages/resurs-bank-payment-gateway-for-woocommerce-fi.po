@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
 "POT-Creation-Date: 2021-09-06 11:37+0200\n"
-"PO-Revision-Date: 2021-09-06 11:39+0200\n"
+"PO-Revision-Date: 2021-09-07 11:25+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: fi_FI\n"
@@ -1732,7 +1732,7 @@ msgstr "Henkilötunnus"
 
 #: resursbankmain.php:4738
 msgid "Get address"
-msgstr "Get address"
+msgstr "Hae osoite"
 
 #: resursbankmain.php:4875
 msgid "Enter social security number"
@@ -1988,15 +1988,15 @@ msgstr ""
 
 #: resursbankmain.php:6134
 msgid "Fraud"
-msgstr ""
+msgstr "Petos"
 
 #: resursbankmain.php:6155
 msgid "Customer name"
-msgstr ""
+msgstr "Asiakkaan nimi"
 
 #: resursbankmain.php:6166
 msgid "Delivery address"
-msgstr ""
+msgstr "Toimitusosoite"
 
 #: resursbankmain.php:6504
 msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
