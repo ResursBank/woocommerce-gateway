@@ -73,7 +73,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20210818');
+    define('ECOMPHP_MODIFY_DATE', '20210906');
 }
 
 /**
@@ -84,7 +84,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.59
+ * @version 1.3.60
  */
 class ResursBank
 {
@@ -3225,7 +3225,7 @@ class ResursBank
         }
         if (is_array($factorObject)) {
             foreach ($factorObject as $factorObjectData) {
-                if ($factorObjectData->duration === $duration && isset($factorObjectData->factor)) {
+                if (isset($factorObjectData->factor) && (int)$factorObjectData->duration === (int)$duration) {
                     return (float)$factorObjectData->factor;
                 }
             }

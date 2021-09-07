@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "resursbank/ecomphp",
-            "version": "1.3.59",
-            "version_normalized": "1.3.59.0",
+            "version": "1.3.60",
+            "version_normalized": "1.3.60.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ResursBank/ecomphp.git",
-                "reference": "6c7dd2eb3d5d261dfba8b72cab59069243d909d0"
+                "reference": "7d68223108b77af6c9e57f6355285a67b13c9878"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/6c7dd2eb3d5d261dfba8b72cab59069243d909d0",
-                "reference": "6c7dd2eb3d5d261dfba8b72cab59069243d909d0",
+                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/7d68223108b77af6c9e57f6355285a67b13c9878",
+                "reference": "7d68223108b77af6c9e57f6355285a67b13c9878",
                 "shasum": ""
             },
             "require": {
@@ -20,7 +20,7 @@
                 "tornevall/tornelib-php-netcurl": "^6.1",
                 "tornevall/tornelib-php-network": "^6.1"
             },
-            "time": "2021-08-18T11:35:33+00:00",
+            "time": "2021-09-06T13:07:48+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -44,7 +44,7 @@
             "description": "Resurs Bank AB ecommerce library for PHP.",
             "support": {
                 "issues": "https://github.com/ResursBank/ecomphp/issues",
-                "source": "https://github.com/ResursBank/ecomphp/tree/1.3.59"
+                "source": "https://github.com/ResursBank/ecomphp/tree/1.3.60"
             },
             "install-path": "../resursbank/ecomphp"
         },
