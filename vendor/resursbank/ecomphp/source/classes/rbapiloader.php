@@ -3190,7 +3190,6 @@ class ResursBank
      * @param $totalAmount
      * @param $paymentMethodIdOrFactorObject
      * @param $duration
-     *
      * @return float
      * @throws Exception
      * @since 1.1.24

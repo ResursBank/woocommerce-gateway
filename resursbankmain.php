@@ -5397,8 +5397,8 @@ function woocommerce_gateway_resurs_bank_init()
                             $paymentLimit = 0;
                         }
 
-                        $realPaymentLimit = $paymentLimit;
-                        if ($payFrom >= $paymentLimit || $payFrom === 0) {
+                        //$realPaymentLimit = $paymentLimit;
+                        if ((int)$payFrom >= $paymentLimit || $payFrom === 0) {
                             $payFromAnnuity = wc_price($payFrom);
                             $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
                             $onclick = 'window.open(\'' . $costOfPurchase . '\')';
@@ -5472,7 +5472,7 @@ function woocommerce_gateway_resurs_bank_init()
                                                 'resurs-bank-payment-gateway-for-woocommerce'
                                             ),
                                             $chosenPaymentLimit,
-                                            $realPaymentLimit
+                                            $payFrom
                                         )
                                     );
                                 }
