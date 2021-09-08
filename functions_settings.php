@@ -591,9 +591,9 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'description' => __(
-                        'For variation products that supports the ability to update annuity factors on fly, but do ' .
-                        'not run with the standard containers for where it is usually located you can tweak the ' .
-                        'plugin to use another container to scan (Example: #main).',
+                        'For variation products that supports the ability to update part payment data on fly in the ' .
+                        'layout, but do dont use the standard container for where the data is used to be located, ' .
+                        'you can tweak the plugin to use another container to scan from (Example: #main).',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'text',
