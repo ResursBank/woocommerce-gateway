@@ -3975,7 +3975,8 @@ function woocommerce_gateway_resurs_bank_init()
          * @param false $return
          * @return string|void
          */
-        public static function get_annuity_html($sum = 0) {
+        public static function get_annuity_html($sum = 0)
+        {
             $displayAnnuity = '';
             $annuityFactorPrice = $sum;
             if ((int)$sum === 0 && isset($_REQUEST['sum']) && (int)$_REQUEST['sum']) {
@@ -4133,7 +4134,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             header('Content-Type: application/json;charset=UTF-8');
             echo json_encode([
-                'html' => $return
+                'html' => $return,
             ]);
 
             die;
@@ -5108,8 +5109,11 @@ function woocommerce_gateway_resurs_bank_init()
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
             'showCheckoutOverlay' => getResursOption('showCheckoutOverlay'),
-            'variationsContainer' => apply_filters('resurs_variation_container', getResursOption('variationsContainer')),
-            'inProductPage' => is_product()
+            'variationsContainer' => apply_filters(
+                    'resurs_variation_container',
+                getResursOption('variationsContainer')
+            ),
+            'inProductPage' => is_product(),
         ];
 
         $oneRandomValue = null;
@@ -5517,7 +5521,6 @@ function woocommerce_gateway_resurs_bank_init()
             }
         }
     }
-
 
 
     /**
