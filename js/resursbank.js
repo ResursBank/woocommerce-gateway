@@ -84,8 +84,6 @@ function resursIsOnlyNatural() {
 
 $RB(document).ready(function ($) {
     if (resursvars["inProductPage"] === "1") {
-        //$annuityMethod = trim(getResursOption('resursAnnuityMethod'));
-
         jQuery('form.variations_form .variation_id').change(function () {
             if (this.value !== '') {
                 var json = jQuery(this).closest('.variations_form').data('product_variations')
