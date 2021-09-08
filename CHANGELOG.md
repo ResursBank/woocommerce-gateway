@@ -1,11 +1,11 @@
 # 2.2.60
 
-[WOO-567](https://resursbankplugins.atlassian.net/browse/WOO-567) Variation Products and annuity factors
+* [WOO-567](https://resursbankplugins.atlassian.net/browse/WOO-567) Variation Products and annuity factors
 
 # 2.2.59
 
-[WOO-566](https://resursbankplugins.atlassian.net/browse/WOO-566) annuityfactors not calculating payFrom properly
-[WOO-568](https://resursbankplugins.atlassian.net/browse/WOO-568) Suomi translations update for "Read more"
+* [WOO-566](https://resursbankplugins.atlassian.net/browse/WOO-566) annuityfactors not calculating payFrom properly
+* [WOO-568](https://resursbankplugins.atlassian.net/browse/WOO-568) Suomi translations update for "Read more"
 
 # 2.2.58
 
