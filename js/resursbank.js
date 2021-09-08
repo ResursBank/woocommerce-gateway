@@ -5,6 +5,28 @@ var $RB = jQuery.noConflict();
 var resursReloadRequired = false;
 var rcoFacelift = false;
 
+/**
+ * Fetch new annuity factor html blocks.
+ * @param newSum
+ */
+function getRbAnnuityUpdate(newSum) {
+    $RB.ajax({
+        type: 'GET',
+        url: ajax_object.ajax_url,
+        data: {
+            'action': 'get_annuity_html',
+            'sum': newSum,
+        }
+    }).done(function (info) {
+        $RB('.resursPartPaymentInfo').html(info.html);
+    });
+}
+
+/**
+ * Facelift variable key fetcher.
+ * @param key
+ * @returns {*}
+ */
 function getRcoRemote(key) {
     let returnData;
     if (typeof rcoremote !== 'undefined' && typeof rcoremote[key] !== 'undefined') {
@@ -61,6 +83,27 @@ function resursIsOnlyNatural() {
 }
 
 $RB(document).ready(function ($) {
+    if (resursvars["inProductPage"] === "1") {
+        //$annuityMethod = trim(getResursOption('resursAnnuityMethod'));
+        jQuery('form.variations_form .variation_id').change(function () {
+            if (this.value !== '') {
+                var startContainer = resursvars["variationsContainer"];
+                var json = jQuery(startContainer + ' .variations_form').data('product_variations');
+                try {
+                    var result = json.find((item) => item.variation_id == this.value);
+                    if (typeof result !== 'undefined') {
+                        var newPrice = result.display_price;
+                        getRbAnnuityUpdate(newPrice)
+                    }
+                } catch (e) {
+                    console.log('Resurs Annuity Factors Widget Error -- Unable to fetch .variations_form: ' + e.message);
+                    console.log('Variants container currently set to "' + startContainer + '"');
+                }
+            }
+        });
+    }
+
+
     var rb_simpl_checkout_form = $RB('form.checkout');
     if (typeof rb_simpl_checkout_form !== 'undefined' &&
         typeof resursvars !== 'undefined' &&

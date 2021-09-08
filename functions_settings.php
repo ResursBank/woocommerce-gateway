@@ -585,6 +585,20 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'text',
                     'default' => '',
                 ],
+                'variationsContainer' => [
+                    'title' => __(
+                        'Container element name for variant prices',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'For variation products that supports the ability to update annuity factors on fly, but do ' .
+                        'not run with the standard containers for where it is usually located you can tweak the ' .
+                        'plugin to use another container to scan (Example: #main).',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'text',
+                    'default' => '',
+                ],
                 'callbackUpdateInterval' => [
                     'title' => __('Callback update interval', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __(

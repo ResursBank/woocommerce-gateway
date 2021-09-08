@@ -3972,6 +3972,174 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
+         * @param false $return
+         * @return string|void
+         */
+        public static function get_annuity_html($sum = 0) {
+            $displayAnnuity = '';
+            $annuityFactorPrice = $sum;
+            if ((int)$sum === 0 && isset($_REQUEST['sum']) && (int)$_REQUEST['sum']) {
+                $annuityFactorPrice = (float)$_REQUEST['sum'];
+            }
+
+            /** @var $flow ResursBank */
+            $flow = initializeResursFlow();
+            $annuityMethod = trim(getResursOption('resursAnnuityMethod'));
+
+            $customWidgetSetting = intval(getResursOption('partPayWidgetPage'));
+            if ($customWidgetSetting <= 1) {
+                $customWidgetSetting = 0;
+            }
+
+            if (!empty($annuityMethod)) {
+                try {
+                    $methodList = $flow->getPaymentMethodSpecific($annuityMethod);
+                    if (!is_array($methodList) && !is_object($methodList)) {
+                        $methodList = [];
+                    }
+                    $allowAnnuity = false;
+                    if ((is_array($methodList) && count($methodList)) || is_object($methodList)) {
+                        $allowAnnuity = true;
+                    }
+                    if ($allowAnnuity) {
+                        $annuityFactors = getResursOption('resursCurrentAnnuityFactors');
+                        $annuityDuration = getResursOption('resursAnnuityDuration');
+                        $payFrom = $flow->getAnnuityPriceByDuration(
+                            $annuityFactorPrice,
+                            $annuityFactors,
+                            $annuityDuration
+                        );
+                        $currentCountry = getResursOption('country');
+                        if ($currentCountry !== 'FI') {
+                            $paymentLimit = 150;
+                        } else {
+                            $paymentLimit = 15;
+                        }
+                        $chosenPaymentLimit = $paymentLimit;
+
+                        if (isResursTest()) {
+                            // Clean out lowest limit in test and always show this.
+                            $paymentLimit = 0;
+                        }
+
+                        //$realPaymentLimit = $paymentLimit;
+                        if ((int)$payFrom >= $paymentLimit || $payFrom === 0) {
+                            $payFromAnnuity = wc_price($payFrom);
+                            $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
+                            $onclick = 'window.open(\'' . $costOfPurchase . '\')';
+
+                            // https://test.resurs.com/docs/pages/viewpage.action?pageId=7208965#Hooks/filtersv2.2-Filter:Partpaymentwidgetstring
+                            $defaultAnnuityString = sprintf(
+                                __(
+                                    'Part pay from %s per month',
+                                    'resurs-bank-payment-gateway-for-woocommerce'
+                                ),
+                                $payFromAnnuity
+                            );
+                            if (!$payFrom) {
+                                $defaultAnnuityString = '';
+                                $pipeString = '';
+                            } else {
+                                $pipeString = ' | ';
+                            }
+                            $useAnnuityString = $defaultAnnuityString;
+                            $customAnnuityString = apply_filters(
+                                'resursbank_custom_annuity_string',
+                                $defaultAnnuityString,
+                                $payFromAnnuity
+                            );
+                            if (!empty($customAnnuityString)) {
+                                $useAnnuityString = $customAnnuityString;
+                            }
+
+                            if ($customWidgetSetting > 0) {
+                                /** @var WP_Post $customWidgetPost */
+                                $customWidgetPost = get_post($customWidgetSetting);
+
+                                $tags = [
+                                    '/\[costOfPurchase\]/i',
+                                    '/\[payFromAnnuity\]/i',
+                                    '/\[defaultAnnuityString\]/i',
+                                    '/\[paymentLimit\]/i',
+                                    '/\[annuityFactors\]/i',
+                                    '/\[annuityDuration\]/i',
+                                    '/\[payFrom\]/i',
+                                ];
+                                $replaceWith = [
+                                    $costOfPurchase,
+                                    $payFromAnnuity,
+                                    $defaultAnnuityString,
+                                    $paymentLimit,
+                                    print_r($annuityFactors, true),
+                                    $annuityDuration,
+                                    $payFrom,
+                                ];
+
+                                $postContent = preg_replace(
+                                    $tags,
+                                    $replaceWith,
+                                    $customWidgetPost->post_content
+                                );
+
+                                $displayAnnuity = sprintf(
+                                    '<div class="resursPartPaymentInfo">%s</div>',
+                                    $postContent
+                                );
+                            } else {
+                                $displayAnnuity .= '<div id="resursAnnuityFactorHtml" class="resursPartPaymentInfo">';
+                                if (isResursTest()) {
+                                    $displayAnnuity .= sprintf(
+                                        '<div class="resursAnnuityStyle">%s</div>',
+                                        sprintf(
+                                            __(
+                                                'Test enabled: In production, this information is shown when the ' .
+                                                'minimum payment amount is above <b>%s</b>. Currently the payment amount is %s.',
+                                                'resurs-bank-payment-gateway-for-woocommerce'
+                                            ),
+                                            $chosenPaymentLimit,
+                                            $payFrom
+                                        )
+                                    );
+                                }
+                                $displayAnnuity .= sprintf(
+                                    '<span>%s</span>%s<span class="resursPartPayInfoLink" onclick="%s">%s</span></div>',
+                                    $useAnnuityString,
+                                    $pipeString,
+                                    $onclick,
+                                    __(
+                                        'Read more',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
+                            }
+
+                            $return = $displayAnnuity;
+                        }
+                    }
+                } catch (Exception $annuityException) {
+                    // In the multilingual demoshop there might be exceptions when the session is lost.
+                    // Exceptions may also occur there, when the wrong payment method is checked and wrong language is chosen.
+                    $displayAnnuity .= __(
+                            'Annuity factors can not be displayed for the moment',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ) . ': ' . $annuityException->getMessage();
+                    $return = $displayAnnuity;
+                }
+            }
+
+            if (!is_ajax()) {
+                return $return;
+            }
+
+            header('Content-Type: application/json;charset=UTF-8');
+            echo json_encode([
+                'html' => $return
+            ]);
+
+            die;
+        }
+
+        /**
          * Get address for a specific government ID
          *
          * @return void Prints the address data as JSON
@@ -4940,6 +5108,8 @@ function woocommerce_gateway_resurs_bank_init()
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
             'showCheckoutOverlay' => getResursOption('showCheckoutOverlay'),
+            'variationsContainer' => apply_filters('resurs_variation_container', getResursOption('variationsContainer')),
+            'inProductPage' => is_product()
         ];
 
         $oneRandomValue = null;
@@ -5348,158 +5518,21 @@ function woocommerce_gateway_resurs_bank_init()
         }
     }
 
+
+
+    /**
+     * @since A while.
+     */
     function resurs_annuity_factors()
     {
         global $product;
 
         /** @var $product WC_Product_Simple */
-        $displayAnnuity = '';
         $annuityMethod = trim(getResursOption('resursAnnuityMethod'));
         if (is_object($product) && !empty($annuityMethod)) {
-            /** @var $flow ResursBank */
-            $flow = initializeResursFlow();
+            $annuityFactorPrice = wc_get_price_to_display($product);
 
-            $customWidgetSetting = intval(getResursOption('partPayWidgetPage'));
-            if ($customWidgetSetting <= 1) {
-                $customWidgetSetting = 0;
-            }
-
-            if (!empty($annuityMethod)) {
-                $annuityFactorPrice = wc_get_price_to_display($product);
-
-                try {
-                    $methodList = $flow->getPaymentMethodSpecific($annuityMethod);
-                    if (!is_array($methodList) && !is_object($methodList)) {
-                        $methodList = [];
-                    }
-                    $allowAnnuity = false;
-                    if ((is_array($methodList) && count($methodList)) || is_object($methodList)) {
-                        $allowAnnuity = true;
-                    }
-                    if ($allowAnnuity) {
-                        $annuityFactors = getResursOption('resursCurrentAnnuityFactors');
-                        $annuityDuration = getResursOption('resursAnnuityDuration');
-                        $payFrom = $flow->getAnnuityPriceByDuration(
-                            $annuityFactorPrice,
-                            $annuityFactors,
-                            $annuityDuration
-                        );
-                        $currentCountry = getResursOption('country');
-                        if ($currentCountry !== 'FI') {
-                            $paymentLimit = 150;
-                        } else {
-                            $paymentLimit = 15;
-                        }
-                        $chosenPaymentLimit = $paymentLimit;
-
-                        if (isResursTest()) {
-                            // Clean out lowest limit in test and always show this.
-                            $paymentLimit = 0;
-                        }
-
-                        //$realPaymentLimit = $paymentLimit;
-                        if ((int)$payFrom >= $paymentLimit || $payFrom === 0) {
-                            $payFromAnnuity = wc_price($payFrom);
-                            $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
-                            $onclick = 'window.open(\'' . $costOfPurchase . '\')';
-
-                            // https://test.resurs.com/docs/pages/viewpage.action?pageId=7208965#Hooks/filtersv2.2-Filter:Partpaymentwidgetstring
-                            $defaultAnnuityString = sprintf(
-                                __(
-                                    'Part pay from %s per month',
-                                    'resurs-bank-payment-gateway-for-woocommerce'
-                                ),
-                                $payFromAnnuity
-                            );
-                            if (!$payFrom) {
-                                $defaultAnnuityString = '';
-                                $pipeString = '';
-                            } else {
-                                $pipeString = ' | ';
-                            }
-                            $useAnnuityString = $defaultAnnuityString;
-                            $customAnnuityString = apply_filters(
-                                'resursbank_custom_annuity_string',
-                                $defaultAnnuityString,
-                                $payFromAnnuity
-                            );
-                            if (!empty($customAnnuityString)) {
-                                $useAnnuityString = $customAnnuityString;
-                            }
-
-                            if ($customWidgetSetting > 0) {
-                                /** @var WP_Post $customWidgetPost */
-                                $customWidgetPost = get_post($customWidgetSetting);
-
-                                $tags = [
-                                    '/\[costOfPurchase\]/i',
-                                    '/\[payFromAnnuity\]/i',
-                                    '/\[defaultAnnuityString\]/i',
-                                    '/\[paymentLimit\]/i',
-                                    '/\[annuityFactors\]/i',
-                                    '/\[annuityDuration\]/i',
-                                    '/\[payFrom\]/i',
-                                ];
-                                $replaceWith = [
-                                    $costOfPurchase,
-                                    $payFromAnnuity,
-                                    $defaultAnnuityString,
-                                    $paymentLimit,
-                                    print_r($annuityFactors, true),
-                                    $annuityDuration,
-                                    $payFrom,
-                                ];
-
-                                $postContent = preg_replace(
-                                    $tags,
-                                    $replaceWith,
-                                    $customWidgetPost->post_content
-                                );
-
-                                $displayAnnuity = sprintf(
-                                    '<div class="resursPartPaymentInfo">%s</div>',
-                                    $postContent
-                                );
-                            } else {
-                                $displayAnnuity .= '<div class="resursPartPaymentInfo">';
-                                if (isResursTest()) {
-                                    $displayAnnuity .= sprintf(
-                                        '<div class="resursAnnuityStyle">%s</div>',
-                                        sprintf(
-                                            __(
-                                                'Test enabled: In production, this information is shown when the ' .
-                                                'minimum payment amount is above <b>%s</b>. Currently the payment amount is %s.',
-                                                'resurs-bank-payment-gateway-for-woocommerce'
-                                            ),
-                                            $chosenPaymentLimit,
-                                            $payFrom
-                                        )
-                                    );
-                                }
-                                $displayAnnuity .= sprintf(
-                                    '<span>%s</span>%s<span class="resursPartPayInfoLink" onclick="%s">%s</span></div>',
-                                    $useAnnuityString,
-                                    $pipeString,
-                                    $onclick,
-                                    __(
-                                        'Read more',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    )
-                                );
-                            }
-
-                            echo $displayAnnuity;
-                        }
-                    }
-                } catch (Exception $annuityException) {
-                    // In the multilingual demoshop there might be exceptions when the session is lost.
-                    // Exceptions may also occur there, when the wrong payment method is checked and wrong language is chosen.
-                    $displayAnnuity .= __(
-                            'Annuity factors can not be displayed for the moment',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . ': ' . $annuityException->getMessage();
-                }
-            }
+            echo WC_Resurs_Bank::get_annuity_html($annuityFactorPrice);
         }
     }
 
@@ -5699,6 +5732,8 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('admin_enqueue_scripts', 'admin_enqueue_script');
     add_action('wp_ajax_get_address_ajax', 'WC_Resurs_Bank::get_address_ajax');
     add_action('wp_ajax_nopriv_get_address_ajax', 'WC_Resurs_Bank::get_address_ajax');
+    add_action('wp_ajax_get_annuity_html', 'WC_Resurs_Bank::get_annuity_html');
+    add_action('wp_ajax_nopriv_get_annuity_html', 'WC_Resurs_Bank::get_annuity_html');
     add_action('wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax');
     add_action('wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax');
     add_action('wp_ajax_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype');
