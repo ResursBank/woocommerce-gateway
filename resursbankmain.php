@@ -5109,10 +5109,6 @@ function woocommerce_gateway_resurs_bank_init()
             'resursSpinnerLocal' => plugin_dir_url(__FILE__) . 'spinnerLocal.gif',
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
             'showCheckoutOverlay' => getResursOption('showCheckoutOverlay'),
-            'variationsContainer' => apply_filters(
-                    'resurs_variation_container',
-                getResursOption('variationsContainer')
-            ),
             'inProductPage' => is_product(),
         ];
 
