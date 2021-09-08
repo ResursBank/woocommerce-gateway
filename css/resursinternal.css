@@ -36,7 +36,8 @@
 
 .resursPaymentInfo td.label {
     font-weight: bold;
-    border-top: 1px dotted grey;
+    /*border-top: 1px dotted grey;*/
+    border-top: none;
     vertical-align: top;
     color: #FFFFFF !important;
 }
@@ -363,8 +364,8 @@ a.labelBoot:focus, a.labelBoot:hover {
 .resursPartPaymentInfo {
     margin: 5px;
     padding: 5px;
-    border-top: 1px solid lightgrey;
-    border-bottom: 1px solid lightgrey;
+    /*border-top: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;*/
 }
 
 .resursPaymentDemoRestrictionView {
@@ -418,8 +419,10 @@ a.labelBoot:focus, a.labelBoot:hover {
 .priceinfoframe {
     height: 800px !important;
 }
+
 .priceinfotablink {
 }
+
 .priceinfotab {
 }
 

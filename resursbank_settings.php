@@ -1356,6 +1356,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     foreach ($pagelist as $page) {
                         $widgetPages[$page->ID] = $page->post_title;
                     }
+                    echo $this->setTextBox('variationsContainer', $namespace);
                     echo $this->setDropDown(
                         'partPayWidgetPage',
                         $namespace,
