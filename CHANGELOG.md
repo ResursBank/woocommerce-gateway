@@ -1,3 +1,12 @@
+# 2.2.60
+
+[WOO-567](https://resursbankplugins.atlassian.net/browse/WOO-567) Variation Products and annuity factors
+
+# 2.2.59
+
+[WOO-566](https://resursbankplugins.atlassian.net/browse/WOO-566) annuityfactors not calculating payFrom properly
+[WOO-568](https://resursbankplugins.atlassian.net/browse/WOO-568) Suomi translations update for "Read more"
+
 # 2.2.58
 
 * [WOO-565](https://resursbankplugins.atlassian.net/browse/WOO-565) Byte mellan simpla och rco gör att fler formulär dyker upp i kassan än vad som behövs
