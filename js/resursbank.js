@@ -86,16 +86,17 @@ $RB(document).ready(function ($) {
     if (resursvars["inProductPage"] === "1") {
         jQuery('form.variations_form .variation_id').change(function () {
             if (this.value !== '') {
-                var json = jQuery(this).closest('.variations_form').data('product_variations')
                 try {
-                    var result = json.find((item) => item.variation_id == this.value);
-                    if (typeof result !== 'undefined') {
-                        var newPrice = result.display_price;
-                        getRbAnnuityUpdate(newPrice)
+                    var json = jQuery(this).closest('.variations_form').data('product_variations');
+                    if (typeof json.find === 'function') {
+                        var result = json.find((item) => item.variation_id == this.value);
+                        if (typeof result !== 'undefined') {
+                            var newPrice = result.display_price;
+                            getRbAnnuityUpdate(newPrice)
+                        }
                     }
                 } catch (e) {
                     console.log('Resurs Annuity Factors Widget Error -- Unable to fetch .variations_form: ' + e.message);
-                    console.log('Variants container currently set to "' + startContainer + '"');
                 }
             }
         });
