@@ -73,7 +73,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20210906');
+    define('ECOMPHP_MODIFY_DATE', '20210909');
 }
 
 /**
@@ -84,7 +84,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.60
+ * @version 1.3.61
  */
 class ResursBank
 {
@@ -3190,6 +3190,7 @@ class ResursBank
      * @param $totalAmount
      * @param $paymentMethodIdOrFactorObject
      * @param $duration
+     *
      * @return float
      * @throws Exception
      * @since 1.1.24
@@ -5311,11 +5312,11 @@ class ResursBank
      *
      * @param string $articleNumberOrId
      * @param string $description
-     * @param int $unitAmountWithoutVat
+     * @param int|float|double $unitAmountWithoutVat
      * @param int $vatPct
      * @param string $unitMeasure
      * @param string $articleType ORDER_LINE, DISCOUNT, SHIPPING_FEE
-     * @param int $quantity
+     * @param int|float|double $quantity
      * @throws Exception
      * @since 1.0.2
      * @since 1.1.2
