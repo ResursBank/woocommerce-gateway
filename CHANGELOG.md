@@ -1,3 +1,7 @@
+# 2.2.61
+
+* [WOO-570](https://resursbankplugins.atlassian.net/browse/WOO-570) Resurs Annuity Factors Widget Error -- Unable to fetch .variations\_form: json.find is not a function
+
 # 2.2.60
 
 * [WOO-567](https://resursbankplugins.atlassian.net/browse/WOO-567) Variation Products and annuity factors

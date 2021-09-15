@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.8
 Requires PHP: 5.4
-Stable tag: 2.2.60
+Stable tag: 2.2.61
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.4.1
@@ -88,6 +88,10 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 
 == Changelog ==
+
+In this release:
+
+* [WOO-570](https://resursbankplugins.atlassian.net/browse/WOO-570) Resurs Annuity Factors Widget Error -- Unable to fetch .variations\_form: json.find is not a function
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
