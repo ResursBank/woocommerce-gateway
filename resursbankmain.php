@@ -942,7 +942,7 @@ function woocommerce_gateway_resurs_bank_init()
             $order->add_order_note(
                 sprintf(
                     __(
-                        '[Resurs Bank] Unhandled callback %s received (Method %s). Additional result flag: %s.',
+                        '[Resurs Bank] Callback %s received notice (Method %s). Additional result flag: %s.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     $event_type,
@@ -1100,18 +1100,39 @@ function woocommerce_gateway_resurs_bank_init()
                     if ($currentStatus !== 'cancelled') {
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
                         $hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
-                        if ($optionReduceOrderStock && empty($hasReduceStock)) {
-                            update_post_meta($orderId, 'hasReduceStock', time());
-                            $order->add_order_note(
-                                __(
-                                    '[Resurs Bank] Stock reducing requested to be handled by Resurs Bank (Callback).',
-                                    'resurs-bank-payment-gateway-for-woocommerce'
-                                )
-                            );
-                            if (isWooCommerce3()) {
-                                wc_reduce_stock_levels($order->get_id());
+
+                        resursEventLogger(
+                            sprintf(
+                                'Callback BOOKED received. Stock reduction is %s. ' .
+                                'Current status (hasReduceStock) for reduction is %s.',
+                                $optionReduceOrderStock ? 'Active' : 'Disabled',
+                                $hasReduceStock ? 'Already Handled.' : 'Not handled.'
+                            )
+                        );
+
+                        if ($optionReduceOrderStock) {
+                            if (empty($hasReduceStock)) {
+                                resursEventLogger(
+                                    'Callback BOOKED received. Plugin is set to handle stock reduction. ' .
+                                    'Metadata (hasReduceStock) is not yet set. This is the first time this part is reached.'
+                                );
+                                update_post_meta($orderId, 'hasReduceStock', time());
+                                $order->add_order_note(
+                                    __(
+                                        '[Resurs Bank] Stock reducing requested to be handled by Resurs Bank (Callback).',
+                                        'resurs-bank-payment-gateway-for-woocommerce'
+                                    )
+                                );
+                                if (isWooCommerce3()) {
+                                    wc_reduce_stock_levels($order->get_id());
+                                } else {
+                                    $order->reduce_order_stock();
+                                }
                             } else {
-                                $order->reduce_order_stock();
+                                resursEventLogger(
+                                    'Callback BOOKED received. Plugin is set to handle stock reduction, but ' .
+                                    'stock has already been marked as handled. Reduction skipped.'
+                                );
                             }
                         }
                         $statusValue = $this->updateOrderByResursPaymentStatus(
@@ -2443,12 +2464,32 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->update_status('processing');
                     $optionReduceOrderStock = getResursOption('reduceOrderStock');
                     $hasReduceStock = get_post_meta($order_id, 'hasReduceStock');
-                    if ($optionReduceOrderStock && empty($hasReduceStock)) {
-                        update_post_meta($order_id, 'hasReduceStock', time());
-                        if (isWooCommerce3()) {
-                            wc_reduce_stock_levels($order_id);
+                    resursEventLogger(
+                        sprintf(
+                            'Callback BOOKED received. Stock reduction is %s. ' .
+                            'Current status (hasReduceStock) for reduction is %s.',
+                            $optionReduceOrderStock ? 'Active' : 'Disabled',
+                            $hasReduceStock ? 'Already Handled.' : 'Not handled.'
+                        )
+                    );
+
+                    if ($optionReduceOrderStock) {
+                        if (empty($hasReduceStock)) {
+                            resursEventLogger(
+                                'Callback BOOKED received. Plugin is set to handle stock reduction. ' .
+                                'Metadata (hasReduceStock) is not yet set. This is the first time this part is reached.'
+                            );
+                            update_post_meta($order_id, 'hasReduceStock', time());
+                            if (isWooCommerce3()) {
+                                wc_reduce_stock_levels($order_id);
+                            } else {
+                                $order->reduce_order_stock();
+                            }
                         } else {
-                            $order->reduce_order_stock();
+                            resursEventLogger(
+                                'Callback BOOKED received. Plugin is set to handle stock reduction, but ' .
+                                'stock has already been marked as handled. Reduction skipped.'
+                            );
                         }
                     }
                     WC()->cart->empty_cart();
