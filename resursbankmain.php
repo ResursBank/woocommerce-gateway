@@ -1104,7 +1104,7 @@ function woocommerce_gateway_resurs_bank_init()
                         resursEventLogger(
                             sprintf(
                                 'Callback BOOKED received. Stock reduction is %s. ' .
-                                'Current status (hasReduceStock) for reduction is %s.',
+                                'Current status (hasReduceStock) for reduction is "%s".',
                                 $optionReduceOrderStock ? 'Active' : 'Disabled',
                                 $hasReduceStock ? 'Already Handled.' : 'Not handled.'
                             )
@@ -1411,9 +1411,9 @@ function woocommerce_gateway_resurs_bank_init()
 
                 $paymentStatus = $this->getResursOrderStatusArray();
 
-                resursEventLogger(
+/*                resursEventLogger(
                     sprintf('Callback Event %s.', $this->flow->getCallbackTypeString($byCallbackEvent))
-                );
+                );*/
                 resursEventLogger(print_r($paymentIdOrPaymentObject, true));
                 resursEventLogger('Current Status: ' . $currentWcStatus);
                 if (isset($paymentStatus[$suggestedStatus])) {
