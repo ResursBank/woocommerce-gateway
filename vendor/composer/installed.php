@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'c0755a49145b0bed9d399cbe513e5f9caeeb6089',
+        'reference' => '0f6aa4a76029a094f5e95aaf9d44aca36400038e',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'c0755a49145b0bed9d399cbe513e5f9caeeb6089',
+            'reference' => '0f6aa4a76029a094f5e95aaf9d44aca36400038e',
             'dev_requirement' => false,
         ),
         'resursbank/ecomphp' => array(
@@ -29,12 +29,12 @@
             'dev_requirement' => false,
         ),
         'resursbank/ecomphp-deprecated' => array(
-            'pretty_version' => '0.0.7',
-            'version' => '0.0.7.0',
+            'pretty_version' => '0.0.8',
+            'version' => '0.0.8.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../resursbank/ecomphp-deprecated',
             'aliases' => array(),
-            'reference' => '06fc609b75d446f90a87a8563bf9cd328e5e3525',
+            'reference' => '44fbf0cbdd043529895bd3c17db77ba91a98dfb1',
             'dev_requirement' => false,
         ),
         'tornevall/tornelib-php-crypto' => array(
