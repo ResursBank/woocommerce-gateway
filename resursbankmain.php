@@ -1435,7 +1435,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                 resursEventLogger('Stored statuses listed.');
                 resursEventLogger(print_r($paymentStatus, true));
-                resursEventLogger('Callback EVENT Information End');
+                resursEventLogger('Callback Event Information -- End.');
 
                 switch (true) {
                     case $suggestedStatus & OrderStatus::PENDING:
