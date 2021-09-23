@@ -243,14 +243,14 @@ function woocommerce_gateway_resurs_bank_init()
                         'paymentId' => 'paymentId',
                     ],
                 ],
-                                'FINALIZATION' => [
-                                        'uri_components' => [
-                                                'paymentId' => 'paymentId',
-                                            ],
-                                        'digest_parameters' => [
-                                                'paymentId' => 'paymentId',
-                                            ],
-                                    ],
+                'FINALIZATION' => [
+                    'uri_components' => [
+                        'paymentId' => 'paymentId',
+                    ],
+                    'digest_parameters' => [
+                        'paymentId' => 'paymentId',
+                    ],
+                ],
                 'BOOKED' => [
                     'uri_components' => [
                         'paymentId' => 'paymentId',
@@ -644,7 +644,8 @@ function woocommerce_gateway_resurs_bank_init()
                                                 Callback::ANNULMENT &
                                                 true
                                             );
-                                        } catch (Exception $e) {}
+                                        } catch (Exception $e) {
+                                        }
 
                                         foreach ($this->callback_types as $callback => $options) {
                                             $setUriTemplate = $this->register_callback($callback, $options);
