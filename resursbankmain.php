@@ -1026,6 +1026,8 @@ function woocommerce_gateway_resurs_bank_init()
                     ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'BOOKED':
+                    sleep(5);
+
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     if ($currentStatus !== 'cancelled') {
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
