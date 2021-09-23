@@ -2411,13 +2411,18 @@ function woocommerce_gateway_resurs_bank_init()
                     $return = ['result' => 'success', 'redirect' => $this->get_return_url($order)];
                     break;
                 case 'BOOKED':
-                    $order->update_status('processing');
+                    $currentStatus = $order->get_status();
+                    if ($currentStatus !== 'processing') {
+                        $order->update_status('processing');
+                    }
                     $optionReduceOrderStock = getResursOption('reduceOrderStock');
                     $hasReduceStock = get_post_meta($order_id, 'hasReduceStock');
+                    // This is not an actual callback. This is a function connected to process_payment.
                     resursEventLogger(
                         sprintf(
-                            'Callback BOOKED received. Stock reduction is %s. ' .
+                            'Function %s executed. Stock reduction is %s. ' .
                             'Current status (hasReduceStock) for reduction is "%s".',
+                            __FUNCTION__,
                             $optionReduceOrderStock ? 'Active' : 'Disabled',
                             $hasReduceStock ? 'Already Handled.' : 'Not handled.'
                         )
