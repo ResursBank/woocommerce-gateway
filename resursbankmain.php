@@ -634,7 +634,7 @@ function woocommerce_gateway_resurs_bank_init()
                                             $this->flow->unregisterEventCallback(
                                                 Callback::AUTOMATIC_FRAUD_CONTROL &
                                                 Callback::ANNULMENT &
-                                                Callback::FINALIZATION
+                                                Callback::FINALIZATION,
                                                 true
                                             );
                                         } catch (Exception $e) {
