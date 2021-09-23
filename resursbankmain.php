@@ -2431,7 +2431,7 @@ function woocommerce_gateway_resurs_bank_init()
                     if ($optionReduceOrderStock) {
                         if (empty($hasReduceStock)) {
                             resursEventLogger(
-                                'Callback BOOKED received. Plugin is set to handle stock reduction. ' .
+                                'Function %s executed. Plugin is set to handle stock reduction. ' .
                                 'Metadata (hasReduceStock) is not yet set. This is the first time this part is reached.'
                             );
                             update_post_meta($order_id, 'hasReduceStock', time());
@@ -2442,7 +2442,7 @@ function woocommerce_gateway_resurs_bank_init()
                             }
                         } else {
                             resursEventLogger(
-                                'Callback BOOKED received. Plugin is set to handle stock reduction, but ' .
+                                'Function %s executed. Plugin is set to handle stock reduction, but ' .
                                 'stock has already been marked as handled. Reduction skipped.'
                             );
                         }
