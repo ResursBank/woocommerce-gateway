@@ -1038,7 +1038,7 @@ function woocommerce_gateway_resurs_bank_init()
                      * land at the success page in the exact moment when the callbacks are fired. Especially
                      * this one.
                      */
-                    sleep(5);
+                    //sleep(5);
 
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     if ($currentStatus !== 'cancelled') {
