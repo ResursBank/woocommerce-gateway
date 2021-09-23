@@ -243,31 +243,6 @@ function woocommerce_gateway_resurs_bank_init()
                         'paymentId' => 'paymentId',
                     ],
                 ],
-                'AUTOMATIC_FRAUD_CONTROL' => [
-                    'uri_components' => [
-                        'paymentId' => 'paymentId',
-                        'result' => 'result',
-                    ],
-                    'digest_parameters' => [
-                        'paymentId' => 'paymentId',
-                    ],
-                ],
-                'ANNULMENT' => [
-                    'uri_components' => [
-                        'paymentId' => 'paymentId',
-                    ],
-                    'digest_parameters' => [
-                        'paymentId' => 'paymentId',
-                    ],
-                ],
-                'FINALIZATION' => [
-                    'uri_components' => [
-                        'paymentId' => 'paymentId',
-                    ],
-                    'digest_parameters' => [
-                        'paymentId' => 'paymentId',
-                    ],
-                ],
                 'BOOKED' => [
                     'uri_components' => [
                         'paymentId' => 'paymentId',
@@ -654,6 +629,13 @@ function woocommerce_gateway_resurs_bank_init()
                                         $responseArray['registeredCallbacks'] = 0;
                                         $rList = [];
                                         set_transient('resurs_callback_templates_cache_last', 0);
+                                        $this->flow->unregisterEventCallback(
+                                            Callback::AUTOMATIC_FRAUD_CONTROL &
+                                            Callback::ANNULMENT &
+                                            Callback::FINALIZATION,
+                                            true
+                                        );
+
                                         foreach ($this->callback_types as $callback => $options) {
                                             $setUriTemplate = $this->register_callback($callback, $options);
                                             $rList[$callback] = $setUriTemplate;
@@ -1411,9 +1393,6 @@ function woocommerce_gateway_resurs_bank_init()
 
                 $paymentStatus = $this->getResursOrderStatusArray();
 
-/*                resursEventLogger(
-                    sprintf('Callback Event %s.', $this->flow->getCallbackTypeString($byCallbackEvent))
-                );*/
                 resursEventLogger(print_r($paymentIdOrPaymentObject, true));
                 resursEventLogger('Current Status: ' . $currentWcStatus);
                 if (isset($paymentStatus[$suggestedStatus])) {
@@ -1552,6 +1531,7 @@ function woocommerce_gateway_resurs_bank_init()
                 /** @var ResursBank */
                 $this->flow = initializeResursFlow();
             }
+
             try {
                 $testTemplate = home_url('/');
                 $useTemplate = $testTemplate;
