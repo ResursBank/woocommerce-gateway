@@ -243,6 +243,14 @@ function woocommerce_gateway_resurs_bank_init()
                         'paymentId' => 'paymentId',
                     ],
                 ],
+                                'FINALIZATION' => [
+                                        'uri_components' => [
+                                                'paymentId' => 'paymentId',
+                                            ],
+                                        'digest_parameters' => [
+                                                'paymentId' => 'paymentId',
+                                            ],
+                                    ],
                 'BOOKED' => [
                     'uri_components' => [
                         'paymentId' => 'paymentId',
@@ -629,12 +637,14 @@ function woocommerce_gateway_resurs_bank_init()
                                         $responseArray['registeredCallbacks'] = 0;
                                         $rList = [];
                                         set_transient('resurs_callback_templates_cache_last', 0);
-                                        $this->flow->unregisterEventCallback(
-                                            Callback::AUTOMATIC_FRAUD_CONTROL &
-                                            Callback::ANNULMENT &
-                                            Callback::FINALIZATION,
-                                            true
-                                        );
+                                        // Unregister callbacks if they are not already removed.
+                                        try {
+                                            $this->flow->unregisterEventCallback(
+                                                Callback::AUTOMATIC_FRAUD_CONTROL &
+                                                Callback::ANNULMENT &
+                                                true
+                                            );
+                                        } catch (Exception $e) {}
 
                                         foreach ($this->callback_types as $callback => $options) {
                                             $setUriTemplate = $this->register_callback($callback, $options);
@@ -970,70 +980,7 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     break;
-                case 'AUTOMATIC_FRAUD_CONTROL':
-                    update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    $statusValue = $this->updateOrderByResursPaymentStatus(
-                        $order,
-                        $currentStatus,
-                        $request['paymentId'],
-                        Callback::AUTOMATIC_FRAUD_CONTROL,
-                        $request['result']
-                    );
-
-                    switch ($request['result']) {
-                        case 'THAWED':
-                            $order->add_order_note(
-                                sprintf(
-                                    __(
-                                        '[Resurs Bank] The event %s updated the order to %s by its value %s [%s].',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    ),
-                                    $event_type,
-                                    $this->getOrderStatusByResursReturnCode($statusValue),
-                                    $request['result'],
-                                    $currentValidationString
-                                )
-                            );
-                            ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
-                            break;
-                        case 'FROZEN':
-                            $order->add_order_note(
-                                sprintf(
-                                    __(
-                                        '[Resurs Bank] The event %s updated the order to %s by its value %s [%s].',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    ),
-                                    $event_type,
-                                    $this->getOrderStatusByResursReturnCode($statusValue),
-                                    $request['result'],
-                                    $currentValidationString
-                                )
-                            );
-                            ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
                 case 'TEST':
-                    break;
-                case 'ANNULMENT':
-                    update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    update_post_meta($order->get_id(), 'hasAnnulment', 1);
-                    $order->update_status('cancelled');
-
-                    $order->add_order_note(
-                        sprintf(
-                            __(
-                                '[Resurs Bank] The event %s cancelled the order.',
-                                'resurs-bank-payment-gateway-for-woocommerce'
-                            ),
-                            $event_type
-                        )
-                    );
-
-                    // Not running suggestedMethod here as we have anoter procedure to cancel orders
-                    ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'FINALIZATION':
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
