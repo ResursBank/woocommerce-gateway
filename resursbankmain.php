@@ -959,6 +959,10 @@ function woocommerce_gateway_resurs_bank_init()
 
             switch ($event_type) {
                 case 'UNFREEZE':
+                    /**
+                     * Watch out for race conditions! https://resursbankplugins.atlassian.net/browse/WOO-573
+                     */
+
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     $statusValue = $this->updateOrderByResursPaymentStatus(
                         $order,
@@ -1026,6 +1030,14 @@ function woocommerce_gateway_resurs_bank_init()
                     ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     break;
                 case 'BOOKED':
+                    /**
+                     * Why did we place a sleep here?
+                     * Because of race condidtions: https://resursbankplugins.atlassian.net/browse/WOO-573
+                     * What happens here, is not only a race condition between callbacks that puts the stock at
+                     * risk of double reduction. Callbacks may also race with the customer where customers may
+                     * land at the success page in the exact moment when the callbacks are fired. Especially
+                     * this one.
+                     */
                     sleep(5);
 
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
