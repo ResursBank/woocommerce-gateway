@@ -2338,22 +2338,29 @@ function woocommerce_gateway_resurs_bank_init()
             switch ($bookedStatus) {
                 case 'FINALIZED':
                     define('RB_SYNCHRONOUS_MODE', true);
-                    WC()->session->set('order_awaiting_payment', true);
-                    //$order->update_status( 'completed' );
                     try {
-                        $order->set_status(
-                            'completed',
+                        $order->add_order_note(
                             __(
-                                'Order is debited and completed',
+                                '[Resurs Bank] The payment are signed, booked and finalized.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
-                            ),
-                            true
+                            )
                         );
-                        $order->save();
+                        $this->updateOrderByResursPaymentStatus(
+                            $order,
+                            $order->get_status(),
+                            $bookedPaymentId
+                        );
                     } catch (Exception $e) {
+                        $order->add_order_note(
+                            sprintf(
+                                '[Resurs Bank] Error %d in %s: %s.',
+                                $e->getCode(),
+                                __FUNCTION__,
+                                $e->getMessage()
+                            )
+                        );
                         wc_add_notice($e->getMessage(), 'error');
-
-                        return;
+                        $getRedirectUrl = wc_get_cart_url();
                     }
                     WC()->cart->empty_cart();
 
@@ -3542,7 +3549,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->update_status(
                         'on-hold',
                         __(
-                            'The payment are frozen, while waiting for manual control',
+                            '[Resurs Bank] The payment are frozen, while waiting for manual control.',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
@@ -3550,35 +3557,35 @@ function woocommerce_gateway_resurs_bank_init()
                     $order->update_status(
                         'processing',
                         __(
-                            'The payment are signed and booked',
+                            '[Resurs Bank] The payment are signed and booked.',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         )
                     );
                 } elseif ($bookedStatus === 'FINALIZED') {
-                    WC()->session->set('order_awaiting_payment', true);
                     try {
-                        $order->set_status(
-                            'completed',
+                        $order->add_order_note(
                             __(
-                                'Order is debited and completed.',
+                                '[Resurs Bank] The payment are signed, booked and finalized.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
-                            ),
-                            true
+                            )
                         );
-                        $order->save();
+                        $this->updateOrderByResursPaymentStatus(
+                            $order,
+                            $order->get_status(),
+                            $bookedPaymentId
+                        );
                     } catch (Exception $e) {
+                        $order->add_order_note(
+                            sprintf(
+                                '[Resurs Bank] Error %d in %s: %s.',
+                                $e->getCode(),
+                                __FUNCTION__,
+                                $e->getMessage()
+                            )
+                        );
                         wc_add_notice($e->getMessage(), 'error');
-
-                        return;
+                        $getRedirectUrl = wc_get_cart_url();
                     }
-
-                    $order->update_status(
-                        'completed',
-                        __(
-                            'The payment are signed and debited',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        )
-                    );
                 } elseif ($bookedStatus === 'DENIED') {
                     $order->update_status('failed');
                     update_post_meta($order_id, 'orderDenied', true);
