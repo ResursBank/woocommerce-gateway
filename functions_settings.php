@@ -709,7 +709,10 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'description' => __(
-                        'Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed by direct debiting which finalizes orders before they are shipped. To prevent this, you can set up a specific status for such payment methods when Resurs callback event FINALIZATION occurs',
+                        'Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed ' .
+                        'by direct debiting which finalizes orders before they are shipped. To prevent this, ' .
+                        'you can set up a specific status for such payment methods when Resurs ' .
+                        'callback event FINALIZATION occurs. Default status is "completed".',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'select',
