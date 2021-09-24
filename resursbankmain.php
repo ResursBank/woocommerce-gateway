@@ -243,14 +243,6 @@ function woocommerce_gateway_resurs_bank_init()
                         'paymentId' => 'paymentId',
                     ],
                 ],
-                'FINALIZATION' => [
-                    'uri_components' => [
-                        'paymentId' => 'paymentId',
-                    ],
-                    'digest_parameters' => [
-                        'paymentId' => 'paymentId',
-                    ],
-                ],
                 'BOOKED' => [
                     'uri_components' => [
                         'paymentId' => 'paymentId',
@@ -642,6 +634,7 @@ function woocommerce_gateway_resurs_bank_init()
                                             $this->flow->unregisterEventCallback(
                                                 Callback::AUTOMATIC_FRAUD_CONTROL &
                                                 Callback::ANNULMENT &
+                                                Callback::FINALIZATION,
                                                 true
                                             );
                                         } catch (Exception $e) {
@@ -962,7 +955,6 @@ function woocommerce_gateway_resurs_bank_init()
                     /**
                      * Watch out for race conditions! https://resursbankplugins.atlassian.net/browse/WOO-573
                      */
-
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     $statusValue = $this->updateOrderByResursPaymentStatus(
                         $order,
@@ -987,48 +979,6 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'TEST':
                     break;
-                case 'FINALIZATION':
-                    update_post_meta($orderId, 'hasCallback' . $event_type, time());
-                    $finalizationStatus = $this->updateOrderByResursPaymentStatus(
-                        $order,
-                        $currentStatus,
-                        $request['paymentId'],
-                        Callback::FINALIZATION
-                    );
-
-                    if ($finalizationStatus & (OrderStatus::AUTO_DEBITED)) {
-                        if (!(bool)$finalizationStatus & OrderStatus::ERROR) {
-                            $order->add_order_note(
-                                sprintf(
-                                    __(
-                                        '[Resurs Bank] The event %s received but the used payment method indicated that instant finalization is available for it. If it\'s not already completed you might have to update the order manually (%s) [%s].',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    ),
-                                    $event_type,
-                                    $this->getOrderStatusByResursReturnCode($finalizationStatus),
-                                    $currentValidationString
-                                )
-                            );
-                        }
-                    } else {
-                        if (!(bool)$finalizationStatus & OrderStatus::ERROR) {
-                            $order->add_order_note(
-                                sprintf(
-                                    __(
-                                        '[Resurs Bank] The event %s completed the order (%s) [%s].',
-                                        'resurs-bank-payment-gateway-for-woocommerce'
-                                    ),
-                                    $event_type,
-                                    $this->getOrderStatusByResursReturnCode($finalizationStatus),
-                                    $currentValidationString
-                                )
-                            );
-                        }
-                        $order->payment_complete();
-                    }
-
-                    ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
-                    break;
                 case 'BOOKED':
                     /**
                      * Why did we place a sleep here?
@@ -1039,7 +989,6 @@ function woocommerce_gateway_resurs_bank_init()
                      * this one.
                      */
                     sleep(5);
-
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     if ($currentStatus !== 'cancelled') {
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
