@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2021-09-24 12:22+0200\n"
-"PO-Revision-Date: 2021-09-24 12:22+0200\n"
+"POT-Creation-Date: 2021-09-24 13:12+0200\n"
+"PO-Revision-Date: 2021-09-24 13:12+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -279,7 +279,7 @@ msgid "Coupons should be handled with vat"
 msgstr "Kuponger ska hanteras med moms"
 
 #: functions_settings.php:310 resursbank_settings.php:1561
-#: resursbankmain.php:6121 resursbankmain.php:6131
+#: resursbankmain.php:6128 resursbankmain.php:6138
 msgid "Yes"
 msgstr "Ja"
 
@@ -1404,7 +1404,7 @@ msgstr "Spara ovanstående data med hjälp av knappen nedan"
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr "Under URL-anropen, så har SSL-certifikatsvalidering stängts av"
 
-#: resursbank_settings.php:1561 resursbankmain.php:6121 resursbankmain.php:6131
+#: resursbank_settings.php:1561 resursbankmain.php:6128 resursbankmain.php:6138
 msgid "No"
 msgstr "Nej"
 
@@ -1440,7 +1440,7 @@ msgstr ""
 msgid "Configuration has not yet been initiated."
 msgstr "Konfigurationen har ännu inte initierats."
 
-#: resursbankmain.php:697 resursbankmain.php:5181
+#: resursbankmain.php:697 resursbankmain.php:5188
 msgid "Waiting for callback"
 msgstr "Väntar på callback"
 
@@ -1603,7 +1603,7 @@ msgstr "Kortnummer"
 msgid "Company government ID"
 msgstr "Organisationsnummer"
 
-#: resursbankmain.php:1866 resursbankmain.php:4056 resursbankmain.php:6245
+#: resursbankmain.php:1866 resursbankmain.php:4063 resursbankmain.php:6252
 msgid "Read more"
 msgstr "Läs mer"
 
@@ -1627,11 +1627,11 @@ msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen (hostedFlow) - "
 "betalningsid emottogs aldrig ordentligt"
 
-#: resursbankmain.php:2347 resursbankmain.php:3563
-msgid "Order is debited and completed"
-msgstr "Ordern är debiterad och färdig"
+#: resursbankmain.php:2344 resursbankmain.php:3568
+msgid "[Resurs Bank] The payment are signed, booked and finalized."
+msgstr "[Resurs Bank] Betalningen är signerad och debiterad."
 
-#: resursbankmain.php:2421
+#: resursbankmain.php:2428
 msgid ""
 "Payment can not complete. A problem with the signing url occurred. Contact "
 "customer services for more information."
@@ -1639,12 +1639,12 @@ msgstr ""
 "Betalningen kan inte färdigställas. Ett problem med signeringen uppstod. "
 "Kontakta kundservice för mer information."
 
-#: resursbankmain.php:2432 resursbankmain.php:3457 resursbankmain.php:3587
+#: resursbankmain.php:2439 resursbankmain.php:3464 resursbankmain.php:3594
 msgid ""
 "The payment can not complete. Contact customer services for more information."
 msgstr "Ordern kan inte slutföras. Kontakta kundservice för mer information."
 
-#: resursbankmain.php:2445
+#: resursbankmain.php:2452
 msgid ""
 "An error occured during the update of the booked payment. The payment ID was "
 "never received properly in the payment process"
@@ -1652,23 +1652,23 @@ msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen. Betalnings-id emottogs "
 "aldrig i betalprocessen"
 
-#: resursbankmain.php:2451 resursbankmain.php:2461 resursbankmain.php:3603
+#: resursbankmain.php:2458 resursbankmain.php:2468 resursbankmain.php:3610
 msgid "An unknown error occured. Please, try again later"
 msgstr "Ett okänt fel har uppstått. Vänligen försök igen senare"
 
-#: resursbankmain.php:3092
+#: resursbankmain.php:3099
 msgid "[Resurs Bank] Customer retried to place order, after failure."
 msgstr ""
 "[Resurs Bank] Kund försökte slutföra order igen, efter ett misslyckat försök."
 
-#: resursbankmain.php:3116
+#: resursbankmain.php:3123
 #, php-format
 msgid ""
 "[Resurs Bank] Order id reference could not be updated during payment: %s."
 msgstr ""
 "[Resurs Bank] OrderID-referensen kunde inte uppdateras under köpet: %s."
 
-#: resursbankmain.php:3137
+#: resursbankmain.php:3144
 msgid ""
 "The nonce key has expired or mismatching, so the payment can not be "
 "accepted. Please reload the page and try again. If this happens again, "
@@ -1678,7 +1678,7 @@ msgstr ""
 "kan inte accepteras. Vänligen ladda om sidan och försök igen. Om felet "
 "återkommer, kontakta supporten."
 
-#: resursbankmain.php:3145
+#: resursbankmain.php:3152
 msgid ""
 "The nonce key is missing, so the payment can not be accepted. Please reload "
 "the page and try again. If this happens again, contact support."
@@ -1687,16 +1687,16 @@ msgstr ""
 "Vänligen ladda om sidan och försök igen. Om felet återkommer, kontakta "
 "supporten."
 
-#: resursbankmain.php:3213
+#: resursbankmain.php:3220
 msgid "[Resurs Bank] updatePaymentReference has already been executed once."
 msgstr "[Resurs Bank] updatePaymentReference has redan körts en gång."
 
-#: resursbankmain.php:3235
+#: resursbankmain.php:3242
 #, php-format
 msgid "[Resurs Bank] updatePaymentReference successful. Changed from %s to %s."
 msgstr "[Resurs Bank] updatePaymentReference lyckades. Ändrad från %s till %s."
 
-#: resursbankmain.php:3283
+#: resursbankmain.php:3290
 #, php-format
 msgid ""
 "[Resurs Bank] updatePaymentReference received exception from API, when "
@@ -1705,7 +1705,7 @@ msgstr ""
 "[Resurs Bank] updatePaymentReference tog emot ett fel från APIet, när den "
 "försökte uppdatera från %s till %s: (%s) %s. Är den redan uppdaterad?"
 
-#: resursbankmain.php:3297
+#: resursbankmain.php:3304
 msgid ""
 "[Resurs Bank] Reference or order id is missing, so the reference can not be "
 "updated."
@@ -1713,11 +1713,11 @@ msgstr ""
 "[Resurs Bank] Referensen eller orderns id saknas, så referensen kan inte "
 "uppdateras."
 
-#: resursbankmain.php:3405
+#: resursbankmain.php:3412
 msgid "The payment failed during purchase"
 msgstr "Betalningen misslyckades"
 
-#: resursbankmain.php:3411
+#: resursbankmain.php:3418
 msgid ""
 "The purchase from Resurs Bank was by some reason not accepted. Please "
 "contact customer services, or try again with another payment method."
@@ -1725,38 +1725,34 @@ msgstr ""
 "Köpet från Resurs Bank gick inte att genomföra. Vänligen kontakta kundtjänst "
 "eller försök igen med en annan betalningsmetod."
 
-#: resursbankmain.php:3426
+#: resursbankmain.php:3433
 msgid "The payment are signed and booked. Waiting for further statuses."
 msgstr "Betalningen är signerad och bokad. Väntar på fler statusar."
 
-#: resursbankmain.php:3496
+#: resursbankmain.php:3503
 msgid "The payment already exists"
 msgstr "Ordern finns redan"
 
-#: resursbankmain.php:3505
+#: resursbankmain.php:3512
 msgid ""
 "We could not finish your order. Please, contact support for more information."
 msgstr ""
 "Vi kunde inte färdigställa din order. Vänligen, kontakta kundtjänst för mer "
 "information."
 
-#: resursbankmain.php:3512
+#: resursbankmain.php:3519
 msgid "An unknown error occured in signing method. Please, try again later"
 msgstr "Ett fel uppstod vid signeringen. Vänligen försök igen senare"
 
-#: resursbankmain.php:3545
-msgid "The payment are frozen, while waiting for manual control"
-msgstr "Betalningen är frusen i väntan på manuell kontroll"
+#: resursbankmain.php:3552
+msgid "[Resurs Bank] The payment are frozen, while waiting for manual control."
+msgstr "[Resurs Bank] Betalningen är frusen i väntan på manuell kontroll."
 
-#: resursbankmain.php:3553
-msgid "The payment are signed and booked"
-msgstr "Betalningen är signerad och bokad"
+#: resursbankmain.php:3560
+msgid "[Resurs Bank] The payment are signed and booked."
+msgstr "[Resurs Bank] Betalningen är signerad och bokad."
 
-#: resursbankmain.php:3578
-msgid "The payment are signed and debited"
-msgstr "Betalningen är signerad och debiterad"
-
-#: resursbankmain.php:3597
+#: resursbankmain.php:3604
 msgid ""
 "An error occured during the update of the booked payment. The payment id was "
 "never received properly in signing response"
@@ -1764,22 +1760,22 @@ msgstr ""
 "Ett fel uppstod under uppdateringen av betalningen. Betalningsid emottogs "
 "aldrig ordentligt under signeringsprocessen"
 
-#: resursbankmain.php:3613
+#: resursbankmain.php:3620
 msgid "Something went wrong during the signing process."
 msgstr "Ett fel uppstod under signeringsprocessen."
 
-#: resursbankmain.php:3729
+#: resursbankmain.php:3736
 #, php-format
 msgid "The field <b>\"%s\"</b> has invalid information (\"%s\") or is missing."
 msgstr ""
 "Fältet <b>\"%s\"</b> har felaktig information (\"%s\") eller saknas helt."
 
-#: resursbankmain.php:3980
+#: resursbankmain.php:3987
 #, php-format
 msgid "Part pay from %s per month"
 msgstr "Delbetala från %s per månad"
 
-#: resursbankmain.php:4041
+#: resursbankmain.php:4048
 #, php-format
 msgid ""
 "Test enabled: In production, this information is shown when the minimum "
@@ -1788,37 +1784,37 @@ msgstr ""
 "Test aktiverat: I produktion visas denna information när minsta "
 "betalningsbeloppet överstiger <b>%s</b>. Just nu är betalningsbeloppet %s."
 
-#: resursbankmain.php:4069
+#: resursbankmain.php:4076
 msgid "Annuity factors can not be displayed for the moment"
 msgstr "Delbetalningsfaktorerna kan för närvarande inte visas"
 
-#: resursbankmain.php:4126
+#: resursbankmain.php:4133
 msgid "Can not get the address from current government ID"
 msgstr "Kan inte hämta adressen från angivet personnummer/organisationsnummer"
 
-#: resursbankmain.php:4181
+#: resursbankmain.php:4188
 msgid "Close"
 msgstr "Stäng"
 
-#: resursbankmain.php:4450
+#: resursbankmain.php:4457
 msgid "This order is already annulled and cannot be changed."
 msgstr "Denna order är annullerad och går därmed ej att ändra status på."
 
-#: resursbankmain.php:4466
+#: resursbankmain.php:4473
 msgid "This order is already credited and cannot be changed."
 msgstr "Denna order är krediterad och går därmed ej att ändra status på."
 
-#: resursbankmain.php:4541
+#: resursbankmain.php:4548
 #, php-format
 msgid "[Error %s] Finalization Failure: %s."
 msgstr "[Fel %s] Debiteringen/finaliseringen misslyckades: %s."
 
-#: resursbankmain.php:4551
+#: resursbankmain.php:4558
 #, php-format
 msgid "%s: FinalizationException: %s - %s. Old status (%s) restored."
 msgstr "%s: Fel vid debitering: %s - %s. Tidigare status (%s) har återställts."
 
-#: resursbankmain.php:4570
+#: resursbankmain.php:4577
 msgid ""
 "This order is now marked completed as a result of the payment method "
 "behaviour (automatic finalization)."
@@ -1826,11 +1822,11 @@ msgstr ""
 "Ordern är markerad som färdig som en följd av betalningsmetodens beteende "
 "(automatisk debitering/finalization)."
 
-#: resursbankmain.php:4578
+#: resursbankmain.php:4585
 msgid "This order has already been finalized externally."
 msgstr "Den här ordern har redan debiterats externt."
 
-#: resursbankmain.php:4588
+#: resursbankmain.php:4595
 msgid ""
 "The payment method for this order indicates that the payment has been "
 "automatically finalized."
@@ -1838,85 +1834,85 @@ msgstr ""
 "Betalningsmetoden för den här ordern indikerar att betalningen har slutförts "
 "automatiskt."
 
-#: resursbankmain.php:4614
+#: resursbankmain.php:4621
 msgid "[Resurs Bank] Reset to prior status."
 msgstr "[Resurs Bank] Återställd till föregående status."
 
-#: resursbankmain.php:4645
+#: resursbankmain.php:4652
 msgid "Cancelled status set: Resurs Bank API was called for cancellation."
 msgstr "Avbruten status: Resurs Bank API anropades för att avbryta order."
 
-#: resursbankmain.php:4652
+#: resursbankmain.php:4659
 #, php-format
 msgid "[Error %s] Cancellation Failure: %s."
 msgstr "[Fel %s] Kunde inte avbryta order: %s."
 
-#: resursbankmain.php:4699
+#: resursbankmain.php:4706
 msgid "Refunded status set: Resurs Bank API was called for cancellation."
 msgstr "Återbetald status: Resurs Bank API anropades för att avbryta order."
 
-#: resursbankmain.php:4706
+#: resursbankmain.php:4713
 #, php-format
 msgid "[Error %s] Refund Failure: %s."
 msgstr "[Fel %s] Kunde inte återbetala: %s."
 
-#: resursbankmain.php:4760
+#: resursbankmain.php:4767
 msgid "Private"
 msgstr "Privat"
 
-#: resursbankmain.php:4761
+#: resursbankmain.php:4768
 msgid "Company"
 msgstr "Företag"
 
-#: resursbankmain.php:4817
+#: resursbankmain.php:4824
 msgid "Resurs Bank has connection errors!"
 msgstr "Resurs Bank annullerade ordern!"
 
-#: resursbankmain.php:4831
+#: resursbankmain.php:4838
 msgid "Enter your government id (social security number)"
 msgstr "Ange ditt personnummer"
 
-#: resursbankmain.php:4834
+#: resursbankmain.php:4841
 msgid "Government ID"
 msgstr "Personnummer"
 
-#: resursbankmain.php:4837
+#: resursbankmain.php:4844
 msgid "Enter your company government ID"
 msgstr "Organisationsnummer"
 
-#: resursbankmain.php:4840
+#: resursbankmain.php:4847
 msgid "Company government id"
 msgstr "Organisationsnummer"
 
-#: resursbankmain.php:4852
+#: resursbankmain.php:4859
 msgid "Get address"
 msgstr "Hämta adress"
 
-#: resursbankmain.php:4989
+#: resursbankmain.php:4996
 msgid "Enter social security number"
 msgstr "Skriv in ditt personnummer"
 
-#: resursbankmain.php:4993
+#: resursbankmain.php:5000
 msgid "Enter corporate government identity"
 msgstr "Skriv in ditt organisationsnummer"
 
-#: resursbankmain.php:4997
+#: resursbankmain.php:5004
 msgid "Government id"
 msgstr "Personnummer"
 
-#: resursbankmain.php:5001
+#: resursbankmain.php:5008
 msgid "Corporate government id"
 msgstr "Organisationsnummer"
 
-#: resursbankmain.php:5008
+#: resursbankmain.php:5015
 msgid "Changing delivery address requires signing"
 msgstr "Ändring av leveransadress kräver e-signering"
 
-#: resursbankmain.php:5012
+#: resursbankmain.php:5019
 msgid "I can not show errors since the element is missing"
 msgstr "Kan inte visa några felmeddelanden eftersom elementet saknas"
 
-#: resursbankmain.php:5016
+#: resursbankmain.php:5023
 msgid ""
 "The purchase has failed, due to an internal server error: The shop could not "
 "properly update the order."
@@ -1924,7 +1920,7 @@ msgstr ""
 "Köpet misslyckades på grund av ett internt serverfel. Butiken kunde inte "
 "uppdatera ordern ordentligt."
 
-#: resursbankmain.php:5020
+#: resursbankmain.php:5027
 msgid ""
 "The purchase was denied: The shop could not properly update the order. "
 "Please contact support for more information."
@@ -1932,11 +1928,11 @@ msgstr ""
 "Köpet nekades: Vi kunde inte färdigställa din order. Vänligen, kontakta "
 "kundtjänst för mer information."
 
-#: resursbankmain.php:5024
+#: resursbankmain.php:5031
 msgid "The purchase was processed, but the payment reference failed to update"
 msgstr "Köpet har hanterats, men betalningsreferensen kunde inte uppdateras"
 
-#: resursbankmain.php:5028
+#: resursbankmain.php:5035
 msgid ""
 "The purchase was rejected by Resurs Bank. Please contact customer services, "
 "or try again with another payment method."
@@ -1944,7 +1940,7 @@ msgstr ""
 "Köpet har nekats av Resurs Bank. Vänligen kontakta kundtjänst eller försök "
 "igen med en annan betalningsmetod."
 
-#: resursbankmain.php:5032
+#: resursbankmain.php:5039
 msgid ""
 "Something went wrong when we tried to book your order. Please contact "
 "customer support for more information."
@@ -1952,7 +1948,7 @@ msgstr ""
 "Något gick fel när vi försökte boka din order. Vänligen kontakta kundtjänst "
 "för mer information."
 
-#: resursbankmain.php:5036
+#: resursbankmain.php:5043
 msgid ""
 "An internal error occured while trying to book the order. Please contact "
 "customer support for more information."
@@ -1960,60 +1956,60 @@ msgstr ""
 "Ett internt serverfel uppstod när vi försökte boka ordern. Vän ligen "
 "kontakta kundtjänst för mer information."
 
-#: resursbankmain.php:5040
+#: resursbankmain.php:5047
 msgid "An internal error occurred while trying to book the order:"
 msgstr "Ett internt fel uppstod när vi försökte boka din order:"
 
-#: resursbankmain.php:5044
+#: resursbankmain.php:5051
 msgid "Please contact customer support for more information."
 msgstr "Vänligen kontakta kundtjänst för mer information."
 
-#: resursbankmain.php:5152
+#: resursbankmain.php:5159
 msgid ""
 "The list of urls below is cached from an earlier response from Resurs Bank"
 msgstr "Listan med urler nedan är cachad från tidigare svar från Resurs Bank"
 
-#: resursbankmain.php:5157
+#: resursbankmain.php:5164
 msgid "callbacks has been registered"
 msgstr "callbacks har registrerats"
 
-#: resursbankmain.php:5160
+#: resursbankmain.php:5167
 msgid "Update callbacks again"
 msgstr "Uppdatera callbacks igen"
 
-#: resursbankmain.php:5161
+#: resursbankmain.php:5168
 msgid "Trigger test callback"
 msgstr "Aktivera testcallback"
 
-#: resursbankmain.php:5163
+#: resursbankmain.php:5170
 msgid "To remove the fee properly, set the value to 0"
 msgstr "För att ta bort avgiften ordentligt, sätt värdet till 0"
 
-#: resursbankmain.php:5167
+#: resursbankmain.php:5174
 msgid "The entered value is not allowed here"
 msgstr "Det angivna värdet är inte tillåtet här"
 
-#: resursbankmain.php:5172
+#: resursbankmain.php:5179
 msgid "No registered callbacks could be found"
 msgstr "Kunde inte hitta några registrerade callbacks"
 
-#: resursbankmain.php:5176
+#: resursbankmain.php:5183
 msgid "This setting requires waitForFraudControl to be active"
 msgstr "Den här inställningen kräver att waitForFraudControl är aktiv"
 
-#: resursbankmain.php:5179
+#: resursbankmain.php:5186
 msgid "Unable to set new fee"
 msgstr "Kan inte ställa in ny avgift"
 
-#: resursbankmain.php:5180
+#: resursbankmain.php:5187
 msgid "Fee has been updated"
 msgstr "Avgiften har uppdateras"
 
-#: resursbankmain.php:5182
+#: resursbankmain.php:5189
 msgid "Callback not yet received"
 msgstr "Callbacken har ännu inte mottagits"
 
-#: resursbankmain.php:5184
+#: resursbankmain.php:5191
 msgid ""
 "It seems that your site has not received any callbacks yet. Either your site "
 "are unreachable, or the callback tester is for the moment slow."
@@ -2022,11 +2018,11 @@ msgstr ""
 "Antingen kan vi inte nå din webbplats, eller så är callbacktestningen för "
 "närvarande långsam."
 
-#: resursbankmain.php:5191
+#: resursbankmain.php:5198
 msgid "Resurs Bank does not support partial annulling for this payment method!"
 msgstr "Resurs Bank stödjer inte delvis annullering för denna betalmetod!"
 
-#: resursbankmain.php:5222
+#: resursbankmain.php:5229
 msgid ""
 "The Resurs Bank Addon for WooCommerce may not work properly in PHP 5.3 or "
 "older. You should consider upgrading to 5.4 or higher."
@@ -2034,27 +2030,27 @@ msgstr ""
 "Resurs Banks tillägg för WooCommerce kanske inte fungerar korrekt i PHP 5.3, "
 "eller äldre. Du bör överväga att uppgradera till 5.4 eller högre."
 
-#: resursbankmain.php:5412
+#: resursbankmain.php:5419
 msgid "Resurs Reference"
 msgstr "Resurs referens"
 
-#: resursbankmain.php:5417
+#: resursbankmain.php:5424
 msgid "Resurs Method"
 msgstr "Resurs method"
 
-#: resursbankmain.php:5618
+#: resursbankmain.php:5625
 msgid "[Resurs Bank] Refund/cancellation sent to API successfully."
 msgstr "[Resurs Bank] updatePaymentReference godkändes efter en omkörning."
 
-#: resursbankmain.php:5712
+#: resursbankmain.php:5719
 msgid "Please wait while we process your order..."
 msgstr "Vänligen vänta medan vi hanterar din order..."
 
-#: resursbankmain.php:5734
+#: resursbankmain.php:5741
 msgid "Settings"
 msgstr "Inställningar"
 
-#: resursbankmain.php:5775
+#: resursbankmain.php:5782
 msgid ""
 "It seems this order has already been finalized from an external system - if "
 "your order is finished you may update it here aswell"
@@ -2062,7 +2058,7 @@ msgstr ""
 "Det ser ut som att ordern redan har blivit debiterad från ett externt system "
 "- om din order är klar kan du uppdatera den härifrån också"
 
-#: resursbankmain.php:5780
+#: resursbankmain.php:5787
 msgid ""
 "It seems this order has been instantly finalized due to the payment method "
 "type. This means that you probably must handle it manually."
@@ -2071,11 +2067,11 @@ msgstr ""
 "betalningsmetodens typ. Detta innebär att du förmodligen måste hantera den "
 "manuellt."
 
-#: resursbankmain.php:5878
+#: resursbankmain.php:5885
 msgid "Referenced data don't exist"
 msgstr "Datat du försöker hämta finns inte"
 
-#: resursbankmain.php:5883
+#: resursbankmain.php:5890
 msgid ""
 "This error might occur when for example a payment doesn't exist at Resurs "
 "Bank. Normally this happens when payments have failed or aborted before it "
@@ -2085,15 +2081,15 @@ msgstr ""
 "Bank. Normalt sker detta när betalningarna har misslyckats eller avbrutits "
 "innan den kan slutföras"
 
-#: resursbankmain.php:5894
+#: resursbankmain.php:5901
 msgid "The order was denied at Resurs Bank and therefore has not been created"
 msgstr "Ordern har nekats hos Resurs Bank och har därför inte skapats"
 
-#: resursbankmain.php:5900
+#: resursbankmain.php:5907
 msgid "This order failed or was cancelled by customer during external actions."
 msgstr "Köpet misslyckades eller avbröts av kund på extern plats."
 
-#: resursbankmain.php:5907
+#: resursbankmain.php:5914
 #, php-format
 msgid ""
 "This order has been cancelled during customer interactions. Returning URL "
@@ -2102,83 +2098,83 @@ msgstr ""
 "Den här ordern avbröts under kundens interaktioner. Return-URL sattes till "
 "%s."
 
-#: resursbankmain.php:5922
+#: resursbankmain.php:5929
 msgid ""
 "Following error ocurred when we tried to fetch information about the payment"
 msgstr "Följande fel uppstod när vi försökte hämta information om betalningen"
 
-#: resursbankmain.php:5965
+#: resursbankmain.php:5972
 #, php-format
 msgid "Incomplete. The fallback tried to use %d."
 msgstr "Inkomplett. Backuplösningen försökte använda %d."
 
-#: resursbankmain.php:5985
+#: resursbankmain.php:5992
 msgid "Not set"
 msgstr "Inte satt"
 
-#: resursbankmain.php:5987 resursbankmain.php:6125
+#: resursbankmain.php:5994 resursbankmain.php:6132
 msgid "Frozen"
 msgstr "Frusen"
 
-#: resursbankmain.php:6013
+#: resursbankmain.php:6020
 #, php-format
 msgid "Status from Resurs Bank: %s."
 msgstr "Status från Resurs Bank: %s."
 
-#: resursbankmain.php:6050
+#: resursbankmain.php:6057
 msgid "Payment ID"
 msgstr "Betalnings-id"
 
-#: resursbankmain.php:6057
+#: resursbankmain.php:6064
 msgid "Payment method ID"
 msgstr "Betalmetodens id"
 
-#: resursbankmain.php:6066
+#: resursbankmain.php:6073
 msgid "Store ID"
 msgstr "Butiks-ID (Store ID)"
 
-#: resursbankmain.php:6075
+#: resursbankmain.php:6082
 msgid "Payment method name"
 msgstr "Betalmetodens namn"
 
-#: resursbankmain.php:6084
+#: resursbankmain.php:6091
 msgid "Payment method type"
 msgstr "Betalmetodens typ"
 
-#: resursbankmain.php:6094
+#: resursbankmain.php:6101
 msgid "Payment amount"
 msgstr "Orderbelopp"
 
-#: resursbankmain.php:6106
+#: resursbankmain.php:6113
 msgid "Payment limit"
 msgstr "Betalningens limit"
 
-#: resursbankmain.php:6115
+#: resursbankmain.php:6122
 msgid "Fraud"
 msgstr "Bedrägeri"
 
-#: resursbankmain.php:6136
+#: resursbankmain.php:6143
 msgid "Customer name"
 msgstr "Kundens namn"
 
-#: resursbankmain.php:6147
+#: resursbankmain.php:6154
 msgid "Delivery address"
 msgstr "Leveransadress"
 
-#: resursbankmain.php:6485
+#: resursbankmain.php:6492
 msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
 msgstr ""
 "Borttagning av orderrad: Resurs Bank API anropades för ta bort orderrader"
 
-#: resursbankmain.php:7123
+#: resursbankmain.php:7130
 msgid "There are currently no payment methods available"
 msgstr "Det finns för närvarande inga betalningsmetoder tillgängliga"
 
-#: resursbankmain.php:7412
+#: resursbankmain.php:7419
 msgid "System maintenance in progress!"
 msgstr "Systemunderhåll pågår!"
 
-#: resursbankmain.php:7414
+#: resursbankmain.php:7421
 msgid ""
 "This store is currently in a temporary maintenance mode. Please wait a "
 "minute and try again."
@@ -2234,6 +2230,9 @@ msgstr "Resurs Bank AB"
 #. Author URI of the plugin/theme
 msgid "https://test.resurs.com/docs/display/ecom/WooCommerce"
 msgstr "https://test.resurs.com/docs/display/ecom/WooCommerce"
+
+#~ msgid "Order is debited and completed"
+#~ msgstr "Ordern är debiterad och färdig"
 
 #~ msgid ""
 #~ "[Resurs Bank] The event %s received but the used payment method indicated "
