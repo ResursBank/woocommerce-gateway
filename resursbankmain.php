@@ -3560,7 +3560,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $order->set_status(
                             'completed',
                             __(
-                                'Order is debited and completed',
+                                'Order is debited and completed.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
                             ),
                             true
