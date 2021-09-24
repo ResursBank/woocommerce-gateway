@@ -952,6 +952,9 @@ function woocommerce_gateway_resurs_bank_init()
 
             switch ($event_type) {
                 case 'UNFREEZE':
+                    /**
+                     * Watch out for race conditions! https://resursbankplugins.atlassian.net/browse/WOO-573
+                     */
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     $statusValue = $this->updateOrderByResursPaymentStatus(
                         $order,
@@ -977,6 +980,14 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'TEST':
                     break;
                 case 'BOOKED':
+                    /**
+                     * Why did we place a sleep here?
+                     * Because of race condidtions: https://resursbankplugins.atlassian.net/browse/WOO-573
+                     * What happens here, is not only a race condition between callbacks that puts the stock at
+                     * risk of double reduction. Callbacks may also race with the customer where customers may
+                     * land at the success page in the exact moment when the callbacks are fired. Especially
+                     * this one.
+                     */
                     sleep(5);
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     if ($currentStatus !== 'cancelled') {
@@ -2349,13 +2360,18 @@ function woocommerce_gateway_resurs_bank_init()
                     $return = ['result' => 'success', 'redirect' => $this->get_return_url($order)];
                     break;
                 case 'BOOKED':
-                    $order->update_status('processing');
+                    $currentStatus = $order->get_status();
+                    if ($currentStatus !== 'processing') {
+                        $order->update_status('processing');
+                    }
                     $optionReduceOrderStock = getResursOption('reduceOrderStock');
                     $hasReduceStock = get_post_meta($order_id, 'hasReduceStock');
+                    // This is not an actual callback. This is a function connected to process_payment.
                     resursEventLogger(
                         sprintf(
-                            'Callback BOOKED received. Stock reduction is %s. ' .
+                            'Function %s executed. Stock reduction is %s. ' .
                             'Current status (hasReduceStock) for reduction is "%s".',
+                            __FUNCTION__,
                             $optionReduceOrderStock ? 'Active' : 'Disabled',
                             $hasReduceStock ? 'Already Handled.' : 'Not handled.'
                         )
@@ -2364,7 +2380,7 @@ function woocommerce_gateway_resurs_bank_init()
                     if ($optionReduceOrderStock) {
                         if (empty($hasReduceStock)) {
                             resursEventLogger(
-                                'Callback BOOKED received. Plugin is set to handle stock reduction. ' .
+                                'Function %s executed. Plugin is set to handle stock reduction. ' .
                                 'Metadata (hasReduceStock) is not yet set. This is the first time this part is reached.'
                             );
                             update_post_meta($order_id, 'hasReduceStock', time());
@@ -2375,7 +2391,7 @@ function woocommerce_gateway_resurs_bank_init()
                             }
                         } else {
                             resursEventLogger(
-                                'Callback BOOKED received. Plugin is set to handle stock reduction, but ' .
+                                'Function %s executed. Plugin is set to handle stock reduction, but ' .
                                 'stock has already been marked as handled. Reduction skipped.'
                             );
                         }
