@@ -6265,7 +6265,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
  * @param WC_Order $order
  * @param $resursPaymentRequest
  * @return bool
- * @throws WC_Data_Exception
  */
 function updateResursOrderBillingData($order, $resursPaymentRequest)
 {
@@ -6301,8 +6300,11 @@ function updateResursOrderBillingData($order, $resursPaymentRequest)
                     isset($resursPayment->customer->address->{$value}) &&
                     $billingAddress[$item] !== $resursPayment->customer->address->{$value}
                 ) {
-                    update_post_meta($orderId, sprintf('_billing_%s', $item),
-                        $resursPayment->customer->address->{$value});
+                    update_post_meta(
+                        $orderId,
+                        sprintf('_billing_%s', $item),
+                        $resursPayment->customer->address->{$value}
+                    );
                     $return = true;
                 }
             }
