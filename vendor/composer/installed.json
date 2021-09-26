@@ -50,20 +50,20 @@
         },
         {
             "name": "resursbank/ecomphp-deprecated",
-            "version": "0.0.8",
-            "version_normalized": "0.0.8.0",
+            "version": "0.0.9",
+            "version_normalized": "0.0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ResursBank/ecomphp-deprecated.git",
-                "reference": "44fbf0cbdd043529895bd3c17db77ba91a98dfb1"
+                "reference": "267b9521b3bb7463abf8f6e6b1ae7affd8b135ea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ResursBank/ecomphp-deprecated/zipball/44fbf0cbdd043529895bd3c17db77ba91a98dfb1",
-                "reference": "44fbf0cbdd043529895bd3c17db77ba91a98dfb1",
+                "url": "https://api.github.com/repos/ResursBank/ecomphp-deprecated/zipball/267b9521b3bb7463abf8f6e6b1ae7affd8b135ea",
+                "reference": "267b9521b3bb7463abf8f6e6b1ae7affd8b135ea",
                 "shasum": ""
             },
-            "time": "2021-09-21T08:29:49+00:00",
+            "time": "2021-09-26T12:44:14+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -87,7 +87,7 @@
             "description": "Support for deprecated code within the EComPHP Library.",
             "support": {
                 "issues": "https://github.com/ResursBank/ecomphp-deprecated/issues",
-                "source": "https://github.com/ResursBank/ecomphp-deprecated/tree/0.0.8"
+                "source": "https://github.com/ResursBank/ecomphp-deprecated/tree/0.0.9"
             },
             "install-path": "../resursbank/ecomphp-deprecated"
         },

@@ -2,6 +2,7 @@
 
 /**
  * Class ResursException
+ * @deprecated Legacy Exception Class for ResursEComPHP
  */
 class ResursException extends \Exception
 {
