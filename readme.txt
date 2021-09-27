@@ -21,14 +21,18 @@ Official payment gateway for Resurs Bank (maintenance version).
 Full support for all active shop flows. *SoapClient* is required as many of the administrative actions are using SOAP.
 Requirements follows WooCommerce requirements, which means (as of june 2021) PHP 7.0 or higher.
 
-= Compatibility =
+= Compatibility and requirements =
 
-There are no longer any guarantees that this plugin is compatible with older versions of woocommerce. Our intentions is
-at least 3.4.0 and up. See the list below.
-
- * Compatibility: WooCommerce - at least 3.4.0
- * Plugin verified with PHP version 7.0 - 8.0
-
+* WooCommerce: v3.4.0 or higher (old features are ditched) and the actual support is set much higher.
+* WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
+  recommended to to the latest version as soon as possible if you're not already there.
+* HTTPS *must* be enabled in both direction. This is a callback security measure.
+* XML and SoapClient must be available.
+* Curl is *recommended* but not necessary.
+* PHP: [Take a look here](https://docs.woocommerce.com/document/server-requirements/) to keep up with support. As of aug
+  2021, both WooCommerce and WordPress is about to jump into 7.4 and higher.
+  Also, [read here](https://wordpress.org/news/2019/04/minimum-php-version-update/) for information about lower versions
+  of PHP.
 
 = Upgrade notice =
 
