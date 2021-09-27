@@ -23,17 +23,16 @@ This is a payment gateway for Resurs Ba2k, that supports three Resurs Bank shopf
 
 # Prerequisites
 
-The below requisites usually is active in a webserver/phpcore.
-
- * PHP 7.0 or above
- * [curl](https://curl.haxx.se): For communication via rest (Hosted flow and Resurs Checkout)
- * [PHP streams](http://php.net/manual/en/book.stream.php)
- * [SoapClient](http://php.net/manual/en/class.soapclient.php)
- 
-## Bundled prerequisites
-
- * [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
- * [NetCURL](http://www.netcurl.org/docs) (Bundled) [Bitbucket](https://www.netcurl.org)
+* WooCommerce: v3.4.0 or higher (old features are ditched) and the actual support is set much higher.
+* WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
+  recommended to to the latest version as soon as possible if you're not already there.
+* HTTPS *must* be enabled in both direction. This is a callback security measure.
+* XML and SoapClient must be available.
+* Curl is *recommended* but not necessary.
+* PHP: [Take a look here](https://docs.woocommerce.com/document/server-requirements/) to keep up with support. As of aug
+  2021, both WooCommerce and WordPress is about to jump into 7.4 and higher.
+  Also, [read here](https://wordpress.org/news/2019/04/minimum-php-version-update/) for information about lower versions
+  of PHP.
 
 SoapClient uses PHP streams to communicate and covers everything but the functions located in the hosted flow/checkout (meaning simplified flow, aftershop flow (finalization, annullments, crediting), payment methods listings and much more)
 
