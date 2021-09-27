@@ -1,3 +1,10 @@
+# 2.2.62
+
+* [WOO-575](https://resursbankplugins.atlassian.net/browse/WOO-575) Order status gets an incorrect jump on bookSignedPayment and status=FINALIZED
+* [WOO-574](https://resursbankplugins.atlassian.net/browse/WOO-574) Remove FINALIZATION and move "instant finalizations" into UPDATE.
+* [WOO-573](https://resursbankplugins.atlassian.net/browse/WOO-573) Remove unnecessary callbacks
+* [WOO-572](https://resursbankplugins.atlassian.net/browse/WOO-572) Activate logging of order stock handling
+
 # 2.2.61
 
 * [WOO-570](https://resursbankplugins.atlassian.net/browse/WOO-570) Resurs Annuity Factors Widget Error -- Unable to fetch .variations\_form: json.find is not a function

@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 3.0.1
 Tested up to: 5.8
 Requires PHP: 5.4
-Stable tag: 2.2.61
+Stable tag: 2.2.62
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.4.1
@@ -91,7 +91,16 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 In this release:
 
-* [WOO-570](https://resursbankplugins.atlassian.net/browse/WOO-570) Resurs Annuity Factors Widget Error -- Unable to fetch .variations\_form: json.find is not a function
+# 2.2.62
+
+* [WOO-575](https://resursbankplugins.atlassian.net/browse/WOO-575) Order status gets an incorrect jump on bookSignedPayment and status=FINALIZED
+* [WOO-574](https://resursbankplugins.atlassian.net/browse/WOO-574) Remove FINALIZATION and move "instant finalizations" into UPDATE.
+* [WOO-573](https://resursbankplugins.atlassian.net/browse/WOO-573) Remove unnecessary callbacks
+* [WOO-572](https://resursbankplugins.atlassian.net/browse/WOO-572) Activate logging of order stock handling
+
+In last release:
+
+* [WOO-570](https://resursbankplugins.atlassian.net/browse/WOO-570) Resurs Annuity Factors Widget Error -- Unable to fetch .variations_form: json.find is not a function
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
