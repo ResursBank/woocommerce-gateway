@@ -3924,7 +3924,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
-         * @param false $return
+         * @param int $sum
          * @return string|void
          */
         public static function get_annuity_html($sum = 0)
