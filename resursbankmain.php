@@ -3930,6 +3930,7 @@ function woocommerce_gateway_resurs_bank_init()
         public static function get_annuity_html($sum = 0)
         {
             $displayAnnuity = '';
+            $return = '';
             $annuityFactorPrice = $sum;
             if ((int)$sum === 0 && isset($_REQUEST['sum']) && (int)$_REQUEST['sum']) {
                 $annuityFactorPrice = (float)$_REQUEST['sum'];

@@ -26,7 +26,7 @@ Requirements follows WooCommerce requirements, which means (as of june 2021) PHP
 * WooCommerce: v3.4.0 or higher (old features are ditched) and the actual support is set much higher.
 * WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
   recommended to go for the latest version as soon as possible if you're not already there.
-* HTTPS *must* be enabled in both direction. This is a callback security measure.
+* HTTPS *must* be enabled in both directions. This is a callback security measure.
 * XML and SoapClient must be available.
 * Curl is *recommended* but not necessary.
 * PHP: [Take a look here](https://docs.woocommerce.com/document/server-requirements/) to keep up with support. As of aug
