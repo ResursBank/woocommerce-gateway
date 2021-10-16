@@ -21,6 +21,8 @@ class Password
     const COMPLEX_SPECIAL = 8;
     const COMPLEX_BINARY = 16;
 
+    private $passwordRetries = 0;
+
     /**
      * Complexity array table.
      * @var array $characterArray
@@ -92,6 +94,7 @@ class Password
         $antiDouble = true
     ) {
         $pwString = '';
+        $this->usedRandomizedCharacter = [];
 
         if (is_null($complexity)) {
             // Defaultify if someone sends null in here.
@@ -102,6 +105,7 @@ class Password
         }
 
         for ($charIndex = 0; $charIndex < $totalLength; $charIndex++) {
+            $this->passwordRetries = 0;
             $pwString .= $this->getCharacterFromComplexity($complexity, $ambigous, $antiDouble);
         }
 
@@ -178,7 +182,7 @@ class Password
                 ) &&
                 $return === $this->lastRandomizedCharacter
             ) ||
-            // or ambigous request and ambigous content
+            // or ambiguous request and ambiguous content
             (
                 $ambigous &&
                 in_array($return, $this->ambigousCharacters)
@@ -186,17 +190,24 @@ class Password
             // or avoid dupes and return value has been used where not special or numerics
             (
                 $antiDouble &&
-                in_array($return, $this->usedRandomizedCharacter) &&
+                isset($this->usedRandomizedCharacter[$return]) &&
                 (
                     $complexity !== self::COMPLEX_SPECIAL &&
                     $complexity !== self::COMPLEX_NUMERICS
                 )
             )
         ) {
-            $return = $this->getRandomCharacterFromArray($complexity, $ambigous, $antiDouble);
+            $this->passwordRetries++;
+            if ($this->passwordRetries <= count($characterArray)) {
+                return $this->getRandomCharacterFromArray($complexity, $ambigous, $antiDouble);
+            } else {
+                return $this->getRandomCharacterFromArray($complexity, $ambigous, false);
+            }
         }
 
-        $this->usedRandomizedCharacter[] = $return;
+        if (!isset($this->usedRandomizedCharacter[$return])) {
+            $this->usedRandomizedCharacter[$return] = $return;
+        }
         $this->lastRandomizedCharacter = $return;
 
         return $return;

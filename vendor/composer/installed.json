@@ -95,17 +95,17 @@
         },
         {
             "name": "tornevall/tornelib-php-crypto",
-            "version": "6.1.3",
-            "version_normalized": "6.1.3.0",
+            "version": "6.1.4",
+            "version_normalized": "6.1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-crypto.git",
-                "reference": "a2551fd0e396ac88a666aeef1eec0fc9a5f91427"
+                "reference": "dc53bcbd3d0327c4dee21e1368cdb831ed320176"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-crypto/zipball/a2551fd0e396ac88a666aeef1eec0fc9a5f91427",
-                "reference": "a2551fd0e396ac88a666aeef1eec0fc9a5f91427",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-crypto/zipball/dc53bcbd3d0327c4dee21e1368cdb831ed320176",
+                "reference": "dc53bcbd3d0327c4dee21e1368cdb831ed320176",
                 "shasum": ""
             },
             "require": {
@@ -114,7 +114,7 @@
                 "tornevall/tornelib-php-io": "^6.1.0",
                 "tornevall/tornelib-php-utils": "^6.1.0"
             },
-            "time": "2020-07-08T07:00:39+00:00",
+            "time": "2021-10-16T22:41:19+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -137,7 +137,7 @@
             "description": "Crypto and I/O library for TorneLIB, handling encryption and data.",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-crypto/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-crypto/tree/6.1.3"
+                "source": "https://github.com/Tornevall/tornelib-php-crypto/tree/6.1.4"
             },
             "install-path": "../tornevall/tornelib-php-crypto"
         },

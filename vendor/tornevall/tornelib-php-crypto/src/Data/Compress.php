@@ -21,22 +21,6 @@ class Compress
     private $compressionLevel = 5;
 
     /**
-     * @param int $compressionLevel
-     */
-    public function setCompressionLevel($compressionLevel = 9)
-    {
-        $this->compressionLevel = $compressionLevel;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCompressionLevel()
-    {
-        return $this->compressionLevel;
-    }
-
-    /**
      * @param $data
      * @return string
      */
@@ -48,6 +32,22 @@ class Compress
                 $this->getCompressionLevel()
             )
         );
+    }
+
+    /**
+     * @return int
+     */
+    public function getCompressionLevel()
+    {
+        return $this->compressionLevel;
+    }
+
+    /**
+     * @param int $compressionLevel
+     */
+    public function setCompressionLevel($compressionLevel = 9)
+    {
+        $this->compressionLevel = $compressionLevel;
     }
 
     /**
