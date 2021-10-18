@@ -4083,12 +4083,12 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if (!is_ajax()) {
-                return $return;
+                return isset($return) ? $return : null;;
             }
 
             header('Content-Type: application/json;charset=UTF-8');
             echo json_encode([
-                'html' => $return,
+                'html' => isset($return) ? $return : '',
             ]);
 
             die;
