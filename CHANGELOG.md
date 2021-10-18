@@ -1,3 +1,11 @@
+# 2.2.64
+
+* [WOO-576](https://resursbankplugins.atlassian.net/browse/WOO-576) $return is sometimes not set when return occurs
+
+# 2.2.63
+
+Informative updates.
+
 # 2.2.62
 
 * [WOO-575](https://resursbankplugins.atlassian.net/browse/WOO-575) Order status gets an incorrect jump on bookSignedPayment and status=FINALIZED

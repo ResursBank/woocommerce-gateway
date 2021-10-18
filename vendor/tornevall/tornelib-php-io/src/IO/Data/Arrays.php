@@ -94,15 +94,14 @@ class Arrays
 
     /**
      * @param $html
-     * @return \DOMElement
-     * @since 6.1.2
+     * @param $options
+     * @return false|string
+     * @since 6.1.4
      */
-    private function getPreparedDocument($html)
+    public function getHtmlAsArray($html, $options)
     {
-        $dom = new \DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($html);
-        return $dom->documentElement;
+        $options['asArray'] = true;
+        return $this->getHtmlAsJson($html, $options);
     }
 
     /**
@@ -130,55 +129,63 @@ class Arrays
 
     /**
      * @param $html
-     * @param $options
-     * @return false|string
-     * @since 6.1.4
+     * @return \DOMElement
+     * @since 6.1.2
      */
-    public function getHtmlAsArray($html, $options) {
-        $options['asArray'] = true;
-        return $this->getHtmlAsJson($html, $options);
+    private function getPreparedDocument($html)
+    {
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        return $dom->documentElement;
     }
 
     /**
-     * @param $html
-     * @param array $tags
-     * @param array $getOptions
+     * @param $element
      * @return array
      * @since 6.1.2
      */
-    public function getHtmlElements($html, $tags = [], $getOptions = [])
+    private function getDomChildren($element)
     {
-        $return = [];
-        $document = $this->getPreparedDocument($html);
+        $nameTypeTag = $this->getNameType($element);
 
-        if (is_string($tags) && (bool)preg_match('/,/', $tags)) {
-            $tags = explode(',', $tags);
+        $domObject = ["tag" => $nameTypeTag];
+        if (isset($element->attributes) && (is_array($element->attributes) || is_object($element->attributes))) {
+            foreach ($element->attributes as $attribute) {
+                $domObject[$attribute->name] = $attribute->value;
+            }
         }
-
-        foreach ((array)$tags as $tag) {
-            /** @var \DOMNodeList $elements */
-            $elements = $document->getElementsByTagName($tag);
-            foreach ($elements as $element) {
-                $addElement = false;
-                if (!count($getOptions)) {
-                    $addElement = true;
-                }
-                $arrayElement = $this->getDomChildren($element);
-                $walkedElement = null;
-                if ($this->getDomWalker($arrayElement, $getOptions)) {
-                    $walkedElement = $this->getElementFromWalk($arrayElement, $getOptions);
-                    $addElement = true;
-                }
-
-                if ($addElement && $walkedElement) {
-                    $return = array_merge($return, $walkedElement);
+        if (isset($element->childNodes)) {
+            foreach ($element->childNodes as $subElement) {
+                if ($subElement->nodeType == XML_TEXT_NODE) {
+                    $domObject["html"] = $subElement->wholeText;
+                } else {
+                    $domObject["children"][] = $this->getDomChildren($subElement, true);
                 }
             }
         }
 
-        if (isset($getOptions['assoc'])) {
-            $return = $this->getAssocArrayFromDomTags($return, $getOptions);
+        return $domObject;
+    }
+
+    /**
+     * @param $element
+     * @return null
+     * @since 6.1.2
+     */
+    private function getNameType($element)
+    {
+        $return = null;
+        $names = ['tagName', 'nodeName'];
+
+        foreach ($names as $name) {
+            if (isset($element->{$name}) && !empty($element->{$name})) {
+                $return = $element->{$name};
+                break;
+            }
         }
+
+        $return = preg_replace('/^#/', '', $return);
 
         return $return;
     }
@@ -234,22 +241,67 @@ class Arrays
     }
 
     /**
-     * @param $arrayElement
-     * @param $getOptions
-     * @return mixed|null
-     * @since 6.1.3
+     * @param $html
+     * @param array $tags
+     * @param array $getOptions
+     * @return array
+     * @since 6.1.2
      */
-    private function getElementFromWalk($arrayElement, $getOptions)
+    public function getHtmlElements($html, $tags = [], $getOptions = [])
     {
         $return = [];
-        foreach ($arrayElement as $key => $item) {
-            try {
-                $this->getHasWalkedOption($item, $key, $getOptions);
-            } catch (ExceptionHandler $e) {
-                $return[] = $arrayElement;
+        $document = $this->getPreparedDocument($html);
+
+        if (is_string($tags) && (bool)preg_match('/,/', $tags)) {
+            $tags = explode(',', $tags);
+        }
+
+        foreach ((array)$tags as $tag) {
+            /** @var \DOMNodeList $elements */
+            $elements = $document->getElementsByTagName($tag);
+            foreach ($elements as $element) {
+                $addElement = false;
+                if (!count($getOptions)) {
+                    $addElement = true;
+                }
+                $arrayElement = $this->getDomChildren($element);
+                $walkedElement = null;
+                if ($this->getDomWalker($arrayElement, $getOptions)) {
+                    $walkedElement = $this->getElementFromWalk($arrayElement, $getOptions);
+                    $addElement = true;
+                }
+
+                if ($addElement && $walkedElement) {
+                    $return = array_merge($return, $walkedElement);
+                }
             }
         }
+
+        if (isset($getOptions['assoc'])) {
+            $return = $this->getAssocArrayFromDomTags($return, $getOptions);
+        }
+
         return $return;
+    }
+
+    /**
+     * @param $arrayElement
+     * @param $getOptions
+     * @return bool
+     * @since 6.1.3
+     */
+    private function getDomWalker($arrayElement, $getOptions)
+    {
+        $walkerResult = false;
+        try {
+            array_walk_recursive($arrayElement, function ($item, $key, $getOptions) {
+                $this->getHasWalkedOption($item, $key, $getOptions);
+            }, $getOptions);
+        } catch (ExceptionHandler $e) {
+            $walkerResult = true;
+        }
+
+        return $walkerResult;
     }
 
     /**
@@ -278,71 +330,19 @@ class Arrays
     /**
      * @param $arrayElement
      * @param $getOptions
-     * @return bool
+     * @return mixed|null
      * @since 6.1.3
      */
-    private function getDomWalker($arrayElement, $getOptions)
+    private function getElementFromWalk($arrayElement, $getOptions)
     {
-        $walkerResult = false;
-        try {
-            array_walk_recursive($arrayElement, function ($item, $key, $getOptions) {
+        $return = [];
+        foreach ($arrayElement as $key => $item) {
+            try {
                 $this->getHasWalkedOption($item, $key, $getOptions);
-            }, $getOptions);
-        } catch (ExceptionHandler $e) {
-            $walkerResult = true;
-        }
-
-        return $walkerResult;
-    }
-
-    /**
-     * @param $element
-     * @return array
-     * @since 6.1.2
-     */
-    private function getDomChildren($element)
-    {
-        $nameTypeTag = $this->getNameType($element);
-
-        $domObject = ["tag" => $nameTypeTag];
-        if (isset($element->attributes) && (is_array($element->attributes) || is_object($element->attributes))) {
-            foreach ($element->attributes as $attribute) {
-                $domObject[$attribute->name] = $attribute->value;
+            } catch (ExceptionHandler $e) {
+                $return[] = $arrayElement;
             }
         }
-        if (isset($element->childNodes)) {
-            foreach ($element->childNodes as $subElement) {
-                if ($subElement->nodeType == XML_TEXT_NODE) {
-                    $domObject["html"] = $subElement->wholeText;
-                } else {
-                    $domObject["children"][] = $this->getDomChildren($subElement, true);
-                }
-            }
-        }
-
-        return $domObject;
-    }
-
-
-    /**
-     * @param $element
-     * @return null
-     * @since 6.1.2
-     */
-    private function getNameType($element)
-    {
-        $return = null;
-        $names = ['tagName', 'nodeName'];
-
-        foreach ($names as $name) {
-            if (isset($element->{$name}) && !empty($element->{$name})) {
-                $return = $element->{$name};
-                break;
-            }
-        }
-
-        $return = preg_replace('/^#/', '', $return);
-
         return $return;
     }
 

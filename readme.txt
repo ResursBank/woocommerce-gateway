@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.0
 Tested up to: 5.8.1
 Requires PHP: 5.4
-Stable tag: 2.2.63
+Stable tag: 2.2.64
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -94,6 +94,15 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 == Changelog ==
 
 In this release:
+
+# 2.2.64
+
+* [WOO-576](https://resursbankplugins.atlassian.net/browse/WOO-576) $return is sometimes not set when return occurs
+* Tagged version for WooCommerce.
+
+# 2.2.63
+
+Info update only.
 
 # 2.2.62
 

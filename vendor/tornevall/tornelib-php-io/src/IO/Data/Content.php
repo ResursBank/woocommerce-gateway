@@ -10,10 +10,20 @@ use TorneLIB\Utils\Security;
 /**
  * Class Content
  * @package TorneLIB\IO\Data
- * @version 6.1.4
+ * @version 6.1.5
  */
 class Content
 {
+    /**
+     * @var int XML_NORMALIZE Normalize XML content.
+     * @since 6.1.1
+     */
+    const XML_NORMALIZE = 1;
+    /**
+     * @var int XML_NO_PATH Do not follow the xml-path.
+     * @since 6.1.1
+     */
+    const XML_NO_PATH = 2;
     /**
      * @var
      */
@@ -26,19 +36,6 @@ class Content
      * @var
      */
     private $simpleElement;
-
-    /**
-     * @var int XML_NORMALIZE Normalize XML content.
-     * @since 6.1.1
-     */
-    const XML_NORMALIZE = 1;
-
-    /**
-     * @var int XML_NO_PATH Do not follow the xml-path.
-     * @since 6.1.1
-     */
-    const XML_NO_PATH = 2;
-
     /**
      * Special options array to use with XML requests.
      * @var array
@@ -93,21 +90,23 @@ class Content
     }
 
     /**
-     * @param $data
-     * @param int $returnOptions
-     * @param string $expectVariable
-     * @return array
-     * @since 6.0.5
+     * Set options for xml input.
+     *
+     * @param $options
+     * @param null $optionsValue
+     * @return $this
      */
-    public function getFromXml($data, $returnOptions = 1, $expectVariable = '')
+    public function setXmlOptions($options, $optionsValue = null)
     {
-        $return = [];
-
-        if ($this->simpleElement) {
-            $return = $this->getFromSimpleXml($data, $returnOptions, $expectVariable);
+        if (is_array($options)) {
+            foreach ($options as $optionKey => $optionValue) {
+                $this->xmlOptions[$optionKey] = $optionValue;
+            }
+        } elseif (!is_null($optionsValue)) {
+            $this->xmlOptions[$options] = $optionsValue;
         }
 
-        return $return;
+        return $this;
     }
 
     /**
@@ -131,47 +130,20 @@ class Content
 
     /**
      * @param $data
-     * @return string
-     * @since 6.1.0
+     * @param int $returnOptions
+     * @param string $expectVariable
+     * @return mixed
+     * @since 6.0.5
      */
-    private function validateXml($data)
+    public function getFromXml($data, $returnOptions = 1, $expectVariable = '')
     {
-        $return = '';
+        $return = [];
 
-        if (is_string($data) &&
-            preg_match('/<(.*?)>/s', $data)
-        ) {
-            $return = $data;
-        } else {
-            if (!preg_match('/^</', $data) && preg_match("/&\b(.*?)+;(.*)/is", $data)) {
-                $dataEntity = trim(html_entity_decode($data));
-                if (preg_match('/^</', $dataEntity)) {
-                    $return = $dataEntity;
-                }
-            }
+        if ($this->simpleElement) {
+            $return = $this->getFromSimpleXml($data, $returnOptions, $expectVariable);
         }
 
-        return trim($return);
-    }
-
-    /**
-     * Set options for xml input.
-     *
-     * @param $options
-     * @param null $optionsValue
-     * @return $this
-     */
-    public function setXmlOptions($options, $optionsValue = null)
-    {
-        if (is_array($options)) {
-            foreach ($options as $optionKey => $optionValue) {
-                $this->xmlOptions[$optionKey] = $optionValue;
-            }
-        } elseif (!is_null($optionsValue)) {
-            $this->xmlOptions[$options] = $optionsValue;
-        }
-
-        return $this;
+        return $return;
     }
 
     /**
@@ -182,6 +154,7 @@ class Content
      * @param int $returnOptions NORMALIZE + XML_NO_PATH
      * @param string $expectVariable
      * @return object|null
+     * @throws Exception
      * @since 6.1.0
      */
     public function getFromSimpleXml($data, $returnOptions = 1, $expectVariable = '')
@@ -241,6 +214,31 @@ class Content
     }
 
     /**
+     * @param $data
+     * @return string
+     * @since 6.1.0
+     */
+    private function validateXml($data)
+    {
+        $return = '';
+
+        if (is_string($data) &&
+            preg_match('/<(.*?)>/s', $data)
+        ) {
+            $return = $data;
+        } else {
+            if (!preg_match('/^</', $data) && preg_match("/&\b(.*?)+;(.*)/is", $data)) {
+                $dataEntity = trim(html_entity_decode($data));
+                if (preg_match('/^</', $dataEntity)) {
+                    $return = $dataEntity;
+                }
+            }
+        }
+
+        return trim($return);
+    }
+
+    /**
      * Check if there is something more than just an empty object hidden behind a SimpleXMLElement
      *
      * @param null $simpleXML
@@ -286,6 +284,56 @@ class Content
     }
 
     /**
+     * @param array $contentData
+     * @param null $renderAndDie
+     * @param null $compression
+     * @param string $initialTagName
+     * @param string $rootName
+     * @return mixed
+     * @throws Exception
+     * @since 6.0.1
+     * @deprecated From 6.0, use 6.1 getXmlFromArray instead.
+     * @noinspection PhpUnusedParameterInspection
+     */
+    public function renderXml(
+        $contentData = [],
+        $renderAndDie = null,
+        $compression = null,
+        $initialTagName = 'item',
+        $rootName = 'XMLResponse'
+    ) {
+        return $this->getXmlFromArray($contentData);
+    }
+
+    /**
+     * @param $data
+     * @param string $rootName
+     * @param string $initialTagName
+     * @param bool $toUtf8
+     * @return mixed
+     * @throws Exception
+     * @noinspection PhpUnusedParameterInspection
+     */
+    public function getXmlFromArray($data, $rootName = 'XMLResponse', $initialTagName = 'item', $toUtf8 = true)
+    {
+        $return = null;
+        if ($toUtf8) {
+            $data = (new Strings())->getUtf8($data);
+        }
+
+        if (class_exists('\SimpleXMLElement')) {
+            /** @noinspection PhpFullyQualifiedNameUsageInspection */
+            $xml = new \SimpleXMLElement('<?xml version="1.0"?>' . '<' . $rootName . '></' . $rootName . '>');
+            $return = $this->getXmlTransformed(
+                $data,
+                $xml
+            )->asXML();
+        }
+
+        return $return;
+    }
+
+    /**
      * @param $data
      * @param \SimpleXMLElement $xml
      * @return \SimpleXMLElement
@@ -304,49 +352,6 @@ class Content
         }
 
         return $xml;
-    }
-
-    /**
-     * @param $data
-     * @param string $rootName
-     * @param string $initialTagName
-     * @param bool $toUtf8
-     * @return mixed
-     * @noinspection PhpUnusedParameterInspection
-     */
-    public function getXmlFromArray($data, $rootName = 'XMLResponse', $initialTagName = 'item', $toUtf8 = true)
-    {
-        if ($toUtf8) {
-            $data = (new Strings())->getUtf8($data);
-        }
-
-        /** @noinspection PhpFullyQualifiedNameUsageInspection */
-        $xml = new \SimpleXMLElement('<?xml version="1.0"?>' . '<' . $rootName . '></' . $rootName . '>');
-        return $this->getXmlTransformed(
-            $data,
-            $xml
-        )->asXML();
-    }
-
-    /**
-     * @param array $contentData
-     * @param null $renderAndDie
-     * @param null $compression
-     * @param string $initialTagName
-     * @param string $rootName
-     * @return mixed
-     * @since 6.0.1
-     * @deprecated From 6.0, use 6.1 getXmlFromArray instead.
-     * @noinspection PhpUnusedParameterInspection
-     */
-    public function renderXml(
-        $contentData = [],
-        $renderAndDie = null,
-        $compression = null,
-        $initialTagName = 'item',
-        $rootName = 'XMLResponse'
-    ) {
-        return $this->getXmlFromArray($contentData);
     }
 
     public function __call($name, $arguments)

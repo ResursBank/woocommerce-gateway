@@ -227,24 +227,24 @@
         },
         {
             "name": "tornevall/tornelib-php-io",
-            "version": "6.1.4",
-            "version_normalized": "6.1.4.0",
+            "version": "6.1.5",
+            "version_normalized": "6.1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-io.git",
-                "reference": "3ad9737093a0f713c6955f749ba5c17807f1074f"
+                "reference": "e07dbc32ee3161d53fa457bd1fc2f580b5b6d4ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-io/zipball/3ad9737093a0f713c6955f749ba5c17807f1074f",
-                "reference": "3ad9737093a0f713c6955f749ba5c17807f1074f",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-io/zipball/e07dbc32ee3161d53fa457bd1fc2f580b5b6d4ef",
+                "reference": "e07dbc32ee3161d53fa457bd1fc2f580b5b6d4ef",
                 "shasum": ""
             },
             "require": {
                 "tornevall/tornelib-php-errorhandler": "^6.1.0",
                 "tornevall/tornelib-php-utils": "^6.1.0"
             },
-            "time": "2020-11-15T09:24:34+00:00",
+            "time": "2021-10-18T07:37:47+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -267,7 +267,7 @@
             "description": "Tiny I/O handler library for TorneLIB.",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-io/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-io/tree/6.1.4"
+                "source": "https://github.com/Tornevall/tornelib-php-io/tree/6.1.5"
             },
             "install-path": "../tornevall/tornelib-php-io"
         },
