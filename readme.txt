@@ -7,10 +7,10 @@ Requires PHP: 5.4
 Stable tag: 2.2.63
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-WC Tested up to: 5.4.1
+WC Tested up to: 5.8.0
 
 Resurs Bank Payment Gateway for WooCommerce.
-WooCommerce Tested up to: 5.4.1
+WooCommerce Tested up to: 5.8.0
 Maintenance release.
 
 == Description ==
