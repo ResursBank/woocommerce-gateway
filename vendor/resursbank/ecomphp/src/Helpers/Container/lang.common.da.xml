@@ -1,0 +1,810 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<translations>
+
+    <!-- error messages  -->
+    <error-messages>
+        <translation class="error-pnr-format">
+            <swedish>Ange ett giltigt personnummer</swedish>
+            <norwegian>Du må oppgi gyldig fødselsnummer</norwegian>
+            <finnish>Henkilötunnus on pakollinen tieto</finnish>
+            <danish>Du skal angive et gyldigt personnummer</danish>
+        </translation>
+        <translation class="error-pnr-service">
+            <swedish>Tjänsten är tyvärr inte tillgänglig just nu. Prova igen eller fyll i dina uppgifter manuellt.</swedish>
+            <norwegian>Vi kunne ikke hente din adresse med oppgitt telefonnummer. Vennligst legg inn din adresse manuelt.</norwegian>
+            <finnish>Palveluun ei valitettavasti juuri nyt saada yhteyttä. Kokeile uudelleen tai täytä tiedot manuaalisesti.</finnish>
+            <danish>Tjenesten er desværre ikke tilgængelig i øjeblikket. Prøv igen, eller udfyld dine oplysninger manuelt.</danish>
+        </translation>
+        <translation class="error-pnr-no-user">
+            <swedish>Ingen användare hittades. Prova igen eller fyll i dina uppgifter manuellt.</swedish>
+            <norwegian>Vi kunne ikke hente din adresse med oppgitt telefonnummer. Vennligst legg inn din adresse manuelt.</norwegian>
+            <finnish>Ei käyttäjä löytynyt. Kokeile uudelleen tai täytä tiedot manuaalisesti.</finnish>
+            <danish>Ingen bruger fundet. Prøv igen, eller udfyld dine oplysninger manuelt.</danish>
+        </translation>
+        <translation class="error-user-to-young">
+            <swedish>Du måste vara 18 eller äldre för att hämta adress.</swedish>
+            <norwegian>Du må være 18 år eller eldre for å hent adresse.</norwegian>
+            <finnish>Sinun täytyy olla 18 tai vanhempi ladata osoitteeseen.</finnish>
+            <danish>Du skal være 18 år for at hente adresse.</danish>
+        </translation>
+        <translation class="error-firstname">
+            <swedish>Ange förnamn</swedish>
+            <norwegian>Skriv inn fornavn</norwegian>
+            <finnish>Kirjoita etunimi</finnish>
+            <danish>Angiv fornavn</danish>
+        </translation>
+        <translation class="error-surname">
+            <swedish>Ange efternamn</swedish>
+            <norwegian>Skriv inn etternavn</norwegian>
+            <finnish>Kirjoita sukunimi</finnish>
+            <danish>Angiv efternavn</danish>
+        </translation>
+        <translation class="error-address">
+            <swedish>Ange adress</swedish>
+            <norwegian>Du må oppgi en adresse</norwegian>
+            <finnish>Osoite on pakollinen tieto</finnish>
+            <danish>Du skal angive en adresse</danish>
+        </translation>
+        <translation class="error-postal">
+            <swedish>Ange postnummer</swedish>
+            <norwegian>Du må oppgi postnr.</norwegian>
+            <finnish>Postinumero on pakollinen tieto</finnish>
+            <danish>Du skal angive et postnummer</danish>
+        </translation>
+        <translation class="error-postal-format">
+            <swedish>Felaktigt postnummer</swedish>
+            <norwegian>Feil postnr.</norwegian>
+            <finnish>Virheellinen postinumero</finnish>
+            <danish>Forkert postnummer</danish>
+        </translation>
+        <translation class="error-city">
+            <swedish>Ange ort</swedish>
+            <norwegian>Du må oppgi et poststed</norwegian>
+            <finnish>Postitoimipaikka on pakollinen tieto</finnish>
+            <danish>Du skal angive en by</danish>
+        </translation>
+        <translation class="error-telephone">
+            <swedish>Ange mobiltelefonnummer</swedish>
+            <norwegian>Du må oppgi Mobilnummer</norwegian>
+            <finnish>Puhelinnumero on pakollinen tieto</finnish>
+            <danish>Du skal angive et mobil nr.</danish>
+        </translation>
+        <translation class="error-telephone-format">
+            <swedish>Ange ett korrekt mobiltelefonnummer</swedish>
+            <norwegian>Skriv inn et korrekt mobiltelefonnummer</norwegian>
+            <finnish>Kirjoita oikea puhelinnumero</finnish>
+            <danish>Angiv et korrekt mobil nr.</danish>
+        </translation>
+        <translation class="error-email">
+            <swedish>Ange e-postadress</swedish>
+            <norwegian>Du må oppgi en e-postadresse</norwegian>
+            <finnish>Sähköpostiosoite on pakollinen tieto</finnish>
+            <danish>Du skal angive en e-mailadresse</danish>
+        </translation>
+        <translation class="error-email-format">
+            <swedish>Ange en korrekt e-postadress</swedish>
+            <norwegian>Skriv inn en korrekt e-postadresse</norwegian>
+            <finnish>Kirjoita oikea sähköpostiosoite</finnish>
+            <danish>Angiv en korrekt e-mailadresse</danish>
+        </translation>
+        <translation class="error-no-resurscard-nr">
+            <swedish>Inget kort hittades. "Nytt kort" har valts istället</swedish>
+            <norwegian>Ingen kort funnet. "Nye kortet" er valgt i stedet</norwegian>
+            <finnish>Ei korttia löytynyt. "Uusi kortti" on valittu sijaan</finnish>
+            <danish>Intet kort fundet. "Nyt kort" er valgt i stedet</danish>
+        </translation>
+        <translation class="error-payment-methods">
+            <swedish>Det gick inte att uppdatera betalningsmetoder</swedish>
+            <norwegian>Kunne ikke oppdatere betalingsmåter</norwegian>
+            <finnish>Ei voi päivittää maksutapoja</finnish>
+            <danish>Kunne ikke opdatere betalingsmetoder</danish>
+        </translation>
+        <translation class="error-payment-method">
+            <swedish>Någonting gick fel. Vänligen försök igen</swedish>
+            <norwegian>Noe gikk galt. Vennligst prøv igjen</norwegian>
+            <finnish>Tapahtui virhe. Ole hyvä ja yritä uudelleen.</finnish>
+            <danish>Der skete en fejl. Prøv venligst igen</danish>
+        </translation>
+        <translation class="error-payment-method-credit">
+            <swedish>Din kreditansökan kunde inte beviljas, vänligen välj ett annat betalsätt.</swedish>
+            <norwegian>Din kredittsøknad ble dessverre ikke innvilget akkurat nå. Vennligst velg en annen betalingsmåte.</norwegian>
+            <finnish>Luottoa ei valitettavasti voida myöntää. Valitse toinen maksutapa. Halutessasi voit ottaa yhteyttä Resurs Bankin asiakaspalveluun numeroon 09 622 4308.</finnish>
+            <danish>Din ansøgning blev desværre ikke bevilget, venligst vælg en anden måde at betale på.</danish>
+        </translation>
+        <translation class="error-book-payment-rejected-by-representative">
+            <swedish>Ditt köp har blivit avbrutet vänligen kontakta säljaren.</swedish>
+            <norwegian>Kjøpet er kansellert, bør du kontakte selgeren.</norwegian>
+            <finnish>Ostoksesi on peruutettu, ota yhteyttä myyjään.</finnish>
+            <danish>Dit køb er blevet annulleret, skal du kontakte sælger.</danish>
+        </translation>
+        <translation class="error-payment-method-nomatch">
+            <swedish>Kortnummer och personnummer stämmer ej överens. Vänligen ange ett annat kortnummer eller byt betalmetod.</swedish>
+            <norwegian>Kortnummer og fødselsnummer samsvarer ikke. Vennligst oppgi et annet kortnummer eller skift betalingsmåte.</norwegian>
+            <finnish>Kortin numero ja henkilötunnus eivät täsmää. Kirjoita toinen korttinumero tai vaihda maksutapaa.</finnish>
+            <danish>Kortnummer og personnummer stemmer ikke overens. Angiv et andet kortnummer, eller vælg en anden betalingsmetode.</danish>
+        </translation>
+        <translation class="error-wrong-authentication">
+            <danish>Intet kort fundet. Obs: Du har ikke en aktiv købekredit hos Resurs Bank. Du kan ansøge om en kredit eller vælge en anden betalingsmetode</danish>
+        </translation>
+    </error-messages>
+
+    <!-- payment methods.  - Order based on payment-methods.html.   -->
+    <payment-methods>
+        <translation class="invoice-first-paragraph">
+            <swedish>Fakturan skickas till angiven e-postadress. Läs villkoren för faktura</swedish>
+            <norwegian>Fakturaen sendes til den angitte e-postadressen. Les vilkårene for faktura</norwegian>
+            <finnish>Lasku lähetetään ilmoitettuun sähköpostiosoitteeseen. Lue laskun ehdot</finnish>
+            <danish>Fakturaen vil blive sendt til den angivne e-mailadresse. Læs betingelserne for faktura</danish>
+        </translation>
+        <translation class="invoice-repex-link">
+            <swedish>här</swedish>
+            <norwegian>her</norwegian>
+            <finnish>täältä</finnish>
+            <danish>her</danish>
+        </translation>
+        <translation class="delivery-bank-id">
+            <swedish>Eftersom du valt en annan leveransadress måste du signera med Bank-id.</swedish>
+            <norwegian>Siden du har valgt en annen leveringsadresse, må du signere med BankID.</norwegian>
+            <finnish>Sinun on allekirjoitettava pankkitunnuksella, koska olet valinnut toisen toimitusosoitteen.</finnish>
+            <danish>Da du har valgt en anden leveringsadresse, skal du underskrive med Nem-ID.</danish>
+        </translation>
+        <translation class="installment-first-paragraph">
+            <swedish>Läs villkoren för delbetalning</swedish>
+            <norwegian>Les vilkårene for delbetaling</norwegian>
+            <finnish>Lue osamaksun ehdot</finnish>
+            <danish>Læs betingelserne for delbetaling</danish>
+        </translation>
+        <translation class="installment-repex-link">
+            <swedish>här</swedish>
+            <norwegian>her</norwegian>
+            <finnish>täältä</finnish>
+            <danish>her</danish>
+        </translation>
+        <translation class="resurscard-cardnr">
+            <swedish>Kortnummer/Kontonummer</swedish>
+            <norwegian>Kortnummer/Kontonummer</norwegian>
+            <finnish>Kortin numero/Tilinumero</finnish>
+            <danish>Kortnummer/Kontonummer</danish>
+        </translation>
+        <translation class="resurscard-balance">
+            <swedish>Tillgängligt</swedish>
+            <norwegian>Balanse</norwegian>
+            <finnish>Tasapaino</finnish>
+            <danish>Balance</danish>
+        </translation>
+        <translation class="resurscard-empty-error">
+            <swedish>Ange kortnummer</swedish>
+            <norwegian>Du må oppgi kortnr</norwegian>
+            <finnish>Kortin numero on pakollinen tieto</finnish>
+            <danish>Du skal angive et kortnummer</danish>
+        </translation>
+        <translation class="resurscard-format-error">
+            <swedish>Ogiltigt kortnummer</swedish>
+            <norwegian>Ugyldig kortnummer</norwegian>
+            <finnish>Kortin numero ei kelpaa</finnish>
+            <danish>Ugyldigt kortnummer</danish>
+        </translation>
+        <translation class="new-resurscard-first-paragraph">
+            <swedish>Läs villkoren</swedish>
+            <norwegian>Les vilkårene</norwegian>
+            <finnish>Lue ehdot</finnish>
+            <danish>Læs betingelserne</danish>
+        </translation>
+        <translation class="new-resurscard-repex-link">
+            <swedish>här</swedish>
+            <norwegian>her</norwegian>
+            <finnish>täältä</finnish>
+            <danish>her</danish>
+        </translation>
+        <translation class="new-resurscard-credit-wish">
+            <swedish>Önskad kreditgräns</swedish>
+            <norwegian>Ønsket kredittgrense</norwegian>
+            <finnish>Haettava luottoraja</finnish>
+            <danish>Ønsket kreditgrænse</danish>
+        </translation>
+        <translation class="new-resurscard-credit-link">
+            <swedish>här</swedish>
+            <norwegian>her</norwegian>
+            <finnish>täältä</finnish>
+            <danish>her</danish>
+        </translation>
+        <translation class="card-modal-link">
+            <swedish>Mer info</swedish>
+            <norwegian>Mer informasjon</norwegian>
+            <finnish>Lue lisää</finnish>
+            <danish>Mere info</danish>
+        </translation>
+        <translation class="submit-pnr-payment">
+            <swedish>Ange personnummer</swedish>
+            <norwegian>Skriv inn fødselsnummer</norwegian>
+            <finnish>Kirjoita henkilötunnus</finnish>
+            <danish>Angiv personnummer</danish>
+        </translation>
+        <translation class="error-pnr-format-payment">
+            <swedish>Ange ett giltigt personnummer</swedish>
+            <norwegian>Du må oppgi gyldig fødselsnummer</norwegian>
+            <finnish>Henkilötunnus on pakollinen tieto</finnish>
+            <danish>Du skal angive et gyldigt personnummer</danish>
+        </translation>
+        <translation class="trustly-info">
+            <swedish>Betala direkt från ditt bankkonto, med säker verifiering via BankID. Slipp kort, nedladdning av appar och registrering.</swedish>
+            <norwegian>Betal direkte fra bankkontoen din på nett, støttet av sikkerhet på banknivå. Ingen kort, ingen app-nedlasting, ingen registrering.</norwegian>
+            <finnish>Maksa suoraan omalta verkkopankkitililtäsi, varmennettu pankkitoiminnan tasoisella turvallisuudella. Ei kortteja, ei sovelluksia, ei rekisteröitymistä.</finnish>
+            <danish>Betal direkte fra din bankkonto med sikker verificering via BankID. Ingen kort, download af app eller registrering behøves.</danish>
+        </translation>
+    </payment-methods>
+
+    <!-- Everything else - Order based on omni-checkout.html.  -->
+
+    <ie-overlay>
+        <translation class="browser-obsolete">
+            <swedish>Du använder en gammal webbläsare som inte stöds av checkouten. Uppdatera din befintliga webbläsare eller ladda hem Chrome, Firefox, Edge eller IE11.</swedish>
+            <norwegian>Du bruker en utdatert nettleser som ikke er støttet av checkouten. Oppdater eksisterende nettleser eller last ned Chrome, Firefox, Edge eller IE11.</norwegian>
+            <finnish>Käytät vanhaa verkkoselainta, jota Checkout ei tue. Päivitä selain tai lataa Chrome, Firefox, Edge tai IE11.</finnish>
+            <danish>Din webbrowser er forældet og understøttes ikke af checkouten. Opdater din webbrowser, eller download Chrome, Firefox, Edge eller IE11.</danish>
+        </translation>
+    </ie-overlay>
+
+    <error-overlay>
+        <translation class="no-service">
+            <swedish>Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.</swedish>
+            <norwegian>Tjenesten er dessverre ikke tilgjengelig for øyeblikket. Prøv igjen senere eller kontakt kundeservice.</norwegian>
+            <finnish>Palveluun ei valitettavasti juuri nyt saada yhteyttä. Kokeile myöhemmin uudelleen tai ota yhteyttä asiakaspalveluun.</finnish>
+            <danish>Tjenesten er desværre ikke tilgængelig i øjeblikket. Prøv igen senere, eller kontakt kundeservice.</danish>
+        </translation>
+        <translation class="session-expired">
+            <swedish>Köpet har pausats eftersom ett annat fönster öppnats. För att genomföra köpet behöver sidan laddas om.</swedish>
+            <norwegian>Et annet vindu er åpent, kjøpet er satt på pause. Oppdater eller last inn siden på nytt for å gjennomføre kjøpet.</norwegian>
+            <finnish>Ostos on keskeytynyt, koska toinen ikkuna on avautunut. Päivitä selain, jotta voit jatkaa.</finnish>
+            <danish>Købet er sat på pause, da et andet vindue er åbent. Opdater eller genindlæs siden for at gennemføre købet.</danish>
+        </translation>
+        <translation class="order-expired">
+            <swedish>Tyvärr har tiden för att genomföra ditt köp gått ut. Men din produkt finns troligtvis fortfarande kvar i sortimentet. Besök gärna någon av våra butiker om du fortfarande är intresserad.</swedish>
+            <norwegian>Det har tatt for lang tid å gjennomføre kjøpet. Varen finnes trolig fortsatt på lager, så forsøk gjerne igjen.</norwegian>
+            <finnish>Valitettavasti ostostesi aikaraja on kulunut umpeen. Ota yhteyttä lähimpään myymälääsi, mikäli olet edelleen kiinnostunut tuotteesta.</finnish>
+            <danish>Den afsatte tid til at gennemføre dit køb, er desværre udløbet. Men dit produkt er sandsynligvis stadig tilgængeligt i sortimentet. Forsøg gerne igen.</danish>
+        </translation>
+        <translation class="order-already-processed">
+            <swedish>Det köp som detta meddelande berör har redan genomförts. Vi hoppas du kommer att bli nöjd!</swedish>
+            <norwegian>Kjøpet som denne meldingen handler om er allerede gjennomført. Vi håper du blir fornøyd!</norwegian>
+            <finnish>Viestiä koskeva ostos on jo suoritettu. Toivottavasti olet tyytyväinen hankintaasi!</finnish>
+            <danish>Du har allerede gennemført købet på denne side. Vi håber du bliver glad for din vare!</danish>
+        </translation>
+    </error-overlay>
+
+    <checkout-overlay>
+        <translation class="main-spinner">
+            <swedish></swedish>
+            <norwegian></norwegian>
+            <finnish></finnish>
+            <danish></danish>
+        </translation>
+    </checkout-overlay>
+
+    <customer-information>
+        <translation class="terms-updated">
+            <swedish>Användarvillkoren har uppdaterats sedan ditt senaste köp.</swedish>
+            <norwegian>Brukervilkårene er blitt oppdatert etter ditt siste kjøp.</norwegian>
+            <finnish>Käyttäjäehdot on päivitetty edellisen ostokertasi jälkeen.</finnish>
+            <danish>Betingelserne for anvendelse er blevet opdateret siden dit sidste køb.</danish>
+        </translation>
+        <translation class="change-data">
+            <swedish>Ändra uppgifter</swedish>
+            <norwegian>Endre opplysninger</norwegian>
+            <finnish>Muuta tiedot</finnish>
+            <danish>Andre oplysninger</danish>
+        </translation>
+        <translation class="reset-data">
+            <swedish>Återställ samtliga uppgifter</swedish>
+            <norwegian>Gjenopprett alle opplysninger</norwegian>
+            <finnish>Palauta kaikki tiedot</finnish>
+            <danish>Nulstil samtlige oplysninger</danish>
+        </translation>
+    </customer-information>
+
+    <bankid>
+        <translation class="bankid-area">
+            <swedish>1. Ange dina uppgifter</swedish>
+            <norwegian>Not implemented</norwegian>
+            <finnish>Not implemented</finnish>
+            <danish>Not implemented</danish>
+        </translation>
+        <translation class="bankid-divider">
+            <swedish>eller</swedish>
+            <norwegian>Not implemented</norwegian>
+            <finnish>Not implemented</finnish>
+            <danish>Not implemented</danish>
+        </translation>
+        <translation class="authenticate-with-bank-id">
+            <swedish>Betala snabbare med Mobilt BankID</swedish>
+            <norwegian>Not implemented</norwegian>
+            <finnish>Not implemented</finnish>
+            <danish>Not implemented</danish>
+        </translation>
+        <translation class="authenticate-with-bank-id-card">
+            <swedish>Hämta ditt {1}</swedish>
+            <norwegian>Not implemented</norwegian>
+            <finnish>Not implemented</finnish>
+            <danish>Not implemented</danish>
+        </translation>
+    </bankid>
+
+
+
+    <pnr-input>
+        <translation class="sub-pnr">
+            <swedish>1. Hämta dina uppgifter</swedish>
+            <norwegian>1. Skriv inn mobilnummer</norwegian>
+            <finnish>1. Kirjoita henkilötunnus</finnish>
+            <danish>1. Angiv personnummer</danish>
+        </translation>
+        <translation class="get-adress">
+            <swedish>Hämta adress</swedish>
+            <norwegian>Hent adresse</norwegian>
+            <finnish>Jatka</finnish>
+            <danish>Hent adresse</danish>
+        </translation>
+        <translation class="not-you">
+            <swedish>Inte du?</swedish>
+            <norwegian>Nytt mobilnummer?</norwegian>
+            <finnish>Väärä henkilö?</finnish>
+            <danish>Er det ikke dig?</danish>
+        </translation>
+        <translation class="skip-pnr">
+            <swedish>Eller fyll i dina uppgifter</swedish>
+            <norwegian>Skriv inn adresseopplysninger</norwegian>
+            <finnish>Täytä osoitetiedot ilman henkilötunnusta</finnish>
+            <danish>Udfyld adresseoplysningerne</danish>
+        </translation>
+        <translation class="pnr-format">
+            <swedish>ååmmdd-xxxx</swedish>
+            <norwegian>ddmmååxxxxx</norwegian>
+            <finnish>ppkkvvyxxxx</finnish>
+            <danish>ddmmåå-xxxx</danish>
+        </translation>
+    </pnr-input>
+
+    <address-header>
+        <translation class="your-data">
+            <swedish>Dina uppgifter</swedish>
+            <norwegian>Dine opplysninger</norwegian>
+            <finnish>Takaisin henkilötunnuksen syöttämiseen</finnish>
+            <danish>Dine oplysninger</danish>
+        </translation>
+    </address-header>
+
+    <information-area>
+        <translation class="data-info">
+            <swedish>Dessa uppgifter behövs för att vi ska kunna skicka din beställning. Var extra noga med att fylla i rätt mobilnummer och e-postadress då dessa används för orderbekräftelse och paketaviseringar.</swedish>
+            <norwegian>Disse opplysningene er påkrevd for at vi skal kunne sende bestillingen. Vær ekstra nøye med å skrive inn riktig mobilnummer og e-postadresse, ettersom disse blir brukt til ordrebekreftelse og hentemeldinger.</norwegian>
+            <finnish>Tarvitsemme nämä tiedot tilauksesi lähettämiseksi. Kirjoita puhelinnumerosi ja sähköpostiosoitteesi huolellisesti, sillä niitä käytetään tilausvahvistuksen ja toimitustietojen lähettämiseen.</finnish>
+            <danish>Disse oplysninger er nødvendige for, at vi skal kunne sende din ordre. Vær ekstra omhyggelig med at udfylde det rette mobilnummer og e-mailadresse, da ordrebekræftelse og pakkeinformation vil blive sendt hertil.</danish>
+        </translation>
+        <translation class="back-to-pnr">
+            <swedish>Tillbaka till hämta dina uppgifter</swedish>
+            <norwegian>Tilbake til oppgi telefonnummer</norwegian>
+            <finnish>Takaisin henkilötunnuksen antamiseen</finnish>
+            <danish>Tilbage til angiv personnummer</danish>
+        </translation>
+        <translation class="label-firstname">
+            <swedish>Förnamn</swedish>
+            <norwegian>Fornavn</norwegian>
+            <finnish>Etunimi</finnish>
+            <danish>Fornavn</danish>
+        </translation>
+        <translation class="label-surname">
+            <swedish>Efternamn</swedish>
+            <norwegian>Etternavn</norwegian>
+            <finnish>Sukunimi</finnish>
+            <danish>Efternavn</danish>
+        </translation>
+        <translation class="label-address">
+            <swedish>Adress</swedish>
+            <norwegian>Adresse</norwegian>
+            <finnish>Osoite</finnish>
+            <danish>Adresse</danish>
+        </translation>
+        <translation class="label-address-extra">
+            <swedish>Adressinformation (frivilligt)</swedish>
+            <norwegian>Adresseinformasjon (valgfritt)</norwegian>
+            <finnish>Lisätietoa osoitteesta (ei pakollinen)</finnish>
+            <danish>Adresseinformationer (frivilligt)</danish>
+        </translation>
+        <translation class="label-postal">
+            <swedish>Postnummer</swedish>
+            <norwegian>Postnummer</norwegian>
+            <finnish>Postinumero</finnish>
+            <danish>Postnummer</danish>
+        </translation>
+        <translation class="label-city">
+            <swedish>Ort</swedish>
+            <norwegian>Sted</norwegian>
+            <finnish>Postitoimipaikka</finnish>
+            <danish>Sted</danish>
+        </translation>
+        <translation class="label-mobile">
+            <swedish>Mobiltelefon</swedish>
+            <norwegian>Mobilnummer</norwegian>
+            <finnish>Puhelinnumero</finnish>
+            <danish>Mobil</danish>
+        </translation>
+        <translation class="label-email">
+            <swedish>E-post</swedish>
+            <norwegian>E-postadresse</norwegian>
+            <finnish>Sähköposti</finnish>
+            <danish>E-mail</danish>
+        </translation>
+    </information-area>
+
+    <another-delivery-address>
+        <translation class="another-delivery">
+            <swedish>Annan leveransadress</swedish>
+            <norwegian>Annen leveringsadresse</norwegian>
+            <finnish>Muu toimitusosoite</finnish>
+            <danish>Anden leveringsadresse</danish>
+        </translation>
+        <translation class="another-delivery-info">
+            <swedish>Att skicka en beställning till en annan leveransadress än din folkbokföringsadress är inga problem. Väljer du faktura eller delbetalning som betalsätt så kommer du få signera ditt köp med bank-id.</swedish>
+            <norwegian>Det er ikke noe problem å sende en bestilling til en annen leveringsadresse enn din folkeregisterte adresse. Velger du faktura eller delbetaling som betalingsmåte, må du signere for kjøpet med BankID.</norwegian>
+            <finnish>Toimitusosoite voi olla eri kuin väestörekisterissä oleva osoite. Jos valitset maksutavaksi laskun tai osamaksun, sinun on hyväksyttävä ostoksesi verkkopankkitunnuksilla.</finnish>
+            <danish>Det er intet problem at sende din ordre til en anden adresse end din folkeregisteradresse. Vælger du faktura eller delbetaling som betalingsmåde, skal du signere dit køb med Nem-ID.</danish>
+        </translation>
+        <translation class="another-delivery-error">
+            <swedish>Fyll först i alla uppgifter ovan</swedish>
+            <norwegian>Du må først skrive inn alle opplysningene over</norwegian>
+            <finnish>Täytä ensin kaikki yllä olevat tiedot.</finnish>
+            <danish>Du skal udfylde alle oplysninger ovenfor først</danish>
+        </translation>
+    </another-delivery-address>
+
+    <payment-area>
+        <translation class="pick-payment">
+            <swedish>2. Välj betalsätt</swedish>
+            <norwegian>2. Velg betalingsmåte</norwegian>
+            <finnish>2. Valitse maksutapa</finnish>
+            <danish>2. Vælg betalingsmåde</danish>
+        </translation>
+        <translation class="mobile-payment">
+            <swedish>Betalsätt:</swedish>
+            <norwegian>Betalingsmåte:</norwegian>
+            <finnish>Maksutapa:</finnish>
+            <danish>Betalingsmåde:</danish>
+        </translation>
+        <translation class="no-payment-options">
+            <swedish>Det finns inga betalsätt tillgängliga än så länge. Vänta lite eller kontakta kundtjänst.</swedish>
+            <norwegian>Det er foreløpig ingen tilgjengelige betalingsmåter. Vent litt eller ta kontakt med kundeservice.</norwegian>
+            <finnish>Maksutapoja ei vielä ole saatavilla. Odota hetki tai ota yhteyttä asiakaspalveluun.</finnish>
+            <danish>Der er ingen betalingsmetoder tilgængelige lige nu. Vent lidt, eller kontakt kundeservice.</danish>
+        </translation>
+        <translation class="available-banks">
+            <swedish>Möjliga internetbanker:</swedish>
+            <norwegian>Mulige internetbanker:</norwegian>
+            <finnish>Available banks:</finnish>
+            <danish>Available banks:</danish>
+        </translation>
+    </payment-area>
+
+    <modal>
+        <translation class="modal-card-header">
+            <swedish>Kortbetalning</swedish>
+            <norwegian>Kortbetaling</norwegian>
+            <finnish>Korttimaksu</finnish>
+            <danish>Kortbetaling</danish>
+        </translation>
+        <translation class="modal-card-info">
+            <swedish>Betala ditt köp med ditt VISA eller Mastercard. Efter att du bekräftat ditt köp genom att klicka på "Genomför köp" i kassan kommer du få ange dina kortuppgifter för att slutföra betalningen. Transaktionen sker via certifierad betalväxel och med SSL-kryptering vilket innebär att ingen obehörig kan se dina uppgifter. Inga kortuppgifter hanteras eller sparas av Resurs Bank. Vi accepterar inte kort som är utfärdade av en bank utanför norden.</swedish>
+            <norwegian>Betal for kjøpet med ditt VISA eller Mastercard. Når du har bekreftet kjøpet ved å klikke på "Fullfør kjøp" i kassen, må du oppgi kortopplysninger for å fullføre betalingen. Transaksjonen skjer via sertifisert betalingsaktør og med SSL-kryptering, noe som betyr at ingen uvedkommende kan se dine opplysninger. Resurs Bank behandler eller lagrer ingen kortinformasjon. Vi aksepterer ikke kort som er utstedt av en bank utenfor Norden.</norwegian>
+            <finnish>Maksa ostoksesi VISA- tai MasterCard-kortilla. Kun olet vahvistanut ostoksesi napsauttamalla Vahvista ostos -painiketta, pääset syöttämään korttitietosi maksun suorittamista varten. Maksu tapahtuu sertifioidun maksuvaihteen kautta SSL-suojattuna. Tämä estää luvattomien henkilöiden pääsyn tietoihisi. Resurs Bank ei käsittele tai tallenna korttitietojasi. Hyväksymme maksuvälineeksi vain pohjoismaisten pankkien myöntämiä kortteja.</finnish>
+            <danish>Betal dit køb med dit VISA eller Mastercard. Når du har bekræftet dit køb ved at klikke på "Gennemfør køb" i kassen, skal du angive dine kortoplysninger for at gennemføre betalingen. Transaktionen sker via certificeret betaling og med SSL-kryptering, hvilket betyder, at ingen uvedkommende kan se dine oplysninger. Ingen kortoplysninger hentes eller gemmes af Resurs Bank. Vi accepterer ikke kort, som er udstedt af en bank uden for Norden.</danish>
+        </translation>
+        <translation class="modal-bank-header">
+            <swedish>TRUSTLY - DIREKTBETALNING MED BANK</swedish>
+            <norwegian>TRUSTLY - BETALNING VIA NETTBANK</norwegian>
+            <finnish>TRUSTLY – MAKSA SUORAAN PANKKITILILTÄSI</finnish>
+            <danish>-</danish>
+        </translation>
+        <translation class="modal-bank-info">
+            <swedish>Efter att du bekräftat ditt köp genom att klicka på ”Genomför köp” kommer Trustly att upprätta en säker anslutning till din internetbank och du kan då betala snabbt och säkert. Betalalternativet är gratis och du behöver inte registrera dig. Däremot behöver du använda dina inloggningsuppgifter till din internetbank för att betala med Trustly. För mer information: www.trustly.com</swedish>
+            <norwegian>Etter at du har bekreftet kjøpet ved å klikke «gjennomfør kjøp» vil Trustly opprette en sikker forbindelse til din nettbank hvor du kan betale trygt og enkelt. Dette betalingsalternativet er kostnadsfritt og du trenger ikke registrere deg for å betale. Det du trenger for å betale med Trustly er innloggingsinformasjonen til din nettbank. For mer informasjon se www.trustly.com</norwegian>
+            <finnish>Kun olet vahvistanut ostoksesi, saat Trustly-palvelun kautta linkin verkkopankin valintaan. Valitse oma pankkisi ja kirjaudu sisään. Valitse tili, jolta haluat maksaa ja vahvista maksu. Valmista! Trustlyn palvelu on veloitukseton eikä sinun tarvitse rekisteröityä ennen maksamista. Lue lisää Trustlysta, www.trustly.com/fi</finnish>
+            <danish>-</danish>
+        </translation>
+        <translation class="modal-personal-data-header">
+            <swedish>Hantering av persondata</swedish>
+            <norwegian>Behandling av personopplysninger</norwegian>
+            <finnish>Henkilötietojen käsittely</finnish>
+            <danish>Behandling af data</danish>
+        </translation>
+        <translation class="modal-personal-data-1">
+            <swedish>För oss på Resurs Bank är du som kund viktigast för oss vilket innebär att vi är måna om din integritet. Som ett led i detta vill vi därför informera om behandlingen av dina personuppgifter.</swedish>
+            <finnish>Asiakkaanamme olet meille tärkeä ja haluamme pitää erityistä huolta yksityisyydestäsi. Tämän johdosta haluamme kertoa henkilötietojesi käsittelystä.</finnish>
+            <danish>For os hos Resurs Bank er du som kunde det vigtigste for os, hvilket indebærer at vi tager din integritet alvorligt.</danish>
+            <norwegian>For oss på Resurs Bank er du som kunde viktig og vi ønsker å ta godt vare på dine personopplysninger. Vi vil derfor informere om behandlingen av disse.</norwegian>
+        </translation>
+        <translation class="modal-personal-data-2">
+            <swedish>Som bank behöver vi behandla dina personuppgifter ur flera perspektiv där de viktigaste är förberedelse och administration av avtal, behandling för att uppfylla förpliktelser enligt lag eller myndighetsbeslut så som motverka bedrägerier och penningtvätt eller marknads- och kundanalyser.</swedish>
+            <finnish>Pankkina meillä on tarve käsitellä henkilötietojasi monestakin eri syystä, joista tärkeimpinä ovat sopimusten valmistelu ja hoito, lakien ja viranomaispäätösten noudattaminen, kuten petosten ja rahapesun estämiseksi, sekä markkina- ja asiakasanalyysit.</finnish>
+            <danish>Som led i dette vil vi derfor informere om, hvordan vi behandler dine personlige oplysninger. Som bank har vi behov for at behandle dine personlige oplysninger af flere årsager, hvor de vigtigste er forberedelse og administration af aftaler, behandling for at opfylde forpligtelser i henhold til lovgivning eller myndighedsbeslutninger som fx at modvirke bedrageri og hvidvask, eller markeds- og kundeanalyser.</danish>
+            <norwegian>Som bank har vi behov for å behandle dine personopplysninger av flere årsaker der de viktigste er forberedelse og administrasjon av avtalen, behandling for å oppfylle våre forpliktelser etter loven som for eksempel motvirke bedragerier og hvitvasking eller markeds- og kundeanalyser.</norwegian>
+        </translation>
+        <translation class="modal-personal-data-3">
+            <swedish>Vi använder endast dina personuppgifter för specifika ändamål som vi har informerat dig om och vi samlar inte in fler uppgifter än nödvändigt för att kunna leverera de tjänster du vill ha eller som enligt lag krävs av oss.</swedish>
+            <finnish>Käytämme henkilötietojasi vain tiettyihin tarkoituksiin, joista olemme informoineet sinua, emmekä kerää enempää tietoja kuin on tarpeen tarjotaksemme haluamiasi palveluita tai mitä laki meiltä edellyttää.</finnish>
+            <danish>Vi anvender kun dine personlige oplysninger til specifikke formål som vi har oplyst dig om, og vi indsamler ikke flere oplysninger end nødvendigt, for at kunne levere de tjenester du ønsker eller som ifølge loven kræves af os.</danish>
+            <norwegian>Vi benytter kun dine personopplysninger for de spesifikke formålene som vi har informert deg om og vi samler ikke inn flere opplysninger enn nødvendig for å kunne levere de tjenestene du vil ha eller som loven stiller krav om.</norwegian>
+        </translation>
+        <translation class="modal-personal-data-4">
+            <swedish>Läs gärna mer om vår behandling av personuppgifter i våra </swedish>
+            <finnish>Voit lukea lisää henkilötietojen käsittelystä </finnish>
+            <danish>Læs gerne mere om vores behandling af personlige oplysninger i vores </danish>
+            <norwegian>Les gjerne mer om vår behandling av personopplysninger i våre </norwegian>
+        </translation>
+        <translation class="modal-personal-data-5">
+            <swedish>allmänna villkor </swedish>
+            <finnish>yleisistä sopimusehdoistamme </finnish>
+            <danish>almindelige vilkår </danish>
+            <norwegian>alminnelige vilkår </norwegian>
+        </translation>
+        <translation class="modal-personal-data-6">
+            <swedish>samt på </swedish>
+            <finnish>sekä </finnish>
+            <danish>samt på </danish>
+            <norwegian>samt på </norwegian>
+        </translation>
+        <translation class="modal-personal-data-7">
+            <swedish>Vid frågor om personuppgiftsbehandlingen är du välkommen att kontakta oss på 0771 – 11 22 33.</swedish>
+            <finnish>Mikäli sinulla on kysymyksiä henkilötietojen käsittelystä, voit olla yhteydessä meihin 09-622 4308.</finnish>
+            <danish>Ved spørgsmål om behandling af personlige oplysninger er du velkommen til at kontakte os på 045-39 13 16 00.</danish>
+            <norwegian>Ved spørsmål om personopplysningsbehandlingen er du velkommen til å kontakte oss på +47 22 56 37 33</norwegian>
+        </translation>
+        <translation class="error-no-information">
+            <swedish>Informationen är tyvärr inte tillgänglig just nu.</swedish>
+            <norwegian>Informasjonen er dessverre ikke tilgjengelig for øyeblikket.</norwegian>
+            <finnish>Tiedot eivät valitettavasti ole saatavilla juuri nyt.</finnish>
+            <danish>Informationen er desværre ikke tilgængelig i øjeblikket.</danish>
+        </translation>
+    </modal>
+
+    <purchase-area>
+        <translation class="complete">
+            <swedish>3. Slutför</swedish>
+            <norwegian>3. Fullfør</norwegian>
+            <finnish>3. Oston vahvistus</finnish>
+            <danish>3. Afslut</danish>
+        </translation>
+        <translation class="save-data">
+            <swedish>Spara mina uppgifter för framtida köp</swedish>
+            <norwegian>Lagre mine opplysninger for fremtidige kjøp</norwegian>
+            <finnish>Tallenna tietoni tulevia ostoksia varten</finnish>
+            <danish>Gem mine oplysninger til brug ved fremtidige køb</danish>
+        </translation>
+        <translation class="cookie-info">
+            <swedish>När du sparar dina uppgifter blir det enklare att handla nästa gång du använder Resurs Checkout. Informationen sparas i en </swedish>
+            <norwegian>Når du lagrer dine opplysninger, er det enklere å handle neste gang du bruker Resurs Checkout. Informasjonen lagres i en </norwegian>
+            <finnish>Tallentaessa tietosi sinun on jatkossa helpompi tehdä ostoksia Resurs Checkoutin kautta. Tietosi tallennetaan </finnish>
+            <danish>Når du gemmer dine oplysninger, bliver det nemmere at handle næste gang, du benytter Resurs Checkout. Informationen gemmes i en </danish>
+        </translation>
+        <translation class="cookie-info-1">
+            <swedish>cookie </swedish>
+            <norwegian>cookie </norwegian>
+            <finnish>evästeenä </finnish>
+            <danish>cookie </danish>
+        </translation>
+        <translation class="cookie-info-2">
+            <swedish>i din webbläsare.</swedish>
+            <norwegian>i din nettleser.</norwegian>
+            <finnish>verkkoselaimeesi</finnish>
+            <danish>i din webbrowser.</danish>
+        </translation>
+        <translation class="modal-cookie-popup">
+            <swedish>Nästa gång du använder Resurs Checkout kan vi göra det enklare för dig att handla genom att fylla i dina uppgifter i kassan automatiskt. Dina uppgifter sparas i din webbläsare. Genom att klicka i rutan "Spara mina uppgifter för framtida köp" godkänner du vår användning av cookies för detta.</swedish>
+            <norwegian>Neste gang du bruker Resurs Checkout, kan vi gjøre det enklere for deg å handle ved at du fyller ut opplysningene dine automatisk i kassen. Opplysningene dine lagres i nettleseren din. Ved å klikke i vinduet "Lagre mine opplysninger til fremtidige kjøp”, godkjenner du vår bruk av cookies til dette formålet.</norwegian>
+            <finnish>Käyttäessäsi seuraavan kerran Resurs Checkout –palvelua, voimme helpottaa ostostasi esitäyttämällä tietosi kassalla automaattisesti. Tiedot tallennetaan internetselaimeesi. Klikkaamalla ruutua ”Tallenna tietoni tulevia ostoksia varten” hyväksyt, että saamme käyttää evästettä tähän tarkoitukseen.</finnish>
+            <danish>Næste gang du anvender Resurs Checkout kan vi gøre det mere enkelt for dig at handle, ved at indsætte dine oplysninger automatisk. Dine oplysninger gemmes så i din browser ved hjælp af cookies. Hvis du krydser af i ”Gem mine oplysninger til fremtidige køb” godkender du, at vi bruger cookies til dette.</danish>
+        </translation>
+        <translation class="modal-cookie-popup-1">
+            <swedish>En cookie är en textfil som sparas på din dator. Om du önskar ytterligare information om vad en cookie är, vilka cookies vi använder, vad syftet med cookien är eller hur du kan blockera eller radera cookies, vänligen läs Resurs Banks fullständiga information om cookies i villkoren.</swedish>
+            <norwegian>En cookie (informasjonskapsel) er en tekstfil som lagres på datamaskinen din. Hvis du ønsker ytterligere informasjon om hva en cookie er, hvilke typer cookies vi bruker, hva formålet med cookies er eller hvordan du kan blokkere eller slette cookies, kan du lese Resurs Banks fullstendige informasjon om cookies i brukervilkårene.</norwegian>
+            <finnish>Eväste on tekstitiedosto, joka tallennetaan laitteellesi. Jos haluat lisätietoja siitä, mikä eväste on, mitä evästeitä käytämme ja mihin tarkoitukseen, tai jos haluat estää tai poistaa evästeen, lue kattava informaatio evästeistä Resurs Checkout -käyttäjäehdoista</finnish>
+            <danish>En cookie er en tekstfil, der gemmes på din computer. Hvis du vil have mere information om hvad en cookie er, hvilke cookies vi bruger, hvad formålet med vores cookies er og hvordan du kan blokere eller slette cookies, så kan du læse om dette i vores vilkår.</danish>
+        </translation>
+        <translation class="more-personal-data-info">
+            <swedish>Läs mer om hur vi hanterar din persondata</swedish>
+            <norwegian>Les mer om hvordan vi behandler dine personopplysninger</norwegian>
+            <finnish>Lue lisää siitä, miten käsittelemme henkilötietojasi</finnish>
+            <danish>Læs mere om hvordan vi behandler dine data</danish>
+        </translation>
+        <translation class="order-cost">
+            <swedish>Order:</swedish>
+            <norwegian>Ordre:</norwegian>
+            <finnish>Tilaus:</finnish>
+            <danish>Ordre:</danish>
+        </translation>
+        <translation class="currency">
+            <swedish>kr</swedish>
+            <norwegian>kr</norwegian>
+            <finnish>euroa</finnish>
+            <danish>kr.</danish>
+        </translation>
+        <translation class="invoice-cost">
+            <swedish>Fakturaavgift:</swedish>
+            <norwegian>Fakturagebyr:</norwegian>
+            <finnish>Laskutusmaksu:</finnish>
+            <danish>Fakturagebyr:</danish>
+        </translation>
+        <translation class="shipping-cost">
+            <swedish>Fraktavgift:</swedish>
+            <norwegian>Frakt gebyr:</norwegian>
+            <finnish>Postikuluja:</finnish>
+            <danish>Shipping gebyr:</danish>
+        </translation>
+        <translation class="discount-cost">
+            <swedish>Rabatt:</swedish>
+            <norwegian>Rabatt:</norwegian>
+            <finnish>Alennus:</finnish>
+            <danish>Rabat:</danish>
+        </translation>
+
+        <translation class="total-sum">
+            <swedish>Summa:</swedish>
+            <norwegian>Sum:</norwegian>
+            <finnish>Summa:</finnish>
+            <danish>Sum:</danish>
+        </translation>
+        <translation class="vat-sum">
+            <swedish>Moms:</swedish>
+            <norwegian>MVA:</norwegian>
+            <finnish>Arvonlisävero:</finnish>
+            <danish>Moms:</danish>
+        </translation>
+
+        <translation class="purchase-button">
+            <swedish>Genomför köp</swedish>
+            <norwegian>Fullfør kjøp</norwegian>
+            <finnish>Vahvista ostos</finnish>
+            <danish>Gennemfør køb</danish>
+        </translation>
+        <translation class="accept-terms1">
+            <swedish>Genom att lämna information i kassan godkänner jag</swedish>
+            <norwegian>Ved å sende informasjon i kassen, godtar jeg</norwegian>
+            <finnish>Ilmoittamalla tiedot kassalla</finnish>
+            <danish>Ved at skrive ind information i kassen godkender jeg</danish>
+        </translation>
+        <translation class="accept-resurs-conditions">
+            <swedish>villkoren för Resurs Checkout</swedish>
+            <norwegian>vilkårene for Resurs Checkout</norwegian>
+            <finnish>hyväksyn Resurs Checkoutin</finnish>
+            <danish>vilkårene for Resurs Checkout</danish>
+        </translation>
+        <translation class="accept-terms2">
+            <swedish>och användning av cookies.</swedish>
+            <norwegian>og bruk av cookies.</norwegian>
+            <finnish>ehdot sekä evästeiden käytön.</finnish>
+            <danish>og brug af cookies.</danish>
+        </translation>
+        <translation class="accept-terms3">
+            <swedish>Genom att klicka på "Genomför köp" accepterar jag betalningsansvar och godkänner köpvillkoren hos</swedish>
+            <norwegian>Ved å klikke på "Fullfør kjøp" påtar jeg meg betalingsansvar og godtar kjøpsvilkårene hos</norwegian>
+            <finnish>Valitsemalla Vahvista ostos hyväksyn ostoehdot yritykseltä</finnish>
+            <danish>Ved at klikke på "Gennemfør køb" accepterer jeg betalingsansvar og godkender købsbetingelserne hos</danish>
+        </translation>
+    </purchase-area>
+
+    <payment-subtypes>
+        <translation class="SwedishBankDanskeBank">
+            <swedish>DanskeBank</swedish>
+            <norwegian>DanskeBank</norwegian>
+            <finnish>DanskeBank</finnish>
+            <danish>DanskeBank</danish>
+        </translation>
+        <translation class="SwedishBankSwedbank">
+            <swedish>Swedbank</swedish>
+            <norwegian>Swedbank</norwegian>
+            <finnish>Swedbank</finnish>
+            <danish>Swedbank</danish>
+        </translation>
+        <translation class="DanishBankNordea">
+            <swedish>Nordea</swedish>
+            <norwegian>Nordea</norwegian>
+            <finnish>Nordea</finnish>
+            <danish>Nordea</danish>
+        </translation>
+        <translation class="FinishBankPopPankki">
+            <swedish>PopPankki</swedish>
+            <norwegian>PopPankki</norwegian>
+            <finnish>PopPankki</finnish>
+            <danish>PopPankki</danish>
+        </translation>
+        <translation class="SwedishBankHandelsbanken">
+            <swedish>Handelsbanken</swedish>
+            <norwegian>Handelsbanken</norwegian>
+            <finnish>Handelsbanken</finnish>
+            <danish>Handelsbanken</danish>
+        </translation>
+        <translation class="FinishBankAktia">
+            <swedish>Aktia</swedish>
+            <norwegian>Aktia</norwegian>
+            <finnish>Aktia</finnish>
+            <danish>Aktia</danish>
+        </translation>
+        <translation class="SwedishBankNordea">
+            <swedish>Nordea</swedish>
+            <norwegian>Nordea</norwegian>
+            <finnish>Nordea</finnish>
+            <danish>Nordea</danish>
+        </translation>
+        <translation class="BankAxess">
+            <swedish>Axess</swedish>
+            <norwegian>Axess</norwegian>
+            <finnish>Axess</finnish>
+            <danish>Axess</danish>
+        </translation>
+        <translation class="FinishBankAlandsbanken">
+            <swedish>Alandsbanken</swedish>
+            <norwegian>Alandsbanken</norwegian>
+            <finnish>Alandsbanken</finnish>
+            <danish>Alandsbanken</danish>
+        </translation>
+        <translation class="SwedishBankSEBCompany">
+            <swedish>SEB</swedish>
+            <norwegian>SEB</norwegian>
+            <finnish>SEB</finnish>
+            <danish>SEB</danish>
+        </translation>
+        <translation class="BankAxessMobile">
+            <swedish>AxessMobile</swedish>
+            <norwegian>AxessMobile</norwegian>
+            <finnish>AxessMobile</finnish>
+            <danish>AxessMobile</danish>
+        </translation>
+        <translation class="FinishBankOp">
+            <swedish>Op</swedish>
+            <norwegian>Op</norwegian>
+            <finnish>Op</finnish>
+            <danish>Op</danish>
+        </translation>
+    </payment-subtypes>
+
+    <footer>
+        <translation class="footer-logo">
+            <swedish>Safe shopping by:</swedish>
+            <norwegian>Safe shopping by:</norwegian>
+            <finnish>Safe shopping by:</finnish>
+            <danish>Safe shopping by:</danish>
+        </translation>
+        <translation class="footer-address-1">
+            <swedish>© 2020 Resurs Bank AB (publ) Org.nr 516401-0208,</swedish>
+            <norwegian>© 2020 Resurs Bank AB (publ)  NUF – Org.nr 984150865 – </norwegian>
+            <finnish>© 2020 Resurs Bank AB (publ) Org.nr 516401-0208,</finnish>
+            <danish>© 2020 Resurs Bank AB (publ) Org.nr 516401-0208,
+            </danish>
+        </translation>
+        <translation class="footer-address-2">
+            <swedish>Box 222 09, SE-250 24 Helsingborg, </swedish>
+            <norwegian>Hovedkontor: Resurs Bank AB (publ) i Helsingborg, Sverige. </norwegian>
+            <finnish>Box 222 09, SE-250 24 Helsingborg,</finnish>
+            <danish>Box 222 09, SE-250 24 Helsingborg,</danish>
+        </translation>
+        <translation class="footer-terms">
+            <swedish>Användarvillkor Resurs Checkout</swedish>
+            <norwegian>Brukervilkår Resurs Checkout</norwegian>
+            <finnish>Resurs Checkout käyttäjäehdot</finnish>
+            <danish>Betingelser for brug Resurs Checkout</danish>
+        </translation>
+        <translation class="footer-customer-support-mail">
+            <swedish>info@resursbank.se</swedish>
+            <norwegian>kundetjeneste@resursbank.no</norwegian>
+            <finnish>asiakaspalvelu@resurs.fi</finnish>
+            <danish>mail@resurs.dk</danish>
+        </translation>
+        <translation class="footer-homepage">
+            <swedish>www.resursbank.se</swedish>
+            <norwegian>www.resursbank.no</norwegian>
+            <finnish>www.resursbank.fi</finnish>
+            <danish>www.resursbank.dk</danish>
+        </translation>
+    </footer>
+
+</translations>
+

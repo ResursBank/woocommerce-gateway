@@ -11,10 +11,22 @@ use TorneLIB\Exception\ExceptionHandler;
 /**
  * Class Generic Generic functions
  * @package TorneLIB\Utils
- * @version 6.1.9
+ * @version 6.1.13
  */
 class Generic
 {
+    /**
+     * @var object
+     * @since 6.1.12
+     */
+    private $composerData = null;
+
+    /**
+     * @var string
+     * @since 6.1.12
+     */
+    private $composerLocation;
+
     /**
      * @var string $templatePath
      * @since 6.1.6
@@ -33,6 +45,12 @@ class Generic
      * @since 6.1.6
      */
     private $templateExtension = ['htm', 'html', 'txt', 'php', 'phtml'];
+
+    /**
+     * @var array Name entry from composer.
+     * @since 6.1.13
+     */
+    private $composerNameEntry;
 
     /**
      * Check if class files exists somewhere in platform (pear/pecl-based functions).
@@ -65,6 +83,143 @@ class Generic
     }
 
     /**
+     * @param $composerLocation
+     * @return mixed|string
+     * @throws ExceptionHandler
+     * @since 6.1.13
+     */
+    public function getComposerShortName($composerLocation)
+    {
+        return $this->getNameEntry('name', $composerLocation);
+    }
+
+    /**
+     * @param $part
+     * @param $composerLocation
+     * @return mixed|string
+     * @throws ExceptionHandler
+     * @since 6.1.13
+     */
+    private function getNameEntry($part, $composerLocation)
+    {
+        $return = '';
+        $this->composerNameEntry = explode('/', $this->getComposerTag($composerLocation, 'name'), 2);
+
+        switch ($part) {
+            case 'name':
+                if (isset($this->composerNameEntry[1])) {
+                    $return = $this->composerNameEntry[1];
+                }
+                break;
+            case 'vendor':
+                if (isset($this->composerNameEntry[0])) {
+                    $return = $this->composerNameEntry[0];
+                }
+                break;
+            default:
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $location
+     * @param $tag
+     * @return string
+     * @throws ExceptionHandler
+     * @since 6.1.3
+     */
+    public function getComposerTag($location, $tag)
+    {
+        $return = '';
+
+        if (empty($this->composerData)) {
+            $this->getComposerConfig($location);
+        }
+
+        if (isset($this->composerData->{$tag})) {
+            $return = $this->composerData->{$tag};
+        }
+
+        return (string)$return;
+    }
+
+    /**
+     * @param $location
+     * @param int $maxDepth
+     * @return string|null
+     * @throws ExceptionHandler
+     * @since 6.1.12
+     */
+    public function getComposerConfig($location, $maxDepth = 3)
+    {
+        if ($maxDepth > 3 || $maxDepth < 1) {
+            $maxDepth = 3;
+        }
+        if (!file_exists($location)) {
+            throw new ExceptionHandler('Invalid path', Constants::LIB_INVALID_PATH);
+        }
+        $startAt = dirname($location);
+        if ($this->hasComposerFile($startAt)) {
+            $this->getComposerConfigData($startAt);
+            return $startAt;
+        }
+
+        $composerLocation = null;
+        while ($maxDepth--) {
+            $startAt .= '/..';
+            if ($this->hasComposerFile($startAt)) {
+                $composerLocation = $startAt;
+                break;
+            }
+        }
+
+        $this->getComposerConfigData($composerLocation);
+
+        return $this->composerLocation;
+    }
+
+    /**
+     * @param $location
+     * @return bool
+     * @since 6.1.3
+     */
+    private function hasComposerFile($location)
+    {
+        $return = false;
+
+        if (file_exists(sprintf('%s/composer.json', $location))) {
+            $return = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $location
+     */
+    private function getComposerConfigData($location)
+    {
+        $this->composerLocation = $location;
+
+        $this->composerData = json_decode(
+            file_get_contents(
+                sprintf('%s/composer.json', $location)
+            )
+        );
+    }
+
+    /**
+     * @param $composerLocation
+     * @return mixed|string
+     * @since 6.1.13
+     */
+    public function getComposerVendor($composerLocation)
+    {
+        return $this->getNameEntry('vendor', $composerLocation);
+    }
+
+    /**
      * Using both class and composer.json to discover version (in case that composer.json are removed in a "final").
      *
      * @param string $composerLocation
@@ -94,7 +249,7 @@ class Generic
 
     /**
      * @param $location
-     * @param int $maxDepth
+     * @param int $maxDepth Default is 3.
      * @return string
      * @throws ExceptionHandler
      * @since 6.1.3
@@ -102,70 +257,12 @@ class Generic
     public function getVersionByComposer($location, $maxDepth = 3)
     {
         $return = '';
-        if ($maxDepth > 3 || $maxDepth < 1) {
-            $maxDepth = 3;
-        }
-        if (!file_exists($location)) {
-            throw new ExceptionHandler('Invalid path', Constants::LIB_INVALID_PATH);
-        }
-        $startAt = dirname($location);
-        if ($this->getComposerJson($startAt)) {
-            return $this->getComposerTag($startAt, 'version');
-        }
 
-        $composerLocation = null;
-        while ($maxDepth--) {
-            $startAt .= '/..';
-            if ($this->getComposerJson($startAt)) {
-                $composerLocation = $startAt;
-                break;
-            }
-        }
-
-        if (!empty($composerLocation)) {
-            $return = $this->getComposerTag($composerLocation, 'version');
+        if (!empty(($this->getComposerConfig($location, $maxDepth)))) {
+            $return = $this->getComposerTag($this->composerLocation, 'version');
         }
 
         return $return;
-    }
-
-    /**
-     * @param $location
-     * @return bool
-     * @since 6.1.3
-     */
-    private function getComposerJson($location)
-    {
-        $return = false;
-
-        if (file_exists(sprintf('%s/composer.json', $location))) {
-            $return = true;
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param $location
-     * @param $tag
-     * @return string
-     * @since 6.1.3
-     */
-    private function getComposerTag($location, $tag)
-    {
-        $return = '';
-
-        $composerData = json_decode(
-            file_get_contents(
-                sprintf('%s/composer.json', $location)
-            )
-        );
-
-        if (isset($composerData->$tag)) {
-            $return = $composerData->$tag;
-        }
-
-        return (string)$return;
     }
 
     /**
@@ -377,7 +474,6 @@ class Generic
      * @param $namespaceClassName
      * @param null $skipReflection
      * @return mixed
-     * @throws ReflectionException
      * @since 6.1.9
      */
     public function getShortClassName($namespaceClassName = null, $skipReflection = null)

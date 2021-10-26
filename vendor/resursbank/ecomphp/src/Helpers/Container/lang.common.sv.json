@@ -1,0 +1,237 @@
+{
+    "common": {
+        "Change": "Ändra",
+        "ChoosePaymentMethod": "Välj betalsätt",
+        "Get": "Hämta",
+        "GetYourInformation": "Hämta dina uppgifter",
+        "NotYouQ": "Inte du?",
+        "Submit": "Slutför",
+        "close": "stäng"
+    },
+    "userInfo": {
+        "manualInputText": "Du kan också",
+        "manualInputLinkText": "fylla i dina uppgifter manuellt",
+        "govIdInputText": "Mycket att fylla i? Låt oss",
+        "govIdInputLinkText": "hämta dina uppgifter",
+        "placeholderGovId": "ååååmmdd-nnnn",
+        "helpGovId": "Med hjälp av ditt personnummer kan vi slå upp dina adressuppgifter.\nDessa behövs för att vi ska kunna skicka din beställning.",
+        "labelFirstName": "Förnamn *",
+        "labelLastName": "Efternamn *",
+        "labelAddress": "Adress *",
+        "labelAddressInfo": "Adressinformation",
+        "labelPostalCode": "Postnummer *",
+        "labelCity": "Stad *",
+        "labelEmail": "E-postadress *",
+        "labelPhone": "Mobiltelefon *",
+        "labelAlternativeDeliveryAddress": "Annan leveransadress",
+        "infoAddressBlock": "Dessa uppgifter behövs för att vi ska kunna skicka din beställning. Var extra noga med att fylla i rätt mobilnummer och e-postadress då dessa används för orderbekräftelse och paketaviseringar.",
+        "infoDeliveryAddressBlock": "Att skicka en beställning till en annan leveransadress än din folkbokföringsadress är inga problem. Väljer du faktura eller delbetalning som betalsätt så kommer du få signera ditt köp med bank-id."
+    },
+    "submit": {
+        "buttonSubmitPayment": "Genomför köp",
+        "amountSummary": "Summa: ",
+        "amountSummaryFeeOnly": "inklusive avgift {{fee}}",
+        "saveInfoTitle": "Spara mina uppgifter",
+        "saveInfoText": "När du sparar dina uppgifter blir det enklare att handla nästa gång du använder Resurs Checkout. Informationen sparas i en cookie i din webbläsare. Läs mer om cookies och persondata i villkoren nedan.",
+        "termsRcoText": "Genom att lämna information i kassan godkänner jag villkoren för <0></0> och användning av cookies.",
+        "termsRcoLink": "./terms/",
+        "termsRcoLinkText": "Resurs Checkout",
+        "termsShopText": "Genom att klicka på \"Genomför köp\" accepterar jag betalningsansvar och godkänner köpvillkoren hos <0></0>",
+        "termsPersonDataLink": "https://www.resursbank.se/om-oss/integritet-och-sakerhet/gdpr-som-kund",
+        "termsPersonDataLinkText": "Läs mer här om hur vi hanterar dina personuppgifter"
+    },
+    "paymentMethods": {
+        "invoice": {
+            "title": "Få hem dina varor först, betala sen.",
+            "info": "Fakturan skickas till angiven e-postadress.",
+            "extendedInfo": "När du väljer att betala på faktura får du 30-60 dagar på dig att känna på varorna innan det är dags att betala. När du får hem din faktura kan du välja att betala hela beloppet eller dela upp det i mindre delar. På fakturan ser du vilka betalningsalternativ som finns och vilka eventuella avgifter som tillkommer.",
+            "extendedOpen": "Läs mer",
+            "extendedClose": "Stäng",
+            "labelGovernmentId": "Personnummer *",
+            "noFee": "Inga faktureringsavgifter",
+            "placeholderGovernmentId": "ååååmmdd-nnnn",
+            "alternativeDeliveryAdress": "Eftersom du valt en annan leveransadress måste du signera med Bank-id."
+        },
+        "pspInternet": {
+            "linkMore": "Läs mer",
+            "linkMoreClose": "Stäng",
+            "ForMoreInformation": "För mer information:",
+            "textInfo": "Efter att du bekräftat ditt köp genom att klicka på \"Genomför köp\" kommer Trustly att upprätta en säker anslutning till din internetbank och du kan då betala snabbt och säkert. Betalalternativet är gratis och du behöver inte registrera dig. Däremot behöver du använda dina inloggningsuppgifter till din internetbank för att betala med Trustly."
+        },
+        "pspTrustly": {
+            "info": "Betala direkt från ditt bankkonto med säker verifiering via BankID. Slipp kort, nedladdning av appar och registrering."
+        },
+        "pspCard": {
+            "linkMore": "Läs mer",
+            "linkMoreClose": "Stäng",
+            "textInfo": "Betala ditt köp med ditt VISA eller Mastercard. Efter att du bekräftat ditt köp genom att klicka på \"Genomför köp\" i kassan kommer du få ange dina kortuppgifter för att slutföra betalningen. Transaktionen sker via certifierad betalväxel och med SSL-kryptering vilket innebär att ingen obehörig kan se dina uppgifter. Inga kortuppgifter hanteras eller sparas av Resurs Bank. Vi accepterar inte kort som är utfärdade av en bank utanför norden.",
+            "termsLink": ""
+        },
+        "partPayment": {
+            "title": "Betala i din takt",
+            "info": "Välj hur du vill dela upp ditt köp när fakturan kommer",
+            "extendedOpen": "Läs mer",
+            "extendedClose": "Stäng",
+            "extendedLinkText": "Läs villkoren för delbetalning här",
+            "extendedInfo": "Fakturan skickas till dig i mitten på nästa månad, när det är dags att betala väljer du om du vill betala allt på en gång eller lite i taget. På fakturan ser du vilka alternativ som finns och de eventuella avgifter som tillkommer.",
+            "labelGovernmentId": "Personnummer *",
+            "alternativeDeliveryAdress": "Eftersom du valt en annan leveransadress måste du signera med Bank-id."
+        },
+        "pspSwish": {
+            "infoText": "Tryck på \"Genomför köp\", öppna Swish i din mobil och genomför köpet",
+            "mobileText": "Ditt mobilnummer: {{mobileNumber}}"
+        },
+        "newCard": {
+            "title": "Betala hela eller dela beloppet",
+            "info": "Se dina köp i Resurs bank app",
+            "extendedOpen": "Läs mer",
+            "extendedClose": "Stäng",
+            "extendedInfo": "Ansökan om ett Resurskort och kom igång med smidigare betalningar redan idag. När du klickar på \"Genomför Köp\", identifierar du dig med BankID föra att vi ska kunna godkänna din kreditansökan. Kortet landar i din brevlåda inom några dagar. Fakturan för ditt köp skickas till din e-post, Mina sidor samt i Resurs Bank app, där du kan välja att betala hela eller dela beloppet som det passar dig.",
+            "label": "Önskad kreditgräns:",
+            "extendedLinkText": "Läs mer om våra villkor här",
+            "labelGovernmentId": "Personnummer *"
+        },
+        "resursCard": {
+            "title": "Köp nu, betala sen",
+            "info": "Se alla dina köp i Resurs bank app",
+            "extendedOpen": "Läs mer",
+            "extendedClose": "Stäng",
+            "extendedInfo": "När du väljer att betala med ditt Resurs kort hämtas dina uppgifter efter du valt \"Genomför Köp\". Du identifieras med BankID så att köpet kan registreras på ditt kort.",
+            "labelGovernmentId": "Personnummer *"
+        },
+        "revolvingCredit": {
+            "title": "Köp nu, betala sen",
+            "info": "Se alla dina köp i Resurs Banks app",
+            "extendedInfo": "När du väljer att betala med Resurs får du tillgång till flera flexibla betalningsalternativ. Allt du behöver göra är att signera ditt köp med BankID efter att du klickat på ”Genomför köp”.",
+            "extendedOpen": "Läs mer",
+            "extendedClose": "Stäng",
+            "labelGovernmentId": "Personnummer *"
+        },
+        "newRevolvingCredit": {
+            "title": "Betala hela eller dela beloppet",
+            "info": "Se alla dina köp i Resurs Banks app",
+            "extendedInfo": "Ansök om ett Resurskonto och få tillgång till flera flexibla betalningsalternativ. Allt du behöver göra är att klicka på ”Genomför köp” och identifiera dig med BankID för att vi ska kunna godkänna din kreditansökan. Fakturan för ditt köp hittar du på Mina sidor via resursbank.se och i Resurs Banks app, där du kan välja hur du vill betala – allt på en gång eller lite i taget.",
+            "extendedTermsLink": "Läs mer om våra villkor här",
+            "extendedOpen": "Läs mer",
+            "extendedClose": "Stäng",
+            "termsLinkText": "Läs mer om våra villkor här",
+            "labelCreditLimit": "Välj önskad kreditgräns",
+            "infoGovernmentId": "För att ansöka om en nya kredit behöver du ange ditt personnummer",
+            "labelGovernmentId": "Personnummer *"
+        }
+    },
+    "validation": {
+        "govId": {
+            "forEmpty": "Ange personnummer",
+            "forPattern": "Ange ett giltigt personnummer"
+        },
+        "firstName": {
+            "forEmpty": "Ange förnamn"
+        },
+        "lastName": {
+            "forEmpty": "Ange efternamn"
+        },
+        "address": {
+            "forEmpty": "Ange adress"
+        },
+        "postalCode": {
+            "forEmpty": "Ange postnummer",
+            "forPattern": "Felaktigt postnummer"
+        },
+        "city": {
+            "forEmpty": "Ange stad"
+        },
+        "email": {
+            "forEmpty": "Ange e-postadress",
+            "forPattern": "Ange en korrekt e-postadress"
+        },
+        "phone": {
+            "forEmpty": "Ange ett mobilnummer",
+            "forPattern": "Ange ett korrekt mobilnummer"
+        },
+        "cardNumber": {
+            "forEmpty": "Ange Kort-/kontonummer",
+            "forPattern": "Ogiltigt Kort-/kontonummer"
+        },
+        "deliveryFirstName": {
+            "forEmpty": "Ange förnamn"
+        },
+        "deliveryLastName": {
+            "forEmpty": "Ange efternamn"
+        },
+        "deliveryAddress": {
+            "forEmpty": "Ange adress"
+        },
+        "deliveryPostalCode": {
+            "forEmpty": "Ange postnummer",
+            "forPattern": "Felaktigt postnummer"
+        },
+        "deliveryCity": {
+            "forEmpty": "Ange stad"
+        }
+    },
+    "findByGovId": {
+        "INVALID_GOVERNMENT_ID": "Ange ett giltigt personnummer.",
+        "VALIDATION_ERROR": "Ange ett giltigt personnummer.",
+        "NOT_FOUND": "Ingen användare hittades. Prova igen eller fyll i dina uppgifter manuellt",
+        "CUSTOMER_TOO_YOUNG": "Du måste vara 18 eller äldre för att hämta adress.",
+        "SERVICE_UNREACHABLE": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen eller fyll i dina uppgifter manuellt.",
+        "TOO_MANY_REQUESTS": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen eller fyll i dina uppgifter manuellt.",
+        "UNKNOWN": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller fyll i dina uppgifter manuellt."
+    },
+    "errors": {
+        "app": {
+            "BAD_FORMAT": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.",
+            "BAD_FORMATTED_JSON": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.",
+            "CREDIT_DENIED": "Din kreditansökan kunde inte beviljas, vänligen välj ett annat betalsätt.",
+            "DUPLICATED_ORDER_REFERENCE": "Det köp som detta meddelande berör har redan genomförts. Vi hoppas du kommer att bli nöjd!",
+            "ECOM_ERROR": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.",
+            "GOVERNMENT_ID_AND_CARD_ID_DO_NOT_MATCH": "Kort-/kontonummer och personnummer stämmer ej överens. Vänligen ange ett annat kortnummer eller byt betalmetod.",
+            "NO_PAYMENT_OPTIONS": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.",
+            "NOT_FOUND": "Tyvärr har tiden för att genomföra ditt köp gått ut. Men din produkt finns troligtvis fortfarande kvar i sortimentet. Vänligen försök igen.",
+            "PAYMENT_ENGINE_ERROR": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.",
+            "REJECTED_BY_REPRESENTATIVE": "Ditt köp har blivit avbrutet vänligen kontakta säljaren.",
+            "UNKNOWN": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.",
+            "LOGIN_ERROR": "Vi kunde tyvärr inte verifiera dina uppgifter. Gör ett nytt försök eller fyll i dina kort-/kontouppgifter manuellt. Du kan självklart också välja ett annat betalsätt.",
+            "EXPIRED": "Tyvärr har sessionen gått ut. Vänligen ladda om sidan."
+        },
+        "titles": {
+            "general": "Något gick fel!"
+        }
+    },
+    "footer": {
+        "copyrightText": "© {{year}} Resurs Bank AB (publ) Org.nr 516401-0208",
+        "contactText": "Box 222 09, SE-250 24 Helsingborg",
+        "mailLinkText": "info@resursbank.se",
+        "mailLink": "mailto:info@resursbank.se",
+        "siteLinkText": "resursbank.se",
+        "siteLink": "https://www.resursbank.se/"
+    },
+    "loading": {
+        "sessionInit": "Vi hämtar dina uppgifter...",
+        "sessionWaitingForConfirm": "Vänta medan order bekräftas...",
+        "redirectingToPsp": "Vänligen vänta, vi laddar betalningsformulär...",
+        "submittingPaymentRequest": "Dina uppgifter behandlas, vänligen vänta..",
+        "requestAuthentication": "Vänligen vänta, vi bearbetar din förfrågan...",
+        "commonWait": "Vänligen vänta..."
+    },
+    "costOfPurchase": {
+        "loading": "Vänta medan vi beräknar dina uppgifter"
+    },
+    "price": {
+        "decimalChar": ",",
+        "thousandsDelim": " ",
+        "currency": "kr",
+        "currencyPlacement": "after"
+    },
+    "mup": {
+        "pep": {
+            "placeholderCountry": "Välj land",
+            "readMore": "Läs mer här"
+        },
+        "terms": {
+            "titleLegal": "Jag bekräftar att jag accepterar",
+            "legalCTA": "villkoren"
+        }
+    }
+}

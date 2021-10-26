@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "resursbank/ecomphp",
-            "version": "1.3.62",
-            "version_normalized": "1.3.62.0",
+            "version": "1.3.63",
+            "version_normalized": "1.3.63.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ResursBank/ecomphp.git",
-                "reference": "b29f8e941aa278c9477b5a3a48d4975456856add"
+                "reference": "ecc6d278041b6e93cc272b79443e6fd2362b6361"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/b29f8e941aa278c9477b5a3a48d4975456856add",
-                "reference": "b29f8e941aa278c9477b5a3a48d4975456856add",
+                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/ecc6d278041b6e93cc272b79443e6fd2362b6361",
+                "reference": "ecc6d278041b6e93cc272b79443e6fd2362b6361",
                 "shasum": ""
             },
             "require": {
@@ -22,7 +22,7 @@
                 "tornevall/tornelib-php-netcurl": "^6.1",
                 "tornevall/tornelib-php-network": "^6.1"
             },
-            "time": "2021-10-16T10:38:25+00:00",
+            "time": "2021-10-21T09:15:48+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -46,7 +46,7 @@
             "description": "Resurs Bank AB ecommerce library for PHP.",
             "support": {
                 "issues": "https://github.com/ResursBank/ecomphp/issues",
-                "source": "https://github.com/ResursBank/ecomphp/tree/1.3.62"
+                "source": "https://github.com/ResursBank/ecomphp/tree/1.3.63"
             },
             "install-path": "../resursbank/ecomphp"
         },
@@ -372,24 +372,24 @@
         },
         {
             "name": "tornevall/tornelib-php-utils",
-            "version": "6.1.11",
-            "version_normalized": "6.1.11.0",
+            "version": "6.1.13",
+            "version_normalized": "6.1.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-utils.git",
-                "reference": "76ce954d81863753cab24fdb2d3905a9a1608c69"
+                "reference": "4d8937261b7482bc48549165aed2e210d7e01a31"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/76ce954d81863753cab24fdb2d3905a9a1608c69",
-                "reference": "76ce954d81863753cab24fdb2d3905a9a1608c69",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/4d8937261b7482bc48549165aed2e210d7e01a31",
+                "reference": "4d8937261b7482bc48549165aed2e210d7e01a31",
                 "shasum": ""
             },
             "require": {
                 "tornevall/tornelib-php-errorhandler": "^6.1",
                 "tornevall/tornelib-php-flags": "^6.1"
             },
-            "time": "2021-08-21T10:04:05+00:00",
+            "time": "2021-10-20T13:45:27+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -412,7 +412,7 @@
             "description": "Utils that many of the TorneLIB-based libraries may need.",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-utils/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-utils/tree/6.1.11"
+                "source": "https://github.com/Tornevall/tornelib-php-utils/tree/6.1.13"
             },
             "install-path": "../tornevall/tornelib-php-utils"
         },

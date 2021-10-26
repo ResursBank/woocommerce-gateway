@@ -1,0 +1,208 @@
+{
+    "common": {
+        "Change": "Endre",
+        "ChoosePaymentMethod": "Velg betalingsmåte",
+        "Get": "Hent adresse",
+        "GetYourInformation": "Hent mine opplysninger",
+        "NotYouQ": "Ikke du?",
+        "Submit": "Fullfør kjøp",
+        "close": "Lukk"
+    },
+    "userInfo": {
+        "manualInputText": "Du kan også",
+        "manualInputLinkText": "fylle ut informasjonen manuelt",
+        "govIdInputText": "Mye å fylle ut? La oss",
+        "govIdInputLinkText": "hent dine opplysninger",
+        "placeholderGovId": "ddmmååxxxxx",
+        "placeholderMobileId": "xxx xx xxx",
+        "helpIdentification": "Ved hjelp av ditt mobilnummer henter vi dine adresseopplysninger.\nDisse opplysningene er påkrevd for at vi skal kunne sende bestillingen.",
+        "labelFirstName": "Fornavn *",
+        "labelLastName": "Etternavn *",
+        "labelAddress": "Adresse *",
+        "labelAddressInfo": "Adresseinformasjon (valgfritt)",
+        "labelPostalCode": "Postnr *",
+        "labelCity": "Sted *",
+        "labelEmail": "Epost *",
+        "labelPhone": "Mobilnummer *",
+        "labelAlternativeDeliveryAddress": "Annen leveringsadresse",
+        "infoAddressBlock": "Disse opplysningene er påkrevd for at vi skal kunne sende bestillingen. Vær ekstra nøye med å skrive inn riktig mobilnummer og e-postadresse, ettersom disse blir brukt til ordrebekreftelse og hentemeldinger.",
+        "infoDeliveryAddressBlock": "Det er ikke noe problem å sende en bestilling til en annen leveringsadresse enn din folkeregisterte adresse. Velger du faktura eller delbetaling som betalingsmåte, må du signere for kjøpet med BankID."
+    },
+    "submit": {
+        "buttonSubmitPayment": "Fullfør kjøp",
+        "amountSummary": "Sum: ",
+        "amountSummaryFeeOnly": "Inkludert gebyr {{fee}}",
+        "saveInfoTitle": "Lagre mine opplysninger",
+        "saveInfoText": " Når du lagrer dine opplysninger, er det enklere å handle neste gang du bruker Resurs Checkout. Informasjonen lagres i en cookie i din nettleser. Les mer om cookies og personopplysninger i vilkårene nedenfor.",
+        "termsRcoText": "Ved å sende informasjon i kassen, godtar jeg <0></0> og bruk av cookies.",
+        "termsRcoLink": "./terms/",
+        "termsRcoLinkText": "Resurs Checkout",
+        "termsShopText": "Ved å klikke på \"Fullfør kjøp\" påtar jeg meg betalingsansvar og godtar kjøpsvilkårene hos <0></0>",
+        "termsPersonalDataLink": "https://www.resursbank.no/om-oss/integritet-og-sikkerhet/gdpr-som-kunde",
+        "termsPersonalDataLinkText": "Les mer om hvordan vi behandler dine personopplysninger"
+    },
+    "paymentMethods": {
+        "revolvingCredit": {
+            "title": "Kjøp nå – betal senere",
+            "info": "Se alle dine kjøp i Resurs Bank app",
+            "extendedInfo": "Når du velger å betale med Resurs Bank får du muligheten å velge blant flere fleksible betalingsalternativ. Alt du trenger å gjøre er å bekrefte kjøpet med å signere med BankID etter at du har klikket på \"Fullfør kjøp\".",
+            "extendedOpen": "Les mer",
+            "extendedClose": "Lukk"
+        },
+        "newRevolvingCredit": {
+            "title": "Betal alt på en gang, eller del opp beløpet",
+            "info": "Se dine kjøp i Resurs Banks app",
+            "extendedInfo": "Søk om Resurs konto og få muligheten til å velge flere fleksible betalingsalternativ. Alt du trenger gjøre er å klikke på \"Fullfør kjøp\". Deretter identifiserer du deg med BankID for å gjennomføre søknaden. Faktura for kjøpet blir gjort tilgjengelig på resursbank.no/mine sider, og i vår app. Der kan du velge betalingsalternativ, og velge om du vil betale alt på en gang, eller dele opp betalingen.",
+            "extendedOpen": "Les mer",
+            "extendedClose": "Lukk",
+            "termsLinkText": "Les mer om våre vilkår her",
+            "labelCreditLimit": "Velg ønsket kredittgrense"
+        },
+        "invoice": {
+            "title": "Motta dine varer nå – betal senere.",
+            "info": "Fakturaen sendes til oppgitt e-post adresse.",
+            "extendedInfo": "Når du velger faktura, får du 30-60 dager før denne må betales. Når fakturaen kommer, kan du velge om du vil betale alt på en gang, eller delbetale beløpet i månedlige rater. På fakturaen ser hvilke betalingsalternativ du kan velge blant, og evt. hvilke avgifter som pålegges.",
+            "extendedOpen": "Mer informasjon",
+            "extendedClose": "Lukk",
+            "noFee": "Ingen faktureringsgebyrer",
+            "alternativeDeliveryAdress": "I og med at du har valgt en annen leveringsadresse, må du signere med BankID."
+        },
+        "pspTrustly": {
+            "info": "Betal direkte fra bankkontoen din på nett, støttet av sikkerhet på banknivå. Ingen kort, ingen app-nedlasting, ingen registrering."
+        },
+        "pspCard": {
+            "linkMore": "Mer informasjon",
+            "linkMoreClose": "Lukk",
+            "textInfo": "Betal for kjøpet med ditt VISA eller Mastercard. Når du har bekreftet kjøpet ved å klikke på \"Fullfør kjøp\" i kassen, må du oppgi kortopplysninger for å fullføre betalingen. Transaksjonen skjer via sertifisert betalingsaktør og med SSL-kryptering, noe som betyr at ingen uvedkommende kan se dine opplysninger. Resurs Bank behandler eller lagrer ingen kortinformasjon. Vi aksepterer ikke kort som er utstedt av en bank utenfor Norden.",
+            "termsLink": ""
+        },
+        "partPayment": {
+            "title": "Betal i ditt eget tempo",
+            "info": "Velg selv hvilken delbetaling du ønsker når du mottar fakturaen",
+            "extendedInfo": "Fakturaen sendes deg i midten av neste måned. Da velger du om du vil betale alt på en gang, eller dele opp i mindre månedlige innbetalinger. På fakturaen vil du også se hvilke alternativer for delbetalinger du kan velge i, og hva kostnaden for dette er.",
+            "extendedOpen": "Les mer her",
+            "extendedClose": "Lukk",
+            "extendedLinkText": "Les vilkårene for delbetaling her"
+        },
+        "newCard": {
+            "title": "Betal alt på en gang, eller del opp beløpet",
+            "info": "Se dine kjøp i Resurs Banks app",
+            "extendedOpen": "Les mer",
+            "extendedClose": "Lukk",
+            "extendedInfo": "Søk om et Resurs kort, og kom i gang med fleksible betalinger allerede i dag. Når du trykker på \"Fullfør kjøp\", identifiserer du deg med BankID for å gjennomføre søknaden. Kortet vil du motta i postkassen i løpet av få dager, mens faktura sendes neste måned og er tilgjengelig i Mine Sider og Resurs Banks app. Når det er på tide å betale, velger du selv om du innfrir eller deler opp beløpet som det passer deg.",
+            "extendedLinkText": "Les mer om våre vilkår her",
+            "label": "Velg ønsket kredittgrense:"
+        },
+        "resursCard": {
+            "title": "Kjøp nå – betal senere",
+            "info": "Se alle dine kjøp i Resurs Bank app",
+            "extendedOpen": "Les mer",
+            "extendedClose": "Lukk",
+            "extendedInfo": "Når du velger å betale med ditt Resurs kort, hentes dine opplysninger etter at du har valgt \"Fullfør kjøp\". Du signerer med BankID, og kjøpet vil registreres på ditt kort."
+        },
+        "common": {
+            "govIdInput": {
+                "labelText": "Fødselsnummer *"
+            }
+        }
+    },
+    "validation": {
+        "govId": {
+            "forEmpty": "Skriv inn fødselsnummer",
+            "forPattern": "Du må oppgi gyldig fødselsnummer"
+        },
+        "firstName": {
+            "forEmpty": "Skriv inn fornavn"
+        },
+        "lastName": {
+            "forEmpty": "Skriv inn etternavn"
+        },
+        "address": {
+            "forEmpty": "Du må oppgi en adresse"
+        },
+        "postalCode": {
+            "forEmpty": "Du må oppgi postnr.",
+            "forPattern": "Feil postnr."
+        },
+        "city": {
+            "forEmpty": "Du må oppgi et poststed"
+        },
+        "email": {
+            "forEmpty": "Du må oppgi en e-postadresse",
+            "forPattern": "Skriv inn en korrekt e-postadresse"
+        },
+        "phone": {
+            "forEmpty": "Du må oppgi mobilnummer",
+            "forPattern": "Skriv inn et korrekt mobilnummer"
+        },
+        "cardNumber": {
+            "forEmpty": "Skriv inn Kort-/kontonummer",
+            "forPattern": "Ugyldig Kort-/kontonummer"
+        },
+        "deliveryFirstName": {
+            "forEmpty": "Skriv inn fornavn"
+        },
+        "deliveryLastName": {
+            "forEmpty": "Skriv inn etternavn"
+        },
+        "deliveryAddress": {
+            "forEmpty": "Du må oppgi en adresse"
+        },
+        "deliveryPostalCode": {
+            "forEmpty": "Du må oppgi postnr.",
+            "forPattern": "Feil postnr."
+        },
+        "deliveryCity": {
+            "forEmpty": "Du må oppgi et poststed"
+        }
+    },
+    "findByMobile": {
+        "VALIDATION_ERROR": "Oppgi et korrekt mobilnummer",
+        "NOT_FOUND": "Vi fant ingen informasjon på dette mobilnummeret. Prøv igjen, eller fyll inn manuelt.",
+        "SERVICE_UNREACHABLE": "Tjenesten er ikke tilgjengelig. Prøv igjen senere eller fyll inn din informasjon manuelt.",
+        "TOO_MANY_REQUESTS": "Tjenesten er ikke tilgjengelig. Prøv igjen senere eller fyll inn din informasjon manuelt.",
+        "UNKNOWN": "Tjenesten er ikke tilgjengelig. Prøv igjen senere eller fyll inn din informasjon manuelt."
+    },
+    "errors": {
+        "app": {
+            "BAD_FORMAT": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
+            "BAD_FORMATTED_JSON": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
+            "CREDIT_DENIED": "Din kredittsøknad ble dessverre ikke innvilget akkurat nå. Vennligst velg en annen betalingsmåte.",
+            "DUPLICATED_ORDER_REFERENCE": "Kjøpet som denne meldingen handler om er allerede gjennomført. Vi håper du blir fornøyd!",
+            "ECOM_ERROR": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
+            "GOVERNMENT_ID_AND_CARD_ID_DO_NOT_MATCH": "Kortnummer og fødselsnummer samsvarer ikke. Vennligst oppgi et annet kortnummer eller skift betalingsmåte.",
+            "NO_PAYMENT_OPTIONS": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
+            "NOT_FOUND": "Tiden har utløpt for å gjennomføre kjøpet. Ditt produkt finnes nok fortsatt i nettbutikken. Vennligst prøv igjen.",
+            "PAYMENT_ENGINE_ERROR": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
+            "REJECTED_BY_REPRESENTATIVE": "Kjøpet er kansellert, bør du kontakte selgeren.",
+            "UNKNOWN": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
+            "EXPIRED": "Tiden har dessverre gått ut. Vennligst last ned siden på nytt."
+        },
+        "titles": {
+            "general": "Noe gikk galt"
+        }
+    },
+    "footer": {
+        "copyrightText": "© {{year}} Resurs Bank AB (publ) NUF Org.nr 984150865",
+        "contactText": "Hovedkontor: Resurs Bank AB (publ) i Helsingborg, Sverige.",
+        "mailLinkText": "kundetjeneste@resursbank.no",
+        "mailLink": "mailto:kundetjeneste@resursbank.no",
+        "siteLinkText": "resursbank.no",
+        "siteLink": "https://www.resursbank.no/"
+    },
+    "loading": {
+        "sessionInit": "Vi samler inn informasjonen din...",
+        "sessionWaitingForConfirm": "Vent mens din ordre bekreftes…",
+        "redirectingToPsp": "Vennligst vent, vi laster opp betalingsinformasjon...",
+        "submittingPaymentRequest": "Informasjonen din blir behandlet, vennligst vent..."
+    },
+    "costOfPurchase": {
+        "loading": "Vent mens vi beregner informasjonen din"
+    },
+    "price": {
+        "decimalChar": ",",
+        "thousandsDelim": " ",
+        "currency": "kr",
+        "currencyPlacement": "after"
+    }
+}
