@@ -2005,33 +2005,23 @@ function woocommerce_gateway_resurs_bank_init()
             $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
             $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
 
-            $countryCredentialArray = [];
-            $hasCountry = false;
-            if (isResursDemo() && isset($_SESSION['rb_country']) && class_exists('CountryHandler')) {
-                if (isset($_SESSION['rb_country'])) {
-                    $methodList = get_transient('resursMethods' . $_SESSION['rb_country']);
-                    $hasCountry = true;
-                }
-            }
-            if (!$hasCountry) {
-                try {
-                    if ($timeDiff >= 3600) {
+            try {
+                if ($timeDiff >= 3600) {
+                    $methodList = $this->flow->getPaymentMethods([], true);
+                    set_transient('resursTemporaryPaymentMethodsTime', time());
+                    set_transient('resursTemporaryPaymentMethods', serialize($methodList));
+                } else {
+                    $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
+                    // When transient fetching fails.
+                    if (!is_array($methodList) || (is_array($methodList) && !count($methodList))) {
                         $methodList = $this->flow->getPaymentMethods([], true);
-                        set_transient('resursTemporaryPaymentMethodsTime', time());
                         set_transient('resursTemporaryPaymentMethods', serialize($methodList));
-                    } else {
-                        $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
-                        // When transient fetching fails.
-                        if (!is_array($methodList) || (is_array($methodList) && !count($methodList))) {
-                            $methodList = $this->flow->getPaymentMethods([], true);
-                            set_transient('resursTemporaryPaymentMethods', serialize($methodList));
-                            set_transient('resursTemporaryPaymentMethodsTime', time());
-                        }
+                        set_transient('resursTemporaryPaymentMethodsTime', time());
                     }
-                } catch (Exception $e) {
-                    $sessionHasErrors = true;
-                    $sessionErrorMessage = $e->getMessage();
                 }
+            } catch (Exception $e) {
+                $sessionHasErrors = true;
+                $sessionErrorMessage = $e->getMessage();
             }
 
             if (!$sessionHasErrors) {
