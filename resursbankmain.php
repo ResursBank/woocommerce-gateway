@@ -7401,8 +7401,13 @@ function getResursRequireSession()
  */
 function rb_in_maintenance()
 {
-    global $pagenow;
+    global $pagenow, $current_tab;
+    $isApiCall = isset($_REQUEST['wc-api']) && $_REQUEST['wc-api'] === 'WC_Resurs_Bank';
+
     if ((is_admin() || is_ajax()) && $pagenow !== 'wp-login.php') {
+        return;
+    }
+    if ($isApiCall || $current_tab === 'tab_resursbank') {
         return;
     }
 
