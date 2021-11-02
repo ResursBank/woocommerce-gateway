@@ -1898,9 +1898,6 @@ function woocommerce_gateway_resurs_bank_init()
                     $customerType,
                     'PAYMENT_PROVIDER'
                 );
-                if ($this->flow->getCanSkipGovernmentIdValidation()) {
-                    $mustShowGov = false;
-                }
             } else {
                 // Always display the field on resurs internals.
                 $mustShowGov = true;
@@ -1917,7 +1914,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $doDisplay = 'block';
                         $streamLineBehaviour = getResursOption('streamlineBehaviour');
                         if ($streamLineBehaviour) {
-                            if ($this->flow->canHideFormField($fieldName)) {
+                            if ($type === 'PAYMENT_PROVIDER' || $this->flow->canHideFormField($fieldName)) {
                                 $doDisplay = 'none';
                             }
                             // When applicant government id and getAddress is enabled so that data can be collected
