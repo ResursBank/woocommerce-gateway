@@ -1914,14 +1914,19 @@ function woocommerce_gateway_resurs_bank_init()
                         $doDisplay = 'block';
                         $streamLineBehaviour = getResursOption('streamlineBehaviour');
                         if ($streamLineBehaviour) {
-                            if ($type === 'PAYMENT_PROVIDER' || $this->flow->canHideFormField($fieldName)) {
+                            if ($this->flow->canHideFormField($fieldName)) {
                                 $doDisplay = 'none';
                             }
                             // When applicant government id and getAddress is enabled so that data can be collected
                             // from that point, the request field is not necessary to be shown all the time.
                             if ($fieldName === 'applicant-government-id') {
                                 $optionGetAddress = getResursOption('getAddress');
+                                // $mustShowGov is unconditional: This setting forces the gov id to ALWAYS show
+                                // regardless of payment method.
                                 if ($optionGetAddress && !$mustShowGov) {
+                                    $doDisplay = 'none';
+                                }
+                                if ($type === 'PAYMENT_PROVIDER' && !$mustShowGov) {
                                     $doDisplay = 'none';
                                 }
                             }
