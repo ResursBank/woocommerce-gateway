@@ -1898,6 +1898,9 @@ function woocommerce_gateway_resurs_bank_init()
                     $customerType,
                     'PAYMENT_PROVIDER'
                 );
+                if ($this->flow->getCanSkipGovernmentIdValidation()) {
+                    $mustShowGov = false;
+                }
             } else {
                 // Always display the field on resurs internals.
                 $mustShowGov = true;
