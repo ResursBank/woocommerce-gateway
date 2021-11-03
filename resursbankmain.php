@@ -1921,7 +1921,12 @@ function woocommerce_gateway_resurs_bank_init()
                             // from that point, the request field is not necessary to be shown all the time.
                             if ($fieldName === 'applicant-government-id') {
                                 $optionGetAddress = getResursOption('getAddress');
+                                // $mustShowGov is unconditional: This setting forces the gov id to ALWAYS show
+                                // regardless of payment method.
                                 if ($optionGetAddress && !$mustShowGov) {
+                                    $doDisplay = 'none';
+                                }
+                                if ($type === 'PAYMENT_PROVIDER' && !$mustShowGov) {
                                     $doDisplay = 'none';
                                 }
                             }
