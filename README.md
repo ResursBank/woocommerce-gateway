@@ -2,7 +2,7 @@
 
 There are no longer any guarantees that this plugin is compatible with older versions of woocommerce. Our intentions is at least 3.4.0 and up. See the list below.
 
-* Compatibility: WooCommerce - at least 3.4.0 and up to 5.3.0
+* Compatibility: WooCommerce - at least 3.4.0 and up to 5.8.0
 * Plugin verified with PHP version 7.0 - 8.0
 
 The plugin was, historically, written for WooCommerce v2.6 and up but since WordPress and WooCommerce dropped old PHP-versions, you should probably not expect anything to work if you still run 2.6. It was also written in an era where coding standards was considered as "less important" amongst developers. That's why the codebase is anything but beautiful.
