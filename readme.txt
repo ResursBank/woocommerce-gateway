@@ -60,6 +60,8 @@ warnings.
 
 = Contribute =
 
+Help us by joining [Crowdin](https://crwd.in/resurs-bank-woocommerce-gateway) as a translator!
+
 Do you think there are ways to make our plugin even better? Join our project for woocommerce at [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce)
 
 Want to add a new language to this plugin? You can contribute via [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/resurs-bank-payment-gateway-for-woocommerce).
