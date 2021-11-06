@@ -3,7 +3,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Project-Id-Version: resurs-bank-woocommerce-gateway\n"
 "POT-Creation-Date: 2021-11-06 01:13+0100\n"
-"PO-Revision-Date: 2021-11-06 01:37+0100\n"
+"PO-Revision-Date: 2021-11-06 02:32+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Norwegian\n"
 "MIME-Version: 1.0\n"
@@ -97,7 +97,7 @@ msgstr ""
 
 #: functions_settings.php:151
 msgid "Use woocommerce order ids (postid) as references"
-msgstr "Bruke woocommerce ordre-IDene (postid) som referanser"
+msgstr "Bruk woocommerce order ids (postid) som referanser"
 
 #: functions_settings.php:157
 msgid "This function tries to use the internal post id as orderid instead of the references created by the plugin."
@@ -281,7 +281,7 @@ msgstr "Hvis du ikke vil vente for manuell håndtering av ordrer som har vært f
 
 #: functions_settings.php:390
 msgid "Defines if a payment should be debited immediately on a booked payment (Not available for Resurs Checkout)"
-msgstr "Definerer om betalingen skal bli debitert umiddelbart ved en registrert betaling"
+msgstr "Definerer om betalingen skal bli debitert umiddelbart ved en registrert betaling (ikke tilgjengelig for Resurs Checkout)"
 
 #: functions_settings.php:395
 msgid "You can only activate this feature if you have goods that can be delivered immediately, like electronic tickets and downloads"
@@ -349,7 +349,7 @@ msgstr "Felt som kreves for å fullføre en bestilling fra Resurs Bank er skjult
 
 #: functions_settings.php:493
 msgid "Show Resurs Bank payment ids in order view"
-msgstr "Vis Resurs Bank betaling-IDer i ordre visning"
+msgstr "Vis Resurs Bank betaling-ids i ordre visning"
 
 #: functions_settings.php:497
 msgid "Do you need to show order references in the order list view? This makes it happen!"
@@ -433,7 +433,7 @@ msgstr ""
 
 #: functions_settings.php:631
 msgid "Log Resurs Bank events"
-msgstr "Resurs Bank event "
+msgstr "Log Resurs Bank-hendelser"
 
 #: functions_settings.php:633
 msgid "Log events like callbacks, status updates on received callbacks, etc"
@@ -485,7 +485,7 @@ msgstr ""
 
 #: functions_settings.php:720
 msgid "Use default (Completed)"
-msgstr "Bruk forvald"
+msgstr "Bruk forvald (Completed)"
 
 #: functions_settings.php:721
 msgid "Processing"
@@ -816,7 +816,7 @@ msgstr ""
 
 #: resursbank_settings.php:919
 msgid "Your callbacks requires an update. The plugin will do this for you as soon as this page has is done loading..."
-msgstr "Dine callbacks krever en oppdatering. Plugin vil gjøre dette for deg så snart denne siden er ferdig med å lade ..."
+msgstr "Dine callbacks krever en oppdatering. Plugin vil gjøre dette for deg så snart denne siden er ferdig med å lade..."
 
 #: resursbank_settings.php:928
 msgid "Callback URLs that is registered at Resurs Bank"
@@ -1000,7 +1000,7 @@ msgstr "Vedlikehold"
 
 #: resursbank_settings.php:1500
 msgid "Clean up "
-msgstr "Rydd opp"
+msgstr "Rydd opp "
 
 #: resursbank_settings.php:1502
 msgid "Resurs settings"
@@ -1191,7 +1191,7 @@ msgstr "Betalingsmetoden er ikke tilgjengelig for valgte betalingsflyten"
 
 #: resursbankmain.php:2241
 msgid "An error occured during the update of the booked payment (hostedFlow) - the payment id which was never received properly"
-msgstr "Det oppstod en feil under oppdateringen for betalingen (Hosted flow) – betalings-ID ble ikke mottatt riktig"
+msgstr "Det oppstod en feil under oppdateringen for betalingen (Hosted flow)- betalings-id ble ikke mottatt riktig"
 
 #: resursbankmain.php:2339 resursbankmain.php:3563
 msgid "[Resurs Bank] The payment are signed, booked and finalized."
@@ -1282,7 +1282,7 @@ msgstr ""
 
 #: resursbankmain.php:3599
 msgid "An error occured during the update of the booked payment. The payment id was never received properly in signing response"
-msgstr "Det oppstod en feil under oppdateringen av betalingen. Betalings-IDen ble ikke riktig mottatt i signeringsprosessen"
+msgstr "Det oppstod en feil under oppdateringen av betalingen. Betalings-iden ble ikke riktig mottatt i signeringsprosessen"
 
 #: resursbankmain.php:3615
 msgid "Something went wrong during the signing process."

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2021-11-06 01:13+0100\n"
+"POT-Creation-Date: 2021-11-06 02:32+0100\n"
 "PO-Revision-Date: 2021-11-06 00:29+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
@@ -985,7 +985,7 @@ msgid "Callback URLs that is registered at Resurs Bank"
 msgstr ""
 
 #: resursbank_settings.php:933
-msgid "curl module is set to enter debug mode"
+msgid "Curl module is set to enter debug mode"
 msgstr ""
 
 #: resursbank_settings.php:956
