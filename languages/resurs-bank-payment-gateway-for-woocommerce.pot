@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2021-11-06 01:09+0100\n"
+"POT-Creation-Date: 2021-11-06 01:13+0100\n"
 "PO-Revision-Date: 2021-11-06 00:29+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
@@ -21,6 +21,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
 "X-Poedit-SearchPathExcluded-1: vendor\n"
+"X-Poedit-SearchPathExcluded-2: includes/wp\n"
 
 #: functions_gateway.php:69 resursbankmain.php:1618
 #: staticflows/flow_omni.php:694
@@ -42,14 +43,6 @@ msgstr ""
 #: functions_settings.php:100 functions_settings.php:627
 #: functions_settings.php:637 functions_settings.php:769
 #: functions_settings.php:771 functions_settings.php:835
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:181
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:181
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:181
-#: includes/wp/resurs_bank_nr_3_CARD.php:181
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:181
-#: includes/wp/resurs_bank_nr_5_SWISH.php:181
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:181
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:181
 #: resursbank_settings.php:1094
 msgid "Enable/Disable"
 msgstr ""
@@ -187,14 +180,6 @@ msgstr ""
 
 #: functions_settings.php:219 functions_settings.php:808
 #: functions_settings.php:854
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:207
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:207
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:207
-#: includes/wp/resurs_bank_nr_3_CARD.php:207
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:207
-#: includes/wp/resurs_bank_nr_5_SWISH.php:207
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:207
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:207
 msgid ""
 "This controls the payment method description which the user sees during "
 "checkout."
@@ -657,26 +642,10 @@ msgid ""
 msgstr ""
 
 #: functions_settings.php:785
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:193
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:193
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:193
-#: includes/wp/resurs_bank_nr_3_CARD.php:193
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:193
-#: includes/wp/resurs_bank_nr_5_SWISH.php:193
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:193
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:193
 msgid "Custom payment method icon"
 msgstr ""
 
 #: functions_settings.php:791
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:196
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:196
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:196
-#: includes/wp/resurs_bank_nr_3_CARD.php:196
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:196
-#: includes/wp/resurs_bank_nr_5_SWISH.php:196
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:196
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:196
 msgid ""
 "Used for branded logotypes as icons for the specific payment method. The "
 "image type must be a http/https-link. Suggested link is local, uploaded to "
@@ -684,38 +653,14 @@ msgid ""
 msgstr ""
 
 #: functions_settings.php:797
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:199
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:199
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:199
-#: includes/wp/resurs_bank_nr_3_CARD.php:199
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:199
-#: includes/wp/resurs_bank_nr_5_SWISH.php:199
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:199
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:199
 msgid "Enable/Disable payment method icon"
 msgstr ""
 
 #: functions_settings.php:818
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:214
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:214
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:214
-#: includes/wp/resurs_bank_nr_3_CARD.php:214
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:214
-#: includes/wp/resurs_bank_nr_5_SWISH.php:214
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:214
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:214
 msgid "Payment fee for this payment method"
 msgstr ""
 
 #: functions_settings.php:825
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:218
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:218
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:218
-#: includes/wp/resurs_bank_nr_3_CARD.php:218
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:218
-#: includes/wp/resurs_bank_nr_5_SWISH.php:218
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:218
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:218
 msgid "Description of this payment method fee"
 msgstr ""
 
@@ -916,42 +861,6 @@ msgid ""
 "Bank WooCommerceControl panel. This means that the plugin may not function "
 "properly. If you need it, make sure it is properly enabled before start "
 "using it."
-msgstr ""
-
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:129
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:129
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:129
-#: includes/wp/resurs_bank_nr_3_CARD.php:129
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:129
-#: includes/wp/resurs_bank_nr_5_SWISH.php:129
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:129
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:129
-msgid ""
-"In demo mode, this payment method is shown regardless of the total payment "
-"amount and the payment method limits"
-msgstr ""
-
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:129
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:129
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:129
-#: includes/wp/resurs_bank_nr_3_CARD.php:129
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:129
-#: includes/wp/resurs_bank_nr_5_SWISH.php:129
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:129
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:129
-msgid "Restricted"
-msgstr ""
-
-#: includes/wp/resurs_bank_nr_0_PSPCARD_DEBIT.php:189
-#: includes/wp/resurs_bank_nr_1_PARTPAYMENT.php:189
-#: includes/wp/resurs_bank_nr_2_INVOICE.php:189
-#: includes/wp/resurs_bank_nr_3_CARD.php:189
-#: includes/wp/resurs_bank_nr_4_PSPCARD_CREDIT.php:189
-#: includes/wp/resurs_bank_nr_5_SWISH.php:189
-#: includes/wp/resurs_bank_nr_6_NEWCARD.php:189
-#: includes/wp/resurs_bank_nr_7_COMPINVOICE.php:189
-msgid ""
-"This controls the payment method title which the user sees during checkout."
 msgstr ""
 
 #: resursbank_settings.php:34
