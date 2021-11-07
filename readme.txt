@@ -100,6 +100,11 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 In this release:
 
+# 2.2.65-66
+
+* [WOO-584](https://resursbankplugins.atlassian.net/browse/WOO-584) Saving credentials is problematic the first round after wp-admin-reload.
+* [WOO-585](https://resursbankplugins.atlassian.net/browse/WOO-585) PAYMENT_PROVIDER with government id
+
 # 2.2.64
 
 * [WOO-576](https://resursbankplugins.atlassian.net/browse/WOO-576) $return is sometimes not set when return occurs
