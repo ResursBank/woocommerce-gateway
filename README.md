@@ -7,6 +7,10 @@ There are no longer any guarantees that this plugin is compatible with older ver
 
 The plugin was, historically, written for WooCommerce v2.6 and up but since WordPress and WooCommerce dropped old PHP-versions, you should probably not expect anything to work if you still run 2.6. It was also written in an era where coding standards was considered as "less important" amongst developers. That's why the codebase is anything but beautiful.
 
+## Plugin needs translation
+
+Help us translate the plugin by joining [Crowdin](https://crwd.in/resurs-bank-woocommerce-gateway)!
+
 ### Can I upgrade WooCommerce with your plugin installed?
 
 If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually changes (after internal tests has been made) to match the base requirements, so you can upgrade without upgrade warnings.

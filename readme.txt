@@ -21,6 +21,8 @@ Official payment gateway for Resurs Bank (maintenance version).
 Full support for all active shop flows. *SoapClient* is required as many of the administrative actions are using SOAP.
 Requirements follows WooCommerce requirements, which means (as of june 2021) PHP 7.0 or higher.
 
+Help us translate the plugin by joining [Crowdin](https://crwd.in/resurs-bank-woocommerce-gateway)!
+
 = Compatibility and requirements =
 
 * WooCommerce: v3.4.0 or higher (old features are ditched) and the actual support is set much higher.
@@ -33,6 +35,7 @@ Requirements follows WooCommerce requirements, which means (as of june 2021) PHP
   2021, both WooCommerce and WordPress is about to jump into 7.4 and higher.
   Also, [read here](https://wordpress.org/news/2019/04/minimum-php-version-update/) for information about lower versions
   of PHP.
+
 
 = Upgrade notice =
 
@@ -60,7 +63,7 @@ warnings.
 
 = Contribute =
 
-Help us by joining [Crowdin](https://crwd.in/resurs-bank-woocommerce-gateway) as a translator!
+Help us translate the plugin by joining [Crowdin](https://crwd.in/resurs-bank-woocommerce-gateway)!
 
 Do you think there are ways to make our plugin even better? Join our project for woocommerce at [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce)
 
