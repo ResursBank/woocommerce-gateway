@@ -11,7 +11,7 @@ use TorneLIB\Exception\ExceptionHandler;
 /**
  * Class Generic Generic functions
  * @package TorneLIB\Utils
- * @version 6.1.13
+ * @version 6.1.14
  */
 class Generic
 {
@@ -202,11 +202,14 @@ class Generic
     {
         $this->composerLocation = $location;
 
-        $this->composerData = json_decode(
-            file_get_contents(
-                sprintf('%s/composer.json', $location)
-            )
-        );
+        $getFrom = sprintf('%s/composer.json', $location);
+        if (file_exists($getFrom)) {
+            $this->composerData = json_decode(
+                file_get_contents(
+                    $getFrom
+                )
+            );
+        }
     }
 
     /**
