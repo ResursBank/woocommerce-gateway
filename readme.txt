@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.0
 Tested up to: 5.8.1
 Requires PHP: 5.4
-Stable tag: 2.2.66
+Stable tag: 2.2.67
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -21,7 +21,9 @@ Official payment gateway for Resurs Bank (maintenance version).
 Full support for all active shop flows. *SoapClient* is required as many of the administrative actions are using SOAP.
 Requirements follows WooCommerce requirements, which means (as of june 2021) PHP 7.0 or higher.
 
-Help us translate the plugin by joining [Crowdin](https://crwd.in/resurs-bank-woocommerce-gateway)!
+[![Crowdin](https://badges.crowdin.net/resursbankwoocommerce/localized.svg)](https://crowdin.com/project/resursbankwoocommerce)
+
+Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwoocommerce)!
 
 = Compatibility and requirements =
 

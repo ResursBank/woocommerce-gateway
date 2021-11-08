@@ -13,7 +13,9 @@ beautiful.
 
 ## Plugin needs translation
 
-Help us translate the plugin by joining [Crowdin](https://crwd.in/resurs-bank-woocommerce-gateway)!
+[![Crowdin](https://badges.crowdin.net/resursbankwoocommerce/localized.svg)](https://crowdin.com/project/resursbankwoocommerce)
+
+Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwoocommerce)!
 
 ### Can I upgrade WooCommerce with your plugin installed?
 
