@@ -14,11 +14,11 @@
 define('RB_WOO_VERSION', '2.2.69');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resurs-bank-payment-gateway-for-woocommerce');
+define('RB_EXPECT_ECOM', '1.3.63');
 
 require_once(__DIR__ . '/functions_settings.php');
 require_once(__DIR__ . '/functions_vitals.php');
 
-//$resurs_obsolete_coexistence_disable = false;
 /**
  * @return bool
  * @since 2.2.47
@@ -30,6 +30,7 @@ function getOldRbVersionAppearance()
 
 function activateResursGatewayScripts()
 {
+    resursExpectVersions();
     add_filter('resurs_bank_v22_woo_appearance', 'getOldRbVersionAppearance');
     if (allowPluginToRun()) {
         require_once(__DIR__ . '/resursbankmain.php');

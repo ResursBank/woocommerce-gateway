@@ -1486,7 +1486,7 @@ function woocommerce_gateway_resurs_bank_init()
                 }
                 $callbackType = $this->flow->getCallbackTypeByString($type);
                 $this->flow->setCallbackDigestSalt($this->getCurrentSalt());
-                //$this->flow->setRegisterCallbacksViaRest();
+                $this->flow->setRegisterCallbackFailover();
                 $this->flow->setRegisterCallback($callbackType, $uriTemplate);
             } catch (Exception $e) {
                 throw new Exception($e);
@@ -4174,7 +4174,7 @@ function woocommerce_gateway_resurs_bank_init()
             /** @var $flow ResursBank */
             $flow = initializeResursFlow();
             $method = $_REQUEST['method'];
-            $amount = floatval($_REQUEST['amount']);
+            $amount = (float)isset($_REQUEST['amount']) ? $_REQUEST['amount'] : 0;
             $costOfPriceInfoCountries = ['DK'];
             $selectedCountry = getResursOption('country');
             if (in_array($selectedCountry, $costOfPriceInfoCountries)) {
@@ -5612,7 +5612,7 @@ function woocommerce_gateway_resurs_bank_init()
         $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);
 
         try {
-            if (floatval($totalDiscount) > 0) {
+            if ((float)$totalDiscount > 0) {
                 $refundFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
             }
 
@@ -5621,7 +5621,7 @@ function woocommerce_gateway_resurs_bank_init()
             $refundStatus = $refundFlow->paymentCancel(
                 $resursOrderId,
                 null,
-                floatval($totalDiscount) > 0 || $hasShippingRefund || $refundPriceAlwaysOverride ? true : false
+                (float)$totalDiscount > 0 || $hasShippingRefund || $refundPriceAlwaysOverride ? true : false
             );
         } catch (Exception $e) {
             $errors = true;
