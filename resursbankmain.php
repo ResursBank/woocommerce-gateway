@@ -895,14 +895,28 @@ function woocommerce_gateway_resurs_bank_init()
                 $order->add_order_note(
                     sprintf(
                         __(
-                            '[Resurs Bank] The event %s was rejected by the plugin when the digest was processed. The salt key may need to be updated, by re-registering the callbacks again.',
+                            '[Resurs Bank] The event %s was rejected by the plugin when the digest was processed. ' .
+                            'The salt key may need to be updated, by re-registering the callbacks again.',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         $event_type
                     )
                 );
-                header('HTTP/1.1 406 Digest rejected by plugin', true, 406);
-                echo '406: Callback digest validation failed, rejected by plugin';
+
+                if ($order->get_id() === 0) {
+                    if ((bool)getResursOption('accept_rejected_callbacks')) {
+                        $message = 'Order is not ours, but it is still accepted.';
+                        $code = 204;
+                    } else {
+                        $code = 410;
+                        $message = 'Order is not ours';
+                    }
+                    header(sprintf('HTTP/1.1 %d %s', $code, $message), true, $code);
+                    echo $code . ': ' . $message;
+                } else {
+                    header('HTTP/1.1 406 Digest rejected by plugin', true, 406);
+                    echo '406: Digest rejected.';
+                }
                 exit;
             }
 
