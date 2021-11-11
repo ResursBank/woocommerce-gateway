@@ -1,6 +1,6 @@
 <?php
 
-namespace Resursbank\Ecommerce\Service;
+namespace Resursbank\Ecommerce\Helpers;
 
 use Exception;
 use TorneLIB\IO\Data\Content;
@@ -9,7 +9,7 @@ use TorneLIB\IO\Data\Strings;
 /**
  * Class Helper Helper functions in ecom, currently for translations.
  */
-class Translation
+class Helper
 {
     const TRANSLATION_SWEDISH = 'sv';
     const TRANSLATION_NORWEGIAN = 'no';
@@ -230,7 +230,7 @@ class Translation
      * (Partially = Finland is considered 'fin' according to ISO 639-1)
      *
      * @param string $useLanguage
-     * @return Translation
+     * @return Helper
      * @throws Exception
      * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
      */
