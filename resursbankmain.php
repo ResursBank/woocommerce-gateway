@@ -5698,8 +5698,8 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('wp_ajax_nopriv_get_annuity_html', 'WC_Resurs_Bank::get_annuity_html');
     add_action('wp_ajax_get_priceinfo_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
     add_action('wp_ajax_nopriv_get_priceinfo_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
-    add_action('wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
-    add_action('wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
+    add_action('wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax'); // Keeping compatibility.
+    add_action('wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax'); // Keeping compatibility.
     add_action('wp_ajax_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype');
     add_action('wp_ajax_nopriv_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype');
     add_action('init', 'start_session', 1);
