@@ -195,7 +195,7 @@ function getResursAllowedLocations()
         'wc-settings',
         'shop_order',
         'edit',
-        'get_cost_ajax',
+        'get_priceinfo_ajax',
         'get_address_customertype',
     ];
 }
