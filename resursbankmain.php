@@ -4156,7 +4156,7 @@ function woocommerce_gateway_resurs_bank_init()
         public static function get_cost_ajax()
         {
             global $styles;
-            require_once('resursbankgateway.php');
+            require_once(__DIR__ . '/resursbankgateway.php');
 
             /* Styles Section */
             $styleSheets = '';
