@@ -2044,7 +2044,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $sessionErrorMessage = $e->getMessage();
                 resursEventLogger(
                     sprintf(
-                        'Payment Method From Render Exception (%s): %s.',
+                        'PaymentMethod CustomerForm Renderer Exception (%s): %s.',
                         $e->getCode(),
                         $e->getMessage()
                     )
