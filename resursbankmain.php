@@ -2012,10 +2012,11 @@ function woocommerce_gateway_resurs_bank_init()
         {
             global $woocommerce;
             $this->flow = initializeResursFlow();
+            $sessionErrorMessage = '';
             $currentCountry = getResursOption('country');
             $minMaxError = null;
             $methodList = null;
-            $fieldGenHtml = null;
+            $fieldGenHtml = '';
 
             $cart = $woocommerce->cart;
             $paymentSpec = $this->get_payment_spec($cart);
@@ -2041,6 +2042,13 @@ function woocommerce_gateway_resurs_bank_init()
             } catch (Exception $e) {
                 $sessionHasErrors = true;
                 $sessionErrorMessage = $e->getMessage();
+                resursEventLogger(
+                    sprintf(
+                        'PaymentMethod CustomerForm Renderer Exception (%s): %s.',
+                        $e->getCode(),
+                        $e->getMessage()
+                    )
+                );
             }
 
             if (!$sessionHasErrors) {
@@ -2057,6 +2065,9 @@ function woocommerce_gateway_resurs_bank_init()
                         'resurs-bank-payment-gateway-for-woocommerce'
                     );
                 }
+            } else {
+                // Append errors to the fieldGenHtml content in case of errors that must reach us.
+                $fieldGenHtml .= !empty($sessionErrorMessage) ? $sessionErrorMessage : '';
             }
             if (!empty($fieldGenHtml)) {
                 echo $fieldGenHtml;
@@ -5389,10 +5400,14 @@ function woocommerce_gateway_resurs_bank_init()
         global $woocommerce;
 
         $selectedCountry = getResursOption('country');
-
         $customerCountry = isset($woocommerce->customer) &&
         method_exists($woocommerce->customer, 'get_billing_country') ?
             $woocommerce->customer->get_billing_country() : '';
+
+        if (empty($customerCountry)) {
+            //$customerCountry = get_option('woocommerce_default_country');
+            $customerCountry = getResursOption('country');
+        }
 
         // Do not distribute payment methods for countries that do not belong to current
         // Resurs setup, with an exception for VISA/Mastercard.
