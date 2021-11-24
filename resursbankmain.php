@@ -908,9 +908,9 @@ function woocommerce_gateway_resurs_bank_init()
                 } catch (Exception $e) {
                     $testOrderId = 0;
                 }
-                
+
                 if ($testOrderId == 0) {
-                    if (!getResursOption('accept_rejected_callbacks')) {
+                    if (getResursOption('accept_rejected_callbacks')) {
                         $message = 'Order is not ours, but it is still accepted.';
                         $code = 204;
                     } else {
