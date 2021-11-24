@@ -1954,7 +1954,7 @@ function woocommerce_gateway_resurs_bank_init()
                     }
 
                     $translation = [];
-                    $costOfPurchase = $ajaxUrl . '?action=get_cost_ajax';
+                    $costOfPurchase = $ajaxUrl . '?action=get_priceinfo_ajax';
                     if ($specificType !== 'CARD' && $type != 'PAYMENT_PROVIDER') {
                         $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __(
                                 $read_more,
@@ -1964,7 +1964,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $fieldGenHtml .= '<input type="hidden" value="' . $id . '" class="resurs-bank-payment-method">';
                 } else {
                     // HOSTED
-                    $costOfPurchase = $ajaxUrl . '?action=get_cost_ajax';
+                    $costOfPurchase = $ajaxUrl . '?action=get_priceinfo_ajax';
                     $fieldGenHtml = $this->description . '<br><br>';
                     if ($specificType !== 'CARD') {
                         $fieldGenHtml .=
@@ -4000,7 +4000,7 @@ function woocommerce_gateway_resurs_bank_init()
                         //$realPaymentLimit = $paymentLimit;
                         if ((int)$payFrom >= $paymentLimit || $payFrom === 0) {
                             $payFromAnnuity = wc_price($payFrom);
-                            $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
+                            $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_priceinfo_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
                             $onclick = 'window.open(\'' . $costOfPurchase . '\')';
 
                             // https://test.resurs.com/docs/pages/viewpage.action?pageId=7208965#Hooks/filtersv2.2-Filter:Partpaymentwidgetstring
@@ -4164,7 +4164,7 @@ function woocommerce_gateway_resurs_bank_init()
             die();
         }
 
-        public static function get_cost_ajax()
+        public static function get_priceinfo_ajax()
         {
             global $styles;
             require_once(__DIR__ . '/resursbankgateway.php');
@@ -5711,8 +5711,10 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('wp_ajax_nopriv_get_address_ajax', 'WC_Resurs_Bank::get_address_ajax');
     add_action('wp_ajax_get_annuity_html', 'WC_Resurs_Bank::get_annuity_html');
     add_action('wp_ajax_nopriv_get_annuity_html', 'WC_Resurs_Bank::get_annuity_html');
-    add_action('wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax');
-    add_action('wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax');
+    add_action('wp_ajax_get_priceinfo_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
+    add_action('wp_ajax_nopriv_get_priceinfo_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
+    add_action('wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax'); // Keeping compatibility.
+    add_action('wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax'); // Keeping compatibility.
     add_action('wp_ajax_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype');
     add_action('wp_ajax_nopriv_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype');
     add_action('init', 'start_session', 1);

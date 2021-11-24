@@ -1089,7 +1089,7 @@ if (is_admin()) {
             $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
             $has_icon = (string)file_exists($temp_icon);
             $ajaxUrl = admin_url('admin-ajax.php');
-            $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+            $costOfPurchase = $ajaxUrl . "?action=get_priceinfo_ajax";
 
             /*
              * Demoshop note: All classes will be written for each country. However, if they are named the same in the merchant admin portal the classes themselves
