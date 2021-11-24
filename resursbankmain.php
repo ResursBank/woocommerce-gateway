@@ -889,9 +889,30 @@ function woocommerce_gateway_resurs_bank_init()
 
             $orderId = wc_get_order_id_by_payment_id($request['paymentId']);
             $order = new WC_Order($orderId);
-            $currentValidation = $this->validateCallback($request);
+            $currentValidation = (bool)$this->validateCallback($request);
+
+            try {
+                $testOrderId = $order->get_id();
+            } catch (Exception $e) {
+                $testOrderId = 0;
+            }
+
+
+            if ($testOrderId == 0) {
+                if (getResursOption('accept_rejected_callbacks')) {
+                    $message = 'Order is not ours, but it is still accepted.';
+                    $code = 204;
+                } else {
+                    $code = 410;
+                    $message = 'Order is not ours';
+                }
+                header(sprintf('HTTP/1.1 %d %s', $code, $message), true, $code);
+                echo $code . ': ' . $message;
+                exit;
+            }
+
             // SKIP_DIGEST_VALIDATION is for test purposes only.
-            if (empty($currentValidation) && !getResursFlag('SKIP_DIGEST_VALIDATION')) {
+            if (!$currentValidation && !getResursFlag('SKIP_DIGEST_VALIDATION')) {
                 $order->add_order_note(
                     sprintf(
                         __(
@@ -903,28 +924,8 @@ function woocommerce_gateway_resurs_bank_init()
                     )
                 );
 
-                try {
-                    $testOrderId = $order->get_id();
-                } catch (Exception $e) {
-                    $testOrderId = 0;
-                }
-
-                if ($testOrderId == 0) {
-/*                    if (getResursOption('accept_rejected_callbacks')) {
-                        $message = 'Order is not ours, but it is still accepted.';
-                        $code = 204;
-                    } else {
-                        $code = 410;
-                        $message = 'Order is not ours';
-                    }*/
-                    $code = 410;
-                    $message = 'Order is not ours';
-                    header(sprintf('HTTP/1.1 %d %s', $code, $message), true, $code);
-                    echo $code . ': ' . $message;
-                } else {
-                    header('HTTP/1.1 406 Digest rejected by plugin', true, 406);
-                    echo '406: Digest rejected.';
-                }
+                header('HTTP/1.1 406 Digest rejected by plugin', true, 406);
+                echo '406: Digest rejected.';
                 exit;
             }
 
