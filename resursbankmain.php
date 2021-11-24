@@ -903,14 +903,20 @@ function woocommerce_gateway_resurs_bank_init()
                     )
                 );
 
-                if ($order->get_id() === 0) {
-/*                    if (!getResursOption('accept_rejected_callbacks')) {
+                try {
+                    $testOrderId = $order->get_id();
+                } catch (Exception $e) {
+                    $testOrderId = 0;
+                }
+                
+                if ($testOrderId == 0) {
+                    if (!getResursOption('accept_rejected_callbacks')) {
                         $message = 'Order is not ours, but it is still accepted.';
                         $code = 204;
                     } else {
                         $code = 410;
                         $message = 'Order is not ours';
-                    }*/
+                    }
                     $code = 410;
                     $message = 'Order is not ours';
                     header(sprintf('HTTP/1.1 %d %s', $code, $message), true, $code);
