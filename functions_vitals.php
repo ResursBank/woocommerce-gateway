@@ -195,7 +195,7 @@ function getResursAllowedLocations()
         'wc-settings',
         'shop_order',
         'edit',
-        'get_cost_ajax',
+        'get_priceinfo_ajax',
         'get_address_customertype',
     ];
 }
@@ -544,6 +544,35 @@ function getRbAdminNotices()
     }
     if (isset($_SESSION['rb2']['exception']['plugin_disabled'])) {
         unset($_SESSION['rb2']['exception']['plugin_disabled']);
+    }
+    if (isset($_SESSION['rb2']['exception']['improper_version'])) {
+        unset($_SESSION['rb2']['exception']['improper_version']);
+    }
+}
+
+/**
+ * Check for version conflicts.
+ */
+function resursExpectVersions()
+{
+    $versionProblems = [];
+    if (is_admin() && getResursOption('enabled')) {
+        $ecomCurrent = (new ResursBank())->getVersionNumber();
+        if (version_compare(RB_EXPECT_ECOM, (new ResursBank())->getVersionNumber(), '>=')) {
+            $versionProblems[] = sprintf('EComPHP %s, requires %s', $ecomCurrent, RB_EXPECT_ECOM);
+        }
+        if (is_admin() && session_status() === PHP_SESSION_NONE && count($versionProblems)) {
+            session_start();
+            $_SESSION['rb2']['exception']['improper_version'] = sprintf(
+                __(
+                    'There is a problem with your platform: The libraries that this plugin is using is ' .
+                    'probably colliding with an older version. This can cause problems with your platform as ' .
+                    'important features could be missing. The libraries affected are: %s.',
+                    'resurs-bank-payment-gateway-for-woocommerce'
+                ),
+                implode(', ', $versionProblems)
+            );
+        }
     }
 }
 

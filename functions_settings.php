@@ -159,6 +159,19 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
+                'accept_rejected_callbacks' => [
+                    'title' => __('Accept rejected callbacks', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => __('Enabled', 'woocommerce'),
+                    'description' => __(
+                        'When Resurs Bank has a callback delivery where the order does not exist in the system, the ' .
+                        'plugin will respond with HTTP 410 (Gone). However, if callbacks from Resurs Bank is ' .
+                        'looping eternally due to this problem, this option allows the plugin to pretend that the ' .
+                        'order has been properly updated. Such cases will be replied with HTTP 204 (No content).',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'default' => 'false',
+                ],
                 'country' => [
                     'title' => __('Country', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'select',
@@ -1076,7 +1089,7 @@ if (is_admin()) {
             $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
             $has_icon = (string)file_exists($temp_icon);
             $ajaxUrl = admin_url('admin-ajax.php');
-            $costOfPurchase = $ajaxUrl . "?action=get_cost_ajax";
+            $costOfPurchase = $ajaxUrl . "?action=get_priceinfo_ajax";
 
             /*
              * Demoshop note: All classes will be written for each country. However, if they are named the same in the merchant admin portal the classes themselves

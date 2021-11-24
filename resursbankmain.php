@@ -895,14 +895,28 @@ function woocommerce_gateway_resurs_bank_init()
                 $order->add_order_note(
                     sprintf(
                         __(
-                            '[Resurs Bank] The event %s was rejected by the plugin when the digest was processed. The salt key may need to be updated, by re-registering the callbacks again.',
+                            '[Resurs Bank] The event %s was rejected by the plugin when the digest was processed. ' .
+                            'The salt key may need to be updated, by re-registering the callbacks again.',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         $event_type
                     )
                 );
-                header('HTTP/1.1 406 Digest rejected by plugin', true, 406);
-                echo '406: Callback digest validation failed, rejected by plugin';
+
+                if ($order->get_id() === 0) {
+                    if ((bool)getResursOption('accept_rejected_callbacks')) {
+                        $message = 'Order is not ours, but it is still accepted.';
+                        $code = 204;
+                    } else {
+                        $code = 410;
+                        $message = 'Order is not ours';
+                    }
+                    header(sprintf('HTTP/1.1 %d %s', $code, $message), true, $code);
+                    echo $code . ': ' . $message;
+                } else {
+                    header('HTTP/1.1 406 Digest rejected by plugin', true, 406);
+                    echo '406: Digest rejected.';
+                }
                 exit;
             }
 
@@ -1472,7 +1486,7 @@ function woocommerce_gateway_resurs_bank_init()
                 }
                 $callbackType = $this->flow->getCallbackTypeByString($type);
                 $this->flow->setCallbackDigestSalt($this->getCurrentSalt());
-                //$this->flow->setRegisterCallbacksViaRest();
+                $this->flow->setRegisterCallbackFailover();
                 $this->flow->setRegisterCallback($callbackType, $uriTemplate);
             } catch (Exception $e) {
                 throw new Exception($e);
@@ -1921,7 +1935,12 @@ function woocommerce_gateway_resurs_bank_init()
                             // from that point, the request field is not necessary to be shown all the time.
                             if ($fieldName === 'applicant-government-id') {
                                 $optionGetAddress = getResursOption('getAddress');
+                                // $mustShowGov is unconditional: This setting forces the gov id to ALWAYS show
+                                // regardless of payment method.
                                 if ($optionGetAddress && !$mustShowGov) {
+                                    $doDisplay = 'none';
+                                }
+                                if ($type === 'PAYMENT_PROVIDER' && !$mustShowGov) {
                                     $doDisplay = 'none';
                                 }
                             }
@@ -1935,7 +1954,7 @@ function woocommerce_gateway_resurs_bank_init()
                     }
 
                     $translation = [];
-                    $costOfPurchase = $ajaxUrl . '?action=get_cost_ajax';
+                    $costOfPurchase = $ajaxUrl . '?action=get_priceinfo_ajax';
                     if ($specificType !== 'CARD' && $type != 'PAYMENT_PROVIDER') {
                         $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __(
                                 $read_more,
@@ -1945,7 +1964,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $fieldGenHtml .= '<input type="hidden" value="' . $id . '" class="resurs-bank-payment-method">';
                 } else {
                     // HOSTED
-                    $costOfPurchase = $ajaxUrl . '?action=get_cost_ajax';
+                    $costOfPurchase = $ajaxUrl . '?action=get_priceinfo_ajax';
                     $fieldGenHtml = $this->description . '<br><br>';
                     if ($specificType !== 'CARD') {
                         $fieldGenHtml .=
@@ -1993,10 +2012,11 @@ function woocommerce_gateway_resurs_bank_init()
         {
             global $woocommerce;
             $this->flow = initializeResursFlow();
+            $sessionErrorMessage = '';
             $currentCountry = getResursOption('country');
             $minMaxError = null;
             $methodList = null;
-            $fieldGenHtml = null;
+            $fieldGenHtml = '';
 
             $cart = $woocommerce->cart;
             $paymentSpec = $this->get_payment_spec($cart);
@@ -2022,6 +2042,13 @@ function woocommerce_gateway_resurs_bank_init()
             } catch (Exception $e) {
                 $sessionHasErrors = true;
                 $sessionErrorMessage = $e->getMessage();
+                resursEventLogger(
+                    sprintf(
+                        'PaymentMethod CustomerForm Renderer Exception (%s): %s.',
+                        $e->getCode(),
+                        $e->getMessage()
+                    )
+                );
             }
 
             if (!$sessionHasErrors) {
@@ -2038,6 +2065,9 @@ function woocommerce_gateway_resurs_bank_init()
                         'resurs-bank-payment-gateway-for-woocommerce'
                     );
                 }
+            } else {
+                // Append errors to the fieldGenHtml content in case of errors that must reach us.
+                $fieldGenHtml .= !empty($sessionErrorMessage) ? $sessionErrorMessage : '';
             }
             if (!empty($fieldGenHtml)) {
                 echo $fieldGenHtml;
@@ -3970,7 +4000,7 @@ function woocommerce_gateway_resurs_bank_init()
                         //$realPaymentLimit = $paymentLimit;
                         if ((int)$payFrom >= $paymentLimit || $payFrom === 0) {
                             $payFromAnnuity = wc_price($payFrom);
-                            $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_cost_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
+                            $costOfPurchase = admin_url('admin-ajax.php') . "?action=get_priceinfo_ajax&method=$annuityMethod&amount=" . $annuityFactorPrice;
                             $onclick = 'window.open(\'' . $costOfPurchase . '\')';
 
                             // https://test.resurs.com/docs/pages/viewpage.action?pageId=7208965#Hooks/filtersv2.2-Filter:Partpaymentwidgetstring
@@ -4134,10 +4164,10 @@ function woocommerce_gateway_resurs_bank_init()
             die();
         }
 
-        public static function get_cost_ajax()
+        public static function get_priceinfo_ajax()
         {
             global $styles;
-            require_once('resursbankgateway.php');
+            require_once(__DIR__ . '/resursbankgateway.php');
 
             /* Styles Section */
             $styleSheets = '';
@@ -4155,7 +4185,7 @@ function woocommerce_gateway_resurs_bank_init()
             /** @var $flow ResursBank */
             $flow = initializeResursFlow();
             $method = $_REQUEST['method'];
-            $amount = floatval($_REQUEST['amount']);
+            $amount = (float)isset($_REQUEST['amount']) ? $_REQUEST['amount'] : 0;
             $costOfPriceInfoCountries = ['DK'];
             $selectedCountry = getResursOption('country');
             if (in_array($selectedCountry, $costOfPriceInfoCountries)) {
@@ -5370,10 +5400,14 @@ function woocommerce_gateway_resurs_bank_init()
         global $woocommerce;
 
         $selectedCountry = getResursOption('country');
-
         $customerCountry = isset($woocommerce->customer) &&
         method_exists($woocommerce->customer, 'get_billing_country') ?
             $woocommerce->customer->get_billing_country() : '';
+
+        if (empty($customerCountry)) {
+            //$customerCountry = get_option('woocommerce_default_country');
+            $customerCountry = getResursOption('country');
+        }
 
         // Do not distribute payment methods for countries that do not belong to current
         // Resurs setup, with an exception for VISA/Mastercard.
@@ -5593,7 +5627,7 @@ function woocommerce_gateway_resurs_bank_init()
         $hasShippingRefund = resurs_refund_shipping($refundObject, $refundFlow);
 
         try {
-            if (floatval($totalDiscount) > 0) {
+            if ((float)$totalDiscount > 0) {
                 $refundFlow->setGetPaymentMatchKeys(['artNo', 'description', 'unitMeasure']);
             }
 
@@ -5602,7 +5636,7 @@ function woocommerce_gateway_resurs_bank_init()
             $refundStatus = $refundFlow->paymentCancel(
                 $resursOrderId,
                 null,
-                floatval($totalDiscount) > 0 || $hasShippingRefund || $refundPriceAlwaysOverride ? true : false
+                (float)$totalDiscount > 0 || $hasShippingRefund || $refundPriceAlwaysOverride ? true : false
             );
         } catch (Exception $e) {
             $errors = true;
@@ -5677,8 +5711,10 @@ function woocommerce_gateway_resurs_bank_init()
     add_action('wp_ajax_nopriv_get_address_ajax', 'WC_Resurs_Bank::get_address_ajax');
     add_action('wp_ajax_get_annuity_html', 'WC_Resurs_Bank::get_annuity_html');
     add_action('wp_ajax_nopriv_get_annuity_html', 'WC_Resurs_Bank::get_annuity_html');
-    add_action('wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax');
-    add_action('wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_cost_ajax');
+    add_action('wp_ajax_get_priceinfo_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
+    add_action('wp_ajax_nopriv_get_priceinfo_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax');
+    add_action('wp_ajax_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax'); // Keeping compatibility.
+    add_action('wp_ajax_nopriv_get_cost_ajax', 'WC_Resurs_Bank::get_priceinfo_ajax'); // Keeping compatibility.
     add_action('wp_ajax_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype');
     add_action('wp_ajax_nopriv_get_address_customertype', 'WC_Resurs_Bank::get_address_customertype');
     add_action('init', 'start_session', 1);
