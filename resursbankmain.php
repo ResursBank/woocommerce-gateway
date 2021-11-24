@@ -462,7 +462,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 set_transient('resurs_bank_last_callback_setup', 0);
                                 $myResponse['html'] = '<br>' .
                                     '<div class="labelBoot labelBoot-success labelBoot-big labelBoot-nofat labelBoot-center">' . __(
-                                        'Please reload or save this page to have this list updated. Annuity factors has been reset!',
+                                        'All clear. Annuity factors has been reset! Do not forget to save your settings.',
                                         'resurs-bank-payment-gateway-for-woocommerce'
                                     ) . '</div><br><br>';
                             }
