@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.0
 Tested up to: 5.8.1
 Requires PHP: 5.4
-Stable tag: 2.2.69
+Stable tag: 2.2.70
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -100,9 +100,14 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-In this release:
+In this release (2.2.70):
 
-# 2.2.65-66
+* [WOO-591](https://resursbankplugins.atlassian.net/browse/WOO-591) get\_cost\_of\_purchase: Rename call \(Also related to ECOMPHP-431\)
+* [WOO-587](https://resursbankplugins.atlassian.net/browse/WOO-587) Stuck callbacks
+* [WOO-583](https://resursbankplugins.atlassian.net/browse/WOO-583) Customer country may or may not be wrongfully returned as an empty string in the checkout and therefore not showing payment methods properly
+
+
+# 2.2.65-69
 
 * [WOO-584](https://resursbankplugins.atlassian.net/browse/WOO-584) Saving credentials is problematic the first round after wp-admin-reload.
 * [WOO-585](https://resursbankplugins.atlassian.net/browse/WOO-585) PAYMENT_PROVIDER with government id

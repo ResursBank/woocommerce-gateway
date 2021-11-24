@@ -1,4 +1,10 @@
-# 2.2.65-66
+# 2.2.70
+
+* [WOO-591](https://resursbankplugins.atlassian.net/browse/WOO-591) get\_cost\_of\_purchase: Rename call \(Also related to ECOMPHP-431\)
+* [WOO-587](https://resursbankplugins.atlassian.net/browse/WOO-587) Stuck callbacks
+* [WOO-583](https://resursbankplugins.atlassian.net/browse/WOO-583) Customer country may or may not be wrongfully returned as an empty string in the checkout and therefore not showing payment methods properly
+
+# 2.2.65-69
 
 * [WOO-584](https://resursbankplugins.atlassian.net/browse/WOO-584) Saving credentials is problematic the first round
   after wp-admin-reload.
