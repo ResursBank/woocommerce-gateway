@@ -908,7 +908,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     $callSent = get_transient("resurs_callbacks_sent");
                     $callRecv = get_transient("resurs_callbacks_received");
 
-                    echo $this->setCheckBox('accept_rejected_callbacks', $namespace);
+                    //echo $this->setCheckBox('accept_rejected_callbacks', $namespace);
                     echo '<tr>
                     <th></th>
                     <td>

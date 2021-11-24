@@ -75,10 +75,6 @@ function getResursDemoOption($key)
  */
 function getResursOption($key = "", $namespace = "woocommerce_resurs-bank_settings")
 {
-    if (($demoReturn = isResursDemo())) {
-        return $demoReturn;
-    }
-
     $getOptionsNamespace = get_option($namespace);
     // Going back to support PHP 5.3 instead of 5.4+
     if (isset($getOptionsNamespace[$key])) {
