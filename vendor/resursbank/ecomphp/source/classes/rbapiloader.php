@@ -4294,6 +4294,9 @@ class ResursBank
                 if (isset($methodArray->id)) {
                     $methodId = $methodArray->id;
                     if (isset($methodArray->legalInfoLinks)) {
+                        if (is_object($methodArray->legalInfoLinks)) {
+                            $methodArray->legalInfoLinks = [$methodArray->legalInfoLinks];
+                        }
                         $linkCount = 0;
                         foreach ($methodArray->legalInfoLinks as $legalInfoLinkId => $legalInfoArray) {
                             if (isset($legalInfoArray->appendPriceLast) && ($legalInfoArray->appendPriceLast === true)
