@@ -1242,8 +1242,11 @@ function woocommerce_gateway_resurs_bank_init()
                     );
                     setResursOrderMetaData(
                         $woocommerceOrder->get_id(),
-                            'orderStatusQueue',
-                            sprintf('%s:%s', $newStatus, strftime('%Y%m%d-%H%M%S', time()))
+                        sprintf(
+                            'orderStatusQueue_%s',
+                            strftime('%Y%m%d-%H%M%S', time())
+                        ),
+                        $newStatus
                     );
                     QueueHandler::setOrderStatusWithNotice(
                         $woocommerceOrder->get_id(),
@@ -3513,7 +3516,7 @@ function woocommerce_gateway_resurs_bank_init()
                 } catch (Exception $bookSignedException) {
                     resursEventLogger(
                         sprintf(
-                            'bookSignedPaymentExcepRtion (%s): %s',
+                            'bookSignedPaymentException (%s): %s',
                             $bookSignedException->getCode(),
                             $bookSignedException->getMessage()
                         )
