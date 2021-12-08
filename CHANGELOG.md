@@ -1,3 +1,7 @@
+# 2.2.71
+
+[WOO-592](https://resursbankplugins.atlassian.net/browse/WOO-592) Race conditions on callbacks, second edition
+
 # 2.2.70
 
 * [WOO-591](https://resursbankplugins.atlassian.net/browse/WOO-591) get\_cost\_of\_purchase: Rename call \(Also related to ECOMPHP-431\)

@@ -98,12 +98,15 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-In this release (2.2.70):
+In this release (2.2.71):
+
+* [WOO-592](https://resursbankplugins.atlassian.net/browse/WOO-592) Race conditions on callbacks, second edition
+
+# 2.2.70
 
 * [WOO-591](https://resursbankplugins.atlassian.net/browse/WOO-591) get\_cost\_of\_purchase: Rename call \(Also related to ECOMPHP-431\)
 * [WOO-587](https://resursbankplugins.atlassian.net/browse/WOO-587) Stuck callbacks
 * [WOO-583](https://resursbankplugins.atlassian.net/browse/WOO-583) Customer country may or may not be wrongfully returned as an empty string in the checkout and therefore not showing payment methods properly
-
 
 # 2.2.65-69
 
