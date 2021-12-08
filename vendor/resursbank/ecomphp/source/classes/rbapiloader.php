@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20211028');
+    define('ECOMPHP_MODIFY_DATE', '20211124');
 }
 
 /**
@@ -113,19 +113,14 @@ class ResursBank
      * @var string
      */
     public $username;
-
-    /**
-     * @var bool
-     */
-    private $registerCallbacksFailover = false;
-
-    ///// Environment and API
     /**
      * The password used with the webservices
      *
      * @var string
      */
     public $password;
+
+    ///// Environment and API
     /**
      * Always append amount data and ending urls (cost examples)
      *
@@ -144,6 +139,10 @@ class ResursBank
         'password' => '',
         'trace' => 1,
     ];
+    /**
+     * @var bool
+     */
+    private $registerCallbacksFailover = false;
 
     /// Web Services (WSDL) available in case of needs to call services directly
     /**
@@ -1149,37 +1148,6 @@ class ResursBank
     }
 
     /**
-     * Validate entered credentials. If credentials is initialized via the constructor, no extra parameters are
-     * required.
-     *
-     * @param int $environment
-     * @param string $username
-     * @param string $password
-     * @return bool
-     * @throws Exception 417 (Expectation Failed) here (https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/417)
-     * @since 1.1.42
-     * @since 1.0.42
-     * @since 1.3.15
-     * @noinspection PhpUnusedParameterInspection
-     */
-    public function validateCredentials($environment = RESURS_ENVIRONMENTS::TEST, $username = '', $password = '')
-    {
-        if (empty($username) && empty($password) && empty($this->username) && empty($this->password)) {
-            throw new ResursException(
-                'Validating credentials means you have to define credentials before ' .
-                'validating them. Use setAuthentication() or push your credentials into this method directly.',
-                417
-            );
-        }
-        if (!empty($username)) {
-            $this->setEnvironment($environment);
-            $this->setAuthentication($username, $password);
-        }
-
-        return $this->getValidatedCredentials();
-    }
-
-    /**
      * @return bool
      */
     private function getValidatedCredentials()
@@ -1362,6 +1330,37 @@ class ResursBank
         }
 
         return $decVersion;
+    }
+
+    /**
+     * Validate entered credentials. If credentials is initialized via the constructor, no extra parameters are
+     * required.
+     *
+     * @param int $environment
+     * @param string $username
+     * @param string $password
+     * @return bool
+     * @throws Exception 417 (Expectation Failed) here (https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/417)
+     * @since 1.1.42
+     * @since 1.0.42
+     * @since 1.3.15
+     * @noinspection PhpUnusedParameterInspection
+     */
+    public function validateCredentials($environment = RESURS_ENVIRONMENTS::TEST, $username = '', $password = '')
+    {
+        if (empty($username) && empty($password) && empty($this->username) && empty($this->password)) {
+            throw new ResursException(
+                'Validating credentials means you have to define credentials before ' .
+                'validating them. Use setAuthentication() or push your credentials into this method directly.',
+                417
+            );
+        }
+        if (!empty($username)) {
+            $this->setEnvironment($environment);
+            $this->setAuthentication($username, $password);
+        }
+
+        return $this->getValidatedCredentials();
     }
 
     /**
@@ -1940,28 +1939,6 @@ class ResursBank
     }
 
     /**
-     * @return bool
-     * @since 1.3.47
-     */
-    public function getRegisterCallbacksViaRest()
-    {
-        return $this->registerCallbacksViaRest;
-    }
-
-    /**
-     * If you want to register callbacks through the rest API instead of SOAP, set this to true
-     *
-     * @param bool $useRest
-     * @return ResursBank
-     * @noinspection ParameterDefaultValueIsNotNullInspection
-     */
-    public function setRegisterCallbacksViaRest($useRest = true)
-    {
-        $this->registerCallbacksViaRest = $useRest;
-        return $this;
-    }
-
-    /**
      * @return $this
      */
     public function setRegisterCallbackFailover()
@@ -1969,15 +1946,6 @@ class ResursBank
         $this->registerCallbacksFailover = true;
         return $this;
     }
-
-    /**
-     * @return bool
-     */
-    public function getRegisterCallbackFailover()
-    {
-        return $this->registerCallbacksFailover;
-    }
-
 
     /**
      * Register a callback URL with Resurs Bank
@@ -2356,6 +2324,36 @@ class ResursBank
     public function getPos()
     {
         return $this->envOmniPos;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getRegisterCallbackFailover()
+    {
+        return $this->registerCallbacksFailover;
+    }
+
+    /**
+     * @return bool
+     * @since 1.3.47
+     */
+    public function getRegisterCallbacksViaRest()
+    {
+        return $this->registerCallbacksViaRest;
+    }
+
+    /**
+     * If you want to register callbacks through the rest API instead of SOAP, set this to true
+     *
+     * @param bool $useRest
+     * @return ResursBank
+     * @noinspection ParameterDefaultValueIsNotNullInspection
+     */
+    public function setRegisterCallbacksViaRest($useRest = true)
+    {
+        $this->registerCallbacksViaRest = $useRest;
+        return $this;
     }
 
     /**
@@ -4085,90 +4083,6 @@ class ResursBank
     }
 
     /**
-     * @param $key
-     * @param string $customerType
-     * @return mixed
-     */
-    public function getSimplifiedRequiredFields($key, $customerType = 'NATURAL')
-    {
-        $fields = $this->getSimplifiedFieldArray($customerType);
-
-        return !empty($key) && isset($fields[$key]) ? $fields[$key] : $fields['undefined'];
-    }
-
-    /**
-     * @param $customerType
-     * @param null $paymentMethod
-     * @return array
-     */
-    private function getSimplifiedFieldArray($customerType)
-    {
-        $fields = [
-            'NATURAL' => [
-                'INVOICE' => [
-                    'government_id',
-                    'phone',
-                    'mobile',
-                    'email',
-                ],
-                'INVOICE_LEGAL' => [
-                    'government_id',
-                    'phone',
-                    'mobile',
-                    'email',
-                    'government_id_contact',
-                ],
-                'CARD' => [
-                    'government_id',
-                ],
-                'DEBIT_CARD' => [
-                    'government_id',
-                ],
-                'CREDIT_CARD' => [
-                    'government_id',
-                ],
-                'REVOLVING_CREDIT' => [
-                    'government_id',
-                    'mobile',
-                    'email',
-                ],
-                'PART_PAYMENT' => [
-                    'government_id',
-                    'phone',
-                    'mobile',
-                    'email',
-                ],
-                'undefined' => [
-                    'government_id',
-                    'phone',
-                    'mobile',
-                    'email',
-                ],
-            ],
-            'LEGAL' => [
-                'undefined' => [
-                    'applicant-government-id',
-                    'applicant-telephone-number',
-                    'applicant-mobile-number',
-                    'applicant-email-address',
-                    'applicant-full-name',
-                    'contact-government-id',
-                ],
-            ],
-        ];
-
-        switch ($customerType) {
-            case 'LEGAL';
-                $return = $fields['LEGAL'];
-                break;
-            default:
-                $return = $fields['NATURAL'];
-        }
-
-        return $return;
-    }
-
-    /**
      * If payment amount is within allowed limits of payment method
      *
      * @param flaot $totalAmount
@@ -4422,6 +4336,90 @@ class ResursBank
             $templateHtml = 'Not a valid page.';
         }
         return $templateHtml;
+    }
+
+    /**
+     * @param $key
+     * @param string $customerType
+     * @return mixed
+     */
+    public function getSimplifiedRequiredFields($key, $customerType = 'NATURAL')
+    {
+        $fields = $this->getSimplifiedFieldArray($customerType);
+
+        return !empty($key) && isset($fields[$key]) ? $fields[$key] : $fields['undefined'];
+    }
+
+    /**
+     * @param $customerType
+     * @param null $paymentMethod
+     * @return array
+     */
+    private function getSimplifiedFieldArray($customerType)
+    {
+        $fields = [
+            'NATURAL' => [
+                'INVOICE' => [
+                    'government_id',
+                    'phone',
+                    'mobile',
+                    'email',
+                ],
+                'INVOICE_LEGAL' => [
+                    'government_id',
+                    'phone',
+                    'mobile',
+                    'email',
+                    'government_id_contact',
+                ],
+                'CARD' => [
+                    'government_id',
+                ],
+                'DEBIT_CARD' => [
+                    'government_id',
+                ],
+                'CREDIT_CARD' => [
+                    'government_id',
+                ],
+                'REVOLVING_CREDIT' => [
+                    'government_id',
+                    'mobile',
+                    'email',
+                ],
+                'PART_PAYMENT' => [
+                    'government_id',
+                    'phone',
+                    'mobile',
+                    'email',
+                ],
+                'undefined' => [
+                    'government_id',
+                    'phone',
+                    'mobile',
+                    'email',
+                ],
+            ],
+            'LEGAL' => [
+                'undefined' => [
+                    'applicant-government-id',
+                    'applicant-telephone-number',
+                    'applicant-mobile-number',
+                    'applicant-email-address',
+                    'applicant-full-name',
+                    'contact-government-id',
+                ],
+            ],
+        ];
+
+        switch ($customerType) {
+            case 'LEGAL';
+                $return = $fields['LEGAL'];
+                break;
+            default:
+                $return = $fields['NATURAL'];
+        }
+
+        return $return;
     }
 
     /**
@@ -7955,9 +7953,7 @@ class ResursBank
         $paymentIdOrPaymentObjectData = '',
         $renderType = 0
     ) {
-
         $returnSpecObject = [];
-
         $sanitizedPaymentDiff = $this->getPaymentDiffByAbility($paymentIdOrPaymentObjectData);
         $canDebitObject = $sanitizedPaymentDiff['DEBIT'];
         $canCreditObject = $sanitizedPaymentDiff['CREDIT'];
