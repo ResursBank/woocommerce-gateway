@@ -1284,10 +1284,12 @@ function woocommerce_gateway_resurs_bank_init()
          */
         public function getResursOrderStatusArray()
         {
+            $autoFinalizationString = getResursOption('autoDebitStatus');
             return [
                 OrderStatus::PROCESSING => 'processing',
                 OrderStatus::CREDITED => 'refunded',
                 OrderStatus::COMPLETED => 'completed',
+                OrderStatus::AUTO_DEBITED => $autoFinalizationString !== 'default' ? $autoFinalizationString : 'completed',
                 OrderStatus::PENDING => 'on-hold',
                 OrderStatus::ANNULLED => 'cancelled',
                 OrderStatus::ERROR => 'on-hold',
@@ -1406,7 +1408,15 @@ function woocommerce_gateway_resurs_bank_init()
                                     $return = $suggestedStatus;
                                 }
                             } else {
-                                $woocommerceOrder->update_status($autoDebitStatus);
+                                if ($this->synchronizeResursOrderStatus(
+                                    $currentWcStatus,
+                                    $autoDebitStatus,
+                                    $woocommerceOrder,
+                                    $suggestedStatus,
+                                    $paymentIdOrPaymentObject
+                                )) {
+                                    $return = $suggestedStatus;
+                                }
                             }
                         } else {
                             if ($this->synchronizeResursOrderStatus(
