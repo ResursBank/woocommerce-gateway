@@ -5,6 +5,7 @@ require_once(__DIR__ . '/v3core.php');
 require_once(__DIR__ . '/functions_settings.php');
 require_once(__DIR__ . '/functions_gateway.php');
 
+use Resurs\WooCommerce\Service\Queue\QueueHandler;
 use Resursbank\Ecommerce\Types\Callback;
 use Resursbank\Ecommerce\Types\CheckoutType;
 use Resursbank\Ecommerce\Types\OrderStatus;
@@ -946,11 +947,10 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             $currentStatus = $order->get_status();
-
             $order->add_order_note(
                 sprintf(
                     __(
-                        '[Resurs Bank] Callback %s received notice (Method %s). Additional result flag: %s.',
+                        '[Resurs Bank] Notice only: Callback %s received (Method %s). Additional result flag: %s.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     $event_type,
@@ -972,23 +972,23 @@ function woocommerce_gateway_resurs_bank_init()
                 );
             }
 
+            /**
+             * Watch out for race conditions! We've queued the callback updates.
+             * @see https://resursbankplugins.atlassian.net/browse/WOO-573
+             */
             switch ($event_type) {
                 case 'UNFREEZE':
-                    /**
-                     * Watch out for race conditions! https://resursbankplugins.atlassian.net/browse/WOO-573
-                     */
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     $statusValue = $this->updateOrderByResursPaymentStatus(
                         $order,
                         $currentStatus,
-                        $request['paymentId'],
-                        Callback::UNFREEZE
+                        $request['paymentId']
                     );
-                    if (!(bool)$statusValue & OrderStatus::ERROR) {
+                    if (!(int)$statusValue) {
                         $order->add_order_note(
                             sprintf(
                                 __(
-                                    '[Resurs Bank] The event %s updated the order to %s [%s].',
+                                    '[Resurs Bank] The event %s queued the order to %s [%s].',
                                     'resurs-bank-payment-gateway-for-woocommerce'
                                 ),
                                 $event_type,
@@ -1002,15 +1002,6 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'TEST':
                     break;
                 case 'BOOKED':
-                    /**
-                     * Why did we place a sleep here?
-                     * Because of race condidtions: https://resursbankplugins.atlassian.net/browse/WOO-573
-                     * What happens here, is not only a race condition between callbacks that puts the stock at
-                     * risk of double reduction. Callbacks may also race with the customer where customers may
-                     * land at the success page in the exact moment when the callbacks are fired. Especially
-                     * this one.
-                     */
-                    sleep(5);
                     update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     if ($currentStatus !== 'cancelled') {
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
@@ -1029,12 +1020,14 @@ function woocommerce_gateway_resurs_bank_init()
                             if (empty($hasReduceStock)) {
                                 resursEventLogger(
                                     'Callback BOOKED received. Plugin is set to handle stock reduction. ' .
-                                    'Metadata (hasReduceStock) is not yet set. This is the first time this part is reached.'
+                                    'Metadata (hasReduceStock) is not yet set. This is the first time this ' .
+                                    'part is reached.'
                                 );
                                 update_post_meta($orderId, 'hasReduceStock', time());
                                 $order->add_order_note(
                                     __(
-                                        '[Resurs Bank] Stock reducing requested to be handled by Resurs Bank (Callback).',
+                                        '[Resurs Bank] Stock reducing requested to be handled by Resurs ' .
+                                        'Bank (Callback).',
                                         'resurs-bank-payment-gateway-for-woocommerce'
                                     )
                                 );
@@ -1053,15 +1046,14 @@ function woocommerce_gateway_resurs_bank_init()
                         $statusValue = $this->updateOrderByResursPaymentStatus(
                             $order,
                             $currentStatus,
-                            $request['paymentId'],
-                            Callback::BOOKED
+                            $request['paymentId']
                         );
 
-                        if (!(bool)$statusValue) {
+                        if (!(int)$statusValue) {
                             $order->add_order_note(
                                 sprintf(
                                     __(
-                                        '[Resurs Bank] The event %s updated the order to %s [%s].',
+                                        '[Resurs Bank] The event %s queued the order to %s [%s].',
                                         'resurs-bank-payment-gateway-for-woocommerce'
                                     ),
                                     $event_type,
@@ -1075,7 +1067,8 @@ function woocommerce_gateway_resurs_bank_init()
                     } else {
                         $order->add_order_note(
                             __(
-                                '[Resurs Bank] The order was placed in status cancelled when BOOKED arrived so the callback will remain unhandled.',
+                                '[Resurs Bank] The order was placed in status cancelled when BOOKED arrived so ' .
+                                'the callback will remain unhandled.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
                             )
                         );
@@ -1085,8 +1078,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $callbackUpdateStatus = $this->updateOrderByResursPaymentStatus(
                         $order,
                         $currentStatus,
-                        $request['paymentId'],
-                        Callback::UPDATE
+                        $request['paymentId']
                     );
 
                     if (!(bool)$callbackUpdateStatus & OrderStatus::ERROR) {
@@ -1213,7 +1205,7 @@ function woocommerce_gateway_resurs_bank_init()
             if ($currentStatus === $newStatus) {
                 resursEventLogger(
                     sprintf(
-                        'Changing status from $currentStatus (%s) to $newStatus (%s) is not necessary.',
+                        'Queuing status from $currentStatus (%s) to $newStatus (%s) is not necessary.',
                         $currentStatus,
                         $newStatus
                     )
@@ -1225,30 +1217,47 @@ function woocommerce_gateway_resurs_bank_init()
                 $suggestedString = 'Suggested status code string could not be defined';
             }
 
+            /**
+             * Statuses for callbacks is now queued.
+             * @see https://resursbankplugins.atlassian.net/browse/WOO-573
+             */
             if ($updateStatus && $currentStatus !== $newStatus) {
-                $woocommerceOrder->update_status($newStatus);
-
-                if (
-                    !is_null($resursOrderObject) &&
-                    $suggestedStatusCode === OrderStatus::ERROR &&
-                    $this->flow->isFrozen($resursOrderObject)
-                ) {
-                    $suggestedString = __(
-                        '[Resurs Bank] On-Hold: Detected frozen order',
-                        'resurs-bank-payment-gateway-for-woocommerce'
+                if ($this->flow->isFrozen($resursOrderObject)) {
+                    $woocommerceOrder->add_order_note(
+                        sprintf(
+                            __(
+                                '[Resurs Bank] Update order request (%s/%s) ignored due to frozen status.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ),
+                            $suggestedString,
+                            $suggestedStatusCode
+                        )
+                    );
+                } else {
+                    resursEventLogger(
+                        sprintf(
+                            'QueueHandler: setOrderStatusWithNotice for %s',
+                            $woocommerceOrder->get_id()
+                        )
+                    );
+                    setResursOrderMetaData(
+                        $woocommerceOrder->get_id(),
+                            'orderStatusQueue',
+                            sprintf('%s:%s', $newStatus, strftime('%Y%m%d-%H%M%S', time()))
+                    );
+                    QueueHandler::setOrderStatusWithNotice(
+                        $woocommerceOrder->get_id(),
+                        $newStatus,
+                        sprintf(
+                            __(
+                                '[Resurs Bank] Queued order status update (%s/%s).',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ),
+                            $suggestedString,
+                            $suggestedStatusCode
+                        )
                     );
                 }
-
-                $woocommerceOrder->add_order_note(
-                    sprintf(
-                        __(
-                            '[Resurs Bank] Updated order status (%s/%s).',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ),
-                        $suggestedString,
-                        $suggestedStatusCode
-                    )
-                );
 
                 return true;
             }
@@ -1302,17 +1311,13 @@ function woocommerce_gateway_resurs_bank_init()
          * @param $woocommerceOrder
          * @param string $currentWcStatus
          * @param string $paymentIdOrPaymentObject
-         * @param int $byCallbackEvent
-         * @param array $callbackEventDataArrayOrString
          * @return int|OrderStatus
          * @throws Exception
          */
         private function updateOrderByResursPaymentStatus(
             $woocommerceOrder,
             $currentWcStatus = '',
-            $paymentIdOrPaymentObject = '',
-            $byCallbackEvent = 0,
-            $callbackEventDataArrayOrString = []
+            $paymentIdOrPaymentObject = ''
         ) {
             $return = OrderStatus::ERROR;
 
@@ -1322,8 +1327,8 @@ function woocommerce_gateway_resurs_bank_init()
                     $paymentIdOrPaymentObject
                 );
 
-                // Developers and merchants should normally not need to touch this section unless they really know what they're doing.
-
+                // Developers and merchants should normally not need to touch this section unless they
+                // really know what they're doing.
                 $paymentStatus = $this->getResursOrderStatusArray();
 
                 resursEventLogger(print_r($paymentIdOrPaymentObject, true));
@@ -2651,7 +2656,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
-         * Secure update of correct orderlines (when payment reference updates are activated).
+         * Secure update of correct orderLines (when payment reference updates are activated).
          *
          * @param $requestedPaymentId
          * @param $paymentSpec
@@ -3431,8 +3436,10 @@ function woocommerce_gateway_resurs_bank_init()
                     }
 
                     if ($request['failInProgress'] == '1' ||
-                        isset($_REQUEST['failInProgress']) &&
-                        $_REQUEST['failInProgress'] == '1'
+                        (
+                            isset($_REQUEST['failInProgress']) &&
+                            $_REQUEST['failInProgress'] == '1'
+                        )
                     ) {
                         $order->update_status(
                             'cancelled',
@@ -3443,7 +3450,8 @@ function woocommerce_gateway_resurs_bank_init()
                         );
                         wc_add_notice(
                             __(
-                                'The purchase from Resurs Bank was by some reason not accepted. Please contact customer services, or try again with another payment method.',
+                                'The purchase from Resurs Bank was by some reason not accepted. Please contact ' .
+                                'customer services, or try again with another payment method.',
                                 'resurs-bank-payment-gateway-for-woocommerce'
                             ),
                             'error'
@@ -3454,7 +3462,6 @@ function woocommerce_gateway_resurs_bank_init()
                         $getRedirectUrl = wc_get_cart_url();
                     } else {
                         $getRedirectUrl = $this->get_return_url($order);
-
                         $order->add_order_note(
                             '[Resurs Bank] ' .
                             __(
@@ -3504,7 +3511,13 @@ function woocommerce_gateway_resurs_bank_init()
                     $signedResult = $this->flow->bookSignedPayment($paymentId);
                     $bookSigned = true;
                 } catch (Exception $bookSignedException) {
-                    // Do nothing
+                    resursEventLogger(
+                        sprintf(
+                            'bookSignedPaymentExcepRtion (%s): %s',
+                            $bookSignedException->getCode(),
+                            $bookSignedException->getMessage()
+                        )
+                    );
                 }
                 if ($bookSigned) {
                     $bookedStatus = isset($signedResult->bookPaymentStatus) ? $signedResult->bookPaymentStatus : null;
@@ -6568,7 +6581,8 @@ function wc_get_order_id_by_payment_id($paymentId = '')
         )
     );
 
-    // If updateOrderReference-setting is enabled, also look for a prior variable, to track down the correct order based on the metadata tag paymentIdLast
+    // If updateOrderReference-setting is enabled, also look for a prior variable, to track down the
+    // correct order based on the metadata tag paymentIdLast
     if (getResursOption('postidreference') && !empty($order_id_last) && empty($order_id)) {
         return $order_id_last;
     }
@@ -7259,11 +7273,18 @@ function resursEventLogger($dataString = '')
 {
     if (getResursOption('logResursEvents') && getResursLogActive()) {
         $writeFile = getResursLogDestination() . '/resurs.log';
+
+        if (is_array($dataString) || is_object($dataString)) {
+            // Convert unprintable strings on fly.
+            $dataString = print_r($dataString, true);
+        }
+
         @file_put_contents(
             $writeFile,
             '[' . strftime('%Y-%m-%d %H:%M:%S', time()) . '] ' . $dataString . "\n",
             FILE_APPEND
         );
+
         return true;
     }
     return false;

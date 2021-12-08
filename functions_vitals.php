@@ -572,6 +572,37 @@ function resursExpectVersions()
     }
 }
 
+/**
+ * Queued status handler. Should not be called directly as it is based on WC_Queue.
+ *
+ * @param int $orderId
+ * @param string $status
+ * @param string $notice
+ * @since Imported
+ * @see https://github.com/woocommerce/woocommerce/wiki/WC_Queue---WooCommerce-Worker-Queue
+ * @see https://github.com/Tornevall/wpwc-resurs/commit/6a7e44f5cdeb24a59c9b0e8fa3f2150b9f598e5c
+ */
+function updateQueuedOrderStatus(int $orderId, string $status, string $notice)
+{
+    if ($orderId && !empty($status)) {
+        try {
+            $properOrder = new WC_Order($orderId);
+            $currentStatus = $properOrder->get_status();
+            if ($currentStatus !== $status) {
+                $properOrder->update_status(
+                    $status,
+                    $notice
+                );
+            }
+            resursEventLogger('Update queued order ' . $orderId . ' with status ' . $status . '.');
+            resursEventLogger('Order note for ' . $orderId . ': ' . $notice);
+        } catch (Exception $e) {
+            resursEventLogger(print_r($e, true));
+        }
+    }
+}
+
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);
 add_filter('resursbank_start_session_before', 'resurs20StartSession');
 add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');
+add_action('resursbank_update_queued_status', 'updateQueuedOrderStatus', 10, 3);
