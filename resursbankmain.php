@@ -11,6 +11,7 @@ use Resursbank\Ecommerce\Types\CheckoutType;
 use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\ResursBank;
+use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\MODULE_NETWORK;
 
 $resurs_obsolete_coexistence_disable = (bool)apply_filters('resurs_obsolete_coexistence_disable', null);
@@ -5878,12 +5879,27 @@ function resurs_no_debit_debited($instant = null)
     <?php
 }
 
+/**
+ * Fetch payment information for the order view.
+ *
+ * @param $order
+ * @param string $getPaymentId
+ * @param false $fallback
+ * @return array|int|mixed|stdClass|null
+ * @throws ResursException
+ * @throws ExceptionHandler
+ */
 function getPaymentInfo($order, $getPaymentId = '', $fallback = false)
 {
     $resursPaymentIdLast = get_post_meta($order->get_id(), 'paymentIdLast', true);
 
     $rb = initializeResursFlow();
-    $rb->setFlag('GET_PAYMENT_BY_SOAP');
+    $checkTimeouts = (int)get_transient('resurs_connection_timeout');
+    if ($checkTimeouts) {
+        $rb->setFlag('GET_PAYMENT_BY_REST');
+        // Extend connection timeout timer for payment information.
+        set_transient('resurs_connection_timeout', time(), 600);
+    }
     $resursPaymentInfo = null;
     try {
         $resursPaymentInfo = $rb->getPayment($getPaymentId);
