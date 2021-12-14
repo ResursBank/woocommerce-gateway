@@ -1,0 +1,12 @@
+composer.lock
+.idea
+Makefile
+vendor
+runit.sh
+**.swp
+merge.sh
+build
+.phpunit.result.cache
+.php_cs.cache
+coverage
+phpunit9

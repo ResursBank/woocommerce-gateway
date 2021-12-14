@@ -214,14 +214,16 @@ class NetWrapper implements WrapperInterface
      */
     public function getBody($url = '')
     {
-        if (($mInstance = $this->getMultiInstance($url)) &&
-            !empty($mInstance) &&
+        $mInstance = $this->getMultiInstance($url);
+        if (!empty($mInstance) &&
             method_exists($mInstance, __FUNCTION__)
         ) {
             return $mInstance->{__FUNCTION__}();
         }
 
-        if (!empty($this->instance) && method_exists($this->instance, __FUNCTION__)) {
+        if (!empty($this->instance) &&
+            method_exists($this->instance, __FUNCTION__)
+        ) {
             return $this->instance->{__FUNCTION__}();
         }
 
@@ -260,8 +262,8 @@ class NetWrapper implements WrapperInterface
      */
     public function getParsed($url = '')
     {
-        if (($mInstance = $this->getMultiInstance($url)) &&
-            !empty($mInstance) &&
+        $mInstance = $this->getMultiInstance($url);
+        if (!empty($mInstance) &&
             method_exists($mInstance, 'getParsed')
         ) {
             return $mInstance->getParsed();
@@ -290,8 +292,8 @@ class NetWrapper implements WrapperInterface
      */
     public function getCode($url = '')
     {
-        if (($mInstance = $this->getMultiInstance($url)) &&
-            !empty($mInstance) &&
+        $mInstance = $this->getMultiInstance($url);
+        if (!empty($mInstance) &&
             method_exists($mInstance, __FUNCTION__)
         ) {
             return $mInstance->{__FUNCTION__}();
@@ -394,7 +396,8 @@ class NetWrapper implements WrapperInterface
 
         // From PHP 8.0 just checking instance content will fail if it is null here.
         if (!empty($this->instance) && method_exists($this->instance, $name)) {
-            if ($instanceRequest = call_user_func_array([$this->instance, $name], $arguments)) {
+            $instanceRequest = call_user_func_array([$this->instance, $name], $arguments);
+            if ($instanceRequest) {
                 return $instanceRequest;
             }
         } elseif (method_exists($this->CONFIG, $name)) {

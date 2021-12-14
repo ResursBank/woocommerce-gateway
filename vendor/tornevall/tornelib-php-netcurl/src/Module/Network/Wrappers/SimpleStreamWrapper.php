@@ -51,8 +51,21 @@ class SimpleStreamWrapper implements WrapperInterface
 
     /**
      * @var array
+     * @since 6.1.0
      */
     private $streamContentResponseHeader = [];
+
+    /**
+     * @var
+     * @since 6.1.5
+     */
+    private $currentErrorHandler;
+
+    /**
+     * @var array $streamWarningException
+     * @since 6.1.5
+     */
+    private $streamWarningException = ['code' => 0, 'string' => null];
 
     /**
      * SimpleStreamWrapper constructor.
@@ -175,7 +188,7 @@ class SimpleStreamWrapper implements WrapperInterface
 
     /**
      * @inheritDoc
-     * @throws ExceptionHandler
+     * @return array|mixed
      */
     public function getParsed()
     {
@@ -383,6 +396,7 @@ class SimpleStreamWrapper implements WrapperInterface
     /**
      * @param $contentType
      * @return $this
+     * @since 6.1.0
      */
     private function setStreamContentType($contentType)
     {
@@ -404,18 +418,20 @@ class SimpleStreamWrapper implements WrapperInterface
      */
     public function getStreamDataContents()
     {
+        $this->setStreamErrorHandler();
         // When requests are failing, this MAY throw warnings.
         // Usually we don't want this method to do this, on for example 404
         // errors, etc as we have our own exception handler below, which does
         // this in a correct way.
-        $this->streamContentResponseRaw = @file_get_contents(
+        $this->streamContentResponseRaw = file_get_contents(
             $this->CONFIG->getRequestUrl(),
             false,
             $this->CONFIG->getStreamContext()
         );
+        // Restore the errorhandler immediately after request if no exceptions are detected during first request.
+        restore_error_handler();
 
         $this->streamContentResponseHeader = isset($http_response_header) ? $http_response_header : [];
-
         $httpExceptionMessage = $this->getHttpMessage();
         if (isset($php_errormsg) && !empty($php_errormsg)) {
             $httpExceptionMessage = $php_errormsg;
@@ -427,6 +443,26 @@ class SimpleStreamWrapper implements WrapperInterface
         );
 
         return $this;
+    }
+
+    /**
+     * @since 6.1.5
+     */
+    private function setStreamErrorHandler()
+    {
+        // This feature very much looks like the soapFault catcher. However
+        // streams works a bit different from SoapClient despite the fact that they
+        // may use the same communications engine to produce content. So instead of
+        // silently return from this point, we will throw an exception properly instead,
+        // even if it is only of code 2.
+        $this->currentErrorHandler = set_error_handler(function ($errNo, $errStr) {
+            if (empty($this->stremWarningException['string'])) {
+                $this->streamWarningException['code'] = $errNo;
+                $this->streamWarningException['string'] = $errStr;
+            }
+            restore_error_handler();
+            throw new ExceptionHandler($errStr, $errNo);
+        }, E_WARNING);
     }
 
     /**
@@ -472,11 +508,24 @@ class SimpleStreamWrapper implements WrapperInterface
         if (isset($compatibilityMethods[$name])) {
             $name = $compatibilityMethods[$name];
             $return = call_user_func_array([$this, $name], $arguments);
+        } elseif (method_exists($this->CONFIG, $name)) {
+            /**
+             * Makeing sure setSsl and other configuration is callable from the StreamWrapper.
+             * @since 6.1.5
+             */
+            $return = call_user_func_array(
+                [
+                    $this->CONFIG,
+                    $name,
+                ],
+                $arguments
+            );
         }
 
         if (!is_null($return)) {
             return $return;
         }
+
         throw new ExceptionHandler(
             sprintf('Function "%s" not available.', $name),
             Constants::LIB_METHOD_OR_LIBRARY_UNAVAILABLE

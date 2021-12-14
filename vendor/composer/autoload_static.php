@@ -31,10 +31,10 @@ class ComposerStaticInit79dc7e60bcbf1cc01214b9f3a85d4211
             1 => __DIR__ . '/..' . '/tornevall/tornelib-php-errorhandler/src',
             2 => __DIR__ . '/..' . '/tornevall/tornelib-php-flags/src',
             3 => __DIR__ . '/..' . '/tornevall/tornelib-php-io/src',
-            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
-            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
-            6 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
-            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
+            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
+            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
+            6 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
+            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
         ),
         'Resursbank\\RBEcomPHP\\' => 
         array (

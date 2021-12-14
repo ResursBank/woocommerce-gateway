@@ -94,6 +94,18 @@ class SoapClientWrapper implements WrapperInterface
     private $soapWarningException = ['code' => 0, 'string' => null];
 
     /**
+     * @var float
+     * @since 6.1.5
+     */
+    private $soapClientTimeBegin = 0;
+
+    /**
+     * @var float
+     * @since 6.1.5
+     */
+    private $soapClientTimeEnd = 0;
+
+    /**
      * Reuse soapClient session if this is true. By means, it will be reinitialized on each call otherwise.
      * @var bool
      * @since 6.1.0
@@ -689,8 +701,13 @@ class SoapClientWrapper implements WrapperInterface
     private function getSoapInit()
     {
         try {
+            $this->soapClientTimeBegin = microtime(true);
             $this->getSoapClient();
         } catch (Exception $soapException) {
+            $this->soapClientTimeEnd = microtime(true);
+            $soapClientRequestTimeDiff = $this->soapClientTimeEnd - $this->soapClientTimeBegin;
+            $currentTimeout = $this->CONFIG->getTimeout();
+
             if ((int)$soapException->getCode()) {
                 throw $soapException;
             }
@@ -699,7 +716,21 @@ class SoapClientWrapper implements WrapperInterface
             // soapclient when potential authfail errors occurred.
             if ((int)$this->soapWarningException['code']) {
                 $code = $this->getHttpHead($this->soapWarningException['string']);
+                if ((int)$code === 0) {
+                    // Above request is fetching the first code in the string. If this makes the code still go 0
+                    // we will fail over to the real one, as we usually want to get errors from the soap warning string.
+                    $code = (int)$this->soapWarningException['code'];
+                }
                 $message = $this->getHttpHead($this->soapWarningException['string'], 'message');
+
+                if ($code === 2) {
+                    if ($soapClientRequestTimeDiff >= $currentTimeout['CONNECT'] &&
+                        $soapClientRequestTimeDiff >= $currentTimeout['REQUEST']
+                    ) {
+                        $code = Constants::LIB_NETCURL_SOAP_TIMEOUT;
+                        $message .= sprintf(' [soapClientRequestTime: %s]', $this->getTotalRequestTime());
+                    }
+                }
 
                 $this->CONFIG->getHttpException(
                     (int)$code > 0 && !empty($message) ? $message : $this->soapWarningException['string'],
@@ -710,10 +741,50 @@ class SoapClientWrapper implements WrapperInterface
                 );
             }
         }
+        $this->soapClientTimeEnd = microtime(true);
+
         // Restore the errorhandler immediately after soaprequest if no exceptions are detected during first request.
         restore_error_handler();
 
         return $this;
+    }
+
+    /**
+     * @return float
+     * @throws ExceptionHandler
+     * @since 6.1.5
+     */
+    public function getTotalRequestTime()
+    {
+        if ($this->soapClientTimeBegin === 0 && $this->soapClientTimeEnd === 0) {
+            throw new ExceptionHandler(
+                'You need to make a request before getting the timediff.',
+                Constants::LIB_NETCURL_SOAP_REQUEST_TIMER_NOT_READY
+            );
+        }
+        return (float)$this->soapClientTimeEnd - $this->soapClientTimeBegin;
+    }
+
+    /**
+     * Get the timestamp for when the SoapCall was started.
+     *
+     * @return float
+     * @since 6.1.5
+     */
+    public function getRequestBeginTime()
+    {
+        return (float)$this->soapClientTimeBegin;
+    }
+
+    /**
+     * Get the timestamp for when the SoapCall was ended.
+     *
+     * @return float
+     * @since 6.1.5
+     */
+    public function getRequestBeginEnd()
+    {
+        return (float)$this->soapClientTimeEnd;
     }
 
     /**

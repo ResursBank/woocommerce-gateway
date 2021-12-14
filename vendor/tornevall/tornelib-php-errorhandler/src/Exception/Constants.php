@@ -5,7 +5,7 @@ namespace TorneLIB\Exception;
 /**
  * Class Constants
  * @package TorneLIB\Exception
- * @version 6.1.12
+ * @version 6.1.14
  */
 abstract class Constants
 {
@@ -114,6 +114,18 @@ abstract class Constants
      * @since 6.1.11
      */
     const LIB_NETCURL_SOAPINSTANCE_MISSING = 1014;
+
+    /**
+     * @var int
+     * @since 6.1.13
+     */
+    const LIB_NETCURL_SOAP_TIMEOUT = 1015;
+
+    /**
+     * @var int
+     * @since 6.1.13
+     */
+    const LIB_NETCURL_SOAP_REQUEST_TIMER_NOT_READY = 1016;
 
     /**
      * Cipher does not exist in current openssl driver.

@@ -7,21 +7,49 @@
 namespace TorneLIB\Model\Type;
 
 /**
- * Class requestMethod
- *
+ * Class RequestMethod
  * @package TorneLIB\Model\Type
+ * @since 6.1.0
  */
 abstract class RequestMethod
 {
+    /**
+     * HTTP GET Method.
+     * @var int
+     */
     const GET = 0;
+    /**
+     * HTTP Post Method.
+     * @var int
+     */
     const POST = 1;
+    /**
+     * HTTP_PUT Method.
+     * @var int
+     */
     const PUT = 2;
+    /**
+     * HTTP DELETE Method.
+     * @var int
+     */
     const DELETE = 3;
+    /**
+     * HTTP HEAD Method.
+     * @var int
+     */
     const HEAD = 4;
+    /**
+     * HTTP Head Method/Request.
+     * @var int
+     */
     const REQUEST = 5;
+    /**
+     * HTTP Request Method.
+     * @var int
+     */
     const PATCH = 6;
 
-    // Findable redundant constants below.
+    // Redundant Constants Below.
 
     /**
      * @var int

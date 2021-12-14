@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "resursbank/ecomphp",
-            "version": "1.3.64",
-            "version_normalized": "1.3.64.0",
+            "version": "dev-ECOMPHP-439",
+            "version_normalized": "dev-ECOMPHP-439",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ResursBank/ecomphp.git",
-                "reference": "5e8fac38d694d64554a0a1a69edd50e19c3b0f2c"
+                "reference": "02adb1b7f71ed01dcb31f0ac8a074cf37d6188fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/5e8fac38d694d64554a0a1a69edd50e19c3b0f2c",
-                "reference": "5e8fac38d694d64554a0a1a69edd50e19c3b0f2c",
+                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/02adb1b7f71ed01dcb31f0ac8a074cf37d6188fa",
+                "reference": "02adb1b7f71ed01dcb31f0ac8a074cf37d6188fa",
                 "shasum": ""
             },
             "require": {
@@ -22,7 +22,7 @@
                 "tornevall/tornelib-php-netcurl": "^6.1",
                 "tornevall/tornelib-php-network": "^6.1"
             },
-            "time": "2021-11-24T08:46:11+00:00",
+            "time": "2021-12-13T08:43:49+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -46,7 +46,7 @@
             "description": "Resurs Bank AB ecommerce library for PHP.",
             "support": {
                 "issues": "https://github.com/ResursBank/ecomphp/issues",
-                "source": "https://github.com/ResursBank/ecomphp/tree/1.3.64"
+                "source": "https://github.com/ResursBank/ecomphp/tree/ECOMPHP-439"
             },
             "install-path": "../resursbank/ecomphp"
         },
@@ -143,20 +143,20 @@
         },
         {
             "name": "tornevall/tornelib-php-errorhandler",
-            "version": "6.1.12",
-            "version_normalized": "6.1.12.0",
+            "version": "6.1.14",
+            "version_normalized": "6.1.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-errorhandler.git",
-                "reference": "2f023b3b817f5c2043ab1de89cd7649a0c335796"
+                "reference": "46e7fc13af412e318fadde0a465b3c39aff1797a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-errorhandler/zipball/2f023b3b817f5c2043ab1de89cd7649a0c335796",
-                "reference": "2f023b3b817f5c2043ab1de89cd7649a0c335796",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-errorhandler/zipball/46e7fc13af412e318fadde0a465b3c39aff1797a",
+                "reference": "46e7fc13af412e318fadde0a465b3c39aff1797a",
                 "shasum": ""
             },
-            "time": "2020-11-14T20:46:16+00:00",
+            "time": "2021-12-13T12:46:06+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -179,7 +179,7 @@
             "description": "Global exception and errorhandling for TorneLIB, with all errorcodes stored in the same place.",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-errorhandler/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-errorhandler/tree/6.1.12"
+                "source": "https://github.com/Tornevall/tornelib-php-errorhandler/tree/6.1.14"
             },
             "install-path": "../tornevall/tornelib-php-errorhandler"
         },
@@ -273,17 +273,17 @@
         },
         {
             "name": "tornevall/tornelib-php-netcurl",
-            "version": "6.1.4",
-            "version_normalized": "6.1.4.0",
+            "version": "6.1.5",
+            "version_normalized": "6.1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-netcurl.git",
-                "reference": "174ef32a35ae38e21d6393b27eb682216b5bcec3"
+                "reference": "14cc6e439b530de24ab92de303c186e3a83fc7fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/174ef32a35ae38e21d6393b27eb682216b5bcec3",
-                "reference": "174ef32a35ae38e21d6393b27eb682216b5bcec3",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-netcurl/zipball/14cc6e439b530de24ab92de303c186e3a83fc7fb",
+                "reference": "14cc6e439b530de24ab92de303c186e3a83fc7fb",
                 "shasum": ""
             },
             "require": {
@@ -294,7 +294,7 @@
                 "tornevall/tornelib-php-utils": "6.1.*",
                 "tornevall/tornelib-php-version": "6.1.*"
             },
-            "time": "2021-05-27T12:09:07+00:00",
+            "time": "2021-12-14T08:31:04+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -317,7 +317,7 @@
             "description": "Yet another Curl Library to handling web calls",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-netcurl/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-netcurl/tree/6.1.4"
+                "source": "https://github.com/Tornevall/tornelib-php-netcurl/tree/6.1.5"
             },
             "install-path": "../tornevall/tornelib-php-netcurl"
         },

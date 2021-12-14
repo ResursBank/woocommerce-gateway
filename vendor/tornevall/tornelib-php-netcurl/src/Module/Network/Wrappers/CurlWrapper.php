@@ -401,18 +401,22 @@ class CurlWrapper implements WrapperInterface
     /**
      * @param mixed $curlHandle
      * @return CurlWrapper
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     private function setCurlSslValues($curlHandle)
     {
-        // version_compare(PHP_VERSION, '5.4.11', ">=")
-        if (PHP_VERSION_ID >= 50411) {
-            $this->setOptionCurl($curlHandle, WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYHOST, 2);
-        } else {
-            $this->setOptionCurl($curlHandle, WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYHOST, 1);
-        }
-        // CURLOPT_SSL_VERIFYPEER is available starting with PHP 7.1
-        $this->setOptionCurl($curlHandle, WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYPEER, 1);
+        $curlSslOptions = $this->CONFIG->getOptions();
+        $verifyHost = isset($curlSslOptions[WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYHOST]) ?
+            $curlSslOptions[WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYHOST] : 2;
+        $verifyPeer = isset($curlSslOptions[WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYPEER]) ?
+            $curlSslOptions[WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYPEER] : 1;
+
+        // PHP older than 5.4.11 prefers 1 as value. Higher versions prefers 2.
+        // However, we no longer support PHP 5.x here.
+        $this->setOptionCurl($curlHandle, WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYHOST, $verifyHost);
+        // CURLOPT_SSL_VERIFYPEER: PHP 7.1
+        $this->setOptionCurl($curlHandle, WrapperCurlOpt::NETCURL_CURLOPT_SSL_VERIFYPEER, $verifyPeer);
 
         return $this;
     }
@@ -900,7 +904,6 @@ class CurlWrapper implements WrapperInterface
      *
      * @param string $url
      * @return mixed
-     * @throws ExceptionHandler
      * @since 6.0
      */
     public function getParsed($url = '')
@@ -943,7 +946,6 @@ class CurlWrapper implements WrapperInterface
      * @param string $specificKey
      * @param string $specificUrl
      * @return string
-     * @throws ExceptionHandler
      * @since 6.0
      */
     public function getHeader($specificKey = '', $specificUrl = '')
@@ -952,7 +954,8 @@ class CurlWrapper implements WrapperInterface
 
         $headerRequest = is_array($this->curlResponseHeaders) ? $this->curlResponseHeaders : [];
 
-        if (!is_null($handleIndexByUrl = $this->getHandleByUrl($specificUrl))) {
+        $handleIndexByUrl = $this->getHandleByUrl($specificUrl);
+        if (!is_null($handleIndexByUrl)) {
             $specificUrl = $handleIndexByUrl;
         }
 

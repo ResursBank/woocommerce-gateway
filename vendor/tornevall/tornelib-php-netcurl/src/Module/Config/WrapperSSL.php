@@ -12,7 +12,7 @@ use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Flags;
 
 /**
- * Class SSL WrapperConfig for SSL related requests. Sets up stream contexts if necessary (for SOAP) and settings
+ * Class WrapperSSL Config for SSL related requests. Sets up stream contexts if necessary (for SOAP) and settings
  * for curl, etc.
  *
  * @package TorneLIB\Helpers
@@ -202,7 +202,7 @@ class WrapperSSL
         $this->context['ssl']['allow_self_signed'] = $selfsignedBooleanValue;
 
         if (!$verifyBooleanValue || $selfsignedBooleanValue) {
-            $this->securityLevelChanges[microtime(true)] = $this->context;
+            $this->securityLevelChanges[time()] = $this->context;
         }
 
         return $this;

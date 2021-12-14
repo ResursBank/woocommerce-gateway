@@ -6809,13 +6809,13 @@ function initializeResursFlow(
         $initFlow->setApiCacheTime($ecomCacheTime);
     }
     getResursInternalRcoUrl($username, $initFlow);
-    $cTimeout = getResursFlag('CURL_TIMEOUT');
-    if ($cTimeout > 0) {
-        $initFlow->setFlag('CURL_TIMEOUT', $cTimeout);
-    } else {
-        // Changes default timeout to 10 sec.
-        $initFlow->setFlag('CURL_TIMEOUT', 12);
+    $cTimeout = (int)getResursFlag('CURL_TIMEOUT');
+    if (!$cTimeout) {
+        $cTimeout = 12;
     }
+
+    $initFlow->setFlag('CURL_TIMEOUT', $cTimeout);
+    $initFlow->setTimeout($cTimeout);
     $initFlow->setSimplifiedPsp(true);
     $initFlow->setRealClientName('Woo');
 

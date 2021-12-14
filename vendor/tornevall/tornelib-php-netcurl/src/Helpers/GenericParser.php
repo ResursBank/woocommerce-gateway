@@ -7,7 +7,7 @@
 
 namespace TorneLIB\Helpers;
 
-use TorneLIB\Exception\ExceptionHandler;
+use Exception;
 use TorneLIB\IO\Data\Content;
 use TorneLIB\Module\Network\Wrappers\RssWrapper;
 
@@ -20,7 +20,7 @@ use TorneLIB\Module\Network\Wrappers\RssWrapper;
 class GenericParser
 {
     /**
-     * @param $string
+     * @param string $string
      * @param string $returnData
      * @return int|string
      * @since 6.1.0
@@ -40,7 +40,6 @@ class GenericParser
 
         if ((bool)preg_match('/\s/', $headString)) {
             $headContent = explode(' ', $headString, 2);
-
             // Make sure there is no extras when starting to extract this data.
             if (($returnData === 'code' && (int)$headContent[1] > 0) ||
                 (
@@ -85,6 +84,10 @@ class GenericParser
         $return = $content;
 
         switch ($contentType) {
+            case 'html':
+                // @todo Use Laminas.
+                break;
+            case 'xml':
             case !empty($contentType) && (bool)preg_match('/\/xml|\+xml/i', $contentType):
                 // More detection possibilites.
                 /* <?xml version="1.0" encoding="UTF-8"?><rss version="2.0"*/
@@ -109,5 +112,25 @@ class GenericParser
         }
 
         return $return;
+    }
+
+    /**
+     * @param $name
+     * @param $arguments
+     * @return false|mixed
+     * @throws Exception
+     */
+    public static function __callStatic($name, $arguments)
+    {
+        if (class_exists(SimpleDomParser::class) &&
+            method_exists(SimpleDomParser::class, $name)
+        ) {
+            return call_user_func_array([SimpleDomParser::class, $name], $arguments);
+        }
+
+        throw new Exception(
+            sprintf('Call to undefined method %s::%s', self::class, $name),
+            404
+        );
     }
 }

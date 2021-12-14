@@ -1,6 +1,6 @@
 {
     "name": "tornevall/tornelib-php-errorhandler",
-    "version": "6.1.12",
+    "version": "6.1.14",
     "description": "Global exception and errorhandling for TorneLIB, with all errorcodes stored in the same place.",
     "license": "Apache-2.0",
     "authors": [

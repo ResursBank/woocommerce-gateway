@@ -29,7 +29,7 @@ use TorneLIB\Utils\Ini;
  *
  * @package Module\Config
  * @since 6.1.0
- * @version 6.1.4
+ * @version 6.1.5
  */
 class WrapperConfig
 {
@@ -211,6 +211,31 @@ class WrapperConfig
     }
 
     /**
+     * Setup new SSL configuration.
+     *
+     * @param WrapperSSL $sslWrapper
+     * @return $this
+     * @since 6.1.5
+     */
+    public function setSsl($sslWrapper)
+    {
+        $this->SSL = $sslWrapper;
+
+        return $this;
+    }
+
+    /**
+     * Get the current SSL configuration wrapper.
+     *
+     * @return WrapperSSL
+     * @since 6.1.5
+     */
+    public function getSsl()
+    {
+        return $this->SSL;
+    }
+
+    /**
      * Preparing curl defaults in a way we like.
      * @return $this
      * @since 6.1.0
@@ -322,6 +347,7 @@ class WrapperConfig
     {
         $this->deleteOption($replace);
         $this->setOption($key, $value);
+
         return $this;
     }
 
@@ -763,15 +789,51 @@ class WrapperConfig
     }
 
     /**
+     * Prepare config for options set by client.
+     *
      * @return array
      * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function getOptions()
     {
+        $this->setContextSsl();
         $this->setHandledUserAgent();
 
         return $this->options;
+    }
+
+    /**
+     * Change the SSL verification if the SSL Context has changed. This modification has only one state.
+     *
+     * @return $this
+     * @since 6.1.5
+     */
+    private function setContextSsl()
+    {
+        $sslContext = $this->SSL->getContext();
+        if (!$this->getSslContextState('verify_peer', $sslContext)) {
+            $this->options[$this->getOptionCurl('CURLOPT_SSL_VERIFYPEER')] = 0;
+        }
+        if (!$this->getSslContextState('verify_host', $sslContext)) {
+            $this->options[$this->getOptionCurl('CURLOPT_SSL_VERIFYHOST')] = 0;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the current state as a boolean from context. Returns false if the key does not exist, so
+     * this should be used with some caution.
+     *
+     * @param $key
+     * @param $sslContext
+     * @return bool
+     * @since 6.1.5
+     */
+    private function getSslContextState($key, $sslContext)
+    {
+        return (bool)(isset($sslContext[$key]) ? $sslContext[$key] : null);
     }
 
     /**

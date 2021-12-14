@@ -17,16 +17,16 @@ use TorneLIB\Module\Network\NetWrapper;
 class NetUtils
 {
     /**
-     * @param string $giturl
+     * @param string $gitUrl
      * @param string $version1
      * @param string $version2
      * @return array
      * @throws ExceptionHandler
      */
-    public function getGitTagsByVersion($giturl, $version1, $version2)
+    public function getGitTagsByVersion($gitUrl, $version1, $version2)
     {
         $return = [];
-        $versionList = $this->getGitTagsByUrl($giturl);
+        $versionList = $this->getGitTagsByUrl($gitUrl);
         if (is_array($versionList) && count($versionList)) {
             foreach ($versionList as $versionNum) {
                 if (version_compare($versionNum, $version1, '>=') &&
