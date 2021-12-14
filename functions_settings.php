@@ -244,6 +244,22 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => '',
                     'desc_tip' => true,
                 ],
+                'timeout_throttler' => [
+                    'title' => __(
+                        'Lowest timeout during connectivity problems',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'text',
+                    'description' => __(
+                        'If WooCommerce experiences connectivity problems in checkout, based on timeouts, the plugin ' .
+                        'can drop the waiting time with this value in seconds when trying to connect to Resurs Bank. ' .
+                        'Since the plugin is depending on responses, this can speed up things a bit when the plugin ' .
+                        'can not communicate with the API.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'default' => '3',
+                    'desc_tip' => true,
+                ],
                 'password' => [
                     'title' => __('Web services password', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'password',
