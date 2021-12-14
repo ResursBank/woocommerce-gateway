@@ -615,6 +615,18 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '>' . $nc . '<br>
             <div id="rwocurltag" style="display:none;"></div>
         </td></tr>';
+        if ((int)($lastTransientTimeout = get_transient('resurs_connection_timeout'))) {
+            $pluginInfo .= sprintf(
+                '<tr><td %s>%s</td><td %s>%s</td></tr>',
+                __('ResursAPI Timeout Detected', 'resurs-bank-payment-gateway-for-woocommerce'),
+                $topCss,
+                $topCss,
+                strftime(
+                    '%Y-%m-%d %H:%m:%S',
+                    $lastTransientTimeout
+                )
+            );
+        }
 
         if ($pluginIsGit) {
             $pluginInfo .= $this->getGitInfo($topCss);
@@ -813,6 +825,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         } catch (Exception $e) {
+            if ($this->flow->hasTimeoutException()) {
+                set_transient('resurs_connection_timeout', time(), 60);
+            }
             $errorCode = $e->getCode();
             $errorMessage = $e->getMessage();
             if ($errorCode == 401) {

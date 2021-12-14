@@ -419,6 +419,9 @@ function woocommerce_gateway_resurs_bank_init()
                                     $newPaymentMethodsList = $newFlow->getPaymentMethods([], true);
                                     $myBool = true;
                                 } catch (Exception $e) {
+                                    if ($newFlow->hasTimeoutException()) {
+                                        set_transient('resurs_connection_timeout', time(), 60);
+                                    }
                                     $myBool = false;
                                     $failSetup = true;
                                     /** @var $errorMessage */
@@ -599,6 +602,10 @@ function woocommerce_gateway_resurs_bank_init()
                                             );
                                             $responseArray['cached'] = false;
                                         } catch (Exception $e) {
+                                            if ($this->flow->hasTimeoutException()) {
+                                                set_transient('resurs_connection_timeout', time(), 60);
+                                            }
+
                                             $errorMessage = $e->getMessage();
                                             $errorCode = $e->getCode();
 
