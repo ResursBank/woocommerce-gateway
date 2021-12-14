@@ -610,11 +610,25 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 $newRelease
             );
         }
-        $pluginInfo .= '<tr><td ' . $topCss . '>SoapClient</td><td ' . $topCss . '>' . $this->displayAvail($hasSoap) . '</td></tr>';
-        $pluginInfo .= '<tr><td ' . $topCss . '>SSL/https (wrapper)</td><td ' . $topCss . '>' . $this->displayAvail($hasSsl) . (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : "") . '</td></tr>';
-        $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '>' . $nc . '<br>
-            <div id="rwocurltag" style="display:none;"></div>
-        </td></tr>';
+        $pluginInfo .= sprintf(
+            '<tr><td %s>SoapClient</td><td %s>%s</td></tr>',
+            $topCss,
+            $topCss,
+            $this->displayAvail($hasSoap)
+        );
+        $pluginInfo .= sprintf(
+            '<tr><td %s>SSL/https (wrapper)</td><td %s>%s</td></tr>',
+            $topCss,
+            $topCss,
+            $this->displayAvail($hasSsl) . (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : "")
+        );
+        $pluginInfo .= sprintf(
+            '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" %s><i>Communication</i></td><td %s>%s<br>
+            <div id="rwocurltag" style="display:none;"></div></td></tr>',
+            $topCss,
+            $topCss,
+            $nc
+        );
 
         if ($pluginIsGit) {
             $pluginInfo .= $this->getGitInfo($topCss);
