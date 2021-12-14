@@ -582,8 +582,31 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $pluginIsGit = true;
         }
 
-        $pluginInfo = $this->setSeparator(__('Plugin information', 'resurs-bank-payment-gateway-for-woocommerce'));
+        $pluginInfo = '';
         $topCss = 'style="vertical-align: top !important;" valign="top"';
+        if ((int)($lastTransientTimeout = get_transient('resurs_connection_timeout'))) {
+            $timeoutCss = 'style="vertical-align: top !important; color: #990000 !important; font-size: 16px !important;" valign="top"';
+
+            $pluginInfo .= sprintf(
+                '<tr><td %s><b>%s</b></td><td %s><b>%s</b></td></tr>',
+                $timeoutCss,
+                __('ResursAPI Timeout', 'resurs-bank-payment-gateway-for-woocommerce'),
+                $timeoutCss,
+                sprintf(
+                    __(
+                        'Timeout detected %s. Wait time changed to %s seconds temporarily.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    strftime(
+                        '%Y-%m-%d %H:%m:%S',
+                        $lastTransientTimeout
+                    ),
+                    getResursOption('timeout_throttler')
+                )
+            );
+        }
+
+        $pluginInfo .= $this->setSeparator(__('Plugin information', 'resurs-bank-payment-gateway-for-woocommerce'));
         //$topCursor  = 'style="vertical-align: top !important;cursor:pointer;" valign="top"';
         $pluginInfo .= '<tr><td ' . $topCss . '>Plugin/Gateway</td><td ' . $topCss . '>v' . rbWcGwVersion() . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>PHP</td><td ' . $topCss . '>' . (defined('PHP_VERSION') ? "v" . PHP_VERSION : "") . '</td></tr>';
@@ -610,23 +633,25 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 $newRelease
             );
         }
-        $pluginInfo .= '<tr><td ' . $topCss . '>SoapClient</td><td ' . $topCss . '>' . $this->displayAvail($hasSoap) . '</td></tr>';
-        $pluginInfo .= '<tr><td ' . $topCss . '>SSL/https (wrapper)</td><td ' . $topCss . '>' . $this->displayAvail($hasSsl) . (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : "") . '</td></tr>';
-        $pluginInfo .= '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" ' . $topCss . '><i>Communication</i></td><td ' . $topCss . '>' . $nc . '<br>
-            <div id="rwocurltag" style="display:none;"></div>
-        </td></tr>';
-        if ((int)($lastTransientTimeout = get_transient('resurs_connection_timeout'))) {
-            $pluginInfo .= sprintf(
-                '<tr><td %s>%s</td><td %s>%s</td></tr>',
-                __('ResursAPI Timeout Detected', 'resurs-bank-payment-gateway-for-woocommerce'),
-                $topCss,
-                $topCss,
-                strftime(
-                    '%Y-%m-%d %H:%m:%S',
-                    $lastTransientTimeout
-                )
-            );
-        }
+        $pluginInfo .= sprintf(
+            '<tr><td %s>SoapClient</td><td %s>%s</td></tr>',
+            $topCss,
+            $topCss,
+            $this->displayAvail($hasSoap)
+        );
+        $pluginInfo .= sprintf(
+            '<tr><td %s>SSL/https (wrapper)</td><td %s>%s</td></tr>',
+            $topCss,
+            $topCss,
+            $this->displayAvail($hasSsl) . (defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : "")
+        );
+        $pluginInfo .= sprintf(
+            '<tr><td style="cursor:pointer;" onclick="doGetRWcurlTags()" %s><i>Communication</i></td><td %s>%s<br>
+            <div id="rwocurltag" style="display:none;"></div></td></tr>',
+            $topCss,
+            $topCss,
+            $nc
+        );
 
         if ($pluginIsGit) {
             $pluginInfo .= $this->getGitInfo($topCss);
