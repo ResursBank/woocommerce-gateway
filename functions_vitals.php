@@ -253,8 +253,6 @@ function allowResursRun($allow = false, $informationSet = [])
  */
 function resursPreventPostType($allow, $postType)
 {
-    global $post;
-
     if ($postType === 'product') {
         $allow = false;
     }
