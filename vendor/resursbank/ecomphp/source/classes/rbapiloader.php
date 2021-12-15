@@ -2496,6 +2496,7 @@ class ResursBank
                 sprintf('%s/callbacks', $this->getCheckoutUrl())
             )->getParsed();
         } catch (Exception $restException) {
+            $this->timeoutControl($restException);
             $message = $restException->getMessage();
             $code = $restException->getCode();
 

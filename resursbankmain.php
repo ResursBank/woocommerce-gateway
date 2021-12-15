@@ -11,6 +11,7 @@ use Resursbank\Ecommerce\Types\CheckoutType;
 use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\ResursBank;
+use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\MODULE_NETWORK;
 
 $resurs_obsolete_coexistence_disable = (bool)apply_filters('resurs_obsolete_coexistence_disable', null);
@@ -419,6 +420,9 @@ function woocommerce_gateway_resurs_bank_init()
                                     $newPaymentMethodsList = $newFlow->getPaymentMethods([], true);
                                     $myBool = true;
                                 } catch (Exception $e) {
+                                    if ($newFlow->hasTimeoutException()) {
+                                        set_transient('resurs_connection_timeout', time(), 60);
+                                    }
                                     $myBool = false;
                                     $failSetup = true;
                                     /** @var $errorMessage */
@@ -599,6 +603,10 @@ function woocommerce_gateway_resurs_bank_init()
                                             );
                                             $responseArray['cached'] = false;
                                         } catch (Exception $e) {
+                                            if ($this->flow->hasTimeoutException()) {
+                                                set_transient('resurs_connection_timeout', time(), 60);
+                                            }
+
                                             $errorMessage = $e->getMessage();
                                             $errorCode = $e->getCode();
 
@@ -4827,6 +4835,7 @@ function woocommerce_gateway_resurs_bank_init()
             $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
             $timeDiff = apply_filters('resurs_methodlist_timediff', time() - $resursTemporaryPaymentMethodsTime);
 
+            $checkoutErrorString = '';
             $errorOnLiveData = false;
             if ($timeDiff >= 3600) {
                 /** @var $theFlow ResursBank */
@@ -4876,9 +4885,23 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             if ($errorOnLiveData) {
-                echo '<div style="border: 1px solid #990000; text-align: center; padding: 3px; font-weight: bold; color: #990000;">' .
-                    __('Resurs Bank has connection errors!', 'resurs-bank-payment-gateway-for-woocommerce') .
-                    '</div>';
+                if ($theFlow->hasTimeoutException()) {
+                    set_transient('resurs_connection_timeout', time(), 60);
+                    $checkoutErrorString = __(
+                        'Resurs Bank connection timeout!',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    );
+                } else {
+                    $checkoutErrorString = __(
+                        'Resurs Bank has connection errors!',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    );
+                }
+
+                echo sprintf(
+                    '<div style="border: 1px solid #990000; text-align: center; padding: 3px; font-weight: bold; color: #990000;">%s</div>',
+                    $checkoutErrorString
+                );
             }
 
             if ($naturalCount) {
@@ -5856,16 +5879,35 @@ function resurs_no_debit_debited($instant = null)
     <?php
 }
 
+/**
+ * Fetch payment information for the order view.
+ *
+ * @param $order
+ * @param string $getPaymentId
+ * @param false $fallback
+ * @return array|int|mixed|stdClass|null
+ * @throws ResursException
+ * @throws ExceptionHandler
+ */
 function getPaymentInfo($order, $getPaymentId = '', $fallback = false)
 {
     $resursPaymentIdLast = get_post_meta($order->get_id(), 'paymentIdLast', true);
 
     $rb = initializeResursFlow();
-    $rb->setFlag('GET_PAYMENT_BY_SOAP');
+    $checkTimeouts = (int)get_transient('resurs_connection_timeout');
+    if ($checkTimeouts) {
+        $rb->setFlag('GET_PAYMENT_BY_REST');
+        // Extend connection timeout timer for payment information.
+        set_transient('resurs_connection_timeout', time(), 600);
+    }
     $resursPaymentInfo = null;
     try {
         $resursPaymentInfo = $rb->getPayment($getPaymentId);
     } catch (Exception $e) {
+        if ($rb->hasTimeoutException()) {
+            // On timeouts, just skip the failovers.
+            set_transient('resurs_connection_timeout', time(), 60);
+        }
         if (resursOption('postidreference')) {
             if ($e->getCode() === 8) {
                 if (!empty($resursPaymentIdLast) && $getPaymentId !== $resursPaymentIdLast) {
@@ -6791,9 +6833,18 @@ function initializeResursFlow(
         $password = $overridePassword;
     }
 
+    // Defined in seconds how low the connectivity timeout should be on API timeouts.
+    $timeoutExceptionLimit = getResursOption('timeout_throttler');
+
     // Reset and recreate ecom-instance on demand.
     if ($requireNewFlow) {
         $hasResursFlow = false;
+    }
+
+    $hasTransientTimeout = (int)get_transient('resurs_connection_timeout');
+    if ($hasTransientTimeout && !empty($resursSavedInstance)) {
+        $resursSavedInstance->setTimeout($timeoutExceptionLimit);
+        $resursSavedInstance->setFlag('CURL_TIMEOUT', $timeoutExceptionLimit);
     }
 
     $resursInstanceCount++;
@@ -6804,6 +6855,7 @@ function initializeResursFlow(
     /** @var $initFlow ResursBank */
     $initFlow = new ResursBank($username, $password);
     $initFlow->setWsdlCache(true);
+
     $ecomCacheTime = getResursFlag('ECOM_CACHE_TIME');
     if (!empty($ecomCacheTime) && is_numeric($ecomCacheTime) && $ecomCacheTime > 1) {
         $initFlow->setApiCacheTime($ecomCacheTime);
@@ -6812,6 +6864,9 @@ function initializeResursFlow(
     $cTimeout = (int)getResursFlag('CURL_TIMEOUT');
     if (!$cTimeout) {
         $cTimeout = 12;
+    }
+    if ($hasTransientTimeout > 0) {
+        $cTimeout = $timeoutExceptionLimit;
     }
 
     $initFlow->setFlag('CURL_TIMEOUT', $cTimeout);

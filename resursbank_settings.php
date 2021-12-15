@@ -582,8 +582,31 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $pluginIsGit = true;
         }
 
-        $pluginInfo = $this->setSeparator(__('Plugin information', 'resurs-bank-payment-gateway-for-woocommerce'));
+        $pluginInfo = '';
         $topCss = 'style="vertical-align: top !important;" valign="top"';
+        if ((int)($lastTransientTimeout = get_transient('resurs_connection_timeout'))) {
+            $timeoutCss = 'style="vertical-align: top !important; color: #990000 !important; font-size: 16px !important;" valign="top"';
+
+            $pluginInfo .= sprintf(
+                '<tr><td %s><b>%s</b></td><td %s><b>%s</b></td></tr>',
+                $timeoutCss,
+                __('ResursAPI Timeout', 'resurs-bank-payment-gateway-for-woocommerce'),
+                $timeoutCss,
+                sprintf(
+                    __(
+                        'Timeout detected %s. Wait time changed to %s seconds temporarily.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    strftime(
+                        '%Y-%m-%d %H:%m:%S',
+                        $lastTransientTimeout
+                    ),
+                    getResursOption('timeout_throttler')
+                )
+            );
+        }
+
+        $pluginInfo .= $this->setSeparator(__('Plugin information', 'resurs-bank-payment-gateway-for-woocommerce'));
         //$topCursor  = 'style="vertical-align: top !important;cursor:pointer;" valign="top"';
         $pluginInfo .= '<tr><td ' . $topCss . '>Plugin/Gateway</td><td ' . $topCss . '>v' . rbWcGwVersion() . '</td></tr>';
         $pluginInfo .= '<tr><td ' . $topCss . '>PHP</td><td ' . $topCss . '>' . (defined('PHP_VERSION') ? "v" . PHP_VERSION : "") . '</td></tr>';
@@ -827,6 +850,9 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                 }
             }
         } catch (Exception $e) {
+            if ($this->flow->hasTimeoutException()) {
+                set_transient('resurs_connection_timeout', time(), 60);
+            }
             $errorCode = $e->getCode();
             $errorMessage = $e->getMessage();
             if ($errorCode == 401) {
@@ -1456,6 +1482,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(
                         __('Customer and store', 'resurs-bank-payment-gateway-for-woocommerce')
                     );
+                    echo $this->setTextBox('timeout_throttler', $namespace);
                     echo $this->setCheckBox('getAddress', $namespace);
                     echo $this->setCheckBox('resursvalidate', $namespace);
                     echo $this->setCheckBox('forceGovIdField', $namespace);
