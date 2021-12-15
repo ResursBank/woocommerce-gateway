@@ -165,17 +165,15 @@ function allowPluginToRun()
     // Always allow this plugin to be alive.
     $return = true;
 
+    $info = [
+        'action' => isset($_REQUEST['action']) ? $_REQUEST['action'] : '',
+        'page' => isset($_REQUEST['page']) ? $_REQUEST['page'] : '',
+        'post_type' => isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : '',
+    ];
+
     if (is_admin() && getResursOption('preventGlobalInterference')) {
         // At this point, we know that we're in wp-admin, so from here we can decide whether the plugin should
         // be present, regardless of what WooCommerce thinks (mind the edit-theme-plugin-file parts).
-        $info = [
-            'action' => isset($_REQUEST['action']) ? $_REQUEST['action'] : '',
-            'page' => isset($_REQUEST['page']) ? $_REQUEST['page'] : '',
-            'post_type' => isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : '',
-        ];
-
-        // From here apply necessary filters, and tell the developer where we are so that presence can be
-        // freely limited by anyone.
         $return = apply_filters('allow_resurs_run', $return, $info);
     }
 
