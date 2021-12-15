@@ -5187,8 +5187,10 @@ function woocommerce_gateway_resurs_bank_init()
         $resursMethod = false;
         $resursPayment = '';
 
-        if (isset($post) && isset($post->ID)) {
-            $methodInfoMeta = getResursPaymentMethodMeta($post->ID);
+        // post_type = shop_order
+        if ($post instanceof WP_Post && $post->post_type === 'shop_order' &&
+            ($methodInfoMeta = getResursPaymentMethodMeta(isset($post->ID) ? $post->ID : 0))
+        ) {
             $resursMeta = getResursPaymentMethodMeta($post->ID, 'resursBankMetaPaymentMethodType');
             if (!empty($resursMeta)) {
                 $resursMethod = true;
