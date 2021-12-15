@@ -175,14 +175,6 @@ function allowPluginToRun()
         // At this point, we know that we're in wp-admin, so from here we can decide whether the plugin should
         // be present, regardless of what WooCommerce thinks (mind the edit-theme-plugin-file parts).
         $return = apply_filters('allow_resurs_run', $return, $info);
-    } elseif (is_admin()) {
-        $ignoreFromAdmin = [
-            'product',
-            'wc-reports',
-        ];
-        if (in_array($info['post_type'], $ignoreFromAdmin, true)) {
-            $return = false;
-        }
     }
 
     return $return;
