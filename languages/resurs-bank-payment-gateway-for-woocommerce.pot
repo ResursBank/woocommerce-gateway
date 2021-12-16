@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2021-12-16 08:22+0100\n"
+"POT-Creation-Date: 2021-12-16 08:28+0100\n"
 "PO-Revision-Date: 2021-11-06 00:29+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
@@ -41,7 +41,7 @@ msgid ""
 msgstr ""
 
 #: functions_settings.php:100
-msgid "Enabled checkout functions"
+msgid "Enable checkout functions"
 msgstr ""
 
 #: functions_settings.php:102 functions_settings.php:144

@@ -97,7 +97,7 @@ if (!function_exists('getResursWooFormFields')) {
         if ($formSectionName === 'defaults' || $formSectionName === 'woocommerce_resurs-bank_settings') {
             $returnArray = [
                 'enabled' => [
-                    'title' => __('Enabled checkout functions', 'woocommerce'),
+                    'title' => __('Enable checkout functions', 'woocommerce'),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(

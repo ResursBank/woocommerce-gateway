@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Project-Id-Version: resursbankwoocommerce\n"
-"POT-Creation-Date: 2021-12-16 08:22+0100\n"
-"PO-Revision-Date: 2021-12-16 08:27+0100\n"
+"POT-Creation-Date: 2021-12-16 08:28+0100\n"
+"PO-Revision-Date: 2021-12-16 08:30+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Swedish\n"
 "MIME-Version: 1.0\n"
@@ -40,8 +40,8 @@ msgid "Automated cancellation detected (reserved orderstock timeout may cause th
 msgstr "Automatiserad annullering upptäckt (timouter vid lagerreservationer kan orsaka detta). Någon måste vara inloggad för att avbryta ordrar för Resurs Bank."
 
 #: functions_settings.php:100
-msgid "Enabled checkout functions"
-msgstr "Aktivera pluginfunktioner för kassa"
+msgid "Enable checkout functions"
+msgstr "Aktivera kassafunktioner"
 
 #: functions_settings.php:102 functions_settings.php:144
 #: functions_settings.php:158 functions_settings.php:168
