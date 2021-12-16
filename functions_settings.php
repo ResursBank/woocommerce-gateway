@@ -97,11 +97,14 @@ if (!function_exists('getResursWooFormFields')) {
         if ($formSectionName === 'defaults' || $formSectionName === 'woocommerce_resurs-bank_settings') {
             $returnArray = [
                 'enabled' => [
-                    'title' => __('Enable/Disable', 'woocommerce'),
+                    'title' => __('Enabled checkout functions', 'woocommerce'),
                     'type' => 'checkbox',
                     'label' => __('Enabled', 'woocommerce'),
                     'description' => __(
-                        'This is the major plugin switch. If not checked, it will be competely disabled, except for that you can still edit this administration control.',
+                        'To make the checkout features function properly, this setting has to be enabled. When ' .
+                        'disabled, the plugin will still function but limited to features that covers order ' .
+                        'handling, callbacks and other after shop features. This features does not shut down ' .
+                        'the entire plugin.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
