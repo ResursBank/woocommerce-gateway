@@ -14,7 +14,7 @@
 define('RB_WOO_VERSION', '2.2.72');
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resurs-bank-payment-gateway-for-woocommerce');
-define('RB_EXPECT_ECOM', '1.3.63');
+define('RB_EXPECT_ECOM', '1.3.68');
 
 require_once(__DIR__ . '/functions_settings.php');
 require_once(__DIR__ . '/functions_vitals.php');

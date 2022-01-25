@@ -1,6 +1,13 @@
+# 2.2.72
+
+* [WOO-596](https://resursbankplugins.atlassian.net/browse/WOO-596) When trying to discover composer.json version/name data, platform renders warnings
+* [WOO-595](https://resursbankplugins.atlassian.net/browse/WOO-595) Slow/crashing platform on API timeouts
+* [WOO-594](https://resursbankplugins.atlassian.net/browse/WOO-594) Produktsidorna funkar inte vid timeout mot Resurs
+* [WOO-593](https://resursbankplugins.atlassian.net/browse/WOO-593) Partially handle server timeouts
+
 # 2.2.71
 
-[WOO-592](https://resursbankplugins.atlassian.net/browse/WOO-592) Race conditions on callbacks, second edition
+* [WOO-592](https://resursbankplugins.atlassian.net/browse/WOO-592) Race conditions on callbacks, second edition
 
 # 2.2.70
 

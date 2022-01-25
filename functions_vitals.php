@@ -552,7 +552,7 @@ function resursExpectVersions()
     $versionProblems = [];
     if (is_admin() && getResursOption('enabled')) {
         $ecomCurrent = (new ResursBank())->getVersionNumber();
-        if (version_compare(RB_EXPECT_ECOM, (new ResursBank())->getVersionNumber(), '>=')) {
+        if (version_compare($ecomCurrent, RB_EXPECT_ECOM, '<')) {
             $versionProblems[] = sprintf('EComPHP %s, requires %s', $ecomCurrent, RB_EXPECT_ECOM);
         }
         if (is_admin() && session_status() === PHP_SESSION_NONE && count($versionProblems)) {
