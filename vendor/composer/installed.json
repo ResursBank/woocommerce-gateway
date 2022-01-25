@@ -372,24 +372,24 @@
         },
         {
             "name": "tornevall/tornelib-php-utils",
-            "version": "6.1.14",
-            "version_normalized": "6.1.14.0",
+            "version": "6.1.15",
+            "version_normalized": "6.1.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-utils.git",
-                "reference": "e98a7fe28ca65951a545bc143eaec313a46ead2a"
+                "reference": "e5bd8bf745922b08fd563a69e039e543fb0eca1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/e98a7fe28ca65951a545bc143eaec313a46ead2a",
-                "reference": "e98a7fe28ca65951a545bc143eaec313a46ead2a",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/e5bd8bf745922b08fd563a69e039e543fb0eca1f",
+                "reference": "e5bd8bf745922b08fd563a69e039e543fb0eca1f",
                 "shasum": ""
             },
             "require": {
                 "tornevall/tornelib-php-errorhandler": "^6.1",
                 "tornevall/tornelib-php-flags": "^6.1"
             },
-            "time": "2021-11-07T09:48:50+00:00",
+            "time": "2022-01-25T09:58:36+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -412,7 +412,7 @@
             "description": "Utils that many of the TorneLIB-based libraries may need.",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-utils/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-utils/tree/6.1.14"
+                "source": "https://github.com/Tornevall/tornelib-php-utils/tree/6.1.15"
             },
             "install-path": "../tornevall/tornelib-php-utils"
         },

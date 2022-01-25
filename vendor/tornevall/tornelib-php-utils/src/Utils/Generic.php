@@ -11,7 +11,7 @@ use TorneLIB\Exception\ExceptionHandler;
 /**
  * Class Generic Generic functions
  * @package TorneLIB\Utils
- * @version 6.1.14
+ * @version 6.1.15
  */
 class Generic
 {
@@ -51,6 +51,34 @@ class Generic
      * @since 6.1.13
      */
     private $composerNameEntry;
+
+    /**
+     * Internal errorhandler.
+     * @var
+     * @since 6.1.15
+     */
+    private $internalErrorHandler;
+
+    /**
+     * Error message on internal handled errors, if any.
+     * @var string
+     * @since 6.1.15
+     */
+    private $internalExceptionMessage = '';
+
+    /**
+     * Error code on internal handled errors, if any.
+     * @var int
+     * @since 6.1.15
+     */
+    private $internalExceptionCode = 0;
+
+    /**
+     * If open_basedir-warnings has been triggered once, we store that here.
+     * @var bool
+     * @since 6.1.15
+     */
+    private $openBaseDirExceptionTriggered = false;
 
     /**
      * Check if class files exists somewhere in platform (pear/pecl-based functions).
@@ -139,9 +167,34 @@ class Generic
 
         if (isset($this->composerData->{$tag})) {
             $return = $this->composerData->{$tag};
+        } elseif ($this->isOpenBaseDirException()) {
+            $return = $this->getOpenBaseDirExceptionString();
         }
 
         return (string)$return;
+    }
+
+    /**
+     * @return $this
+     * @since 6.1.4
+     */
+    private function getInternalErrorHandler()
+    {
+        if (!is_null($this->internalErrorHandler)) {
+            restore_error_handler();
+            $this->internalErrorHandler = null;
+        }
+
+        $this->internalErrorHandler = set_error_handler(function ($errNo, $errStr) {
+            if (empty($this->internalExceptionMessage)) {
+                $this->internalExceptionCode = $errNo;
+                $this->internalExceptionMessage = $errStr;
+            }
+            restore_error_handler();
+            return $errNo === 2 && (bool)preg_match('/open_basedir/', $errStr) ? true : false;
+        }, E_WARNING);
+
+        return $this;
     }
 
     /**
@@ -153,11 +206,24 @@ class Generic
      */
     public function getComposerConfig($location, $maxDepth = 3)
     {
+        $this->getInternalErrorHandler();
+
         if ($maxDepth > 3 || $maxDepth < 1) {
             $maxDepth = 3;
         }
-        if (!file_exists($location)) {
+
+        // Pre-check if file exists, to also make sure that open_basedir is not a problem.
+        $locationCheck = file_exists($location);
+        $this->isOpenBaseDirException();
+
+        if (!$this->openBaseDirExceptionTriggered && !$locationCheck) {
             throw new ExceptionHandler('Invalid path', Constants::LIB_INVALID_PATH);
+        }
+        if ($this->isOpenBaseDirException()) {
+            return $this->getOpenBaseDirExceptionString();
+        }
+        if ($this->isOpenBaseDirException()) {
+            return $this->getOpenBaseDirExceptionString();
         }
         $startAt = dirname($location);
         if ($this->hasComposerFile($startAt)) {
@@ -177,6 +243,48 @@ class Generic
         $this->getComposerConfigData($composerLocation);
 
         return $this->composerLocation;
+    }
+
+    /**
+     * Exception string that is used in several places that will mark up if the running methods have
+     * had problems with open_basedir security.
+     * @return string
+     * @since 6.1.15
+     */
+    private function getOpenBaseDirExceptionString()
+    {
+        return 'N/A (open_basedir security active)';
+    }
+
+    /**
+     * Checks internal warnings for open_basedir exceptions during runs.
+     * @return bool
+     * @since 6.1.15
+     */
+    private function isOpenBaseDirException()
+    {
+        // If triggered once, skip checks.
+        if ($this->openBaseDirExceptionTriggered) {
+            return $this->openBaseDirExceptionTriggered;
+        }
+
+        $return = $this->hasInternalException() &&
+            $this->internalExceptionCode === 2 &&
+            (bool)preg_match('/open_basedir/', $this->internalExceptionMessage);
+
+        if ($return) {
+            $this->openBaseDirExceptionTriggered = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return bool
+     */
+    private function hasInternalException()
+    {
+        return !empty($this->internalExceptionMessage);
     }
 
     /**
@@ -261,8 +369,10 @@ class Generic
     {
         $return = '';
 
-        if (!empty(($this->getComposerConfig($location, $maxDepth)))) {
+        if (!empty(($this->getComposerConfig($location, $maxDepth))) && !$this->isOpenBaseDirException()) {
             $return = $this->getComposerTag($this->composerLocation, 'version');
+        } elseif ($this->isOpenBaseDirException()) {
+            $return = $this->getOpenBaseDirExceptionString();
         }
 
         return $return;
