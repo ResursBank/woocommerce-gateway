@@ -58,7 +58,6 @@ use stdClass;
 use TorneLIB\Config\Flag;
 use TorneLIB\Data\Compress;
 use TorneLIB\Data\Password;
-use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\NetUtils;
 use TorneLIB\IO\Data\Strings;
@@ -75,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20211214');
+    define('ECOMPHP_MODIFY_DATE', '20220118');
 }
 
 /**
@@ -86,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.66
+ * @version 1.3.68
  */
 class ResursBank
 {
@@ -886,6 +885,43 @@ class ResursBank
     }
 
     /**
+     * Function to make sure that we can handle proxies on multiple levels.
+     */
+    private function prepareProxy($curlProxyAddr = '', $curlProxyType = '')
+    {
+        $hasProxy = false;
+        // Make sure we don't use the wrapper before it is set.
+        if (!empty($this->CURL)) {
+            if (!empty($curlProxyAddr) && !empty($curlProxyType)) {
+                $this->CURL->setProxy($curlProxyAddr, $curlProxyAddr);
+                $hasProxy = true;
+            } elseif (defined('HTTP_PROXY')) {
+                $this->CURL->setProxy(HTTP_PROXY, defined('HTTP_PROXY_TYPE') ? HTTP_PROXY_TYPE : 0);
+                $hasProxy = true;
+            } elseif (isset($_SERVER['HTTP_PROXY'])) {
+                $this->CURL->setProxy(
+                    $_SERVER['HTTP_PROXY'],
+                    isset($_SERVER['HTTP_PROXY_TYPE']) ? $_SERVER['HTTP_PROXY_TYPE'] : 0
+                );
+                $hasProxy = true;
+            } elseif (Flag::getFlag('HTTP_PROXY')) {
+                $this->CURL->setProxy(
+                    Flag::getFlag('HTTP_PROXY'),
+                    Flag::getFlag('HTTP_PROXY_TYPE') ? Flag::getFlag('HTTP_PROXY_TYPE') : 0
+                );
+                $hasProxy = true;
+            }
+
+            if ($hasProxy && Flag::hasFlag('request_fulluri')) {
+                $currentConfig = $this->CURL->getConfig();
+                $currentConfig->setDualStreamHttp('request_fulluri', Flag::getFlag('request_fulluri'));
+                $this->CURL->setConfig($currentConfig);
+            }
+        }
+        return $this;
+    }
+
+    /**
      * Everything that communicates with Resurs Bank should go here, whether is is web services or curl/json data. The
      * former name of this function is InitializeWsdl, but since we are handling nonWsdl-calls differently, but still
      * needs some kind of compatibility in dirty code structures, everything needs to be done from here. For now. In
@@ -921,6 +957,7 @@ class ResursBank
         } else {
             $this->CURL = new Netwrapper();
         }
+
         if (method_exists($this->CURL, 'setIdentifiers')) {
             $this->CURL->setIdentifiers(true);
         }
@@ -938,6 +975,9 @@ class ResursBank
         foreach ($this->wsdlServices as $ServiceName => $isAvailableBoolean) {
             $this->URLS[$ServiceName] = sprintf('%s%s?wsdl', $this->environment, $ServiceName);
         }
+
+        $this->prepareProxy();
+
         return $this;
     }
 
@@ -2473,13 +2513,14 @@ class ResursBank
      * object will be empty. Developer note: Changing this behaviour so all event types is always returned even if they
      * don't exist (meaning ecomphp fills in what's missing) might break plugins that is already in production.
      *
-     * @param bool $ReturnAsArray
+     * @param bool $returnAsAssocArray
+     * @param bool $skipFailOver
      * @return array
-     * @throws Exception
+     * @throws ResursException
      * @link  https://test.resurs.com/docs/display/ecom/ECommerce+PHP+Library#ECommercePHPLibrary-getCallbacksByRest
      * @since 1.0.1
      */
-    public function getCallBacksByRest($ReturnAsArray = false)
+    public function getCallBacksByRest($returnAsAssocArray = false, $skipFailOver = false)
     {
         $ResursResponse = [];
         $hasUpdate = false;
@@ -2501,12 +2542,12 @@ class ResursBank
             $code = $restException->getCode();
 
             $failover = false;
-            if ($code >= 500) {
+            if ($code >= 500 && !$skipFailOver) {
                 try {
                     $failover = true;
                     $hasUpdate = true;
                     $ResursResponse = $this->getRegisteredEventCallback(255);
-                    if (!$ReturnAsArray && is_array($ResursResponse)) {
+                    if (!$returnAsAssocArray && is_array($ResursResponse)) {
                         foreach ($ResursResponse as $callbackKey => $callbackUrl) {
                             $callbackClass = new stdClass();
                             $callbackClass->eventType = $callbackKey;
@@ -2538,7 +2579,7 @@ class ResursBank
                 throw new ResursException($message, $code, $restException);
             }
         }
-        if ($ReturnAsArray) {
+        if ($returnAsAssocArray) {
             $ResursResponseArray = [];
             if (is_array($ResursResponse) && count($ResursResponse)) {
                 foreach ($ResursResponse as $object) {
@@ -2694,9 +2735,7 @@ class ResursBank
      */
     public function setProxy($curlProxyAddr, $curlProxyType)
     {
-        $CURL = $this->getCurlHandle();
-        $CURL->setProxy($curlProxyAddr, $curlProxyType);
-        $this->setCurlHandle($CURL);
+        $this->prepareProxy($curlProxyAddr, $curlProxyType);
 
         return $this;
     }
@@ -2880,9 +2919,10 @@ class ResursBank
     private function timeoutControl($e)
     {
         if ($e instanceof Exception) {
+            // Constants::LIB_NETCURL_SOAP_TIMEOUT = 1015
             // Curl throws 28 and the wrapper for SoapClient throws code 1015 (from netcurl 6.1.5), on timeouts.
             if ($e->getCode() === 28 ||
-                $e->getCode() === Constants::LIB_NETCURL_SOAP_TIMEOUT
+                $e->getCode() === 1015
             ) {
                 $this->timeoutException = true;
             }
@@ -2907,6 +2947,8 @@ class ResursBank
         $serviceNameUrl = $this->getServiceUrl($serviceName);
         $soapBody = null;
         if (!empty($serviceNameUrl) && !is_null($this->CURL)) {
+            $this->prepareProxy();
+
             $Service = $this->CURL->request($serviceNameUrl);
 
             try {
