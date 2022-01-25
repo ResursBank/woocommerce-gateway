@@ -5,7 +5,7 @@ namespace Resursbank\RBEcomPHP;
 /**
  * Class RESURS_AFTERSHOP_RENDER_TYPES
  * @package Resursbank\RBEcomPHP
- * @deprecated Do not query this. Use Resursbank\Ecommerce\AftershopAction.
+ * @deprecated Do not query this. Use Resursbank\Ecommerce\Types\AftershopAction.
  */
 class RESURS_AFTERSHOP_RENDER_TYPES
 {

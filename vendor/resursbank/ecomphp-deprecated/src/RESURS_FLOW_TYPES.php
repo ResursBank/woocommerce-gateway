@@ -5,7 +5,7 @@ namespace Resursbank\RBEcomPHP;
 /**
  * Class RESURS_FLOW_TYPES
  * @package Resursbank\RBEcomPHP
- * @deprecated Do not query this. Use Resursbank\Ecommerce\CheckoutType.
+ * @deprecated Do not query this. Use Resursbank\Ecommerce\Types\CheckoutType.
  */
 abstract class RESURS_FLOW_TYPES
 {

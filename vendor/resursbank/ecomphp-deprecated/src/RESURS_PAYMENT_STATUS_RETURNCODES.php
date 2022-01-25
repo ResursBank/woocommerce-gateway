@@ -5,7 +5,7 @@ namespace Resursbank\RBEcomPHP;
 /**
  * Class RESURS_PAYMENT_STATUS_RETURNCODES
  * @package Resursbank\RBEcomPHP
- * @deprecated Do not query this. Use Resursbank\Ecommerce\PaymentStatus or Resursbank\Ecommerce\OrderStatus.
+ * @deprecated Do not query this. Use Resursbank\Ecommerce\Types\OrderStatus.
  */
 class RESURS_PAYMENT_STATUS_RETURNCODES
 {

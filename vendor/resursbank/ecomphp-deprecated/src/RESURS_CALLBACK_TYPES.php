@@ -5,7 +5,7 @@ namespace Resursbank\RBEcomPHP;
 /**
  * Class RESURS_CALLBACK_TYPES
  * @package Resursbank\RBEcomPHP
- * @deprecated Do not query this. Use Resursbank\Ecommerce\Callback.
+ * @deprecated Do not query this. Use Resursbank\Ecommerce\Types\Callback.
  */
 class RESURS_CALLBACK_TYPES
 {

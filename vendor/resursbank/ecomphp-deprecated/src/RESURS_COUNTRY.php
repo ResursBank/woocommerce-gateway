@@ -5,7 +5,7 @@ namespace Resursbank\RBEcomPHP;
 /**
  * Class RESURS_COUNTRY
  * @package Resursbank\RBEcomPHP
- * @deprecated Do not query this. Use Resursbank\Ecommerce\Country.
+ * @deprecated Do not query this. Use Resursbank\Ecommerce\Types\Country.
  */
 class RESURS_COUNTRY
 {
