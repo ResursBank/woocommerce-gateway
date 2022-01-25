@@ -578,7 +578,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         }
 
         $pluginIsGit = false;
-        if (file_exists(__DIR__ . '/.git') && !defined('RESURS_BANK_PAYMENT_GATEWAY_FOR_WOOCOMMERCE_HAS_GIT')) {
+        if (@file_exists(__DIR__ . '/.git') && !defined('RESURS_BANK_PAYMENT_GATEWAY_FOR_WOOCOMMERCE_HAS_GIT')) {
             $pluginIsGit = true;
         }
 
@@ -671,10 +671,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
         $pluginInfo = "";
         try {
             $gitbin = (string)getResursFlag('GIT_BIN');
-            if (empty($gitbin) && file_exists('/usr/bin/git')) {
+            if (empty($gitbin) && @file_exists('/usr/bin/git')) {
                 $gitbin = '/usr/bin/git';
             }
-            if (empty($gitbin) || !file_exists($gitbin)) {
+            if (empty($gitbin) || !@file_exists($gitbin)) {
                 $pluginInfo .= '<tr><td ' . $topCss . '>gitinfo</td><td ' . $topCss . '>' .
                     __(
                         'The plugin is part of a git repo. Status is unknown; need proper /path/to/git to activate feature.',
