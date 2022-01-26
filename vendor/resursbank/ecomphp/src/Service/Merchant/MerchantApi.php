@@ -1,4 +1,9 @@
 <?php
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+declare(strict_types=1);
 
 namespace Resursbank\Ecommerce\Service\Merchant;
 
@@ -17,36 +22,32 @@ class MerchantApi extends MerchantApiConnector
     private $storeId = '';
 
     /**
-     * @return array
+     * @param null $storeId
+     * @return PaymentMethods
      * @throws ExceptionHandler
      */
-    public function getStores()
+    public function getPaymentMethods($storeId = null): PaymentMethods
     {
-        return $this->getMerchantRequest('stores')->content;
-    }
-
-    /**
-     * @param $storeId
-     * @throws ExceptionHandler
-     */
-    public function setStoreId($storeId)
-    {
-        if (!empty($storeId)) {
-            $this->storeId = $this->getStoreByIdNum($storeId);
-        }
-
-        return $this;
+        return new PaymentMethods(
+            $this->getMerchantRequest(
+                sprintf(
+                    'stores/%s/payment_methods',
+                    $this->getStoreId($storeId)
+                )
+            )->paymentMethods
+        );
     }
 
     /**
      * StoreID Automation. Making sure that we are always using a proper store id, regardless of how it is pushed
      * into the API.
      *
-     * @param string $storeId
+     * @param string|null $storeId
+     *
      * @return string
      * @throws ExceptionHandler
      */
-    public function getStoreId($storeId = null)
+    public function getStoreId(string $storeId = ''): string
     {
         if (!empty($storeId)) {
             $return = is_numeric($storeId) ? $this->getStoreByIdNum($storeId) : $storeId;
@@ -60,12 +61,28 @@ class MerchantApi extends MerchantApiConnector
     }
 
     /**
-     * Transform a numeric store id to Resurs internal.
+     * @param $storeId
      *
-     * @param $idNum
+     * @return MerchantApi
      * @throws ExceptionHandler
      */
-    public function getStoreByIdNum($idNum)
+    public function setStoreId($storeId): MerchantApi
+    {
+        if (!empty($storeId)) {
+            $this->storeId = $this->getStoreByIdNum($storeId);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Transform a numeric store id to Resurs internal.
+     *
+     * @param int|string $idNum
+     * @return string
+     * @throws ExceptionHandler
+     */
+    public function getStoreByIdNum($idNum): string
     {
         $return = '';
         $storeList = $this->getStores();
@@ -85,19 +102,11 @@ class MerchantApi extends MerchantApiConnector
     }
 
     /**
-     * @param $storeId
-     * @return mixed|string
+     * @return array
      * @throws ExceptionHandler
      */
-    public function getPaymentMethods($storeId = null)
+    public function getStores(): array
     {
-        return new PaymentMethods(
-            $this->getMerchantRequest(
-                sprintf(
-                    'stores/%s/payment_methods',
-                    $this->getStoreId($storeId)
-                )
-            )->paymentMethods
-        );
+        return (array)$this->getMerchantRequest('stores')->content;
     }
 }

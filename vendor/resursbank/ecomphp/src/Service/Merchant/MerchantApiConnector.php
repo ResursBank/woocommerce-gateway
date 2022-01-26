@@ -1,4 +1,9 @@
 <?php
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
+declare(strict_types=1);
 
 namespace Resursbank\Ecommerce\Service\Merchant;
 
@@ -54,6 +59,11 @@ class MerchantApiConnector
     private $grantType = '';
 
     /**
+     * @var string
+     */
+    private $bearerToken = '';
+
+    /**
      * @var bool
      */
     private $jwtReady = false;
@@ -64,9 +74,14 @@ class MerchantApiConnector
     private $connection;
 
     /**
+     * @var bool
+     */
+    private $isRenewedToken = false;
+
+    /**
      * @return $this
      */
-    public function setProduction()
+    public function setProduction(): MerchantApiConnector
     {
         $this->environmentIsTest = false;
 
@@ -75,26 +90,28 @@ class MerchantApiConnector
 
     /**
      * @param string $merchantToken
+     *
      * @return $this
      */
-    public function setBearer($merchantToken = '')
+    public function setBearer(string $merchantToken = ''): MerchantApiConnector
     {
         if (empty($merchantToken) && !empty($this->token->getAccessToken())) {
-            $useBearerToken = $this->token->getAccessToken();
+            $this->bearerToken = $this->token->getAccessToken();
         } else {
-            $useBearerToken = $merchantToken;
+            $this->bearerToken = $merchantToken;
         }
 
-        $this->connection->setHeader('Authorization', sprintf('Bearer %s', $useBearerToken));
+        $this->getConnection()->setHeader('Authorization', sprintf('Bearer %s', $this->bearerToken));
 
         return $this;
     }
 
     /**
      * @param $resource
+     *
      * @return string
      */
-    private function getRequestUrl($resource)
+    private function getRequestUrl($resource): string
     {
         return sprintf(
             '%s%s/%s',
@@ -105,21 +122,51 @@ class MerchantApiConnector
     }
 
     /**
+     * Checks whether the Resurs Token is still valid or expired.
+     *
+     * @return bool
+     */
+    public function hasExpiredToken(): bool
+    {
+        $return = true;
+
+        if (!empty($this->token) &&
+            time() < $this->token->getValidEndTime()
+        ) {
+            $return = false;
+        }
+
+        return $return;
+    }
+
+    /**
      * Compile a request to the API, so all requests look the same.
      *
      * @param $resource
      * @param $data
      * @param int $requestMethod
+     *
      * @return mixed
      * @throws ExceptionHandler
+     * @throws Exception
      */
-    public function getMerchantRequest($resource, $data = null, $requestMethod = RequestMethod::GET)
+    public function getMerchantRequest($resource, $data = null, int $requestMethod = RequestMethod::GET)
     {
         // Parsed responses may contain:
         // content->[],
-        // page->number, size, totaltElements, totalPages
+        // page->number, size, totalElements, totalPages
         // Note: This may be necessary when looking for content with large sized arrays.
 
+        if ($this->hasExpiredToken() && $this->isJwtReady() && !$this->isRenewedToken) {
+            $this->getRenewedToken();
+        }
+
+        /*
+         * Exceptions that occurs at this point should very much be handled by merchants (at least for now).
+         * We've removed an automation that was placed within a try-catch block here before that was checking
+         * for 401-auth errors and, when necessary automatically renewed the token. A helper like this may
+         * likely be a security issue and should be handled by the remote, instead of this module.
+         */
         return $this->getMerchantConnection()->request(
             $this->getRequestUrl($resource),
             (array)$data,
@@ -128,11 +175,23 @@ class MerchantApiConnector
     }
 
     /**
+     * @return ResursToken
+     * @throws Exception
+     */
+    private function getRenewedToken()
+    {
+        $this->isRenewedToken = true;
+
+        return $this->getToken(true);
+    }
+
+    /**
      * Make sure the Jwt request for tokens are properly set up before allowing usage.
      *
      * @return bool
+     * @noinspection PhpUnused
      */
-    public function isJwtReady()
+    public function isJwtReady(): bool
     {
         return $this->jwtReady;
     }
@@ -141,9 +200,10 @@ class MerchantApiConnector
      * Set the client id for the merchant requests.
      *
      * @param $clientId
+     *
      * @return $this
      */
-    public function setClientId($clientId)
+    public function setClientId($clientId): MerchantApiConnector
     {
         $this->clientId = $clientId;
 
@@ -155,7 +215,7 @@ class MerchantApiConnector
      *
      * @return $this
      */
-    private function setPreparedJwtInit()
+    private function setPreparedJwtInit(): MerchantApiConnector
     {
         if (!empty($this->clientId) &&
             !empty($this->clientSecret) &&
@@ -172,9 +232,10 @@ class MerchantApiConnector
      * Set a secret for the API.
      *
      * @param $clientSecret
+     *
      * @return $this
      */
-    public function setClientSecret($clientSecret)
+    public function setClientSecret($clientSecret): MerchantApiConnector
     {
         $this->clientSecret = $clientSecret;
 
@@ -185,9 +246,10 @@ class MerchantApiConnector
      * Set the request scope for the API.
      *
      * @param $clientScope
+     *
      * @return $this
      */
-    public function setScope($clientScope)
+    public function setScope($clientScope): MerchantApiConnector
     {
         $this->clientScope = $clientScope;
 
@@ -198,9 +260,10 @@ class MerchantApiConnector
      * Set the grant type for the API.
      *
      * @param $grantType
+     *
      * @return $this
      */
-    public function setGrantType($grantType)
+    public function setGrantType($grantType): MerchantApiConnector
     {
         $this->grantType = $grantType;
 
@@ -216,9 +279,14 @@ class MerchantApiConnector
      * @return NetWrapper
      * @throws Exception
      */
-    public function getMerchantConnection()
+    public function getMerchantConnection(): NetWrapper
     {
-        if (!empty($this->token->getAccessToken()) && !$this->hasConnectionBearer()) {
+        if (!empty($this->token) && !empty($this->token->getAccessToken()) && !$this->hasConnectionBearer()) {
+            $this->getConnection()->setHeader(
+                'Authorization',
+                sprintf('Bearer %s', $this->getToken()->getAccessToken())
+            );
+        } elseif ($this->isRenewedToken) {
             $this->getConnection()->setHeader(
                 'Authorization',
                 sprintf('Bearer %s', $this->getToken()->getAccessToken())
@@ -233,9 +301,10 @@ class MerchantApiConnector
      *
      * @return bool
      */
-    private function hasConnectionBearer()
+    private function hasConnectionBearer(): bool
     {
-        $storedHeader = $this->connection->getConfig()->getHeader();
+        $storedHeader = $this->getConnection()->getConfig()->getHeader();
+
         return isset($storedHeader['Authorization']);
     }
 
@@ -244,7 +313,7 @@ class MerchantApiConnector
      *
      * @return NetWrapper
      */
-    public function getConnection()
+    public function getConnection(): NetWrapper
     {
         if (empty($this->connection)) {
             $this->connection = new NetWrapper();
@@ -258,10 +327,31 @@ class MerchantApiConnector
      * from another service.
      *
      * @param $connection
+     * @return MerchantApiConnector
      */
-    public function setConnection($connection)
+    public function setConnection($connection): MerchantApiConnector
     {
         $this->connection = $connection;
+
+        return $this;
+    }
+
+    /**
+     * @param $accessToken
+     * @param $tokenType
+     * @param $tokenExpire
+     * @param $tokenRegisterTime
+     *
+     * @return $this
+     */
+    public function setStoredToken($accessToken, $tokenType, $tokenExpire, $tokenRegisterTime): MerchantApiConnector
+    {
+        $this->token = new ResursToken(
+            $accessToken,
+            $tokenType,
+            $tokenExpire,
+            $tokenRegisterTime
+        );
 
         return $this;
     }
@@ -271,9 +361,9 @@ class MerchantApiConnector
      *
      * @throws Exception
      */
-    public function getToken()
+    public function getToken($renew = false): ResursToken
     {
-        if (empty($this->token)) {
+        if (empty($this->token) || $renew) {
             $tokenParsedResponse = $this->getConnection()->request(
                 sprintf('%s%s', $this->getApiUrl(), $this->getTokenRequestUrl()),
                 $this->getJwtData(),
@@ -283,20 +373,17 @@ class MerchantApiConnector
             $this->token = new ResursToken(
                 $tokenParsedResponse->access_token,
                 $tokenParsedResponse->token_type,
-                $tokenParsedResponse->expires_in
+                $tokenParsedResponse->expires_in,
+                time()
             );
-            $return = $this->token;
-        } else {
-            $return = $this->token;
         }
-
-        return $return;
+        return $this->token;
     }
 
     /***
      * @return string
      */
-    protected function getApiUrl()
+    protected function getApiUrl(): string
     {
         return (string)($this->isTest() ? $this->urls['mock'] : $this->urls['prod']);
     }
@@ -304,7 +391,7 @@ class MerchantApiConnector
     /**
      * @return bool
      */
-    public function isTest()
+    public function isTest(): bool
     {
         return $this->environmentIsTest;
     }
@@ -312,7 +399,7 @@ class MerchantApiConnector
     /**
      * @return string
      */
-    private function getTokenRequestUrl()
+    private function getTokenRequestUrl(): string
     {
         return $this->isTest() ? $this->tokenRequest['mock'] : $this->tokenRequest['prod'];
     }
@@ -321,7 +408,7 @@ class MerchantApiConnector
      * @return array
      * @throws Exception
      */
-    private function getJwtData()
+    private function getJwtData(): array
     {
         if (!$this->jwtReady) {
             throw new Exception('JWT credentials not ready.', 500);
@@ -338,7 +425,7 @@ class MerchantApiConnector
     /**
      * @return string
      */
-    protected function getMerchantApiUrlService()
+    protected function getMerchantApiUrlService(): string
     {
         return $this->isTest() ? $this->merchantApiServiceUrls['mock'] : $this->merchantApiServiceUrls['prod'];
     }

@@ -2,6 +2,7 @@
 
 namespace Resursbank\Ecommerce\Service\Merchant\Model;
 
+use stdClass;
 use function is_array;
 
 class PaymentMethods
@@ -10,7 +11,9 @@ class PaymentMethods
     private $paymentMethodList;
 
     /**
-     * @param $apiResponse
+     * This constructor needs to have the original stdClass included, as returned from the API.
+     *
+     * @param stdClass $apiResponse
      */
     public function __construct($apiResponse)
     {

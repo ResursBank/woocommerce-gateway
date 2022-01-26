@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Copyright © Resurs Bank AB. All rights reserved.
+ * See LICENSE for license details.
+ */
 namespace Resursbank\Ecommerce\Service;
 
 use Exception;
