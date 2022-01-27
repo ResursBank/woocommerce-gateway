@@ -12,8 +12,16 @@ use TorneLIB\Exception\ExceptionHandler;
  */
 class WordPress
 {
+    /**
+     * @var string
+     * @since 6.1.11
+     */
     private $wpPrefix;
 
+    /**
+     * @throws ExceptionHandler
+     * @since 6.1.11
+     */
     public function __construct()
     {
         $this->validate();
@@ -21,6 +29,7 @@ class WordPress
 
     /**
      * @throws ExceptionHandler
+     * @since 6.1.11
      */
     public function validateAbsPath()
     {
@@ -31,6 +40,7 @@ class WordPress
 
     /**
      * @throws ExceptionHandler
+     * @since 6.1.11
      */
     public function validate()
     {
@@ -39,6 +49,8 @@ class WordPress
             'add_action',
             'add_filter',
             'apply_filters',
+            'get_current_user_id',
+            'get_user_meta',
         ];
         foreach ($functionCheck as $functionName) {
             if (!function_exists($functionName)) {
@@ -54,6 +66,7 @@ class WordPress
      *
      * @param null $extra
      * @return string
+     * @since 6.1.11
      */
     public function getPrefix($extra = null)
     {
@@ -74,6 +87,7 @@ class WordPress
     /**
      * @param $prefix
      * @return $this
+     * @since 6.1.11
      */
     public function setPrefix($prefix)
     {
@@ -84,7 +98,7 @@ class WordPress
     /**
      * @param string $key
      * @return bool|string
-     * @since 0.0.1.0
+     * @since 6.1.11
      */
     public function getOption($key)
     {
@@ -108,7 +122,7 @@ class WordPress
     /**
      * @param $value
      * @return bool|null If value returned is null, then this is a signal to the receiving part that it is not a bool.
-     * @since 0.0.1.0
+     * @since 6.1.11
      */
     private function getTruth(
         $value
@@ -119,6 +133,35 @@ class WordPress
             $return = false;
         } else {
             $return = null;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $key
+     * @return int|mixed|null
+     * @since 6.1.16
+     */
+    public function getUserInfo($key)
+    {
+        $return = null;
+
+        if (function_exists('get_current_user_id') && function_exists('get_user_meta')) {
+            $currentUserId = get_current_user_id();
+            if ($key === 'userid' || empty($key)) {
+                $return = $currentUserId;
+            } else {
+                $metaData = empty($key) ? get_user_meta($currentUserId) : get_user_meta($currentUserId, $key);
+                if ($currentUserId && is_array($metaData) && !count($metaData)) {
+                    $return = get_userdata($currentUserId)->get($key);
+                } else {
+                    $return = isset($metaData[$key]) ? $metaData[$key] : $metaData;
+                    if (is_array($return) && count($return) === 1) {
+                        $return = array_pop($return);
+                    }
+                }
+            }
         }
 
         return $return;
