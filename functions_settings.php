@@ -375,14 +375,15 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'forceGovIdField' => [
                     'title' => __(
-                        'Always show govId in simplified flow',
+                        'Always show govId in the last checkout form in checkout (simplified only)',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'label' => __('Enabled', 'woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Always show government id field in simplified flow, regardless of getAddress settings.',
+                        'Always show government id field in the checkout forms at payment methods level, regardless ' .
+                        'of the getAddress settings.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
@@ -475,7 +476,11 @@ if (!function_exists('getResursWooFormFields')) {
                 'getAddress' => [
                     'title' => __('getAddressBox Enabled', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __(
-                        'If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active.',
+                        'If enabled, a box for social security numbers will be shown on the checkout. For Sweden, ' .
+                        'there will also be a capability to retrieve the customer home address, while active. ' .
+                        'Please take note on, that you cannot disable those fields entirely if you have both ' .
+                        'private person- and company based payment methods active since parts of this form makes ' .
+                        'it possible to switch between the two types.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',
