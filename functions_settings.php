@@ -475,7 +475,11 @@ if (!function_exists('getResursWooFormFields')) {
                 'getAddress' => [
                     'title' => __('getAddressBox Enabled', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __(
-                        'If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active.',
+                        'If enabled, a box for social security numbers will be shown on the checkout. For Sweden, ' .
+                        'there will also be a capability to retrieve the customer home address, while active. ' .
+                        'Please take note on, that you cannot disable those fields entirely if you have both ' .
+                        'private person- and company based payment methods active since parts of this form makes ' .
+                        'it possible to switch between the two types.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',
