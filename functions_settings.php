@@ -375,14 +375,15 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'forceGovIdField' => [
                     'title' => __(
-                        'Always show govId in simplified flow',
+                        'Always show govId in the last checkout form in checkout (simplified only)',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'label' => __('Enabled', 'woocommerce'),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Always show government id field in simplified flow, regardless of getAddress settings.',
+                        'Always show government id field in the checkout forms at payment methods level, regardless ' .
+                        'of the getAddress settings.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
