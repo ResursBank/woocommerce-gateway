@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Project-Id-Version: resursbankwoocommerce\n"
-"POT-Creation-Date: 2022-02-03 11:54+0100\n"
-"PO-Revision-Date: 2022-02-03 12:01+0100\n"
+"POT-Creation-Date: 2022-02-03 15:20+0100\n"
+"PO-Revision-Date: 2022-02-03 15:22+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Norwegian Bokmal\n"
 "MIME-Version: 1.0\n"
@@ -47,10 +47,10 @@ msgstr ""
 #: functions_settings.php:158 functions_settings.php:168
 #: functions_settings.php:381 functions_settings.php:394
 #: functions_settings.php:405 functions_settings.php:420
-#: functions_settings.php:491 functions_settings.php:508
-#: functions_settings.php:525 functions_settings.php:542
-#: functions_settings.php:559 functions_settings.php:605
-#: functions_settings.php:925 functions_settings.php:1639
+#: functions_settings.php:487 functions_settings.php:504
+#: functions_settings.php:521 functions_settings.php:538
+#: functions_settings.php:555 functions_settings.php:601
+#: functions_settings.php:921 functions_settings.php:1635
 #: resursbank_settings.php:1241 resursbank_settings.php:1323
 #: resursbankmain.php:532 resursbankmain.php:554 staticflows/flow_omni.php:711
 msgid "Enabled"
@@ -152,8 +152,8 @@ msgstr ""
 msgid "What kind of shop flow you want to use.<br><b>Caution: If you change and save this data, all ongoing customer sessions in the checkout will be cleaned up, to prevent broken orders due to the switchover.</b>"
 msgstr ""
 
-#: functions_settings.php:221 functions_settings.php:811
-#: functions_settings.php:877 functions_settings.php:1583
+#: functions_settings.php:221 functions_settings.php:807
+#: functions_settings.php:873 functions_settings.php:1579
 msgid "Title"
 msgstr "Tittel"
 
@@ -161,13 +161,13 @@ msgstr "Tittel"
 msgid "This controls the payment method title, which the user sees during checkout."
 msgstr "Dette kontrollerer betalingsmetodenes tittel som kunder ser under checkout."
 
-#: functions_settings.php:231 functions_settings.php:841
-#: functions_settings.php:887
+#: functions_settings.php:231 functions_settings.php:837
+#: functions_settings.php:883
 msgid "Description"
 msgstr "Beskrivelse"
 
-#: functions_settings.php:235 functions_settings.php:845
-#: functions_settings.php:891
+#: functions_settings.php:235 functions_settings.php:841
+#: functions_settings.php:887
 msgid "This controls the payment method description which the user sees during checkout."
 msgstr "Dette kontrollerer betalingsmetodenes beskrivelse som kunder ser under checkout."
 
@@ -337,356 +337,356 @@ msgid "Make orders editable even if they are set to in progress. Note: This sett
 msgstr ""
 
 #: functions_settings.php:477
-msgid "getAddressBox Enabled"
-msgstr "getAddressBox aktivert"
-
-#: functions_settings.php:479
-msgid "If enabled, a box for social security numbers will be shown on the checkout. For Sweden, there will also be a capability to retrieve the customer home address, while active. Please take note on, that you cannot disable those fields entirely if you have both private person- and company based payment methods active since parts of this form makes it possible to switch between the two types."
+msgid "Address retrieval at checkout"
 msgstr ""
 
-#: functions_settings.php:496
+#: functions_settings.php:479
+msgid "This function is available in Sweden only."
+msgstr ""
+
+#: functions_settings.php:492
 msgid "Let Resurs validate customer data fields"
 msgstr ""
 
-#: functions_settings.php:500
+#: functions_settings.php:496
 msgid "If enabled, customer forms fields required by Resurs Bank will be validated by Resurs Bank instead of the plugin."
 msgstr ""
 
-#: functions_settings.php:513
+#: functions_settings.php:509
 msgid "Streamlined customer field behaviour"
 msgstr "Strømlinjeformet kundefeltadferd"
 
-#: functions_settings.php:517
+#: functions_settings.php:513
 msgid "Fields that are required to complete an order from Resurs Bank, are hidden when active, since the fields required for Resurs Bank are inherited from WooCommerce fields by default."
 msgstr "Felt som kreves for å fullføre en bestilling fra Resurs Bank er skjult når de er aktive, siden feltene som kreves for Resurs Bank er overført fra WooCommerce-feltene som default."
 
-#: functions_settings.php:530
+#: functions_settings.php:526
 msgid "Show Resurs Bank payment ids in order view"
 msgstr "Vis Resurs Bank betaling-ids i ordre visning"
 
-#: functions_settings.php:534
+#: functions_settings.php:530
 msgid "Do you need to show order references in the order list view? This makes it happen!"
 msgstr "Trenger du å vise referanser i listevisningen? Dette gjør det skje!"
 
-#: functions_settings.php:547
+#: functions_settings.php:543
 msgid "Make getAddress fetch live data while in test mode"
 msgstr "Få getAddress til å hente live data mens du er i testmodus"
 
-#: functions_settings.php:551
+#: functions_settings.php:547
 msgid "If enabled, live data will be available on getAddress-requests while in demo shop. Credentials for production - and enabling of demoshop mode - are required! Feature does not work for Omni Checkout."
 msgstr "Hvis aktivert vil live data være tilgjengelig på getAddress-forespørsler mens du er i demo-butikk. Credentials for produksjon er påkrevd. Funksjonen virker ikke for Resurs Checkout."
 
-#: functions_settings.php:564
+#: functions_settings.php:560
 msgid "Web services username (getAddress/Production)"
 msgstr "Web service brukernavn (getAddress/Produksjon)"
 
-#: functions_settings.php:569
+#: functions_settings.php:565
 msgid "Resurs Bank web services username (getaddress/Production)"
 msgstr "Resurs Bank web services brukernavn (getAddress/Produksjon)"
 
-#: functions_settings.php:577
+#: functions_settings.php:573
 msgid "Web services password (getAddress/Production)"
 msgstr "Web service passord (getAdress/produksjon)"
 
-#: functions_settings.php:583
+#: functions_settings.php:579
 msgid "Resurs Bank web services password (getAddress/Production)"
 msgstr "Resurs Bank web service passord (getAdress/produksjon)"
 
-#: functions_settings.php:590
+#: functions_settings.php:586
 msgid "Prevent caching of included javascripts"
 msgstr "Forhindre caching av inkluderte javascripts"
 
-#: functions_settings.php:594
+#: functions_settings.php:590
 msgid "Enable this feature, if resursbank.js tend to cache older versions even after the codebase are updated"
 msgstr "Aktiver denne løsningen om resursbank.js forsøker cache eldre versjoner selv etter kodebasen er oppdatert"
 
-#: functions_settings.php:602
+#: functions_settings.php:598
 msgid "Include empty tax classes in admin config"
 msgstr "Inkluder tom skatt klasser i administrasjonskonfigurasjon"
 
-#: functions_settings.php:607
+#: functions_settings.php:603
 msgid "If your needs requires all tax classes selectable in this administration panel, enable this option to reach them"
 msgstr "Hvis behovene krever alle skatt klasser kan velges i denne administrasjonspanel, Aktiver dette alternativet for å nå dem"
 
-#: functions_settings.php:615
+#: functions_settings.php:611
 msgid "Special flags"
 msgstr "Spesielle flagg"
 
-#: functions_settings.php:619
+#: functions_settings.php:615
 msgid "Set up flags here (comma separated) to test, reveal or activate parts of the plugin that is normally not available. To set up variables with comma separated content, try use | or another characters instead."
 msgstr ""
 
-#: functions_settings.php:626
+#: functions_settings.php:622
 msgid "Callback update interval"
 msgstr "Callbacks oppdateringsintervall"
 
-#: functions_settings.php:628
+#: functions_settings.php:624
 msgid "Sets an interval for which the callback urls and salt key will update against Resurs Bank next time entering the administration control panel. This function has to be enabled above, to have any effect. Interval is set in days."
 msgstr "Angir et intervall som tilbakeringing nettadresser og salt nøkkel vil oppdatere mot Resurs Bank neste gang inn til administrasjons kontrollpanelet. Denne funksjonen aktiveres ovenfor. Intervallet angis i dager."
 
-#: functions_settings.php:636
+#: functions_settings.php:632
 msgid "Maintenance timeout for hard changes"
 msgstr ""
 
-#: functions_settings.php:640
+#: functions_settings.php:636
 msgid "When switching payment flow or webservice credentials, we normally want to be sure that we do not break anything for checkout customers. This sets a grace period of how long the site will be unavailable due to local maintenance. Default is 20 seconds and occurs when data referring to credentials are changed. This is a transient setting so basically, wordpress will handle the grace period. Set 0 to disable this feature."
 msgstr ""
 
-#: functions_settings.php:652
+#: functions_settings.php:648
 msgid "Enable automatic callback updates"
 msgstr "Aktiver automatiske callback-oppdateringer"
 
-#: functions_settings.php:656
+#: functions_settings.php:652
 msgid "Enabling this, the plugin will update callback urls and salt key, each time entering the administration control panel after a specific time"
 msgstr "Aktivere dette vil plugin oppdatere callback URLen og salt-koden hver gang inn til administrasjons kontrollpanelet etter en bestemt tid"
 
-#: functions_settings.php:660
+#: functions_settings.php:656
 msgid "(It is no longer recommended to actively use this setting)"
 msgstr ""
 
-#: functions_settings.php:664 functions_settings.php:674
-#: functions_settings.php:806 functions_settings.php:808
-#: functions_settings.php:872 resursbank_settings.php:1135
+#: functions_settings.php:660 functions_settings.php:670
+#: functions_settings.php:802 functions_settings.php:804
+#: functions_settings.php:868 resursbank_settings.php:1135
 msgid "Enable/Disable"
 msgstr "Aktiver/Deaktiver"
 
-#: functions_settings.php:668
+#: functions_settings.php:664
 msgid "Log Resurs Bank events"
 msgstr "Log Resurs Bank-hendelser"
 
-#: functions_settings.php:670
+#: functions_settings.php:666
 msgid "Log events like callbacks, status updates on received callbacks, etc"
 msgstr ""
 
-#: functions_settings.php:679 functions_settings.php:1018
+#: functions_settings.php:675 functions_settings.php:1014
 msgid "Keep standard customer fields open for Resurs Checkout in test"
 msgstr "Holde vanlige felt åpne for Resurs Checkout i test"
 
-#: functions_settings.php:685
+#: functions_settings.php:681
 msgid "Resurs Checkout Feature: If your plugin is running in test mode, you might want to study the behaviour of the standard customer form fields when communicating with the iframe."
 msgstr ""
 
-#: functions_settings.php:693
+#: functions_settings.php:689
 msgid "Show checkout overlay on purchase"
 msgstr ""
 
-#: functions_settings.php:699
+#: functions_settings.php:695
 msgid "When clicking on the purchase button and being redirected to success or signing page, this feature adds an extra overlay in the checkout telling the customer that payment is in progress."
 msgstr ""
 
-#: functions_settings.php:708
+#: functions_settings.php:704
 msgid "Custom checkout overlay message"
 msgstr ""
 
-#: functions_settings.php:712
+#: functions_settings.php:708
 msgid "If this value is empty, we will use the default notification text in the checkout overlay. If not, we will use your customization."
 msgstr ""
 
-#: functions_settings.php:720 functions_settings.php:721
+#: functions_settings.php:716 functions_settings.php:717
 msgid "Annuity factor config"
 msgstr "Annuitetens faktor"
 
-#: functions_settings.php:726 functions_settings.php:727
+#: functions_settings.php:722 functions_settings.php:723
 msgid "Annuity factor duration"
 msgstr "Annuitetens faktor - varighet"
 
-#: functions_settings.php:733 functions_settings.php:737
+#: functions_settings.php:729 functions_settings.php:733
 msgid "Current chosen payment method for annuity factors"
 msgstr "Gjeldende valgte betalingsmåten for annuiteten faktorer"
 
-#: functions_settings.php:745
+#: functions_settings.php:741
 msgid "Order status on instant finalizations"
 msgstr "Statusen på instant finalizations"
 
-#: functions_settings.php:749
+#: functions_settings.php:745
 msgid "Payment methods like SWISH, Vips, direct bank transfers, and so on tend to be followed by direct debiting which finalizes orders before they are shipped. To prevent this, you can set up a specific status for such payment methods when Resurs callback event FINALIZATION occurs. Default status is \"completed\"."
 msgstr ""
 
-#: functions_settings.php:757
+#: functions_settings.php:753
 msgid "Use default (Completed)"
 msgstr "Bruk forvald (Completed)"
 
-#: functions_settings.php:758
+#: functions_settings.php:754
 msgid "Processing"
 msgstr "Behandler"
 
-#: functions_settings.php:759
+#: functions_settings.php:755
 msgid "Credited (refunded)"
 msgstr "Kreditert (refunded)"
 
-#: functions_settings.php:760
+#: functions_settings.php:756
 msgid "Completed"
 msgstr "Fullført"
 
-#: functions_settings.php:761
+#: functions_settings.php:757
 msgid "Pending (on-hold)"
 msgstr "På vent (on-hold)"
 
-#: functions_settings.php:762
+#: functions_settings.php:758
 msgid "Annulled (cancelled)"
 msgstr "Annullert (cancelled)"
 
-#: functions_settings.php:769
+#: functions_settings.php:765
 msgid "Instant debitable payment methods"
 msgstr "Øyeblikkelig debitable betalingsmetoder"
 
-#: functions_settings.php:773
+#: functions_settings.php:769
 msgid "Payment methods that are considered instantly debitable during a payment process. If you choose the top alternative the plugin will choose for you if the correct default method (swish) are available."
 msgstr ""
 
-#: functions_settings.php:779 resursbank_settings.php:877
+#: functions_settings.php:775 resursbank_settings.php:877
 msgid "Chosen by plugin"
 msgstr ""
 
-#: functions_settings.php:788
+#: functions_settings.php:784
 msgid "Widget for custom part pay views"
 msgstr ""
 
-#: functions_settings.php:792
+#: functions_settings.php:788
 msgid "If you choose a page here, this page will be primary set for a customized part payment widget."
 msgstr ""
 
-#: functions_settings.php:815
+#: functions_settings.php:811
 msgid "If you are leaving this field empty, the default title will be used in the checkout"
 msgstr "Hvis du lar dette feltet stå tomt brukes standard"
 
-#: functions_settings.php:822
+#: functions_settings.php:818
 msgid "Custom payment method icon"
 msgstr "Tilpasset betalingsmetode-ikon"
 
-#: functions_settings.php:828
+#: functions_settings.php:824
 msgid "Used for branded logotypes as icons for the specific payment method. The image type must be a http/https-link. Suggested link is local, uploaded to WordPress own media storage."
 msgstr "Brukes for merkede logoer som ikoner for den spesifikke betalingsmetoden. Bildetypen må være en http/https-link. Foreslått lenke er lokal, opplastet til WordPress egen media lagring."
 
-#: functions_settings.php:834
+#: functions_settings.php:830
 msgid "Enable/Disable payment method icon"
 msgstr "Aktiver/Deaktiver betalingsmetode-ikon"
 
-#: functions_settings.php:855
+#: functions_settings.php:851
 msgid "Payment fee for this payment method"
 msgstr "Gebyr for denne betalingsmetode"
 
-#: functions_settings.php:862
+#: functions_settings.php:858
 msgid "Description of this payment method fee"
 msgstr "Beskrivelse av betalingsmetodens gebyr"
 
-#: functions_settings.php:881
+#: functions_settings.php:877
 msgid "This controls the title of Resurs Checkout as a payment method in the checkout"
 msgstr "Bestemmer tittelen Resurs sjekk som betalingsmetode i kassa"
 
-#: functions_settings.php:898
+#: functions_settings.php:894
 msgid "Change the (CSS)-shape of the iframe"
 msgstr "Endre (CSS) -formen til iframe"
 
-#: functions_settings.php:904
+#: functions_settings.php:900
 msgid "This controls the shape of the iframe CSS (meaning you may use CSS code here to change the background and shape of the iframe)"
 msgstr "Dette styrer formen på iframe CSS (som betyr at du kan bruke CSS-kode her for å endre bakgrunnen og formen på iframe)"
 
-#: functions_settings.php:911
+#: functions_settings.php:907
 msgid "Internal Test URL for special accounts"
 msgstr ""
 
-#: functions_settings.php:917
+#: functions_settings.php:913
 msgid "If there is an URL here, it will be enforced when special accounts are used. The URL should point at the service where you send all your inital POST-data"
 msgstr ""
 
-#: functions_settings.php:923
+#: functions_settings.php:919
 msgid "Permanent PTE"
 msgstr ""
 
-#: functions_settings.php:927
+#: functions_settings.php:923
 msgid "Special feature. Only visible when in correct domain."
 msgstr ""
 
-#: functions_settings.php:932
+#: functions_settings.php:928
 msgid "iFrame location"
 msgstr "iFrame-plassering"
 
-#: functions_settings.php:936
+#: functions_settings.php:932
 msgid "After checkout form (Default)"
 msgstr "Etter kassen-skjema (Standard)"
 
-#: functions_settings.php:940
+#: functions_settings.php:936
 msgid "Before order review"
 msgstr "Ordreoversikt"
 
-#: functions_settings.php:946
+#: functions_settings.php:942
 msgid "Sets up where the iframe for Resurs Checkout should appear. The first versions of this plugin automatically rendered the checkout in the payment method list. Do not do this as things might break."
 msgstr ""
 
-#: functions_settings.php:953
+#: functions_settings.php:949
 msgid "No methods on Checkout (Experimental)"
 msgstr "Ingen metoder på kassa (Experimental)"
 
-#: functions_settings.php:959
+#: functions_settings.php:955
 msgid "Remove payment methods list if Resurs Checkout is the only gateway"
 msgstr "Fjerne betaling metoder liste hvis Resurs Checkout er den eneste gatewayen"
 
-#: functions_settings.php:966
+#: functions_settings.php:962
 msgid "Reload checkout on cart changes"
 msgstr "Oppdater checkout ved endringer i handlevogn"
 
-#: functions_settings.php:972
+#: functions_settings.php:968
 msgid "If you experience problems during the checkout (the iframe does not reload properly when the cart is updated), activating will reload the checkout page completely instead of just the iframe"
 msgstr "Hvis du opplever problemer rundt checkout (hvis iFramen ikke oppdateres på nytt når vognen er oppdatert), vil aktivering laste opp checkout-siden på nytt, isteden for bare iFramen"
 
-#: functions_settings.php:979
+#: functions_settings.php:975
 msgid "Remove all default customer fields when loading Omni Checkout iframe"
 msgstr "Fjern alle standard kundefelt når du laster inn Resurs Checkout iFrame"
 
-#: functions_settings.php:985
+#: functions_settings.php:981
 msgid "Normally, OmniCheckout has all necessary customer fields located in the iFrame. The plugin removes those fields automatically from the checkout. However, templates may not always clean up the fields properly. This option fixes this, but may affect the checkout in other ways than expected."
 msgstr "Normalt har Resurs Checkout alle nødvendige kundefelt i iFramen. Pluginet fjerner disse feltene automatisk fra kassen. Maler kan imidlertid ikke alltid rydde opp feltene riktig. Dette alternativet løser dette, men kan påvirke kassen på andre måter enn forventet."
 
-#: functions_settings.php:992
+#: functions_settings.php:988
 msgid "Use standard customer fields to update shipping methods when postal code changes (Experimental)"
 msgstr "Bruke vanlige felt til å oppdatere leveringsmetoder når postnummer endres (Experimental)"
 
-#: functions_settings.php:998
+#: functions_settings.php:994
 msgid "Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function."
 msgstr ""
 
-#: functions_settings.php:1005
+#: functions_settings.php:1001
 msgid "Checkout form fields must not be empty"
 msgstr "Obligatoriske felt må ikke stå tomme"
 
-#: functions_settings.php:1011
+#: functions_settings.php:1007
 msgid "This setting secures that this plugin is returning an array, if WooCommerce for some passes over completely empty data (null) during the checkout process"
 msgstr "Denne innstillingen sikrer at denne plugin returnerer en matrise, hvis WooCommerce for noen går over helt tom data (null) under betalingsprosessen"
 
-#: functions_settings.php:1024
+#: functions_settings.php:1020
 msgid "If your plugin is running in test, enable this settings, to not hide the standard form fields"
 msgstr ""
 
-#: functions_settings.php:1031
+#: functions_settings.php:1027
 msgid "Bypass problems with multiple payment methods (experimental)"
 msgstr ""
 
-#: functions_settings.php:1037
+#: functions_settings.php:1033
 msgid "Resurs Checkout is normally not compatible with other payments as the checkout fields are handled differently when an iframe is active. This setting enables an experimental way to bypass such problems by make a reload each time a switch to or from the Resurs Checkout is being made."
 msgstr ""
 
-#: functions_settings.php:1048
+#: functions_settings.php:1044
 msgid "In payment method list (Deprecated, not recommended to use)"
 msgstr ""
 
-#: functions_settings.php:1582
+#: functions_settings.php:1578
 msgid "Method"
 msgstr "Metode"
 
-#: functions_settings.php:1584 resursbank_settings.php:1091
+#: functions_settings.php:1580 resursbank_settings.php:1091
 msgid "ID"
 msgstr ""
 
-#: functions_settings.php:1585
+#: functions_settings.php:1581
 msgid "Status"
 msgstr ""
 
-#: functions_settings.php:1586
+#: functions_settings.php:1582
 msgid "Process"
 msgstr "Prosess"
 
-#: functions_settings.php:1631 resursbank_settings.php:1270
+#: functions_settings.php:1627 resursbank_settings.php:1270
 #: resursbank_settings.php:1315 resursbankmain.php:511 resursbankmain.php:548
 #: staticflows/flow_omni.php:711
 msgid "Disabled"
