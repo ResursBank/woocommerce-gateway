@@ -4410,7 +4410,7 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             /**
-             * Test existing shipping lines in a dry run test. Orderrows should only
+             * Test existing shipping lines in a dry run test. Order rows should only
              * be added into the order if the discount is missing and the process is not a full
              * cancellation of the order as shipping might troll orders.
              */
@@ -4830,7 +4830,7 @@ function woocommerce_gateway_resurs_bank_init()
         $optionGetAddress = getResursOption('getAddress');
         $private = __('Private', 'resurs-bank-payment-gateway-for-woocommerce');
         $company = __('Company', 'resurs-bank-payment-gateway-for-woocommerce');
-        if ($optionGetAddress && !isResursOmni()) {
+        if (!isResursOmni()) {
             // Here we use the translated or not translated values for Private and Company radiobuttons
             $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
             $timeDiff = apply_filters('resurs_methodlist_timediff', time() - $resursTemporaryPaymentMethodsTime);
@@ -4904,42 +4904,48 @@ function woocommerce_gateway_resurs_bank_init()
                 );
             }
 
-            if ($naturalCount) {
-                // [DOM] Found 2 elements with non-unique id #ssnCustomerType
-                // onchange="$RB('body').trigger('update_checkout')"
-                echo '<span id="ssnCustomerRadioNATURAL" style="' . $viewNatural . '"><input type="radio" id="ssnCustomerTypeNATURAL" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . $private . '</span> ';
-            }
-            if ($legalCount) {
-                echo '<span id="ssnCustomerRadioLEGAL" style="' . $viewLegal . '"><input type="radio" id="ssnCustomerTypeLEGAL" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . $company . '</span>';
-            }
-            echo '<input type="hidden" id="resursSelectedCountry" value="' . $selectedCountry . '">';
-            $placeHolderField = __(
-                'Enter your government id (social security number)',
-                'resurs-bank-payment-gateway-for-woocommerce'
-            );
-            $govIdLabel = __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce');
-            if (!$naturalCount) {
+            // On both company+natural methods, enforce displaying of fields.
+            if ($optionGetAddress || ($naturalCount > 0 && $legalCount > 0)) {
+                if ($naturalCount) {
+                    // [DOM] Found 2 elements with non-unique id #ssnCustomerType
+                    // onchange="$RB('body').trigger('update_checkout')"
+                    echo '<span id="ssnCustomerRadioNATURAL" style="' . $viewNatural . '"><input type="radio" id="ssnCustomerTypeNATURAL" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . $private . '</span> ';
+                }
+                if ($legalCount) {
+                    echo '<span id="ssnCustomerRadioLEGAL" style="' . $viewLegal . '"><input type="radio" id="ssnCustomerTypeLEGAL" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . $company . '</span>';
+                }
+                echo '<input type="hidden" id="resursSelectedCountry" value="' . $selectedCountry . '">';
                 $placeHolderField = __(
-                    'Enter your company government ID',
+                    'Enter your government id (social security number)',
                     'resurs-bank-payment-gateway-for-woocommerce'
                 );
-                $govIdLabel = __('Company government id', 'resurs-bank-payment-gateway-for-woocommerce');
-            }
-            woocommerce_form_field('ssn_field', [
-                'type' => 'text',
-                'class' => ['ssn form-row-wide resurs_ssn_field'],
-                'label' => $govIdLabel,
-                'placeholder' => $placeHolderField,
-            ], $checkout->get_value('ssn_field'));
-            if ('SE' === $selectedCountry) {
-                $translation = [];
+                $govIdLabel = __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce');
+                if (!$naturalCount) {
+                    $placeHolderField = __(
+                        'Enter your company government ID',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    );
+                    $govIdLabel = __('Company government id', 'resurs-bank-payment-gateway-for-woocommerce');
+                }
+                // Only show govid-fields if enabled.
+                if ($optionGetAddress) {
+                    woocommerce_form_field('ssn_field', [
+                        'type' => 'text',
+                        'class' => ['ssn form-row-wide resurs_ssn_field'],
+                        'label' => $govIdLabel,
+                        'placeholder' => $placeHolderField,
+                    ], $checkout->get_value('ssn_field'));
+                    if ('SE' === $selectedCountry) {
+                        $translation = [];
 
-                $get_address = (!empty($translation)) ? $translation['get_address'] : __(
-                    'Get address',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                );
-                echo '<a href="#" class="button" id="fetch_address">' . $get_address . '</a> <span id="fetch_address_status" style="display: none;"><img src="' . plugin_dir_url(__FILE__) . 'loader.gif' . '" border="0"></span>
+                        $get_address = (!empty($translation)) ? $translation['get_address'] : __(
+                            'Get address',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        );
+                        echo '<a href="#" class="button" id="fetch_address">' . $get_address . '</a> <span id="fetch_address_status" style="display: none;"><img src="' . plugin_dir_url(__FILE__) . 'loader.gif' . '" border="0"></span>
                 <br>';
+                    }
+                }
             }
         }
 
