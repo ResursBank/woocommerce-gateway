@@ -407,7 +407,12 @@ function getMethodType(customerType) {
     var enterNumberPhrase = "";
     var labelNumberPhrase = "";
 
-    if ($RB('#resursSelectedCountry').length > 0 && $RB('#ssn_field').length > 0) {
+    // Checking for ssn field before manipulating the content is necessarily not a good thing.
+    // This section affects LEGAL methods, when the ssn-field is removed and has to be passed regardless
+    // of its presence.
+    // $RB('#ssn_field').length > 0
+    // @see https://resursbankplugins.atlassian.net/browse/WOO-597
+    if ($RB('#resursSelectedCountry').length > 0) {
         currentResursCountry = $RB('#resursSelectedCountry').val();
         currentCustomerType = customerType.toLowerCase();
         if (currentCustomerType === "natural") {
@@ -437,17 +442,22 @@ function getMethodType(customerType) {
                 }
             }
         );
-        if (customerType != "" && hasResursMethods) {
+        if (customerType !== '' && hasResursMethods) {
             preSetResursMethods(customerType, resursvars["customerTypes"]);
         }
     }
 }
 
+/**
+ * @param customerType
+ * @param returnedObjects
+ */
 function preSetResursMethods(customerType, returnedObjects) {
     var hasLegal = false;
     var hasNatural = false;
     var disableGetAddressOptions = "";
     var keepGetAddressOption = "";
+    var hideCustomerType = "";
 
     if (typeof returnedObjects["legal"] !== "undefined") {
         if (returnedObjects["legal"].length > 0) {
@@ -468,7 +478,7 @@ function preSetResursMethods(customerType, returnedObjects) {
         keepGetAddressOption = "LEGAL";
     }
 
-    if (disableGetAddressOptions != "") {
+    if (disableGetAddressOptions !== '') {
         // Make sure the options are removed if there is just one bulk of payment methods
         $RB('[id="ssnCustomerType' + customerType.toUpperCase() + '"]').each(
             function (i, d) {
@@ -488,16 +498,15 @@ function preSetResursMethods(customerType, returnedObjects) {
 
     // Only invoke if there are multiple customer types
     if (customerType.toLowerCase() == "natural") {
-        var hideCustomerType = "legal";
+        hideCustomerType = "legal";
     } else {
-        var hideCustomerType = "natural";
+        hideCustomerType = "natural";
     }
 
     customerType = customerType.toLowerCase();
     getResursMethodList(returnedObjects, hideCustomerType, false);
 
     if (!resursvars["customerTypes"]["hasLegal"]) {
-        //console.log("Legal: !hasLegal");
         $RB('#ssnCustomerRadioNATURAL').remove();
         $RB('#ssnCustomerRadioLEGAL').remove();
     }
@@ -527,7 +536,6 @@ function getResursMethodList(returnedObjects, hideCustomerType, skipDisplay) {
     if (typeof returnedObjects["hasNatural"] !== 'undefined' && !returnedObjects["hasNatural"]) {
         hideCustomerType = 'natural';
     }
-
     $RB('li[class*=payment_method_resurs]').each(function () {
         var showElm = document.getElementsByClassName(this.className);
         if (showElm.length > 0) {
