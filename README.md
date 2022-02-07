@@ -1,7 +1,6 @@
 # Resurs Bank payment gateway for WooCommerce (Legacy/Maintenance)
 
-There are no longer any guarantees that this plugin is compatible with older versions of woocommerce. Our intentions is
-at least 3.4.0 and up. See the list below.
+We are only supporting WooCommerce 3.5.0 and up.
 
 * Compatibility: WooCommerce - at least 3.4.0 and up to 5.8.0
 * Plugin verified with PHP version 7.0 - 8.0
@@ -43,9 +42,11 @@ this plugin - it is good to have them all available.
 
 # Prerequisites
 
-* WooCommerce: v3.4.0 or higher (old features are ditched) and the actual support is set much higher.
-* WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly recommended
-  to go for the latest version as soon as possible if you're not already there.
+* WooCommerce: v3.5.0 or higher (old features are ditched) and the actual support is set much higher.
+* WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
+  recommended to go for the latest version as soon as possible if you're not already there.
+  See [here](https://make.wordpress.org/core/handbook/references/php-compatibility-and-wordpress-versions/) for more
+  information.
 * HTTPS *must* be enabled in both directions. This is a callback security measure.
 * XML and SoapClient must be available.
 * Curl is *recommended* but not necessary.

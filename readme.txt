@@ -1,8 +1,8 @@
 === Resurs Bank payment gateway for WooCommerce ===
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
-Requires at least: 5.9
-Tested up to: 5.8.3
+Requires at least: 5.5
+Tested up to: 5.9
 Requires PHP: 7.0
 Stable tag: 2.2.73
 License: GPLv2 or later
@@ -16,7 +16,7 @@ Resurs Bank Payment Gateway for WooCommerce -- Maintenance release.
 = About =
 
 Official payment gateway for Resurs Bank (maintenance version).
-Full support for all active shop flows. *SoapClient* is required as many of the administrative actions are using SOAP.
+Full support for all active shop flows. **SoapClient** is required as many of the administrative actions are using SOAP.
 Requirements follows WooCommerce requirements, which means (as of june 2021) PHP 7.0 or higher.
 
 [![Crowdin](https://badges.crowdin.net/resursbankwoocommerce/localized.svg)](https://crowdin.com/project/resursbankwoocommerce)
@@ -28,9 +28,9 @@ Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwooc
 * WooCommerce: v3.5.0 or higher!
 * WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
   recommended to go for the latest version as soon as possible if you're not already there.
-* HTTPS *must* be enabled in both directions. This is a callback security measure.
+* HTTPS **must** be enabled in both directions. This is a callback security measure.
 * XML and SoapClient must be available.
-* Curl is *recommended* but not necessary.
+* Curl is **recommended** but not necessary.
 * PHP: [Take a look here](https://docs.woocommerce.com/document/server-requirements/) to keep up with support. As of aug
   2021, both WooCommerce and WordPress is about to jump into 7.4 and higher.
   Also, [read here](https://wordpress.org/news/2019/04/minimum-php-version-update/) for information about lower versions
@@ -40,7 +40,7 @@ Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwooc
 = Upgrade notice =
 
 When developing the plugin for Woocommerce, we usually follow the versions for WooCommerce and always upgrading when
-there are new versions out. That said, it is *normally* also safe to upgrade to the latest woocommerce.
+there are new versions out. That said, it is **normally** also safe to upgrade to the latest woocommerce.
 
 
 == Can I upgrade WooCommerce with your plugin installed? ==
