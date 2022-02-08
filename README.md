@@ -60,5 +60,24 @@ meaning simplified flow, aftershop flow (finalization, annullments, crediting), 
 
 # Documentation
 
-[Project URL](https://test.resurs.com/docs/display/ecom/WooCommerce)
-- [Plugin URL](https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/)
+* [Project URL](https://test.resurs.com/docs/display/ecom/WooCommerce)
+* [Plugin URL](https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/)
+
+## Frequently Asked Questions
+
+You may want to look further at https://test.resurs.com/docs/display/ecom/WooCommerce for updates regarding this plugin
+
+### Plugin is causing 40X errors on my site ###
+
+There are several reasons for the 40X errors, but if they are thrown from an EComPHP API message there are few things to take in consideration:
+
+* 401 = Unauthorized.
+  **Cause**: Bad credentials
+  **Solution**: Contact Resurs Bank support for support questions regarding API credentials.
+* 403 = Forbidden.
+  **Cause**: This may be more common during test.
+  **Solution:** Resolution: Contact Resurs Bank for support.
+
+### There's an order created but there is no order information connected to Resurs Bank ###
+
+This is a common question about customer actions and how the order has been created/signed. Most of the details is usually placed in the order notes for the order, but if you need more information you could also consider contacting Resurs Bank support.
