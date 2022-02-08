@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 2.2.74
+Stable tag: 2.2.75
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -121,8 +121,9 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-In this release (2.2.73):
+In this release (2.2.73-2.2.75):
 
+* Readme files updated several times.
 * [WOO-597](https://resursbankplugins.atlassian.net/browse/WOO-597) If getAddress-form is entirely disabled and methods for both natural and legal is present
 
 # 2.2.72

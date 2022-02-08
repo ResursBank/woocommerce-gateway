@@ -1,5 +1,6 @@
-# 2.2.73
+# 2.2.73-2.2.75
 
+* Readme files updated several times.
 * [WOO-597](https://resursbankplugins.atlassian.net/browse/WOO-597) If getAddress-form is entirely disabled and methods for both natural and legal is present
 
 # 2.2.72
