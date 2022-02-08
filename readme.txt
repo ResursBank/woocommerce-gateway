@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 2.2.78
+Stable tag: 2.2.79
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -26,17 +26,19 @@ Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwooc
 = Compatibility and requirements =
 
 * WooCommerce: v3.5.0 or higher!
+* [curl](https://curl.haxx.se) or [PHP stream](https://php.net/manual/en/book.stream.php) features active (for REST based actions).
+  To not loose important features, we recommend you to have this extension enabled - if you currently run explicitly with streams.
+* Included: [NetCURL](https://netcurl.org/docs/) [Bitbucket](https://www.netcurl.org). NetCURL handles all of the communication
+  drivers just mentioned.
+* **Required**: [SoapClient](https://php.net/manual/en/class.soapclient.php) with xml drivers.
+* **Included** [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled vendor) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
 * WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
   recommended to go for the latest version as soon as possible if you're not already there.
 * HTTPS **must** be **fully** enabled. This is a callback security measure, which is required from Resurs Bank.
-* XML and SoapClient must be available.
-* Curl is highly **recommended** but not necessary. We suggest that you do not trust only PHP streams on this one
-  as you may loose important features if you run explicitly with streams.
 * PHP: [Take a look here](https://docs.woocommerce.com/document/server-requirements/) to keep up with support. As of aug
   2021, both WooCommerce and WordPress is about to jump into 7.4 and higher.
   Also, [read here](https://wordpress.org/news/2019/04/minimum-php-version-update/) for information about lower versions
-  of PHP.
-
+  of PHP. Syntax for this release is written for releases lower than 7.0
 
 = Upgrade notice =
 
@@ -49,15 +51,6 @@ there are new versions out. That said, it is **normally** also safe to upgrade t
 If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually
 changes (after internal tests has been made) to match the base requirements, so you can upgrade without upgrade
 warnings.
-
-
-= Requirements and content =
-
- * Required: At least PHP 7.0
- * Required: [curl](https://curl.haxx.se) or [PHP stream](https://php.net/manual/en/book.stream.php) features active (for REST based actions).
- * Required: [SoapClient](https://php.net/manual/en/class.soapclient.php) with xml drivers.
- * Included: [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
- * Included: [NetCURL](https://netcurl.org/docs/) [Bitbucket](https://www.netcurl.org)
 
 [Project URL](https://test.resurs.com/docs/display/ecom/WooCommerce) - [Plugin URL](https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/)
 
