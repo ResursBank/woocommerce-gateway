@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 2.2.75
+Stable tag: 2.2.76
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -109,7 +109,7 @@ This is a common question about customer actions and how the order has been crea
 
 = How does the respective payment flows work with Resurs Bank in this plugin? =
 
-There is a document published at https://docs.tornevall.net/display/TORNEVALL/Checkout+workflows+and+metadata+store+described
+There is a document published at https://docs.tornevall.net/x/IAAkBQ
 describing in details how the plugin implementation at least should be done, for "simplifiedShopFlow", "hosted flow"
 and "Resurs Checkout".
 
@@ -121,7 +121,7 @@ Docs are continuously updated at https://test.resurs.com/docs/display/ecom/WooCo
 
 == Changelog ==
 
-In this release (2.2.73-2.2.75):
+In this release (2.2.73-2.2.76):
 
 * Readme files updated several times.
 * [WOO-597](https://resursbankplugins.atlassian.net/browse/WOO-597) If getAddress-form is entirely disabled and methods for both natural and legal is present
