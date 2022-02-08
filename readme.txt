@@ -28,9 +28,10 @@ Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwooc
 * WooCommerce: v3.5.0 or higher!
 * WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
   recommended to go for the latest version as soon as possible if you're not already there.
-* HTTPS **must** be enabled in both directions. This is a callback security measure.
+* HTTPS **must** be **fully** enabled. This is a callback security measure, which is required from Resurs Bank.
 * XML and SoapClient must be available.
-* Curl is **recommended** but not necessary.
+* Curl is highly **recommended** but not necessary. We suggest that you do not trust only PHP streams on this one
+  as you may loose important features if you run explicitly with streams.
 * PHP: [Take a look here](https://docs.woocommerce.com/document/server-requirements/) to keep up with support. As of aug
   2021, both WooCommerce and WordPress is about to jump into 7.4 and higher.
   Also, [read here](https://wordpress.org/news/2019/04/minimum-php-version-update/) for information about lower versions

@@ -906,14 +906,13 @@ function woocommerce_gateway_resurs_bank_init()
                 $testOrderId = 0;
             }
 
-            if ($testOrderId == 0) {
-                if (getResursOption('accept_rejected_callbacks')) {
-                    $message = 'Order is not ours, but it is still accepted.';
-                    $code = 204;
-                } else {
-                    $code = 410;
-                    $message = 'Order is not ours';
-                }
+            if ($testOrderId === 0) {
+                // If you really need to reply 20X, you should do that yourself.
+                $code = apply_filters(
+                    'resurs_bank_order_is_not_outs',
+                    410
+                );
+                $message = 'Order is not ours';
                 header(sprintf('HTTP/1.1 %d %s', $code, $message), true, $code);
                 echo $code . ': ' . $message;
                 exit;
@@ -3530,6 +3529,16 @@ function woocommerce_gateway_resurs_bank_init()
             if (!$isHostedFlow) {
                 try {
                     $signedResult = $this->flow->bookSignedPayment($paymentId);
+                    $bookedStatus = isset($signedResult->bookPaymentStatus) ? $signedResult->bookPaymentStatus : null;
+                    $order->add_order_note(
+                        sprintf(
+                            __(
+                                'Customer returned from signing. Routine for book signed payment executed, got response %s.',
+                                'resurs-bank-payment-gateway-for-woocommerce'
+                            ),
+                            $bookedStatus
+                        )
+                    );
                     $bookSigned = true;
                 } catch (Exception $bookSignedException) {
                     resursEventLogger(
@@ -3541,7 +3550,7 @@ function woocommerce_gateway_resurs_bank_init()
                     );
                 }
                 if ($bookSigned) {
-                    $bookedStatus = isset($signedResult->bookPaymentStatus) ? $signedResult->bookPaymentStatus : null;
+                    //$bookedStatus = isset($signedResult->bookPaymentStatus) ? $signedResult->bookPaymentStatus : null;
                     $bookedPaymentId = isset($signedResult->paymentId) ? $signedResult->paymentId : null;
                 }
             }
