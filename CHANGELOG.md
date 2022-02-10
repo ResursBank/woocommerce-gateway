@@ -1,3 +1,7 @@
+# 2.2.80
+
+* [WOO-599](https://resursbankplugins.atlassian.net/browse/WOO-599) Ip control section for woo
+
 # 2.2.73-2.2.79
 
 * Readme files updated several times.

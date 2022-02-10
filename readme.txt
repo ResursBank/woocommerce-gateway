@@ -112,52 +112,21 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 == Changelog ==
 
-In this release (2.2.73-2.2.77):
+= In this release (2.2.80): =
+
+* [WOO-599](https://resursbankplugins.atlassian.net/browse/WOO-599) Ip control section for woo
+
+= 2.2.73-2.2.79 =
 
 * Readme files updated several times.
 * [WOO-597](https://resursbankplugins.atlassian.net/browse/WOO-597) If getAddress-form is entirely disabled and methods for both natural and legal is present
 
-# 2.2.72
+= 2.2.72 =
 
 * [WOO-596](https://resursbankplugins.atlassian.net/browse/WOO-596) When trying to discover composer.json version/name data, platform renders warnings
 * [WOO-595](https://resursbankplugins.atlassian.net/browse/WOO-595) Slow/crashing platform on API timeouts
 * [WOO-594](https://resursbankplugins.atlassian.net/browse/WOO-594) Product pages stuck on Resurs-API timeouts
 * [WOO-593](https://resursbankplugins.atlassian.net/browse/WOO-593) Partially handle server timeouts
-
-# 2.2.71:
-
-* [WOO-592](https://resursbankplugins.atlassian.net/browse/WOO-592) Race conditions on callbacks, second edition
-
-# 2.2.70
-
-* [WOO-591](https://resursbankplugins.atlassian.net/browse/WOO-591) get\_cost\_of\_purchase: Rename call \(Also related to ECOMPHP-431\)
-* [WOO-587](https://resursbankplugins.atlassian.net/browse/WOO-587) Stuck callbacks
-* [WOO-583](https://resursbankplugins.atlassian.net/browse/WOO-583) Customer country may or may not be wrongfully returned as an empty string in the checkout and therefore not showing payment methods properly
-
-# 2.2.65-69
-
-* [WOO-584](https://resursbankplugins.atlassian.net/browse/WOO-584) Saving credentials is problematic the first round after wp-admin-reload.
-* [WOO-585](https://resursbankplugins.atlassian.net/browse/WOO-585) PAYMENT_PROVIDER with government id
-
-# 2.2.64
-
-* [WOO-576](https://resursbankplugins.atlassian.net/browse/WOO-576) $return is sometimes not set when return occurs
-* Tagged version for WooCommerce.
-
-# 2.2.63
-
-Info update only.
-
-# 2.2.62
-
-* [WOO-575](https://resursbankplugins.atlassian.net/browse/WOO-575) Order status gets an incorrect jump on bookSignedPayment and status=FINALIZED
-* [WOO-574](https://resursbankplugins.atlassian.net/browse/WOO-574) Remove FINALIZATION and move "instant finalizations" into UPDATE.
-* [WOO-573](https://resursbankplugins.atlassian.net/browse/WOO-573) Remove unnecessary callbacks
-* [WOO-572](https://resursbankplugins.atlassian.net/browse/WOO-572) Activate logging of order stock handling
-
-In last release:
-
-* [WOO-570](https://resursbankplugins.atlassian.net/browse/WOO-570) Resurs Annuity Factors Widget Error -- Unable to fetch .variations_form: json.find is not a function
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
