@@ -679,7 +679,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     $curlInfo = $NET->request('https://ipv4.netcurl.org/');
                                     $curlInfoResponse = $curlInfo->getParsed();
                                 } catch (Exception $e) {
-                                    $errorMessage = $e->getMessage();
+                                    $errorMessage = sprintf('Exception (%s): %s' . $e->getCode(), $e->getMessage());
                                 }
                                 $showInfo = ['ip', 'host', 'SSL_PROTOCOL'];
                                 $curlInfoReturn = [];
@@ -687,8 +687,10 @@ function woocommerce_gateway_resurs_bank_init()
                                 if (is_object($curlInfoResponse)) {
                                     foreach ($showInfo as $key) {
                                         if (isset($curlInfoResponse->{$key})) {
-                                            $curlInfoReturn[$key] = sprintf('<b>%s</b>: %s', $key,
-                                                $curlInfoResponse->{$key});
+                                            $curlInfoReturn[$key] = sprintf(
+                                                '<b>%s</b>: %s', $key,
+                                                $curlInfoResponse->{$key}
+                                            );
                                         }
                                     }
                                 } else {
