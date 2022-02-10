@@ -494,6 +494,32 @@ function doUpdateResursCallbacks() {
     runResursAdminCallback("setMyCallbacks", "updateResursCallbacksResult");
 }
 
+function rbGetIpInfo() {
+    $RB('#externalIpInfo').html('<img src="' + adminJs.resursSpinner + '" border="0">');
+    runResursAdminCallback('getRbIpInfo', 'getRbIpInfoResponse');
+}
+
+/**
+ * External info helper.
+ * @param info
+ */
+function getRbIpInfoResponse(info) {
+    var errorString = '';
+    if (typeof info.errorMessage !== 'undefined') {
+        errorString = info.errorMessage;
+    }
+    if (typeof info.response !== 'undefined' &&
+        typeof info.response.getRbIpInfoResponse &&
+        typeof info.response.getRbIpInfoResponse.errormessage) {
+        errorString = info.response.getRbIpInfoResponse.errormessage;
+        if (errorString !== '') {
+            $RB('#externalIpInfo').html(errorString);
+        } else {
+            $RB('#externalIpInfo').html(info.response.getRbIpInfoResponse.externalinfo);
+        }
+    }
+}
+
 function doGetRWcurlTags() {
     $RB('#rwocurltag').html('<img src="' + adminJs.resursSpinner + '">');
     $RB('#rwocurltag').show();

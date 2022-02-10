@@ -652,6 +652,11 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
             $topCss,
             $nc
         );
+        $pluginInfo .= sprintf(
+            '<tr><td %s>External ip and information</td><td %s><button type="button" onclick="rbGetIpInfo()">Request Information</button><br><div id="externalIpInfo"></div></td></tr>',
+            $topCss,
+            $topCss
+        );
 
         if ($pluginIsGit) {
             $pluginInfo .= $this->getGitInfo($topCss);
