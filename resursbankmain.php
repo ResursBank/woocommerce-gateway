@@ -12,6 +12,7 @@ use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\ResursBank;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Module\Network\NetWrapper;
 use TorneLIB\MODULE_NETWORK;
 
 $resurs_obsolete_coexistence_disable = (bool)apply_filters('resurs_obsolete_coexistence_disable', null);
@@ -670,6 +671,36 @@ function woocommerce_gateway_resurs_bank_init()
                                         $responseArray['errorstring'] = $e->getMessage();
                                     }
                                 }
+                            } elseif ($_REQUEST['run'] == 'getRbIpInfo') {
+                                $NET = new NetWrapper();
+                                $curlInfoResponse = null;
+                                $errorMessage = '';
+                                try {
+                                    $curlInfo = $NET->request('https://ipv4.netcurl.org/');
+                                    $curlInfoResponse = $curlInfo->getParsed();
+                                } catch (Exception $e) {
+                                    $errorMessage = $e->getMessage();
+                                }
+                                $showInfo = ['ip', 'host', 'SSL_PROTOCOL'];
+                                $curlInfoReturn = [];
+                                $responseArray['errormessage'] = '';
+                                if (is_object($curlInfoResponse)) {
+                                    foreach ($showInfo as $key) {
+                                        if (isset($curlInfoResponse->{$key})) {
+                                            $curlInfoReturn[$key] = sprintf('<b>%s</b>: %s', $key,
+                                                $curlInfoResponse->{$key});
+                                        }
+                                    }
+                                } else {
+                                    if (empty($errorMessage)) {
+                                        $errorMessage = __(
+                                            'Could not reach service right now. Are your server connected or allowed to do outgoing traffic?',
+                                            'resurs-bank-payment-gateway-for-woocommerce'
+                                        );
+                                    }
+                                    $responseArray['errormessage'] = $errorMessage;
+                                }
+                                $responseArray['externalinfo'] = implode(",<br>\n", $curlInfoReturn);
                             } elseif ($_REQUEST['run'] == 'getNetCurlTag') {
                                 $NET = new MODULE_NETWORK();
                                 $curlTags = $NET->getGitTagsByUrl('https://bitbucket.tornevall.net/scm/lib/tornelib-php-netcurl.git');
