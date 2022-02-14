@@ -12,8 +12,12 @@ use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\RBEcomPHP\RESURS_ENVIRONMENTS;
 use Resursbank\RBEcomPHP\ResursBank;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Model\Type\DataType;
+use TorneLIB\Model\Type\RequestMethod;
 use TorneLIB\Module\Network\NetWrapper;
+use TorneLIB\Module\Network\Wrappers\CurlWrapper;
 use TorneLIB\MODULE_NETWORK;
+use TorneLIB\Utils\Security;
 
 $resurs_obsolete_coexistence_disable = (bool)apply_filters('resurs_obsolete_coexistence_disable', null);
 if ($resurs_obsolete_coexistence_disable && !is_admin()) {
@@ -681,6 +685,25 @@ function woocommerce_gateway_resurs_bank_init()
                                 } catch (Exception $e) {
                                     $errorMessage = sprintf('Exception (%s): %s' . $e->getCode(), $e->getMessage());
                                 }
+                                $soapResponded = 'No';
+                                try {
+                                    // Check if curl is available before using it.
+                                    Security::getCurrentFunctionState('curl_init');
+                                    Security::getCurrentFunctionState('curl_exec');
+                                    $curlDriver = new CurlWrapper();
+                                    $leaveTracesRequest = $curlDriver->request(
+                                        'https://test.resurs.com/ecommerce-test/ws/V4/ConfigurationService?wsdl',
+                                        [],
+                                        RequestMethod::GET,
+                                        DataType::JSON
+                                    );
+                                    $responseFromRequest = $leaveTracesRequest->getBody();
+                                    if ((bool)preg_match('/<?xml/i', $responseFromRequest)) {
+                                        $soapResponded = 'Yes';
+                                    }
+                                } catch (Exception $e) {
+                                    $soapResponded = sprintf('%s (%s)', $e->getMessage(), $e->getCode());
+                                }
                                 $showInfo = ['ip', 'host', 'SSL_PROTOCOL'];
                                 $curlInfoReturn = [];
                                 $responseArray['errormessage'] = '';
@@ -702,6 +725,10 @@ function woocommerce_gateway_resurs_bank_init()
                                     }
                                     $responseArray['errormessage'] = $errorMessage;
                                 }
+                                $curlInfoReturn['soapResponded'] = '<b>' . sprintf(
+                                    'Resurs Request contains XML: %s',
+                                    $soapResponded
+                                ) . '</b>';
                                 $responseArray['externalinfo'] = implode(",<br>\n", $curlInfoReturn);
                             } elseif ($_REQUEST['run'] == 'getNetCurlTag') {
                                 $NET = new MODULE_NETWORK();
