@@ -193,10 +193,10 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         );
         if (isset($this->iframeResponse->script)) {
             $urlList = (new Domain())->getUrlsFromHtml($this->iframeResponse->script);
-            if (isset($this->iframeResponse) &&
+            if (isset($this->iframeResponse, $this->iframeResponse->script) &&
                 !empty($this->iframeResponse) &&
-                isset($this->iframeResponse->script) &&
-                !empty($this->iframeResponse->script) && count($urlList)
+                !empty($this->iframeResponse->script) &&
+                count($urlList)
             ) {
                 wp_enqueue_script(
                     'rcoremote',
