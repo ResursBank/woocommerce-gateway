@@ -2,6 +2,8 @@
 
 namespace TorneLIB\IO\Data;
 
+use Exception;
+
 /**
  * Class Strings
  *
@@ -128,6 +130,74 @@ class Strings
         }
 
         return $newArray;
+    }
+
+    /**
+     * Obfuscate/anonymize strings.
+     *
+     * @param $string
+     * @param string $replacementCharacter Default: *.
+     * @param int $startPosition Default:  2.
+     * @param int $stopPosition Default: 2.
+     * @param int $rnd Sensitivity: 1-10000. Default is 4000, since we want more stars than real characters.
+     * @return string
+     * @throws Exception
+     * @since 6.1.6
+     */
+    public function getObfuscatedString(
+        $string,
+        $replacementCharacter = '*',
+        $startPosition = 2,
+        $stopPosition = 2,
+        $rnd = 4000
+    ) {
+        $return = $string;
+        $startPosition = (int)$startPosition;
+        $stopPosition = (int)$stopPosition;
+        if (empty($replacementCharacter)) {
+            $replacementCharacter = '*';
+        }
+        preg_match_all('/./', $string, $result);
+        if (isset($result[0]) && is_array($result)) {
+            $characterCount = count($result[0]);
+            if ($characterCount <= 8) {
+                $startPosition = 1;
+                $stopPosition = 1;
+            }
+            $startAt = $startPosition ? $startPosition : 2;
+            $stopAt = $stopPosition ? $stopPosition : 2;
+            $newString = [];
+            foreach ($result[0] as $pos => $character) {
+                if (function_exists('random_int')) {
+                    // Start use secure random if exists.
+                    $isTrue = random_int(1, 10000) > ((int)$rnd < 10000 ? $rnd : 4000);
+                } else {
+                    $isTrue = rand(1, 10000) > ((int)$rnd < 10000 ? $rnd : 4000);
+                }
+                $wantCharacter = ($isTrue && $pos >= $startAt && $pos <= $characterCount - $stopAt);
+                $newString[] = $wantCharacter ? $replacementCharacter : $character;
+            }
+            $return = implode('', $newString);
+        }
+        return (string)$return;
+    }
+
+    /**
+     * Just obfuscate strings between first and last character.
+     *
+     * @param $string
+     * @return string
+     * @since 6.1.6
+     */
+    function getObfuscatedStringFull($string, $startAt = 1, $endAt = 1)
+    {
+        $stringLength = strlen($string);
+        return $stringLength > $startAt - 1 ?
+            substr($string, 0, $startAt) . str_repeat('*', $stringLength - 2) . substr(
+                $string,
+                $stringLength - $endAt,
+                $stringLength - $endAt
+            ) : $string;
     }
 
     /**

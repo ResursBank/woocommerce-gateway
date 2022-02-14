@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20220126');
+    define('ECOMPHP_MODIFY_DATE', '20220209');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.69
+ * @version 1.3.70
  */
 class ResursBank
 {
@@ -4257,19 +4257,14 @@ class ResursBank
     /**
      * If payment amount is within allowed limits of payment method
      *
-     * @param flaot $totalAmount
-     * @param int $minimumAmount
-     * @param int $maxmimumAMount
+     * @param int|float $totalAmount
+     * @param int|float $minimumAmount
+     * @param int|float $maxmimumAmount
      * @return bool
      */
-    public function getMinMax($totalAmount = 0, $minimumAmount = 0, $maxmimumAMount = 0)
+    public function getMinMax($totalAmount = 0, $minimumAmount = 0, $maxmimumAmount = 0)
     {
-        $return = false;
-        if ($totalAmount >= $minimumAmount && $totalAmount <= $maxmimumAMount) {
-            $return = true;
-        }
-
-        return $return;
+        return (float)$totalAmount >= (float)$minimumAmount && (float)$totalAmount <= (float)$maxmimumAmount;
     }
 
     /**
@@ -8277,6 +8272,7 @@ class ResursBank
                     ) &&
                     $useQuantity > 0
                 ) {
+                    //$articleType = isset($orderRow['type']) ? $orderRow['type'] : null;
                     $orderRow = $this->getPurgedPaymentRow(
                         $statusRow,
                         [
@@ -8290,6 +8286,9 @@ class ResursBank
                         ],
                         $this->getPaymentDefaultPurgeSet ? true : false
                     );
+                    /*if (!empty($articleType) && $articleType !== 'ORDER_LINE') {
+                        $orderRow['type'] = $articleType;
+                    }*/
 
                     if (!$this->skipAfterShopPaymentValidation) {
                         $useUnitAmount = $orderRow['unitAmountWithoutVat'];
