@@ -112,21 +112,18 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 == Changelog ==
 
-= In this release (2.2.80): =
+= In this release (2.2.82) =
+
+* [WOO-600](https://resursbankplugins.atlassian.net/browse/WOO-600) Hotfix: QueryMonitor reports missing dependency
+
+= 2.2.81 =
+
+* Hotfix: Added ip-tracking feature for whitelisting-help in wp-admin.
+
+= 2.2.80 =
 
 * [WOO-599](https://resursbankplugins.atlassian.net/browse/WOO-599) Ip control section for woo
 
-= 2.2.73-2.2.79 =
-
-* Readme files updated several times.
-* [WOO-597](https://resursbankplugins.atlassian.net/browse/WOO-597) If getAddress-form is entirely disabled and methods for both natural and legal is present
-
-= 2.2.72 =
-
-* [WOO-596](https://resursbankplugins.atlassian.net/browse/WOO-596) When trying to discover composer.json version/name data, platform renders warnings
-* [WOO-595](https://resursbankplugins.atlassian.net/browse/WOO-595) Slow/crashing platform on API timeouts
-* [WOO-594](https://resursbankplugins.atlassian.net/browse/WOO-594) Product pages stuck on Resurs-API timeouts
-* [WOO-593](https://resursbankplugins.atlassian.net/browse/WOO-593) Partially handle server timeouts
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 

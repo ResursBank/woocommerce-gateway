@@ -1,3 +1,11 @@
+# 2.2.82
+
+* [WOO-600](https://resursbankplugins.atlassian.net/browse/WOO-600) Hotfix: QueryMonitor reports missing dependency
+
+# 2.2.81
+
+* Hotfix: Added ip-tracking feature for whitelisting-help in wp-admin.
+
 # 2.2.80
 
 * [WOO-599](https://resursbankplugins.atlassian.net/browse/WOO-599) Ip control section for woo
