@@ -5236,13 +5236,16 @@ function woocommerce_gateway_resurs_bank_init()
             ['jquery'],
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
-        // Legacy RCOJS is depending on rcoface, due to auto detection.
-        wp_enqueue_script(
-            'rcojs',
-            plugin_dir_url(__FILE__) . 'js/rcojs.js' . $oneRandomValue,
-            ['jquery', 'rcoface'],
-            RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
-        );
+
+        if (hasResursOmni()) {
+            // Legacy RCOJS is depending on rcoface, due to auto detection.
+            wp_enqueue_script(
+                'rcojs',
+                plugin_dir_url(__FILE__) . 'js/rcojs.js' . $oneRandomValue,
+                ['jquery', 'rcoface'],
+                RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
+            );
+        }
         wp_localize_script('resursbankmain', 'rb_getaddress_fields', $resursLanguageLocalization);
         wp_localize_script('resursbankmain', 'rb_general_translations', $generalJsTranslations);
         wp_localize_script('resursbankmain', 'ajax_object', $ajaxObject);
@@ -7266,10 +7269,10 @@ function hasResursOmni($ignoreActiveFlag = false)
         }
         update_option('woocommerce_resurs_bank_omnicheckout_settings', $omniOption);
     }
-    if ($resursEnabled != 'yes' && !$ignoreActiveFlag) {
+    if ($resursEnabled !== 'yes' && !$ignoreActiveFlag) {
         return false;
     }
-    if ($flowType == 'resurs_bank_omnicheckout') {
+    if ($flowType === 'resurs_bank_omnicheckout') {
         return true;
     }
 
