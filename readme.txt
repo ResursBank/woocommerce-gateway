@@ -67,11 +67,21 @@ Want to add a new language to this plugin? You can contribute via [translate.wor
 == Installation ==
 
 1. Upload the plugin archive to the "/wp-content/plugins/" directory
-2. Activate the plugin through the "Plugins" menu in WordPress
-3. Configure the plugin via admin control panel
+2. Make sure the plugin has write access to itself under the includes folder (see below)
+3. Activate the plugin through the "Plugins" menu in WordPress
+4. Configure the plugin via admin control panel
 
 (Or install and activate the plugin through the WordPress plugin installer)
-If you are installing the plugin manually, make sure that the plugin folder contains a folder named includes and that includes directory are writable, since that's where the payment methods are stored.
+
+= Write access to the includes folder =
+
+The most commonly used path to the plugin folder's include-path is set to:
+/wp-content/plugin/resurs-bank-payment-gateway-for-woocommerce/includes
+This path has to be write-accessible for your web server or the plugin won't work properly since the payment methods are written to disk as classes. If you have login access to your server by SSH you could simply run this kind of command:
+
+    chmod a+rw <wp-root>/wp-content/plugin/resurs-bank-payment-gateway-for-woocommerce/includes
+
+If you have a FTP-client or similar, make sure to give this path write-access for at least your webserver. If you know what you are doing you should limit this to your web server.
 
 = Upgrading =
 
