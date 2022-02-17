@@ -123,7 +123,12 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 == Changelog ==
 
-= In this release (2.2.82) =
+= 2.2.83 =
+
+* Libraries and readme patch.
+* Simplified the way we fetch version information in plugin which is used by the ecommerce php library, making tags easier to handle.
+
+= 2.2.82 =
 
 * [WOO-600](https://resursbankplugins.atlassian.net/browse/WOO-600) Hotfix: QueryMonitor reports missing dependency
 

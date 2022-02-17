@@ -11,13 +11,18 @@
  * Domain Path: /languages/
  */
 
-define('RB_WOO_VERSION', '2.2.83');
-define('RB_ALWAYS_RELOAD_JS', true);
-define('RB_WOO_CLIENTNAME', 'resurs-bank-payment-gateway-for-woocommerce');
-define('RB_EXPECT_ECOM', '1.3.70');
+use TorneLIB\Utils\WordPress as WPUtils;
 
 require_once(__DIR__ . '/functions_settings.php');
 require_once(__DIR__ . '/functions_vitals.php');
+
+$wpUtils = new WPUtils();
+$wpUtils->setPluginBaseFile(__FILE__);
+
+define('RB_WOO_VERSION', $wpUtils->getCurrentVersion());
+define('RB_ALWAYS_RELOAD_JS', true);
+define('RB_WOO_CLIENTNAME', 'resurs-bank-payment-gateway-for-woocommerce');
+define('RB_EXPECT_ECOM', '1.3.70');
 
 /**
  * @return bool
