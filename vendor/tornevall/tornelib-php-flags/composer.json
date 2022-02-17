@@ -1,6 +1,7 @@
 {
     "name": "tornevall/tornelib-php-flags",
     "description": "Decentralized special flagsetter. Could be used globally.",
+    "version": "6.1.4",
     "minimum-stability": "stable",
     "license": "Apache-2.0",
     "require": {},
