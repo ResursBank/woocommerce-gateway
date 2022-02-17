@@ -4,25 +4,26 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 2.2.84
+Stable tag: 2.2.85
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
 
-Resurs Bank Payment Gateway for WooCommerce -- Maintenance release.
+Resurs Bank Payment Gateway for WooCommerce.
 
 == Description ==
 
 = About =
 
-**Official** payment gateway for Resurs Bank (maintenance version).
-
-Full support for all active shop flows. **SoapClient** is required as many of the administrative actions are using SOAP.
-Requirements follows WooCommerce requirements, which means (as of june 2021) PHP 7.0 or higher.
-
-[![Crowdin](https://badges.crowdin.net/resursbankwoocommerce/localized.svg)](https://crowdin.com/project/resursbankwoocommerce)
+Official payment gateway for Resurs Bank.
 
 Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwoocommerce)!
+
+= Supported shop flows =
+
+* [Simplified Shop Flow](https://test.resurs.com/docs/display/ecom/Simplified+Flow+API). Integrated checkout that works with WooCommerce built in features.
+* [Resurs Checkout Web](https://test.resurs.com/docs/display/ecom/Resurs+Checkout+Web). Iframe integration. Currently supporting **RCOv1 and RCOv2**.
+* [Hosted Payment Flow](https://test.resurs.com/docs/display/ecom/Hosted+Payment+Flow). A paypal like checkout where most of the payment events takes place at Resurs Bank.
 
 = Compatibility and requirements =
 
@@ -123,9 +124,9 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 == Changelog ==
 
-= 2.2.84 =
+= 2.2.84 - 2.2.85 =
 
-* Cleanup.
+* Cleanup, corrections.
 
 = 2.2.83 =
 
