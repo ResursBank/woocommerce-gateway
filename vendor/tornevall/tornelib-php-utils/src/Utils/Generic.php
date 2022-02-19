@@ -15,7 +15,7 @@ use TorneLIB\Exception\ExceptionHandler;
 /**
  * Class Generic Generic functions
  * @package TorneLIB\Utils
- * @version 6.1.17
+ * @version 6.1.18
  */
 class Generic
 {
@@ -85,6 +85,12 @@ class Generic
     private $openBaseDirExceptionTriggered = false;
 
     /**
+     * @var array
+     * @since 6.1.18
+     */
+    private $expectReleases = [];
+
+    /**
      * Check if class files exists somewhere in platform (pear/pecl-based functions).
      * Initially used to fetch XML-serializers. Returns first successful match.
      *
@@ -109,6 +115,82 @@ class Generic
                 $return = $serializerPath;
                 break;
             }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Set an array with expected classes and versions to be present.
+     *
+     * @param $versionArray
+     * @return $this
+     * @since 6.1.18
+     */
+    public function setExpectedVersions($versionArray)
+    {
+        $this->expectReleases = $versionArray;
+
+        return $this;
+    }
+
+    /**
+     * Check all required versions and expect them to match or be above expected release.
+     * Works with Classname-based version tag or composer.json.
+     *
+     * @param bool $proceed Throw exceptions if one match fails, when this is false.
+     * @return bool
+     * @throws ExceptionHandler
+     * @throws ReflectionException
+     * @since 6.1.18
+     */
+    public function getExpectedVersions($proceed = true)
+    {
+        $return = true;
+        $wrongVersions = [];
+
+        if (is_array($this->expectReleases) && count($this->expectReleases)) {
+            foreach ($this->expectReleases as $expectName => $expectVersion) {
+                if (class_exists($expectName)) {
+                    $docVersion = $this->getVersionByClassDoc($expectName);
+                    if (!empty($docVersion)) {
+                        if (version_compare($docVersion, $expectVersion, '<')) {
+                            $return = false;
+                            $wrongVersions[] = $expectName;
+                        }
+                    }
+                } else {
+                    // Check if this is a proper path/file before proceeding.
+                    if (!file_exists($expectName)) {
+                        throw new Exception(
+                            sprintf(
+                                'Expected %s, but could not find class.',
+                                $expectName
+                            ),
+                            Constants::LIB_GENERIC_EXPECTED_VERSIONS_NOT_FULFILLED
+                        );
+                    }
+                    // Sanitize name.
+                    $expectName = preg_replace('/\/$|\/composer.json/', '', $expectName) . '/composer.json';
+                    $composerVersion = $this->getVersionByComposer($expectName);
+                    if (version_compare($composerVersion, $expectVersion, '<')) {
+                        $return = false;
+                        $wrongVersions[] = $expectName;
+                    }
+                }
+            }
+
+            if (!$proceed && !$return) {
+                throw new Exception(
+                    sprintf(
+                        'Version control expectation failed. Wrong versions discovered for %s.',
+                        implode(', ', $wrongVersions)
+                    ),
+                    Constants::LIB_GENERIC_EXPECTED_VERSIONS_NOT_FULFILLED
+                );
+            }
+
+            return $return;
         }
 
         return $return;

@@ -260,4 +260,10 @@ abstract class Constants
      * @since 6.1.9
      */
     const LIB_GENERIC_DRIVER_UNAVAILABLE = 65009;
+
+    /**
+     * @var int
+     * @since 6.1.15
+     */
+    const LIB_GENERIC_EXPECTED_VERSIONS_NOT_FULFILLED = 65010;
 }
