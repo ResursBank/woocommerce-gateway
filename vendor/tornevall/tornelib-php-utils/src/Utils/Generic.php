@@ -197,6 +197,16 @@ class Generic
     }
 
     /**
+     * @return array
+     * @since 6.1.18
+     */
+    public function getExpectationList()
+    {
+        // Make sure correct data is returned.
+        return is_array($this->expectReleases) ? $this->expectReleases : [];
+    }
+
+    /**
      * @param $composerLocation
      * @return mixed|string
      * @throws ExceptionHandler

@@ -377,19 +377,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-utils.git",
-                "reference": "c018f667d25bf864be1f46e224da9e3a4c38b53f"
+                "reference": "8a744ac15b7458cd9146d0990425ead1a3f014d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/c018f667d25bf864be1f46e224da9e3a4c38b53f",
-                "reference": "c018f667d25bf864be1f46e224da9e3a4c38b53f",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/8a744ac15b7458cd9146d0990425ead1a3f014d5",
+                "reference": "8a744ac15b7458cd9146d0990425ead1a3f014d5",
                 "shasum": ""
             },
             "require": {
                 "tornevall/tornelib-php-errorhandler": "^6.1",
                 "tornevall/tornelib-php-flags": "^6.1"
             },
-            "time": "2022-02-19T15:15:07+00:00",
+            "time": "2022-02-19T15:23:28+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

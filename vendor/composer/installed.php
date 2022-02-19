@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '11111518054ce623af4e1eac5cba0f167c595ad5',
+        'reference' => '9d6d7adbe55e715a907c55d94aef09e4cc3aa687',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '11111518054ce623af4e1eac5cba0f167c595ad5',
+            'reference' => '9d6d7adbe55e715a907c55d94aef09e4cc3aa687',
             'dev_requirement' => false,
         ),
         'resursbank/ecomphp' => array(
@@ -97,7 +97,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../tornevall/tornelib-php-utils',
             'aliases' => array(),
-            'reference' => 'c018f667d25bf864be1f46e224da9e3a4c38b53f',
+            'reference' => '8a744ac15b7458cd9146d0990425ead1a3f014d5',
             'dev_requirement' => false,
         ),
         'tornevall/tornelib-php-version' => array(
