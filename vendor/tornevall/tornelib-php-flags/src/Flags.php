@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Copyright © Tomas Tornevall / Tornevall Networks. All rights reserved.
  * See LICENSE for license details.
@@ -13,12 +15,14 @@ use TorneLIB\Exception\ExceptionHandler;
 /**
  * Class Flags Statically callable.
  * @package TorneLIB
- * @version 6.1.4
+ * @version 6.1.5
  */
 class Flags
 {
     /**
-     * @var array Internally stored flags.
+     * Internally stored flags.
+     * @var array
+     * @since 6.1.0
      */
     private $internalFlags = [];
 
@@ -30,7 +34,9 @@ class Flags
     private $lockedFlags = [];
 
     /**
-     * @var array For all static calls.
+     * For all static calls.
+     * @var array
+     * @since 6.1.0
      */
     protected static $staticFlagSet = [];
 
@@ -40,10 +46,11 @@ class Flags
      * @param string $flagKey
      * @param null $flagValue
      * @param bool $lock
-     * @return bool If successful
+     * @return bool
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
-    public function setFlag($flagKey = '', $flagValue = null, $lock = false)
+    public function setFlag(string $flagKey = '', $flagValue = null, bool $lock = false): bool
     {
         $return = true;
         if (!empty($flagKey)) {
@@ -76,13 +83,13 @@ class Flags
     }
 
     /**
-     * Get internal flag
+     * Get internal flag.
      *
      * @param string $flagKey
      * @return mixed|null
      * @since 6.1.0
      */
-    public function getFlag($flagKey = '')
+    public function getFlag(string $flagKey)
     {
         if (isset($this->internalFlags[$flagKey])) {
             return $this->internalFlags[$flagKey];
@@ -92,13 +99,13 @@ class Flags
     }
 
     /**
-     * Check if flag is set and true
+     * Check if flag is set and true.
      *
      * @param string $flagKey
      * @return bool
      * @since 6.1.0
      */
-    public function isFlag($flagKey = '')
+    public function isFlag(string $flagKey): bool
     {
         if ($this->hasFlag($flagKey)) {
             return ($this->getFlag($flagKey) === 1 || $this->getFlag($flagKey) === true ? true : false);
@@ -108,13 +115,13 @@ class Flags
     }
 
     /**
-     * Check if there is an internal flag set with current key
+     * Check if there is an internal flag set with current key.
      *
      * @param string $flagKey
      * @return bool
      * @since 6.1.0
      */
-    public function hasFlag($flagKey = '')
+    public function hasFlag(string $flagKey): bool
     {
         if (!is_null($this->getFlag($flagKey))) {
             return true;
@@ -128,7 +135,7 @@ class Flags
      * @return bool
      * @since 6.1.1
      */
-    public function isAssoc(array $arrayData)
+    public function isAssoc(array $arrayData): bool
     {
         if ([] === $arrayData) {
             return false;
@@ -138,13 +145,15 @@ class Flags
     }
 
     /**
-     * Set multiple flags
+     * Set multiple flags. Chained from 6.1.5.
      *
      * @param array $flags
+     * @param array $lock
+     * @return $this
      * @throws ExceptionHandler
      * @since 6.1.1
      */
-    public function setFlags($flags = [], $lock = [])
+    public function setFlags(array $flags = [], array $lock = []): Flags
     {
         if ($this->isAssoc($flags)) {
             foreach ($flags as $flagKey => $flagData) {
@@ -157,6 +166,8 @@ class Flags
                 $this->setFlag($flagKey, true, $lockFlag);
             }
         }
+
+        return $this;
     }
 
     /**
@@ -164,17 +175,19 @@ class Flags
      * @return array
      * @since 6.1.1
      */
-    public function getFlags()
+    public function getFlags(): array
     {
         return $this->internalFlags;
     }
 
     /**
+     * Remove flag from internals. Returns boolean if successful.
+     *
      * @param string $flagKey
      * @return bool
      * @since 6.1.0
      */
-    public function unsetFlag($flagKey = '')
+    public function unsetFlag(string $flagKey): bool
     {
         if ($this->hasFlag($flagKey)) {
             unset($this->internalFlags[$flagKey]);
@@ -190,7 +203,7 @@ class Flags
      * @return bool
      * @since 6.1.0
      */
-    public function removeFlag($flagKey = '')
+    public function removeFlag(string $flagKey): bool
     {
         return $this->unsetFlag($flagKey);
     }
@@ -200,22 +213,36 @@ class Flags
      * @return bool
      * @since 6.1.0
      */
-    public function deleteFlag($flagKey = '')
+    public function deleteFlag(string $flagKey): bool
     {
         return $this->unsetFlag($flagKey);
     }
 
     /**
+     * @return $this
      * @since 6.1.0
      */
-    public function clearAllFlags()
+    public function clearAllFlags(): Flags
     {
         $this->internalFlags = [];
+
+        return $this;
+    }
+
+    /**
+     * Returns this class.
+     *
+     * @return $this
+     * @since 6.1.5
+     */
+    public function getInstance(): Flags
+    {
+        return $this;
     }
 
     /**
      * Get them all.
-     * @return mixed
+     * @return array
      * @since 6.1.1
      */
     public function getAllFlags()

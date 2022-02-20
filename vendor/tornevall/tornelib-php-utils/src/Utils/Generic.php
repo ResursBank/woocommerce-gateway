@@ -152,7 +152,14 @@ class Generic
         if (is_array($this->expectReleases) && count($this->expectReleases)) {
             foreach ($this->expectReleases as $expectName => $expectVersion) {
                 if (class_exists($expectName)) {
-                    $docVersion = $this->getVersionByClassDoc($expectName);
+                    // Track down a composer file for the current class and try to figure
+                    // out current version on anything available.
+                    if (class_exists('\ReflectionClass')) {
+                        $classPath = (new \ReflectionClass($expectName))->getFileName();
+                        $docVersion = $this->getVersionByAny($classPath, 3, $expectName);
+                    } else {
+                        $docVersion = $this->getVersionByClassDoc($expectName);
+                    }
                     if (!empty($docVersion)) {
                         if (version_compare($docVersion, $expectVersion, '<')) {
                             $return = false;

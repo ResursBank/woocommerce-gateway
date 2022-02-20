@@ -667,8 +667,8 @@ function woocommerce_gateway_resurs_bank_init()
                                         $responseArray['registeredCallbacks'] = $regCount;
                                         $responseArray['registeredTemplates'] = $rList;
                                         $responseArray['testTriggerActive'] = $triggeredTest;
-                                        $responseArray['testTriggerTimestamp'] = strftime(
-                                            '%Y-%m-%d (%H:%M:%S)',
+                                        $responseArray['testTriggerTimestamp'] = date(
+                                            'Y-m-d (H:i:s)',
                                             time()
                                         );
                                     } catch (Exception $e) {
@@ -751,8 +751,8 @@ function woocommerce_gateway_resurs_bank_init()
                                 $triggeredTest = $this->flow->triggerCallback();
                                 $responseArray['errorstring'] = '';
                                 $responseArray['testTriggerActive'] = $triggeredTest;
-                                $responseArray['testTriggerTimestamp'] = strftime(
-                                    '%Y-%m-%d (%H:%M:%S)',
+                                $responseArray['testTriggerTimestamp'] = date(
+                                    'Y-m-d (H:i:s)',
                                     time()
                                 );
                                 $boxColor = 'labelBoot labelBoot-danger';
@@ -810,7 +810,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     $never = false;
                                     $responseText = $translation['notYetReceived'];
                                     if ($lastRecv > 0) {
-                                        $ts = strftime('%Y-%m-%d, %H:%M:%S', $lastRecv);
+                                        $ts = date('Y-m-d, H:i:s', $lastRecv);
                                     } else {
                                         $never = true;
                                         $ts = __(
@@ -2444,7 +2444,7 @@ function woocommerce_gateway_resurs_bank_init()
                 sprintf(
                     '%s (%s)',
                     $bookedStatus,
-                    strftime('%Y-%m-%d %H:%M:%S', time())
+                    date('Y-m-d H:i:s', time())
                 )
             );
 
@@ -3671,7 +3671,7 @@ function woocommerce_gateway_resurs_bank_init()
                     sprintf(
                         '%s (%s)',
                         $bookedStatus,
-                        strftime('%Y-%m-%d %H:%M:%S', time())
+                        strftime('Y-m-d H:i:s', time())
                     )
                 );
 
@@ -5284,7 +5284,7 @@ function woocommerce_gateway_resurs_bank_init()
         $requestForCallbacks = callbackUpdateRequest();
 
         $callbackUriCacheTime = get_transient('resurs_callback_templates_cache_last');
-        $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? strftime('%Y-%m-%d, %H:%M', $callbackUriCacheTime) : '';
+        $lastFetchedCacheTime = $callbackUriCacheTime > 0 ? date('Y-m-d, H:i', $callbackUriCacheTime) : '';
         $resursMethod = false;
         $resursPayment = '';
 
@@ -6365,7 +6365,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                         continue;
                     }
                     if ((strncmp($metaKey, 'hasCallback', 11) === 0) && is_numeric($setValue)) {
-                        $setValue = strftime('%Y-%m-%d %H:%M:%S', $setValue);
+                        $setValue = date('Y-m-d H:i:s', $setValue);
                     }
                     $continueView->$metaValueDescription = $setValue;
                 }
@@ -6397,7 +6397,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                         $handleAsTime = true;
                     }
                     if ($handleAsTime) {
-                        $value .= ' (' . strftime('%Y-%m-%d %H:%M:%S', $value) . ')';
+                        $value .= ' (' . date('Y-m-d H:i:s', $value) . ')';
                     }
                     if (!is_array($value) && !is_object($value)) {
                         $renderedResursData .= '
@@ -7429,7 +7429,7 @@ function resursEventLogger($dataString = '')
 
         @file_put_contents(
             $writeFile,
-            '[' . strftime('%Y-%m-%d %H:%M:%S', time()) . '] ' . $dataString . "\n",
+            '[' . date('Y-m-d H:i:s', time()) . '] ' . $dataString . "\n",
             FILE_APPEND
         );
 

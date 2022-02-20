@@ -185,20 +185,24 @@
         },
         {
             "name": "tornevall/tornelib-php-flags",
-            "version": "6.1.4",
-            "version_normalized": "6.1.4.0",
+            "version": "6.1.5",
+            "version_normalized": "6.1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-flags.git",
-                "reference": "3ec838ceb7e30a859876a9ddbffcd6a119e9d77e"
+                "reference": "5249cf4bd64c750bd3fb4c56b33896e2f8eb0e39"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-flags/zipball/3ec838ceb7e30a859876a9ddbffcd6a119e9d77e",
-                "reference": "3ec838ceb7e30a859876a9ddbffcd6a119e9d77e",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-flags/zipball/5249cf4bd64c750bd3fb4c56b33896e2f8eb0e39",
+                "reference": "5249cf4bd64c750bd3fb4c56b33896e2f8eb0e39",
                 "shasum": ""
             },
-            "time": "2022-02-14T10:28:55+00:00",
+            "require": {
+                "php": ">=7.0",
+                "tornevall/tornelib-php-errorhandler": ">=6.1.15"
+            },
+            "time": "2022-02-20T11:48:56+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -221,7 +225,7 @@
             "description": "Decentralized special flagsetter. Could be used globally.",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-flags/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-flags/tree/6.1.4"
+                "source": "https://github.com/Tornevall/tornelib-php-flags/tree/6.1.5"
             },
             "install-path": "../tornevall/tornelib-php-flags"
         },
@@ -377,19 +381,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-utils.git",
-                "reference": "8a744ac15b7458cd9146d0990425ead1a3f014d5"
+                "reference": "67f1099faf9fc01ccc26a7a3de10ee056d362149"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/8a744ac15b7458cd9146d0990425ead1a3f014d5",
-                "reference": "8a744ac15b7458cd9146d0990425ead1a3f014d5",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/67f1099faf9fc01ccc26a7a3de10ee056d362149",
+                "reference": "67f1099faf9fc01ccc26a7a3de10ee056d362149",
                 "shasum": ""
             },
             "require": {
                 "tornevall/tornelib-php-errorhandler": "^6.1",
                 "tornevall/tornelib-php-flags": "^6.1"
             },
-            "time": "2022-02-19T15:23:28+00:00",
+            "time": "2022-02-19T15:58:18+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

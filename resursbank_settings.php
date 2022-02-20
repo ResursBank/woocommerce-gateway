@@ -597,8 +597,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                         'Timeout detected %s. Wait time changed to %s seconds temporarily.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
-                    strftime(
-                        '%Y-%m-%d %H:%m:%S',
+                    date(
+                        'Y-m-d H:i:s',
                         $lastTransientTimeout
                     ),
                     getResursOption('timeout_throttler')
@@ -1007,8 +1007,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</td>
                         <td class="lastCbTableStyling" valign="top" id="lastCbRun" width="80%">' . (
-                        $callSent > 0 ? strftime(
-                            '%Y-%m-%d (%H:%M:%S)',
+                        $callSent > 0 ? date(
+                            'Y-m-d (H:i:s)',
                             $callSent
                         ) : __('Never', 'resurs-bank-payment-gateway-for-woocommerce')
                         ) . '</td>
@@ -1019,8 +1019,8 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ) . '</td>
                         <td class="lastCbTableStyling" style="border-bottom: 1px dashed gray; margin-bottom: 5px; padding-bottom: 10px;" valign="top" id="lastCbRec" width="80%">' . (
-                        $callRecv > 0 ? strftime(
-                            '%Y-%m-%d (%H:%M:%S)',
+                        $callRecv > 0 ? date(
+                            'Y-m-d (H:i:s)',
                             $callRecv
                         ) : ''
                         ) . '</td>

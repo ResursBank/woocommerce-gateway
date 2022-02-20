@@ -1,6 +1,8 @@
 <?php
 
 use Resursbank\RBEcomPHP\ResursBank;
+use TorneLIB\Module\Network\NetWrapper;
+use TorneLIB\Utils\Generic;
 
 /**
  * Get specific options from the Resurs configuration set
@@ -549,22 +551,36 @@ function getRbAdminNotices()
  */
 function resursExpectVersions()
 {
+    $genericRequest = new Generic();
+    $genericRequest->setExpectedVersions(
+        [
+            ResursBank::class => '1.3.70',
+            NetWrapper::class => '6.1.5'
+        ]
+    );
+
     $versionProblems = [];
     if (is_admin() && getResursOption('enabled')) {
-        $ecomCurrent = (new ResursBank())->getVersionNumber();
-        if (version_compare($ecomCurrent, RB_EXPECT_ECOM, '<')) {
-            $versionProblems[] = sprintf('EComPHP %s, requires %s', $ecomCurrent, RB_EXPECT_ECOM);
+        try {
+            $genericRequest->getExpectedVersions(false);
+        } catch (Exception $e) {
+            $versionProblems[] = $e->getMessage();
         }
         if (is_admin() && session_status() === PHP_SESSION_NONE && count($versionProblems)) {
             session_start();
+            $expectList = $genericRequest->getExpectationList();
+            $expectationList = [];
+            foreach ($expectList as $name => $version) {
+                $expectationList[] = sprintf('<b>%s:</b> %s', $name, $version);
+            }
             $_SESSION['rb2']['exception']['improper_version'] = sprintf(
                 __(
                     'There is a problem with your platform: The libraries that this plugin is using is ' .
                     'probably colliding with an older version. This can cause problems with your platform as ' .
-                    'important features could be missing. The libraries affected are: %s.',
+                    'important features could be missing.<br><br><b>Expected versions:</b><br>%s.',
                     'resurs-bank-payment-gateway-for-woocommerce'
                 ),
-                implode(', ', $versionProblems)
+                implode('<br>', $expectationList)
             );
         }
     }
