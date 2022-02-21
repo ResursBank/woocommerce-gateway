@@ -143,20 +143,20 @@
         },
         {
             "name": "tornevall/tornelib-php-errorhandler",
-            "version": "6.1.15",
-            "version_normalized": "6.1.15.0",
+            "version": "6.1.16",
+            "version_normalized": "6.1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Tornevall/tornelib-php-errorhandler.git",
-                "reference": "6fb9f50e2eabb6340d11001d1b532ebabffd8e05"
+                "reference": "038b43d88542e4b82381bd49f96621b0a8519201"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Tornevall/tornelib-php-errorhandler/zipball/6fb9f50e2eabb6340d11001d1b532ebabffd8e05",
-                "reference": "6fb9f50e2eabb6340d11001d1b532ebabffd8e05",
+                "url": "https://api.github.com/repos/Tornevall/tornelib-php-errorhandler/zipball/038b43d88542e4b82381bd49f96621b0a8519201",
+                "reference": "038b43d88542e4b82381bd49f96621b0a8519201",
                 "shasum": ""
             },
-            "time": "2022-02-19T14:45:49+00:00",
+            "time": "2022-02-21T13:03:06+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -179,7 +179,7 @@
             "description": "Global exception and errorhandling for TorneLIB, with all errorcodes stored in the same place.",
             "support": {
                 "issues": "https://github.com/Tornevall/tornelib-php-errorhandler/issues",
-                "source": "https://github.com/Tornevall/tornelib-php-errorhandler/tree/6.1.15"
+                "source": "https://github.com/Tornevall/tornelib-php-errorhandler/tree/6.1.16"
             },
             "install-path": "../tornevall/tornelib-php-errorhandler"
         },
