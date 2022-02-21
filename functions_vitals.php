@@ -554,7 +554,7 @@ function resursExpectVersions()
     $genericRequest = new Generic();
     $genericRequest->setExpectedVersions(
         [
-            ResursBank::class => '1.3.70',
+            ResursBank::class => '1.3.72',
             NetWrapper::class => '6.1.5'
         ]
     );

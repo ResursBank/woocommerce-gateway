@@ -1,11 +1,10 @@
 {
     "common": {
         "Change": "Ändra",
-        "ChoosePaymentMethod": "Välj betalsätt",
+        "ChoosePaymentMethod": "Betalsätt",
         "Get": "Hämta",
-        "GetYourInformation": "Hämta dina uppgifter",
+        "GetYourInformation": "Dina uppgifter",
         "NotYouQ": "Inte du?",
-        "Submit": "Slutför",
         "close": "stäng"
     },
     "userInfo": {
@@ -27,9 +26,13 @@
         "infoAddressBlock": "Dessa uppgifter behövs för att vi ska kunna skicka din beställning. Var extra noga med att fylla i rätt mobilnummer och e-postadress då dessa används för orderbekräftelse och paketaviseringar.",
         "infoDeliveryAddressBlock": "Att skicka en beställning till en annan leveransadress än din folkbokföringsadress är inga problem. Väljer du faktura eller delbetalning som betalsätt så kommer du få signera ditt köp med bank-id."
     },
+    "govId": {
+        "labelGovernmentId": "Personnummer *",
+        "govidInputNextStepText": "Fortsätt"
+    },
     "submit": {
         "buttonSubmitPayment": "Genomför köp",
-        "amountSummary": "Summa: ",
+        "amountSummary": "Summa att betala",
         "amountSummaryFeeOnly": "inklusive avgift {{fee}}",
         "saveInfoTitle": "Spara mina uppgifter",
         "saveInfoText": "När du sparar dina uppgifter blir det enklare att handla nästa gång du använder Resurs Checkout. Informationen sparas i en cookie i din webbläsare. Läs mer om cookies och persondata i villkoren nedan.",
@@ -42,15 +45,16 @@
     },
     "paymentMethods": {
         "invoice": {
-            "title": "Få hem dina varor först, betala sen.",
-            "info": "Fakturan skickas till angiven e-postadress.",
+            "infoText1": "Få hem dina varor först, betala sen.",
             "extendedInfo": "När du väljer att betala på faktura får du 30-60 dagar på dig att känna på varorna innan det är dags att betala. När du får hem din faktura kan du välja att betala hela beloppet eller dela upp det i mindre delar. På fakturan ser du vilka betalningsalternativ som finns och vilka eventuella avgifter som tillkommer.",
             "extendedOpen": "Läs mer",
             "extendedClose": "Stäng",
+            "informationAndTerms": "Information och villkor",
             "labelGovernmentId": "Personnummer *",
             "noFee": "Inga faktureringsavgifter",
             "placeholderGovernmentId": "ååååmmdd-nnnn",
-            "alternativeDeliveryAdress": "Eftersom du valt en annan leveransadress måste du signera med Bank-id."
+            "alternativeDeliveryAdress": "Eftersom du valt en annan leveransadress måste du signera med Bank-id.",
+            "infoGovernmentId": "För att betala mot faktura behöver du ange ditt personnummer"
         },
         "pspInternet": {
             "linkMore": "Läs mer",
@@ -62,62 +66,86 @@
             "info": "Betala direkt från ditt bankkonto med säker verifiering via BankID. Slipp kort, nedladdning av appar och registrering."
         },
         "pspCard": {
-            "linkMore": "Läs mer",
-            "linkMoreClose": "Stäng",
+            "moreInfo": "Mer information",
             "textInfo": "Betala ditt köp med ditt VISA eller Mastercard. Efter att du bekräftat ditt köp genom att klicka på \"Genomför köp\" i kassan kommer du få ange dina kortuppgifter för att slutföra betalningen. Transaktionen sker via certifierad betalväxel och med SSL-kryptering vilket innebär att ingen obehörig kan se dina uppgifter. Inga kortuppgifter hanteras eller sparas av Resurs Bank. Vi accepterar inte kort som är utfärdade av en bank utanför norden.",
             "termsLink": ""
         },
         "partPayment": {
-            "title": "Betala i din takt",
-            "info": "Välj hur du vill dela upp ditt köp när fakturan kommer",
-            "extendedOpen": "Läs mer",
-            "extendedClose": "Stäng",
+            "infoText1": "Betala i din takt",
+            "infoText2": "Välj hur du vill dela upp ditt köp när fakturan kommer",
+            "informationAndTerms": "Information och villkor",
             "extendedLinkText": "Läs villkoren för delbetalning här",
             "extendedInfo": "Fakturan skickas till dig i mitten på nästa månad, när det är dags att betala väljer du om du vill betala allt på en gång eller lite i taget. På fakturan ser du vilka alternativ som finns och de eventuella avgifter som tillkommer.",
-            "labelGovernmentId": "Personnummer *",
-            "alternativeDeliveryAdress": "Eftersom du valt en annan leveransadress måste du signera med Bank-id."
+            "alternativeDeliveryAdress": "Eftersom du valt en annan leveransadress måste du signera med Bank-id.",
+            "infoGovernmentId": "För att betala mot faktura behöver du ange ditt personnummer"
         },
         "pspSwish": {
-            "infoText": "Tryck på \"Genomför köp\", öppna Swish i din mobil och genomför köpet",
+            "infoText1": "Tryck på \"Genomför köp\", öppna Swish i din mobil och genomför köpet",
             "mobileText": "Ditt mobilnummer: {{mobileNumber}}"
         },
         "newCard": {
-            "title": "Betala hela eller dela beloppet",
-            "info": "Se dina köp i Resurs bank app",
-            "extendedOpen": "Läs mer",
-            "extendedClose": "Stäng",
+            "infoText1": "Betala hela eller dela beloppet",
+            "infoText2": "Se dina köp i Resurs bank app",
+            "moreInfo": "Mer information",
             "extendedInfo": "Ansökan om ett Resurskort och kom igång med smidigare betalningar redan idag. När du klickar på \"Genomför Köp\", identifierar du dig med BankID föra att vi ska kunna godkänna din kreditansökan. Kortet landar i din brevlåda inom några dagar. Fakturan för ditt köp skickas till din e-post, Mina sidor samt i Resurs Bank app, där du kan välja att betala hela eller dela beloppet som det passar dig.",
             "label": "Önskad kreditgräns:",
             "extendedLinkText": "Läs mer om våra villkor här",
-            "labelGovernmentId": "Personnummer *"
+            "infoGovernmentId": "För att ansöka om ett Resurskort behöver du ange ditt personnummer"
         },
         "resursCard": {
-            "title": "Köp nu, betala sen",
-            "info": "Se alla dina köp i Resurs bank app",
-            "extendedOpen": "Läs mer",
-            "extendedClose": "Stäng",
-            "extendedInfo": "När du väljer att betala med ditt Resurs kort hämtas dina uppgifter efter du valt \"Genomför Köp\". Du identifieras med BankID så att köpet kan registreras på ditt kort.",
-            "labelGovernmentId": "Personnummer *"
+            "infoText1": "Köp nu, betala sen",
+            "infoText2": "Se alla dina köp i Resurs bank app",
+            "moreInfo": "Mer information",
+            "extendedInfo": "När du väljer att betala med ditt Resurskort hämtas dina uppgifter efter du valt \"Genomför Köp\". Du identifieras med BankID så att köpet kan registreras på ditt kort.",
+            "infoGovernmentId": "För att betala med Resurskort behöver du ange ditt personnummer"
         },
         "revolvingCredit": {
-            "title": "Köp nu, betala sen",
-            "info": "Se alla dina köp i Resurs Banks app",
+            "infoText1": "Köp nu, betala sen",
+            "infoText2": "Se alla dina köp i Resurs Banks app",
             "extendedInfo": "När du väljer att betala med Resurs får du tillgång till flera flexibla betalningsalternativ. Allt du behöver göra är att signera ditt köp med BankID efter att du klickat på ”Genomför köp”.",
             "extendedOpen": "Läs mer",
             "extendedClose": "Stäng",
+            "infoGovernmentId": "För att betala med Resurs behöver du ange ditt personnummer",
+            "moreInfo": "Mer information",
             "labelGovernmentId": "Personnummer *"
         },
         "newRevolvingCredit": {
-            "title": "Betala hela eller dela beloppet",
-            "info": "Se alla dina köp i Resurs Banks app",
+            "infoText1": "Betala hela eller dela beloppet",
+            "infoText2": "Se alla dina köp i Resurs Banks app",
             "extendedInfo": "Ansök om ett Resurskonto och få tillgång till flera flexibla betalningsalternativ. Allt du behöver göra är att klicka på ”Genomför köp” och identifiera dig med BankID för att vi ska kunna godkänna din kreditansökan. Fakturan för ditt köp hittar du på Mina sidor via resursbank.se och i Resurs Banks app, där du kan välja hur du vill betala – allt på en gång eller lite i taget.",
             "extendedTermsLink": "Läs mer om våra villkor här",
-            "extendedOpen": "Läs mer",
-            "extendedClose": "Stäng",
+            "moreInfo": "Mer information",
             "termsLinkText": "Läs mer om våra villkor här",
             "labelCreditLimit": "Välj önskad kreditgräns",
-            "infoGovernmentId": "För att ansöka om en nya kredit behöver du ange ditt personnummer",
-            "labelGovernmentId": "Personnummer *"
+            "infoGovernmentId": "För att ansöka om en ny kredit behöver du ange ditt personnummer"
+        },
+        "RESURS_INVOICE": {
+            "subTitle": "Betala senare utan avgift",
+            "subTitleWithFee": "Betala senare, {{fee}} avgift"
+        },
+        "RESURS_PART_PAYMENT": {
+            "subTitle": "Betala i din takt",
+            "subTitleWithFee": "Betala i din takt, {{fee}} avgift"
+        },
+        "RESURS_CARD": {
+            "subTitle": "Köp nu, betala senare",
+            "subTitleWithFee": "Köp nu, betala senare. {{fee}} avgift"
+        },
+        "RESURS_CREDIT_CARD": {
+            "subTitle": "Köp nu, betala senare",
+            "subTitleWithFee": "Köp nu, betala senare. {{fee}} avgift"
+        },
+        "RESURS_NEW_CARD": {
+            "subTitle": "Betala allt eller dela upp",
+            "subTitleWithFee": "Betala allt eller dela upp, {{fee}} avgift"
+        },
+        "RESURS_REVOLVING_CREDIT": {
+            "subTitle": "Köp nu, betala senare",
+            "subTitleWithFee": "Köp nu, betala senare. {{fee}} avgift"
+        },
+        "RESURS_NEW_REVOLVING_CREDIT": {
+            "subTitle": "Betala allt eller dela upp",
+            "subTitleWithFee": "Betala allt eller dela upp, {{fee}} avgift"
         }
     },
     "validation": {
@@ -193,14 +221,15 @@
             "REJECTED_BY_REPRESENTATIVE": "Ditt köp har blivit avbrutet vänligen kontakta säljaren.",
             "UNKNOWN": "Tjänsten är tyvärr inte tillgänglig just nu. Prova igen senare eller kontakta kundtjänst.",
             "LOGIN_ERROR": "Vi kunde tyvärr inte verifiera dina uppgifter. Gör ett nytt försök eller fyll i dina kort-/kontouppgifter manuellt. Du kan självklart också välja ett annat betalsätt.",
-            "EXPIRED": "Tyvärr har sessionen gått ut. Vänligen ladda om sidan."
+            "SESSION_EXPIRED": "Tyvärr har sessionen gått ut. Vänligen ladda om sidan."
         },
         "titles": {
             "general": "Något gick fel!"
         }
     },
     "footer": {
-        "copyrightText": "© {{year}} Resurs Bank AB (publ) Org.nr 516401-0208",
+        "copyrightText": "© {{year}} Resurs Bank AB (publ)",
+        "orgNr": "Org.nr 516401-0208",
         "contactText": "Box 222 09, SE-250 24 Helsingborg",
         "mailLinkText": "info@resursbank.se",
         "mailLink": "mailto:info@resursbank.se",
@@ -226,12 +255,13 @@
     },
     "mup": {
         "pep": {
+            "title": "Politisk utsatt ställning?",
             "placeholderCountry": "Välj land",
             "readMore": "Läs mer här"
         },
         "terms": {
-            "titleLegal": "Jag bekräftar att jag accepterar",
-            "legalCTA": "villkoren"
+            "titleLegal": "Jag bekräftar att jag accepterar villkoren",
+            "legalCTA": "Villkor"
         }
     }
 }

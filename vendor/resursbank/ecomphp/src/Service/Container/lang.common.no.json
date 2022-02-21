@@ -1,11 +1,10 @@
 {
     "common": {
         "Change": "Endre",
-        "ChoosePaymentMethod": "Velg betalingsmåte",
+        "ChoosePaymentMethod": "Betalingsmåte",
         "Get": "Hent adresse",
-        "GetYourInformation": "Hent mine opplysninger",
+        "GetYourInformation": "Mine opplysninger",
         "NotYouQ": "Ikke du?",
-        "Submit": "Fullfør kjøp",
         "close": "Lukk"
     },
     "userInfo": {
@@ -30,7 +29,7 @@
     },
     "submit": {
         "buttonSubmitPayment": "Fullfør kjøp",
-        "amountSummary": "Sum: ",
+        "amountSummary": "Totalt å betale: ",
         "amountSummaryFeeOnly": "Inkludert gebyr {{fee}}",
         "saveInfoTitle": "Lagre mine opplysninger",
         "saveInfoText": " Når du lagrer dine opplysninger, er det enklere å handle neste gang du bruker Resurs Checkout. Informasjonen lagres i en cookie i din nettleser. Les mer om cookies og personopplysninger i vilkårene nedenfor.",
@@ -43,67 +42,90 @@
     },
     "paymentMethods": {
         "revolvingCredit": {
-            "title": "Kjøp nå – betal senere",
-            "info": "Se alle dine kjøp i Resurs Bank app",
+            "infoText1": "Kjøp nå, betal senere.",
+            "infoText2": "Se alle dine kjøp i Resurs Bank app",
             "extendedInfo": "Når du velger å betale med Resurs Bank får du muligheten å velge blant flere fleksible betalingsalternativ. Alt du trenger å gjøre er å bekrefte kjøpet med å signere med BankID etter at du har klikket på \"Fullfør kjøp\".",
-            "extendedOpen": "Les mer",
-            "extendedClose": "Lukk"
+            "moreInfo": "Mer informasjon"
         },
         "newRevolvingCredit": {
-            "title": "Betal alt på en gang, eller del opp beløpet",
-            "info": "Se dine kjøp i Resurs Banks app",
+            "infoText1": "Betal alt på en gang, eller del opp beløpet",
+            "infoText2": "Se dine kjøp i Resurs Banks app",
             "extendedInfo": "Søk om Resurs konto og få muligheten til å velge flere fleksible betalingsalternativ. Alt du trenger gjøre er å klikke på \"Fullfør kjøp\". Deretter identifiserer du deg med BankID for å gjennomføre søknaden. Faktura for kjøpet blir gjort tilgjengelig på resursbank.no/mine sider, og i vår app. Der kan du velge betalingsalternativ, og velge om du vil betale alt på en gang, eller dele opp betalingen.",
-            "extendedOpen": "Les mer",
-            "extendedClose": "Lukk",
+            "moreInfo": "Mer informasjon",
             "termsLinkText": "Les mer om våre vilkår her",
             "labelCreditLimit": "Velg ønsket kredittgrense"
         },
         "invoice": {
-            "title": "Motta dine varer nå – betal senere.",
-            "info": "Fakturaen sendes til oppgitt e-post adresse.",
+            "infoText1": "Kjøp nå, betal senere.",
             "extendedInfo": "Når du velger faktura, får du 30-60 dager før denne må betales. Når fakturaen kommer, kan du velge om du vil betale alt på en gang, eller delbetale beløpet i månedlige rater. På fakturaen ser hvilke betalingsalternativ du kan velge blant, og evt. hvilke avgifter som pålegges.",
-            "extendedOpen": "Mer informasjon",
-            "extendedClose": "Lukk",
-            "noFee": "Ingen faktureringsgebyrer",
+            "informationAndTerms": "Informasjon og vilkår",
             "alternativeDeliveryAdress": "I og med at du har valgt en annen leveringsadresse, må du signere med BankID."
         },
         "pspTrustly": {
-            "info": "Betal direkte fra bankkontoen din på nett, støttet av sikkerhet på banknivå. Ingen kort, ingen app-nedlasting, ingen registrering."
+            "infoText1": "Betal direkte fra bankkontoen din på nett, støttet av sikkerhet på banknivå. Ingen kort, ingen app-nedlasting, ingen registrering."
+        },
+        "pspVipps": {
+            "infoText1": "Friksjonsfri betaling med mobilen. Kostnadsfritt uansett beløp og med samme rettigheter som ved vanlig kortbetaling."
         },
         "pspCard": {
-            "linkMore": "Mer informasjon",
-            "linkMoreClose": "Lukk",
+            "moreInfo": "Mer informasjon",
             "textInfo": "Betal for kjøpet med ditt VISA eller Mastercard. Når du har bekreftet kjøpet ved å klikke på \"Fullfør kjøp\" i kassen, må du oppgi kortopplysninger for å fullføre betalingen. Transaksjonen skjer via sertifisert betalingsaktør og med SSL-kryptering, noe som betyr at ingen uvedkommende kan se dine opplysninger. Resurs Bank behandler eller lagrer ingen kortinformasjon. Vi aksepterer ikke kort som er utstedt av en bank utenfor Norden.",
             "termsLink": ""
         },
         "partPayment": {
-            "title": "Betal i ditt eget tempo",
-            "info": "Velg selv hvilken delbetaling du ønsker når du mottar fakturaen",
+            "infoText1": "Betal i ditt eget tempo",
+            "infoText2": "Velg selv hvilken delbetaling du ønsker når du mottar fakturaen",
             "extendedInfo": "Fakturaen sendes deg i midten av neste måned. Da velger du om du vil betale alt på en gang, eller dele opp i mindre månedlige innbetalinger. På fakturaen vil du også se hvilke alternativer for delbetalinger du kan velge i, og hva kostnaden for dette er.",
-            "extendedOpen": "Les mer her",
-            "extendedClose": "Lukk",
+            "informationAndTerms": "Informasjon og vilkår",
             "extendedLinkText": "Les vilkårene for delbetaling her"
         },
         "newCard": {
-            "title": "Betal alt på en gang, eller del opp beløpet",
-            "info": "Se dine kjøp i Resurs Banks app",
-            "extendedOpen": "Les mer",
-            "extendedClose": "Lukk",
+            "infoText1": "Betal alt på en gang, eller del opp beløpet",
+            "infoText2": "Se dine kjøp i Resurs Banks app",
+            "moreInfo": "Mer informasjon",
             "extendedInfo": "Søk om et Resurs kort, og kom i gang med fleksible betalinger allerede i dag. Når du trykker på \"Fullfør kjøp\", identifiserer du deg med BankID for å gjennomføre søknaden. Kortet vil du motta i postkassen i løpet av få dager, mens faktura sendes neste måned og er tilgjengelig i Mine Sider og Resurs Banks app. Når det er på tide å betale, velger du selv om du innfrir eller deler opp beløpet som det passer deg.",
             "extendedLinkText": "Les mer om våre vilkår her",
             "label": "Velg ønsket kredittgrense:"
         },
         "resursCard": {
-            "title": "Kjøp nå – betal senere",
-            "info": "Se alle dine kjøp i Resurs Bank app",
-            "extendedOpen": "Les mer",
-            "extendedClose": "Lukk",
+            "infoText1": "Kjøp nå, betal senere.",
+            "infoText2": "Se alle dine kjøp i Resurs Bank app",
+            "moreInfo": "Mer informasjon",
             "extendedInfo": "Når du velger å betale med ditt Resurs kort, hentes dine opplysninger etter at du har valgt \"Fullfør kjøp\". Du signerer med BankID, og kjøpet vil registreres på ditt kort."
+        },
+        "RESURS_INVOICE": {
+            "subTitle": "Betal senere, uten gebyr",
+            "subTitleWithFee": "Betal senere, {{fee}} gebyr"
+        },
+        "RESURS_PART_PAYMENT": {
+            "subTitle": "Betal i ditt eget tempo",
+            "subTitleWithFee": "Betal i ditt eget tempo, {{fee}} gebyr"
+        },
+        "RESURS_CARD": {
+            "subTitle": "Betal i ditt eget tempo",
+            "subTitleWithFee": "Betal i ditt eget tempo, {{fee}} gebyr"
+        },
+        "RESURS_CREDIT_CARD": {
+            "subTitle": "Betal i ditt eget tempo",
+            "subTitleWithFee": "Betal i ditt eget tempo, {{fee}} gebyr"
+        },
+        "RESURS_NEW_CARD": {
+            "subTitle": "Betal i ditt eget tempo",
+            "subTitleWithFee": "Betal i ditt eget tempo, {{fee}} gebyr"
+        },
+        "RESURS_REVOLVING_CREDIT": {
+            "subTitle": "Betal i ditt eget tempo",
+            "subTitleWithFee": "Betal i ditt eget tempo, {{fee}} gebyr"
+        },
+        "RESURS_NEW_REVOLVING_CREDIT": {
+            "subTitle": "Betal i ditt eget tempo",
+            "subTitleWithFee": "Betal i ditt eget tempo, {{fee}} gebyr"
         },
         "common": {
             "govIdInput": {
                 "labelText": "Fødselsnummer *"
-            }
+            },
+            "govidInputNextStepText": "Fortsett"
         }
     },
     "validation": {
@@ -176,14 +198,15 @@
             "PAYMENT_ENGINE_ERROR": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
             "REJECTED_BY_REPRESENTATIVE": "Kjøpet er kansellert, bør du kontakte selgeren.",
             "UNKNOWN": "Tjenesten er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere eller kontakt kundetjeneste.",
-            "EXPIRED": "Tiden har dessverre gått ut. Vennligst last ned siden på nytt."
+            "SESSION_EXPIRED": "Tiden har dessverre gått ut. Vennligst last ned siden på nytt."
         },
         "titles": {
             "general": "Noe gikk galt"
         }
     },
     "footer": {
-        "copyrightText": "© {{year}} Resurs Bank AB (publ) NUF Org.nr 984150865",
+        "copyrightText": "© {{year}} Resurs Bank AB (publ)",
+        "orgNr": "NUF Org.nr 984150865",
         "contactText": "Hovedkontor: Resurs Bank AB (publ) i Helsingborg, Sverige.",
         "mailLinkText": "kundetjeneste@resursbank.no",
         "mailLink": "mailto:kundetjeneste@resursbank.no",

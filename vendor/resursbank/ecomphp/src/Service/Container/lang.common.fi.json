@@ -2,7 +2,6 @@
     "common": {
         "Change": "Muuta",
         "ChoosePaymentMethod": "Valitse maksutapa",
-        "Submit": "Oston vahvistus",
         "GetYourInformation": "Omat tietoni",
         "close": "sulje",
         "Remove": "Poista",
@@ -11,21 +10,21 @@
     },
     "userInfo": {
         "placeholderGovId": "PPKKVV-XXXX",
-        "labelFirstName": "Etunimi*",
-        "labelLastName": "Sukunimi*",
-        "labelAddress": "Osoite*",
+        "labelFirstName": "Etunimi *",
+        "labelLastName": "Sukunimi *",
+        "labelAddress": "Osoite *",
         "labelAddressInfo": "Lisätietoa osoitteesta",
-        "labelPostalCode": "Postinumero*",
-        "labelCity": "Postitoimipaikka*",
-        "labelEmail": "Sähköposti*",
-        "labelPhone": "Puhelinnumero*",
+        "labelPostalCode": "Postinumero *",
+        "labelCity": "Postitoimipaikka *",
+        "labelEmail": "Sähköposti *",
+        "labelPhone": "Puhelinnumero *",
         "labelAlternativeDeliveryAddress": "Muu toimitusosoite",
         "infoAddressBlock": "Näitä tietoja tarvitaan, että voimme lähettää tilauksesi. Täytäthän puhelinnumerosi ja sähköpostiosoitteesi oikein, että pystymme lähettää sinulle tilausvahvistuksen ja tavaran toimitustiedot.",
         "infoDeliveryAddressBlock": "Toimitusosoite voi olla eri kuin väestörekisterissä oleva osoite. Jos valitset maksutavaksi laskun tai osamaksun, sinun on hyväksyttävä ostoksesi verkkopankkitunnuksilla."
     },
     "submit": {
         "buttonSubmitPayment": "Vahvista ostos",
-        "amountSummary": "Summa: ",
+        "amountSummary": "Maksettava yhteensä: ",
         "amountSummaryFeeOnly": "sisältää {{fee}} kulun",
         "saveInfoTitle": "Tallenna tietoni",
         "saveInfoText": "Kun tietosi tallennetaan, on sinun helpompi tehdä ostoksia seuraavalla kerralla, kun käytät Resurs Checkoutia. Tiedot tallentuvat selaimesi evästeisiin. Lue lisää evästeistä ja henkilötiedoista alla olevista ehdoista.",
@@ -38,67 +37,87 @@
     },
     "paymentMethods": {
         "invoice": {
-            "title": "Maksa vasta sitten, kun olet saanut tilauksen kotiisi.",
-            "info": "Lasku lähetetään antamaasi sähköpostiosoitteeseen.",
+            "infoText1": "Maksa vasta sitten, kun olet saanut tilauksen kotiisi.",
             "extendedInfo": "Kun valitset maksutavaksi laskun, saat 30 – 60 päivää aikaa tutustua tuotteisiin ennen kuin on maksun aika. Laskun saatuasi voit valita maksatko kaiken kerralla vai jaatko maksun useampaan osaan. Laskusta näet, millaisia maksuvaihtoehtoja on tarjolla, ja mitä mahdollisia kuluja niihin liittyy.",
-            "noFee": "Ei laskutuskuluja",
             "alternativeDeliveryAdress": "Koska olet valinnut toisen toimitusosoitteen, on sinun hyväksyttävä osto pankkitunnuksilla tai mobiilivarmenteella.",
-            "extendedOpen": "Lue lisää",
-            "extendedClose": "Sulje"
+            "informationAndTerms": "Tiedot ja ehdot"
         },
         "pspTrustly": {
-            "info": "Maksa suoraan omalta verkkopankkitililtäsi, varmennettu pankkitoiminnan tasoisella turvallisuudella. Ei kortteja, ei sovelluksia, ei rekisteröitymistä."
+            "infoText1": "Maksa suoraan omalta verkkopankkitililtäsi, varmennettu pankkitoiminnan tasoisella turvallisuudella. Ei kortteja, ei sovelluksia, ei rekisteröitymistä."
         },
         "pspCard": {
-            "linkMore": "Lue lisää",
-            "linkMoreClose": "Sulje",
+            "moreInfo": "Lue lisää",
             "textInfo": "Maksa ostoksesi VISA- tai MasterCard-kortilla. Kun olet vahvistanut ostoksesi klikkaamalla Vahvista ostos -painiketta, pääset syöttämään korttitietosi maksun suorittamista varten. Maksu tapahtuu sertifioidun maksuvaihteen kautta SSL-suojattuna. Tämä estää luvattomien henkilöiden pääsyn tietoihisi. Resurs Bank ei käsittele tai tallenna korttitietojasi. Hyväksymme maksuvälineeksi vain pohjoismaisten pankkien myöntämiä kortteja.",
             "termsLink": ""
         },
         "partPayment": {
-            "title": "Maksa omassa tahdissa",
-            "info": "Valitse itsellesi sopivin osamaksuvaihtoehto, kun saat laskun",
-            "extendedOpen": "Lue lisää",
-            "extendedClose": "Sulje",
+            "infoText1": "Maksa omassa tahdissa",
+            "infoText2": "Valitse itsellesi sopivin osamaksuvaihtoehto, kun saat laskun",
+            "informationAndTerms": "Tiedot ja ehdot",
             "extendedLinkText": "Katso tiliehdot täältä",
             "extendedInfo": "Saat laskun ostoa seuraavassa kuussa. Voit silloin päättää maksatko koko summan kerralla vai vähän kerrallaan. Laskulta löytyvät kaikki maksuvaihtoehdot kuluineen.",
             "alternativeDeliveryAdress": "Sinun on allekirjoitettava pankkitunnuksella, koska olet valinnut toisen toimitusosoitteen."
         },
         "newCard": {
-            "title": "Maksa kaikki kerralla tai osissa",
-            "info": "",
-            "extendedOpen": "Lue lisää",
-            "extendedClose": "Sulje",
+            "infoText1": "Maksa kaikki kerralla tai osissa",
+            "infoText2": "",
+            "moreInfo": "Lue lisää",
             "extendedLinkText": "Lue luottoehdot täältä",
             "extendedInfo": "Hae Resursin korttia ja aloita joustavampi maksaminen jo tänään. Kun klikkaat ”Viimeistele ostos”, tunnistaudu pankkitunnuksillasi tai mobiilivarmenteella, että voimme käsitellä luottohakemuksesi. Kortti postitetaan sinulle kotiosoitteeseen. Saat laskun antamaasi sähköpostiosoitteeseen sekä Omille sivuille osoitteessa resursbank.fi. Laskun saatuasi voit päättää maksatko koko summan kerralla vai osissa.",
             "label": "Valitse toivottu luottoraja:"
         },
         "resursCard": {
-            "title": "Osta nyt, maksa myöhemmin",
-            "info": "",
-            "extendedOpen": "Lue lisää",
-            "extendedClose": "Sulje",
+            "infoText1": "Osta nyt, maksa myöhemmin",
+            "infoText2": "",
+            "moreInfo": "Lue lisää",
             "extendedInfo": "Kun valitset maksun Resursin kortilla ja klikkaat ”Viimeistele ostos”, saat korttitietosi näkyviin. Tunnistaudu pankkitunnuksillasi tai mobiilivarmenteella, niin ostot rekisteröityvät kortillesi."
         },
         "revolvingCredit": {
-            "title": "Osta nyt, maksa myöhemmin",
-            "info": "",
-            "extendedOpen": "Lue lisää",
-            "extendedClose": "Sulje",
+            "infoText1": "Osta nyt, maksa myöhemmin",
+            "infoText2": "",
+            "moreInfo": "Lue lisää",
             "extendedInfo": "Kun valitset maksutavaksi Resurs Bankin, voit valita useista joustavista maksuvaihtoehdoista. Klikattuasi ”Viimeistele osto” hyväksyt oston tunnistautumalla pankkitunnuksillasi tai mobiilivarmenteella."
         },
         "newRevolvingCredit": {
-            "title": "Maksa kaikki kerralla tai osissa",
-            "info": "",
+            "infoText1": "Maksa kaikki kerralla tai osissa",
+            "infoText2": "",
             "extendedInfo": "Hae Resurs Bankin luottoa ja saat useita joustavia maksuvaihtoehtoja. Luottohakemusta varten sinun tarvitsee vain klikata ”Viimeistele osto” ja tunnistautua pankkitunnuksilla tai mobiilivarmenteella. Kun saat laskun sähköpostiisi, voit valita maksatko kaiken kerralla vai osissa.",
-            "extendedOpen": "Lue lisää",
-            "extendedClose": "Sulje",
+            "moreInfo": "Lue lisää",
             "termsLinkText": "Lue luottoehdot täältä",
             "labelCreditLimit": "Valitse toivottu luottoraja"
         },
+        "RESURS_INVOICE": {
+            "subTitle": "Maksa myöhemmin ilman kuluja",
+            "subTitleWithFee": "Maksa myöhemmin – {{fee}} kulu"
+        },
+        "RESURS_PART_PAYMENT": {
+            "subTitle": "Maksa omaan tahtiisi",
+            "subTitleWithFee": "Maksa omaan tahtiisi - {{fee}} kulu"
+        },
+        "RESURS_CARD": {
+            "subTitle": "Maksa omassa tahdissasi",
+            "subTitleWithFee": "Maksa omaan tahtiisi - {{fee}} kulu"
+        },
+        "RESURS_CREDIT_CARD": {
+            "subTitle": "Maksa omassa tahdissasi",
+            "subTitleWithFee": "Maksa omaan tahtiisi - {{fee}} kulu"
+        },
+        "RESURS_NEW_CARD": {
+            "subTitle": "Maksa omassa tahdissasi",
+            "subTitleWithFee": "Maksa omaan tahtiisi - {{fee}} kulu"
+        },
+        "RESURS_REVOLVING_CREDIT": {
+            "subTitle": "Maksa omassa tahdissasi",
+            "subTitleWithFee": "Maksa omaan tahtiisi - {{fee}} kulu"
+        },
+        "RESURS_NEW_REVOLVING_CREDIT": {
+            "subTitle": "Maksa omassa tahdissasi",
+            "subTitleWithFee": "Maksa omaan tahtiisi - {{fee}} kulu"
+        },
         "common": {
             "govIdInput": {
-                "labelText": "Henkilötunnus *"
+                "labelText": "Henkilötunnus *",
+                "govidInputNextStepText": "Jatka"
             }
         }
     },
@@ -160,14 +179,15 @@
             "PAYMENT_ENGINE_ERROR": "Palveluun ei valitettavasti juuri nyt saada yhteyttä. Kokeile myöhemmin uudelleen tai ota yhteyttä asiakaspalveluun.",
             "REJECTED_BY_REPRESENTATIVE": "Ostoksesi on peruutettu, ota yhteyttä myyjään.",
             "UNKNOWN": "Palveluun ei valitettavasti juuri nyt saada yhteyttä. Kokeile myöhemmin ",
-            "EXPIRED": "Valitettavasti istuntosi on päättynyt. Ole hyvä ja lataa sivu uudelleen."
+            "SESSION_EXPIRED": "Valitettavasti istuntosi on päättynyt. Ole hyvä ja lataa sivu uudelleen."
         },
         "titles": {
             "general": "Tapahtui virhe!"
         }
     },
     "footer": {
-        "copyrightText": "© {{year}} Resurs Bank AB (publ) Org.nr 516401-0208",
+        "copyrightText": "© {{year}} Resurs Bank AB (publ)",
+        "orgNr": "Org.nr 516401-0208",
         "contactText": "Box 222 09, SE-250 24 Helsingborg",
         "mailLinkText": "asiakaspalvelu@resurs.fi",
         "mailLink": "mailto:asiakaspalvelu@resurs.fi",
