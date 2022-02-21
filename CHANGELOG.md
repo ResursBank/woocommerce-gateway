@@ -1,3 +1,7 @@
+# 2.2.87
+
+* Hotfix for ecom requirements.
+
 # 2.2.86
 
 * [WOO-602](https://resursbankplugins.atlassian.net/browse/WOO-602) Centralize requirements
