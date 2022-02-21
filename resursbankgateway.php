@@ -34,7 +34,7 @@ function getOldRbVersionAppearance()
 
 function activateResursGatewayScripts()
 {
-    resursExpectVersions();
+    //resursExpectVersions();
     add_filter('resurs_bank_v22_woo_appearance', 'getOldRbVersionAppearance');
     if (allowPluginToRun()) {
         require_once(__DIR__ . '/resursbankmain.php');
