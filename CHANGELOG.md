@@ -1,3 +1,8 @@
+# 2.2.86
+
+* [WOO-602](https://resursbankplugins.atlassian.net/browse/WOO-602) Centralize requirements
+* [WOO-601](https://resursbankplugins.atlassian.net/browse/WOO-601) strftime is deprecated in PHP 8.1.0
+
 # 2.2.84 - 2.2.85
 
 * Cleanup.
