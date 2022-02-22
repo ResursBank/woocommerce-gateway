@@ -91,6 +91,12 @@ class Generic
     private $expectReleases = [];
 
     /**
+     * @var array
+     * @since 6.1.19
+     */
+    private $expectedReality = [];
+
+    /**
      * Check if class files exists somewhere in platform (pear/pecl-based functions).
      * Initially used to fetch XML-serializers. Returns first successful match.
      *
@@ -106,8 +112,6 @@ class Generic
             $classFile,
             sprintf('%s.php', $classFile),
         ];
-
-        $return = false;
 
         foreach ($checkClassFiles as $classFileName) {
             $serializerPath = stream_resolve_include_path($classFileName);
@@ -148,28 +152,31 @@ class Generic
     {
         $return = true;
         $wrongVersions = [];
-
+        $this->expectedReality = [];
         if (is_array($this->expectReleases) && count($this->expectReleases)) {
             foreach ($this->expectReleases as $expectName => $expectVersion) {
                 if (class_exists($expectName)) {
                     // Track down a composer file for the current class and try to figure
                     // out current version on anything available.
                     if (class_exists('\ReflectionClass')) {
-                        $classPath = (new \ReflectionClass($expectName))->getFileName();
+                        $classPath = (new ReflectionClass($expectName))->getFileName();
                         $docVersion = $this->getVersionByAny($classPath, 3, $expectName);
                     } else {
                         $docVersion = $this->getVersionByClassDoc($expectName);
                     }
                     if (!empty($docVersion)) {
+                        $this->expectedReality[$expectName] = $docVersion;
                         if (version_compare($docVersion, $expectVersion, '<')) {
                             $return = false;
                             $wrongVersions[] = $expectName;
                         }
+                    } else {
+                        $this->expectedReality[$expectName] = 'N/A';
                     }
                 } else {
                     // Check if this is a proper path/file before proceeding.
                     if (!file_exists($expectName)) {
-                        throw new Exception(
+                        throw new ExceptionHandler(
                             sprintf(
                                 'Expected %s, but could not find class.',
                                 $expectName
@@ -180,6 +187,7 @@ class Generic
                     // Sanitize name.
                     $expectName = preg_replace('/\/$|\/composer.json/', '', $expectName) . '/composer.json';
                     $composerVersion = $this->getVersionByComposer($expectName);
+                    $this->expectedReality[$expectName] = $composerVersion;
                     if (version_compare($composerVersion, $expectVersion, '<')) {
                         $return = false;
                         $wrongVersions[] = $expectName;
@@ -188,7 +196,7 @@ class Generic
             }
 
             if (!$proceed && !$return) {
-                throw new Exception(
+                throw new ExceptionHandler(
                     sprintf(
                         'Version control expectation failed. Wrong versions discovered for %s.',
                         implode(', ', $wrongVersions)
@@ -204,12 +212,25 @@ class Generic
     }
 
     /**
+     * What we did expect, but received.
+     * @return array
+     * @throws ExceptionHandler
+     * @throws ReflectionException
+     * @since 6.1.19
+     */
+    public function getExpectationsReal()
+    {
+        // Run expectations first.
+        $this->getExpectedVersions();
+        return $this->expectedReality;
+    }
+
+    /**
      * @return array
      * @since 6.1.18
      */
     public function getExpectationList()
     {
-        // Make sure correct data is returned.
         return is_array($this->expectReleases) ? $this->expectReleases : [];
     }
 
@@ -426,6 +447,7 @@ class Generic
     /**
      * @param $composerLocation
      * @return mixed|string
+     * @throws ExceptionHandler
      * @since 6.1.13
      */
     public function getComposerVendor($composerLocation)
@@ -705,7 +727,7 @@ class Generic
             }
             if (!$skipReflection && class_exists('\ReflectionClass')) {
                 /** @noinspection PhpFullyQualifiedNameUsageInspection */
-                $useReflection = new \ReflectionClass($namespaceClassName);
+                $useReflection = new ReflectionClass($namespaceClassName);
                 $return = $useReflection->getShortName();
             } else {
                 $wrapperClassExplode = explode('\\', $namespaceClassName);

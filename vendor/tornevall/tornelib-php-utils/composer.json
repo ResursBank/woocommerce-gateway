@@ -1,11 +1,12 @@
 {
     "name": "tornevall/tornelib-php-utils",
     "description": "Utils that many of the TorneLIB-based libraries may need.",
-    "version": "6.1.18",
+    "version": "6.1.19",
     "license": "Apache-2.0",
     "require": {
         "tornevall/tornelib-php-errorhandler": "^6.1",
-        "tornevall/tornelib-php-flags": "^6.1"
+        "tornevall/tornelib-php-flags": "^6.1",
+        "php": ">=7.0"
     },
     "authors": [
         {

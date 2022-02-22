@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20220221');
+    define('ECOMPHP_MODIFY_DATE', '20220222');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.72
+ * @version 1.3.73
  */
 class ResursBank
 {
@@ -5092,7 +5092,7 @@ class ResursBank
         if (!empty($this->preferredId) && !$force) {
             return $this->preferredId;
         }
-        $timestamp = strftime('%Y%m%d%H%M%S', time());
+        $timestamp = date('YmdHis', time());
         if ($dualUniq) {
             $uniq = uniqid(sha1(uniqid(rand(), true)), true);
         } else {
@@ -7374,12 +7374,12 @@ class ResursBank
                         'artNo' => $artRow['artNo'],
                         'description' => $artRow['description'],
                         'unitMeasure' => $artRow['unitMeasure'],
-                        'unitAmountWithoutVat' => $artRow['unitAmountWithoutVat'],
-                        'vatPct' => $artRow['vatPct'],
+                        'unitAmountWithoutVat' => isset($artRow['unitAmountWithoutVat']) ? $artRow['unitAmountWithoutVat'] : 0.0,
+                        'vatPct' => isset($artRow['vatPct']) ? $artRow['vatPct'] : 0,
                         'AUTHORIZE' => 0,
                         'DEBIT' => 0,
                         'CREDIT' => 0,
-                        'ANNUL' => 0,
+                        'ANNUL' => 0
                     ];
                     $setRow[strtoupper($type)] += $artRow['quantity'];
                     $tableStatusList[] = $setRow;
@@ -8191,134 +8191,149 @@ class ResursBank
         $id = 0;
 
         foreach ($currentOrderLines as $idx => $orderRow) {
-            // Count unsafe payment objects per row.
-            $isUnsafePaymentObject = 0;
+            $found = false;
 
-            $realQuantity = null;
-            $realUnitAmount = null;
-            $realVatPct = null;
-
-            $realData = [];
-            if ($this->skipAfterShopPaymentValidation) {
-                foreach ($this->getPaymentDefaultUnPurge as $field) {
-                    if (isset($orderRow[$field])) {
-                        $realData[$field] = $orderRow[$field];
-                    }
+            if (isset($orderRow['artNo'])) {
+                foreach ($currentPaymentSpecTable as $l) {
+                    $found = $found || (
+                        isset($l['artNo']) &&
+                        $l['artNo'] === $orderRow['artNo']
+                    );
                 }
-                $realQuantity = $orderRow['quantity'];
-                $realUnitAmount = $orderRow['unitAmountWithoutVat'];
-                $realVatPct = $orderRow['vatPct'];
             }
 
-            foreach ($currentPaymentSpecTable as $statusRow) {
-                if ($type === 'credit') {
-                    $quantityMatch = isset($statusRow['CREDITABLE']) ? $statusRow['CREDITABLE'] : 0;
-                } elseif ($type === 'annul') {
-                    $quantityMatch = isset($statusRow['ANNULLABLE']) ? $statusRow['ANNULLABLE'] : 0;
-                } elseif ($type === 'debit') {
-                    $quantityMatch = isset($statusRow['DEBITABLE']) ? $statusRow['DEBITABLE'] : 0;
-                } elseif ($type === 'authorize') {
-                    $quantityMatch = isset($statusRow['AUTHORIZE']) ? $statusRow['AUTHORIZE'] : 0;
-                } else {
-                    $quantityMatch = 0;
-                }
+            if ($this->skipAfterShopPaymentValidation && !$found) {
+                $return[] = $orderRow;
+            } else {
+                // Count unsafe payment objects per row.
+                $isUnsafePaymentObject = 0;
 
-                if (!$quantityMatch) {
-                    continue;
-                }
+                $realQuantity = null;
+                $realUnitAmount = null;
+                $realVatPct = null;
 
-                // If the requested quantity is legit (below the maximum matchable amount)
-                // we should use the requested quantity.
-                if ($orderRow['quantity'] <= $quantityMatch) {
-                    $useQuantity = $orderRow['quantity'];
-                } else {
-                    // If the requested quantity is set too high (over the maximum matchable amount)
-                    // we should lower the value to the max-allowed quantity instead.
-                    $useQuantity = $quantityMatch;
-                }
-
-                $this->checkUnsafePaymentObject($isUnsafePaymentObject);
-
-                if ((!isset($orderRow['unitAmountWithoutVat']) || empty($orderRow['unitAmountWithoutVat'])) &&
-                    $orderRow['artNo'] == $statusRow['artNo']
-                ) {
-                    $orderRow['unitAmountWithoutVat'] = $statusRow['unitAmountWithoutVat'];
-                    $isUnsafePaymentObject++;
-                }
-
-                if ((!isset($orderRow['description']) || empty($orderRow['description'])) &&
-                    $orderRow['artNo'] == $statusRow['artNo']
-                ) {
-                    $orderRow['description'] = $statusRow['description'];
-                    $isUnsafePaymentObject++;
-                }
-
+                $realData = [];
                 if ($this->skipAfterShopPaymentValidation) {
-                    if (count($realData)) {
-                        foreach ($realData as $key => $value) {
-                            // Protect a few fields from mistakes that is already considered below in the
-                            // validation parts.
-                            if (!in_array($key, ['artNo', 'description', 'quantity'])) {
-                                $orderRow[$key] = $value;
-                            }
+                    foreach ($this->getPaymentDefaultUnPurge as $field) {
+                        if (isset($orderRow[$field])) {
+                            $realData[$field] = $orderRow[$field];
                         }
                     }
-                    $useQuantity = $realQuantity;
-                    $useUnitAmount = $realUnitAmount;
-                    $useVatPct = $realVatPct;
+                    $realQuantity = $orderRow['quantity'];
+                    $realUnitAmount = $orderRow['unitAmountWithoutVat'];
+                    $realVatPct = $orderRow['vatPct'];
                 }
 
-                // Validation is based on same article, description and price.
-                // Besides this the validation is also
-                if ($orderRow['artNo'] == $statusRow['artNo'] &&
-                    $orderRow['description'] == $statusRow['description'] &&
-                    (
-                        $orderRow['unitAmountWithoutVat'] == $statusRow['unitAmountWithoutVat'] ||
-                        $this->skipAfterShopPaymentValidation
-                    ) &&
-                    $useQuantity > 0
-                ) {
-                    //$articleType = isset($orderRow['type']) ? $orderRow['type'] : null;
-                    $orderRow = $this->getPurgedPaymentRow(
-                        $statusRow,
-                        [
-                            'AUTHORIZE',
-                            'DEBIT',
-                            'CREDIT',
-                            'ANNUL',
-                            'ANNULLABLE',
-                            'DEBITABLE',
-                            'CREDITABLE',
-                        ],
-                        $this->getPaymentDefaultPurgeSet ? true : false
-                    );
-                    /*if (!empty($articleType) && $articleType !== 'ORDER_LINE') {
-                        $orderRow['type'] = $articleType;
-                    }*/
-
-                    if (!$this->skipAfterShopPaymentValidation) {
-                        $useUnitAmount = $orderRow['unitAmountWithoutVat'];
-                        $useVatPct = $orderRow['vatPct'];
+                foreach ($currentPaymentSpecTable as $statusRow) {
+                    if ($type === 'credit') {
+                        $quantityMatch = isset($statusRow['CREDITABLE']) ? $statusRow['CREDITABLE'] : 0.0;
+                    } elseif ($type === 'annul') {
+                        $quantityMatch = isset($statusRow['ANNULLABLE']) ? $statusRow['ANNULLABLE'] : 0.0;
+                    } elseif ($type === 'debit') {
+                        $quantityMatch = isset($statusRow['DEBITABLE']) ? $statusRow['DEBITABLE'] : 0.0;
+                    } elseif ($type === 'authorize') {
+                        $quantityMatch = isset($statusRow['AUTHORIZE']) ? $statusRow['AUTHORIZE'] : 0.0;
+                    } else {
+                        $quantityMatch = 0.0;
                     }
 
-                    // Make sure we use the correct getPaymentData.
-                    $orderRow['id'] = $id;
-                    $orderRow['quantity'] = $useQuantity;
-                    $orderRow['unitAmountWithoutVat'] = $useUnitAmount;
-                    $orderRow['vatPct'] = $useVatPct;
+                    if (!$quantityMatch) {
+                        continue;
+                    }
 
-                    $orderRow['totalVatAmount'] = $this->getTotalVatAmount(
-                        $useUnitAmount,
-                        $useVatPct,
-                        $useQuantity
-                    );
-                    $orderRow['totalAmount'] = $this->getTotalAmount(
-                        $useUnitAmount,
-                        $useVatPct,
-                        $useQuantity
-                    );
-                    $return[] = $orderRow;
-                    $id++;
+                    // If the requested quantity is legit (below the maximum matchable amount)
+                    // we should use the requested quantity.
+                    if ($orderRow['quantity'] <= $quantityMatch) {
+                        $useQuantity = $orderRow['quantity'];
+                    } else {
+                        // If the requested quantity is set too high (over the maximum matchable amount)
+                        // we should lower the value to the max-allowed quantity instead.
+                        $useQuantity = $quantityMatch;
+                    }
+
+                    $this->checkUnsafePaymentObject($isUnsafePaymentObject);
+
+                    if ((!isset($orderRow['unitAmountWithoutVat']) || empty($orderRow['unitAmountWithoutVat'])) &&
+                        $orderRow['artNo'] == $statusRow['artNo']
+                    ) {
+                        $orderRow['unitAmountWithoutVat'] = $statusRow['unitAmountWithoutVat'];
+                        $isUnsafePaymentObject++;
+                    }
+
+                    if ((!isset($orderRow['description']) || empty($orderRow['description'])) &&
+                        $orderRow['artNo'] == $statusRow['artNo']
+                    ) {
+                        $orderRow['description'] = $statusRow['description'];
+                        $isUnsafePaymentObject++;
+                    }
+
+                    if ($this->skipAfterShopPaymentValidation) {
+                        if (count($realData)) {
+                            foreach ($realData as $key => $value) {
+                                // Protect a few fields from mistakes that is already considered below in the
+                                // validation parts.
+                                if (!in_array($key, ['artNo', 'description', 'quantity'])) {
+                                    $orderRow[$key] = $value;
+                                }
+                            }
+                        }
+                        $useQuantity = $realQuantity;
+                        $useUnitAmount = $realUnitAmount;
+                        $useVatPct = $realVatPct;
+                    }
+
+                    // Validation is based on same article, description and price.
+                    // Besides this the validation is also
+                    if ($orderRow['artNo'] == $statusRow['artNo'] &&
+                        $orderRow['description'] == $statusRow['description'] &&
+                        (
+                            $orderRow['unitAmountWithoutVat'] == $statusRow['unitAmountWithoutVat'] ||
+                            $this->skipAfterShopPaymentValidation
+                        ) &&
+                        $useQuantity > 0
+                    ) {
+                        //$articleType = isset($orderRow['type']) ? $orderRow['type'] : null;
+                        $orderRow = $this->getPurgedPaymentRow(
+                            $statusRow,
+                            [
+                                'AUTHORIZE',
+                                'DEBIT',
+                                'CREDIT',
+                                'ANNUL',
+                                'ANNULLABLE',
+                                'DEBITABLE',
+                                'CREDITABLE',
+                            ],
+                            $this->getPaymentDefaultPurgeSet ? true : false
+                        );
+                        /*if (!empty($articleType) && $articleType !== 'ORDER_LINE') {
+                            $orderRow['type'] = $articleType;
+                        }*/
+
+                        if (!$this->skipAfterShopPaymentValidation) {
+                            $useUnitAmount = $orderRow['unitAmountWithoutVat'];
+                            $useVatPct = $orderRow['vatPct'];
+                        }
+
+                        // Make sure we use the correct getPaymentData.
+                        $orderRow['id'] = $id;
+                        $orderRow['quantity'] = $useQuantity;
+                        $orderRow['unitAmountWithoutVat'] = $useUnitAmount;
+                        $orderRow['vatPct'] = $useVatPct;
+
+                        $orderRow['totalVatAmount'] = $this->getTotalVatAmount(
+                            $useUnitAmount,
+                            $useVatPct,
+                            $useQuantity
+                        );
+                        $orderRow['totalAmount'] = $this->getTotalAmount(
+                            $useUnitAmount,
+                            $useVatPct,
+                            $useQuantity
+                        );
+                        $return[] = $orderRow;
+                        $id++;
+                    }
                 }
             }
         }

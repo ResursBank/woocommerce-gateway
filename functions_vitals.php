@@ -552,36 +552,55 @@ function getRbAdminNotices()
 function resursExpectVersions()
 {
     $genericRequest = new Generic();
+    $expectReleases = [
+        ResursBank::class => '1.3.70',
+        NetWrapper::class => '6.1.5',
+    ];
     $genericRequest->setExpectedVersions(
-        [
-            ResursBank::class => '1.3.70',
-            NetWrapper::class => '6.1.4'
-        ]
+        $expectReleases
     );
 
-    $versionProblems = [];
     if (is_admin() && getResursOption('enabled')) {
+        $versionProblems = [];
         try {
             $genericRequest->getExpectedVersions(false);
         } catch (Exception $e) {
             $versionProblems[] = $e->getMessage();
         }
-        if (is_admin() && session_status() === PHP_SESSION_NONE && count($versionProblems)) {
+        if (is_admin() && session_status() === PHP_SESSION_NONE) {
             session_start();
-            $expectList = $genericRequest->getExpectationList();
-            $expectationList = [];
-            foreach ($expectList as $name => $version) {
-                $expectationList[] = sprintf('<b>%s:</b> %s', $name, $version);
+            // Start session, but do not show $versionProblems if it is empty.
+            if (count($versionProblems)) {
+                $expectList = $genericRequest->getExpectationList();
+                $whatYouHave = $genericRequest->getExpectationsReal();
+                $expectationList = [];
+                foreach ($expectList as $name => $version) {
+                    if (isset($whatYouHave[$name])) {
+                        if ($whatYouHave[$name] === $version) {
+                            continue;
+                        }
+                        $expectationList[] = sprintf(
+                            '<b>%s:</b> %s (<b>Have:</b> %s)',
+                            $name,
+                            $version,
+                            $whatYouHave[$name]
+                        );
+                    } else {
+                        $expectationList[] = sprintf('<b>%s:</b> %s', $name, $version);
+                    }
+                }
+                if (count($expectationList)) {
+                    $_SESSION['rb2']['exception']['improper_version'] = sprintf(
+                        __(
+                            'There is a problem with your platform: The libraries that this plugin is using is ' .
+                            'probably colliding with an older version. This can cause problems with your platform as ' .
+                            'important features could be missing.<br><br><b>Expected versions:</b><br>%s.',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        ),
+                        implode('<br>', $expectationList)
+                    );
+                }
             }
-            $_SESSION['rb2']['exception']['improper_version'] = sprintf(
-                __(
-                    'There is a problem with your platform: The libraries that this plugin is using is ' .
-                    'probably colliding with an older version. This can cause problems with your platform as ' .
-                    'important features could be missing.<br><br><b>Expected versions:</b><br>%s.',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                ),
-                implode('<br>', $expectationList)
-            );
         }
     }
 }
