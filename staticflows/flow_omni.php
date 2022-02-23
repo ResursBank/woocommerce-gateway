@@ -523,7 +523,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 'unitMeasure' => '',
                 'unitAmountWithoutVat' => $priceExTax,
                 'vatPct' => $vatPct,
-                'totalVatAmount' => ($priceExTax * ($vatPct / 100)),
+                'totalVatAmount' => ($priceExTax * ($vatPct / 100)) * $item['quantity'],
                 'totalAmount' => (($priceExTax * $item['quantity']) + ($totalVatAmount * $item['quantity'])),
                 'type' => 'ORDER_LINE',
             ];
