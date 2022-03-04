@@ -492,6 +492,7 @@ function preSetResursMethods(customerType, returnedObjects) {
         );
     }
 
+    /*
     if (typeof customerType === "undefined") {
         return;
     }
@@ -505,11 +506,11 @@ function preSetResursMethods(customerType, returnedObjects) {
 
     customerType = customerType.toLowerCase();
     getResursMethodList(returnedObjects, hideCustomerType, false);
-
-    if (!resursvars["customerTypes"]["hasLegal"]) {
+    */
+    /*if (!resursvars["customerTypes"]["hasLegal"]) {
         $RB('#ssnCustomerRadioNATURAL').remove();
         $RB('#ssnCustomerRadioLEGAL').remove();
-    }
+    }*/
 
     if ($RB('#billing_company').length > 0) {
         var currentCustomerType = $RB('#ssnCustomerType' + customerType.toUpperCase() + ':checked').val();
@@ -530,6 +531,8 @@ function preSetResursMethods(customerType, returnedObjects) {
  * @returns {boolean}
  */
 function getResursMethodList(returnedObjects, hideCustomerType, skipDisplay) {
+    console.log('getResursMethodList was executed but did not have to.');
+    return true;
     var shown = 0;
     var hasShown = false;
 

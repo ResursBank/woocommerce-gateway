@@ -726,9 +726,9 @@ function woocommerce_gateway_resurs_bank_init()
                                     $responseArray['errormessage'] = $errorMessage;
                                 }
                                 $curlInfoReturn['soapResponded'] = '<b>' . sprintf(
-                                    'Resurs Request contains XML: %s',
-                                    $soapResponded
-                                ) . '</b>';
+                                        'Resurs Request contains XML: %s',
+                                        $soapResponded
+                                    ) . '</b>';
                                 $responseArray['externalinfo'] = implode(",<br>\n", $curlInfoReturn);
                             } elseif ($_REQUEST['run'] == 'getNetCurlTag') {
                                 $NET = new MODULE_NETWORK();
@@ -1896,17 +1896,7 @@ function woocommerce_gateway_resurs_bank_init()
          */
         private function splitPostData($dataContent = '')
         {
-            $return = [];
-
-            preg_match_all("/(.*?)\&/", $dataContent, $extraction);
-            if (isset($extraction[1])) {
-                foreach ($extraction[1] as $postDataVars) {
-                    $exVars = explode('=', $postDataVars, 2);
-                    $return[$exVars[0]] = $exVars[1];
-                }
-            }
-
-            return $return;
+            return rbSplitPostData($dataContent);
         }
 
         /**
@@ -1968,6 +1958,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             $fieldGenHtml = null;
             $post_data = isset($_REQUEST['post_data']) ? $this->splitPostData($_REQUEST['post_data']) : [];
+
             // Get the read more from internal translation if not set
             $read_more = __(
                 'Read more',
@@ -2111,26 +2102,58 @@ function woocommerce_gateway_resurs_bank_init()
             $methodList = null;
             $fieldGenHtml = '';
 
+            $post_data = isset($_REQUEST['post_data']) ? $this->splitPostData($_REQUEST['post_data']) : [];
+            if (isset(WC()->session)) {
+                $ssnCustomerTypeInfo = isset($post_data['ssnCustomerType']) ? $post_data['ssnCustomerType'] : 'NATURAL';
+                rbSimpleLogging(
+                    sprintf('payment session getAddress ssnCustomerType changed: %s.', $ssnCustomerTypeInfo)
+                );
+                WC()->session->set(
+                    'ssnCustomerType',
+                    $ssnCustomerTypeInfo
+                );
+            }
+
             $cart = $woocommerce->cart;
             $paymentSpec = $this->get_payment_spec($cart);
             $sessionHasErrors = false;
 
-            $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
-            $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
+            //$resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
+            //$timeDiff = time() - $resursTemporaryPaymentMethodsTime;
 
+            /*
+             * From resursbank_settings.php (2022-03-04):
+             *
+             *   $this->paymentMethods = $this->flow->getPaymentMethods([], true);
+             *   set_transient('resursTemporaryPaymentMethods', serialize($this->paymentMethods));
+             *
+             * This feature is based on a legacy issue with shopFlow, there the primary idea was to make
+             * sure that payment methods are always up to day API-side. One specific feature that was used was
+             * campaigns which disabled payment methods after a specific set date. To avoid that those payment
+             * methods are left available, the integrations had in mind to make sure that payment methods
+             * were periodically re-fetched. In "modern time" this is not necessary. Besides, if there are
+             * operational networking issues, the list in --this-- section could negatively affect the checkout.
+             * If payment methods are not available, no forms will neither be generated.
+             *
+             * Resolution: In wp-admin, the transient variable that we are using below will always be written
+             * when payment methods are fetched manually instead of this sequentially control. As we want to make sure
+             * things really properly works, we will however not remove the entire code below, since the risk
+             * is higher that we create new bugs in the flow.
+             *
+             * In short, the payment method handling has to be rebuilt.
+             */
             try {
-                if ($timeDiff >= 3600) {
+                // Fetch methods through what's saved from wp-admin.
+                // Note: unserialization is not a very smart thing to do.
+                $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
+                // If transient fetching failed, re-fetch methods and store them again.
+                // This should in a natural way not fail since we do not have any expiration time
+                // set on the transients.
+                if (!is_array($methodList) || (is_array($methodList) && !count($methodList))) {
+                    rbSimpleLogging('Resurs Payment Methods is not set - re-fetch in progress.');
                     $methodList = $this->flow->getPaymentMethods([], true);
-                    set_transient('resursTemporaryPaymentMethodsTime', time());
                     set_transient('resursTemporaryPaymentMethods', serialize($methodList));
-                } else {
-                    $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
-                    // When transient fetching fails.
-                    if (!is_array($methodList) || (is_array($methodList) && !count($methodList))) {
-                        $methodList = $this->flow->getPaymentMethods([], true);
-                        set_transient('resursTemporaryPaymentMethods', serialize($methodList));
-                        set_transient('resursTemporaryPaymentMethodsTime', time());
-                    }
+                    set_transient('resursTemporaryPaymentMethodsTime', time());
                 }
             } catch (Exception $e) {
                 $sessionHasErrors = true;
@@ -4343,23 +4366,26 @@ function woocommerce_gateway_resurs_bank_init()
             $methodsErrorMessage = null;
             $paymentMethods = null;
 
-            $resursTemporaryPaymentMethodsTime = get_transient('resursTemporaryPaymentMethodsTime');
-            $timeDiff = time() - $resursTemporaryPaymentMethodsTime;
-            $maxWaitForTransients = 1500;
-
             try {
-                if ($timeDiff >= $maxWaitForTransients) {
-                    $paymentMethods = $flow->getPaymentMethods([], true);
-                    set_transient('resursTemporaryPaymentMethodsTime', time(), 3600);
-                    set_transient('resursTemporaryPaymentMethods', serialize($paymentMethods), 3600);
-                } else {
-                    $paymentMethods = unserialize(get_transient('resursTemporaryPaymentMethods'));
+                $paymentMethods = unserialize(get_transient('resursTemporaryPaymentMethods'));
+                // Only fetch methods if necessary!
+                if (!is_array($paymentMethods) || (is_array($paymentMethods) && !count($paymentMethods))) {
+                    rbSimpleLogging('Resurs Payment Methods is not set - re-fetch in progress.');
+                    $methodList = $flow->getPaymentMethods([], true);
+                    set_transient('resursTemporaryPaymentMethods', serialize($methodList));
                 }
             } catch (Exception $e) {
                 $methodsHasErrors = true;
                 $methodsErrorMessage = $e->getMessage();
             }
             $requestedCustomerType = isset($_REQUEST['customerType']) ? $_REQUEST['customerType'] : 'NATURAL';
+            rbSimpleLogging(
+                sprintf(
+                    '%s requested customer type: %s.',
+                    __FUNCTION__,
+                    $requestedCustomerType
+                )
+            );
             $responseArray = [
                 'natural' => [],
                 'legal' => [],
@@ -5542,8 +5568,17 @@ function woocommerce_gateway_resurs_bank_init()
             $woocommerce->customer->get_billing_country() : '';
 
         if (empty($customerCountry)) {
-            //$customerCountry = get_option('woocommerce_default_country');
             $customerCountry = getResursOption('country');
+            rbSimpleLogging(
+                sprintf('Customer country not set, using %s.', $customerCountry)
+            );
+        } else {
+            rbSimpleLogging(
+                sprintf(
+                    'Customer country used for current customer: %s.',
+                    $customerCountry
+                )
+            );
         }
 
         // Do not distribute payment methods for countries that do not belong to current
@@ -7420,22 +7455,9 @@ function getResursLogDestination()
 function resursEventLogger($dataString = '')
 {
     if (getResursOption('logResursEvents') && getResursLogActive()) {
-        $writeFile = getResursLogDestination() . '/resurs.log';
-
-        if (is_array($dataString) || is_object($dataString)) {
-            // Convert unprintable strings on fly.
-            $dataString = print_r($dataString, true);
-        }
-
-        @file_put_contents(
-            $writeFile,
-            '[' . date('Y-m-d H:i:s', time()) . '] ' . $dataString . "\n",
-            FILE_APPEND
-        );
-
-        return true;
+        /** @see WOO-605 */
+        rbSimpleLogging($dataString);
     }
-    return false;
 }
 
 if (!function_exists('getHadMisplacedIframeLocation')) {

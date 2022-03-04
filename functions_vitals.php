@@ -547,6 +547,26 @@ function getRbAdminNotices()
 }
 
 /**
+ * @param string $dataContent
+ * @return array
+ * @2.2.89
+ */
+function rbSplitPostData($dataContent = '')
+{
+    $return = [];
+
+    preg_match_all("/(.*?)\&/", $dataContent, $extraction);
+    if (isset($extraction[1])) {
+        foreach ($extraction[1] as $postDataVars) {
+            $exVars = explode('=', $postDataVars, 2);
+            $return[$exVars[0]] = $exVars[1];
+        }
+    }
+
+    return $return;
+}
+
+/**
  * Check for version conflicts.
  */
 function resursExpectVersions()
@@ -633,6 +653,38 @@ function updateQueuedOrderStatus(int $orderId, string $status, string $notice)
             resursEventLogger(print_r($e, true));
         }
     }
+}
+
+/**
+ * Replaces the first implemented logging features with WooCommerce built-ins.
+ *
+ * @param string $logMessage
+ * @param string $from
+ * @see WOO-605
+ * @noinspection ParameterDefaultValueIsNotNullInspection
+ * @since 2.2.89
+ */
+function rbSimpleLogging($logMessage, $from = '')
+{
+    if (!class_exists('WC_Logger')) {
+        return;
+    }
+    $logger = new WC_Logger();
+
+    if (empty($from)) {
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $from = $_SERVER['REMOTE_ADDR'];
+        } else {
+            $from = 'CONSOLE';
+        }
+    }
+
+    $formatted = sprintf('[ResursBank] (%s): %s', $from, $logMessage);
+
+    $logger->info(
+        $formatted,
+        []
+    );
 }
 
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);

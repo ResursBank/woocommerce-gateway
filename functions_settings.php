@@ -1104,16 +1104,31 @@ if (is_admin()) {
              * from the plugin's regular place, we'll use the internally stored data from the demoshop template.
              */
 
+            $customerTypeArray = [];
+            foreach ((array)$customerType as $item) {
+                $customerTypeArray[] = sprintf("'%s'", $item);
+            }
+            // Convert customer type arrays to strings so it can be injected into the writer.
+            $customerTypeAsString = sprintf('[%s]', implode(',', $customerTypeArray));
+
             $class = <<<EOT
 <?php
     if (!class_exists('{$class_name}')) {
         class {$class_name} extends WC_Resurs_Bank {
             public \$type;
             public \$specificType;
+            public \$customerType;
+            public \$currentCustomerType;
         
             public function __construct()
             {
                 global \$woocommerce;
+
+                \$post_data = isset(\$_REQUEST['post_data']) ? rbSplitPostData(\$_REQUEST['post_data']) : [];
+                if (isset(WC()->session)) {
+                    WC()->session->set('ssnCustomerType', isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
+                }
+
                 \$this->isDemo = isResursDemo();
                 //\$this->allMethods = array();
                 \$this->overRideIsAvailable = true;
@@ -1126,6 +1141,8 @@ if (is_admin()) {
                 \$this->has_icon();
                 \$this->isPsp = {$isPsp};
                 \$this->allowPsp = {$allowPsp};
+                // Customer type from payment method.
+                \$this->customerType = {$customerTypeAsString};
                 \$this->method_title = '{$method_name}';
                 if (!isResursHosted()) {
                     \$this->has_fields   = true;
@@ -1255,7 +1272,12 @@ if (is_admin()) {
              * Making sure that the payment method acts properly
              * @return bool
              */
-            public function is_available() {
+            public function is_available()
+            {
+                if (isset(WC()->session)) {
+                    \$this->currentCustomerType = WC()->session->get('ssnCustomerType');
+                }
+
                 // No title means no activity
                 if (empty(\$this->title)) {
                     return false;
@@ -1275,6 +1297,9 @@ if (is_admin()) {
                    \$this
                 );
                 
+                if (!empty(\$this->currentCustomerType) && !in_array(\$this->currentCustomerType, {$customerTypeAsString})) {
+                    return false;
+                }
                 if (!\$isEnabled) {
                     return false;
                 }
