@@ -4367,6 +4367,8 @@ function woocommerce_gateway_resurs_bank_init()
             $paymentMethods = null;
 
             try {
+                // getAddress CustomerType resolving does not need to fetch realtime payment methods from Resurs Bank.
+                // That may be a potential destroyer during checkout.
                 $paymentMethods = unserialize(get_transient('resursTemporaryPaymentMethods'));
                 // Only fetch methods if necessary!
                 if (!is_array($paymentMethods) || (is_array($paymentMethods) && !count($paymentMethods))) {
@@ -7450,12 +7452,15 @@ function getResursLogDestination()
 
 /**
  * @param string $dataString
- * @return bool
+ * @deprecated Use rbSimpleLogging instead.
  */
 function resursEventLogger($dataString = '')
 {
     if (getResursOption('logResursEvents') && getResursLogActive()) {
-        /** @see WOO-605 */
+        /**
+         * Forward all logging to the real logger.
+         * @see WOO-605
+         */
         rbSimpleLogging($dataString);
     }
 }
