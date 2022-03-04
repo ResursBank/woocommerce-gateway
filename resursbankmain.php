@@ -6153,7 +6153,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
         }
 
         $unsetKeys = [];
-        $invoices = [];
         if (empty($hasError)) {
             $fail = null;
             try {
@@ -6333,16 +6332,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
                     (!empty($addressInfo) ? nl2br($addressInfo) : '') . '</span>
             ';
-
-                if (is_array($invoices) && count($invoices)) {
-                    $renderedResursData .= '
-                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">Invoices:</span>
-                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . implode(
-                            ', ',
-                            $invoices
-                        ) . '</span>
-                        ';
-                }
             }
 
             $continueView = $resursPaymentInfo;
