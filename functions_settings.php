@@ -1111,8 +1111,12 @@ if (is_admin()) {
             // Convert customer type arrays to strings so it can be injected into the writer.
             $customerTypeAsString = sprintf('[%s]', implode(',', $customerTypeArray));
 
+            $writeDate = date('Y-m-d H:i');
             $class = <<<EOT
 <?php
+    /*
+     * Written {$writeDate}.
+     */
     if (!class_exists('{$class_name}')) {
         class {$class_name} extends WC_Resurs_Bank {
             public \$type;
