@@ -8,7 +8,7 @@ use TorneLIB\Utils\Security;
 /**
  * Class Arrays
  * @package TorneLIB\IO\Data
- * @version 6.1.4
+ * @version 6.1.7
  */
 class Arrays
 {
@@ -387,5 +387,60 @@ class Arrays
             );
         }
         return $pairedArray;
+    }
+
+    /**
+     * @param $array
+     * @param $insertValue
+     * @param $keyNameTo
+     * @param $newName
+     * @param $arrayLocation
+     * @return array
+     * @since 6.1.7
+     */
+    private function injectArray($array, $insertValue, $keyNameTo, $newName, $arrayLocation) {
+        $newArray = [];
+
+        foreach ($array as $key => $item) {
+            if ($key === $keyNameTo && $arrayLocation === 'before') {
+                $newArray[$newName] = $insertValue;
+            }
+            $newArray[$key] = $item;
+            if ($key === $keyNameTo && $arrayLocation === 'after') {
+                $newArray[$newName] = $insertValue;
+            }
+        }
+
+        return $newArray;
+    }
+
+    /**
+     * Inject new data before a spot in an array.
+     *
+     * @param $array
+     * @param $insertValue
+     * @param $keyNameTo
+     * @param $newName
+     * @return array
+     * @since 6.1.7
+     */
+    public function moveArrayBefore($array, $insertValue, $keyNameTo, $newName)
+    {
+        return $this->injectArray($array, $insertValue, $keyNameTo, $newName, 'before');
+    }
+
+    /**
+     * Inject new data before a spot in an array.
+     *
+     * @param $array
+     * @param $insertValue
+     * @param $keyNameTo
+     * @param $newName
+     * @return array
+     * @since 6.1.7
+     */
+    public function moveArrayAfter($array, $insertValue, $keyNameTo, $newName)
+    {
+        return $this->injectArray($array, $insertValue, $keyNameTo, $newName, 'after');
     }
 }
