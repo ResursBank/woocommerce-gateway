@@ -124,7 +124,18 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 == Changelog ==
 
-= 2.2.87 =
+= 2.2.89 - 2.2.90 =
+
+[WOO-607](https://resursbankplugins.atlassian.net/browse/WOO-607) PHP 8 soaprequest failures
+[WOO-606](https://resursbankplugins.atlassian.net/browse/WOO-606) Remove invoice peek requests
+[WOO-605](https://resursbankplugins.atlassian.net/browse/WOO-605) Change log destination
+[WOO-604](https://resursbankplugins.atlassian.net/browse/WOO-604) Handle customer type from respective written method class
+
+= 2.2.89 (Hotfix) =
+
+[WOO-607](https://resursbankplugins.atlassian.net/browse/WOO-607) PHP 8 soaprequest failures
+
+= 2.2.87 - 2.2.88 =
 
 * Hotfix for ecom requirements.
 
