@@ -1505,17 +1505,6 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setCheckBox('resursOrdersEditable', $namespace);
                     echo $this->setCheckBox('showCheckoutOverlay', $namespace);
                     echo $this->setTextBox('checkoutOverlayMessage', $namespace);
-                    echo $this->setSeparator(
-                        __(
-                            'Invoice numbering',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ),
-                        'configSeparateTitleSmall'
-                    );
-                    echo '<tr><td colspan="2"><b>' . __(
-                            'Next invoice number to use',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        ) . '</b> - <span id="nextInvoiceSequence"><img src="' . $this->spinner . '"></span></td></tr>';
 
                     echo $this->setSeparator(
                         __('Session handling', 'resurs-bank-payment-gateway-for-woocommerce')

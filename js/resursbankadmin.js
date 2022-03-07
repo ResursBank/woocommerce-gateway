@@ -10,14 +10,6 @@ var lastCallbackCheckInterval = null;
 var lastRecvContent = "";
 
 $RB(document).ready(function ($) {
-    if ($RB('#nextInvoiceSequence').length > 0) {
-        runResursAdminCallback('getNextInvoiceSequence', function (x) {
-            if (typeof x['response'] !== 'undefined') {
-                $RB('#nextInvoiceSequence').html(x['response']['getNextInvoiceSequenceResponse']['nextInvoice']);
-            }
-        });
-    }
-
     if (typeof adminJs["resursMethod"] !== 'undefined' && adminJs["resursMethod"] === "1") {
         var resursPaymentId = adminJs["resursPaymentId"];
         runResursAdminCallback(

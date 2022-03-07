@@ -738,13 +738,6 @@ function woocommerce_gateway_resurs_bank_init()
                                 $NET = new MODULE_NETWORK();
                                 $ecomTags = $NET->getGitTagsByUrl('https://bitbucket.org/resursbankplugins/resurs-ecomphp.git');
                                 $responseArray['ecomTag'] = is_array($ecomTags) && count($ecomTags) ? array_pop($ecomTags) : [];
-                            } elseif ($_REQUEST['run'] == 'getNextInvoiceSequence') {
-                                try {
-                                    $nextInvoice = $this->flow->getNextInvoiceNumberByDebits(5);
-                                    $responseArray['nextInvoice'] = $nextInvoice;
-                                } catch (Exception $e) {
-                                    $responseArray['nextInvoice'] = $e->getMessage() . ' [' . $e->getCode() . ']';
-                                }
                             } elseif ($_REQUEST['run'] == 'resursTriggerTest') {
                                 set_transient('resurs_callbacks_sent', time());
                                 set_transient('resurs_callbacks_received', 0);
@@ -6160,7 +6153,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
         }
 
         $unsetKeys = [];
-        $invoices = [];
         if (empty($hasError)) {
             $fail = null;
             try {
@@ -6340,16 +6332,6 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
                     (!empty($addressInfo) ? nl2br($addressInfo) : '') . '</span>
             ';
-
-                if (is_array($invoices) && count($invoices)) {
-                    $renderedResursData .= '
-                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">Invoices:</span>
-                            <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' . implode(
-                            ', ',
-                            $invoices
-                        ) . '</span>
-                        ';
-                }
             }
 
             $continueView = $resursPaymentInfo;
