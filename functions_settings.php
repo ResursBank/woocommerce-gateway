@@ -10,12 +10,6 @@ if (!defined('ABSPATH')) {
 
 require_once(__DIR__ . "/vendor/autoload.php");
 
-load_plugin_textdomain(
-    'resurs-bank-payment-gateway-for-woocommerce',
-    false,
-    dirname(plugin_basename(__FILE__)) . '/languages'
-);
-
 if (!function_exists('getResursWooFormFields')) {
     function getResursWooFormFields($addId = null, $namespace = "")
     {

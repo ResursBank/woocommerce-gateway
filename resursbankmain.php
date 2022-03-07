@@ -43,13 +43,6 @@ function woocommerce_gateway_resurs_bank_init()
         return;
     }
 
-    // Localization
-    load_plugin_textdomain(
-        'resurs-bank-payment-gateway-for-woocommerce',
-        false,
-        dirname(plugin_basename(__FILE__)) . '/languages'
-    );
-
     /**
      * Class WC_Resurs_Bank
      */

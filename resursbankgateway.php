@@ -13,6 +13,10 @@
 
 use TorneLIB\Utils\WordPress as WPUtils;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 require_once(__DIR__ . '/functions_settings.php');
 require_once(__DIR__ . '/functions_vitals.php');
 
@@ -22,6 +26,12 @@ $wpUtils->setPluginBaseFile(__FILE__);
 define('RB_WOO_VERSION', $wpUtils->getCurrentVersion());
 define('RB_ALWAYS_RELOAD_JS', true);
 define('RB_WOO_CLIENTNAME', 'resurs-bank-payment-gateway-for-woocommerce');
+
+load_plugin_textdomain(
+    'resurs-bank-payment-gateway-for-woocommerce',
+    false,
+    dirname(plugin_basename(__FILE__)) . '/languages/'
+);
 
 /**
  * @return bool
