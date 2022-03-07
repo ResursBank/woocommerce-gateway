@@ -1,3 +1,7 @@
+# 2.2.88 - 2.2.89
+
+* Hotfix for errorhandler problems (PHP 8.0+)
+
 # 2.2.87
 
 * Hotfix for ecom requirements.
