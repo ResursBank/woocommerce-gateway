@@ -83,7 +83,7 @@ class Arrays
      * @return bool
      * @since 6.0.2
      */
-    public function isAssoc(array $arrayData)
+    public function isAssoc($arrayData)
     {
         if ([] === $arrayData) {
             return false;
