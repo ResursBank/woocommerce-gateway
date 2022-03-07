@@ -836,6 +836,13 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     }
                 } else {
                     $this->paymentMethods = $this->flow->getPaymentMethods([], true);
+                    rbSimpleLogging(
+                        sprintf(
+                            'Updated payment methods from Resurs Bank. Storing new transient. Count: %d.',
+                            count($this->paymentMethods)
+                        )
+                    );
+                    set_transient('resursTemporaryPaymentMethods', serialize($this->paymentMethods));
                 }
                 if (is_array($this->paymentMethods)) {
                     $idMerchant = 0;

@@ -492,6 +492,7 @@ function preSetResursMethods(customerType, returnedObjects) {
         );
     }
 
+    /*
     if (typeof customerType === "undefined") {
         return;
     }
@@ -505,11 +506,11 @@ function preSetResursMethods(customerType, returnedObjects) {
 
     customerType = customerType.toLowerCase();
     getResursMethodList(returnedObjects, hideCustomerType, false);
-
-    if (!resursvars["customerTypes"]["hasLegal"]) {
+    */
+    /*if (!resursvars["customerTypes"]["hasLegal"]) {
         $RB('#ssnCustomerRadioNATURAL').remove();
         $RB('#ssnCustomerRadioLEGAL').remove();
-    }
+    }*/
 
     if ($RB('#billing_company').length > 0) {
         var currentCustomerType = $RB('#ssnCustomerType' + customerType.toUpperCase() + ':checked').val();
@@ -530,6 +531,11 @@ function preSetResursMethods(customerType, returnedObjects) {
  * @returns {boolean}
  */
 function getResursMethodList(returnedObjects, hideCustomerType, skipDisplay) {
+    // Show on screen but stop execute. With the new fixes, this part should not change any of its prior
+    // behaviour.
+    // @todo Remove this part entirely when we can see that it works live.
+    console.log('getResursMethodList was executed but did not have to.');
+    return true;
     var shown = 0;
     var hasShown = false;
 
@@ -563,12 +569,14 @@ function getResursMethodList(returnedObjects, hideCustomerType, skipDisplay) {
 
 /**
  * Return true if the "requested" payment method resides in the array that should be tested.
+ * Function is executed from within a disabled part of the frontend scripts. This should never be trigged.
  *
  * @param methods
  * @param currentElm
  * @returns {boolean}
  */
 function resursMethodIsIn(methods, currentElm, hideCustomerType) {
+    console.log('resursMethodIsIn triggered, but not necessary.');
     var returnValue = true;
     var foundMethod = false;
     if (currentElm.className.indexOf('_nr_') > -1) {
