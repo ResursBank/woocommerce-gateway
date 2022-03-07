@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20220222');
+    define('ECOMPHP_MODIFY_DATE', '20220228');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.73
+ * @version 1.3.76
  */
 class ResursBank
 {
@@ -783,6 +783,22 @@ class ResursBank
     private $finalizeWithoutOrderRows;
 
     /**
+     * Setting getPaymentValidation to false means that everything calculated in the afterShopFlow should be accepted
+     * without any pre-getPayment validation.
+     * @var bool
+     * @since 1.3.74
+     */
+    private $getPaymentValidation = true;
+
+    /**
+     * Validating of duplicate order lines before rendering them.
+     *
+     * @var bool
+     * @since 1.3.75
+     */
+    private $bookPaymentValidation = true;
+
+    /**
      * Constructor method for Resurs Bank WorkFlows
      *
      * This method prepares initial variables for the workflow. No connections are being made from this point.
@@ -875,14 +891,58 @@ class ResursBank
         }
 
         if (!empty($flagKey)) {
-            // CURL pass through
-            //$this->CURL->setFlag($flagKey, $flagValue);
-            $this->internalFlags[$flagKey] = $flagValue;
+            Flag::setFlag($flagKey, $flagValue);
 
             return true;
         }
         throw new ResursException('Flags can not be empty!', 500);
     }
+
+    /**
+     * @param $validationMode
+     * @return $this
+     * @throws Exception
+     * @since 1.3.74
+     */
+    public function setGetPaymentValidation($validationMode)
+    {
+        $this->getPaymentValidation = $validationMode;
+        if (!$validationMode) {
+            $this->setFlag('ALWAYS_RENDER_TOTALS', true);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     * @since 1.3.74
+     */
+    public function getGetPaymentValidation()
+    {
+        return $this->getPaymentValidation;
+    }
+
+    /**
+     * @param $validationMode
+     * @return $this
+     * @since 1.3.75
+     */
+    public function setBookPaymentValidation($validationMode)
+    {
+        $this->bookPaymentValidation = $validationMode;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     * @since 1.3.75
+     */
+    public function getBookPaymentValidation() {
+        return $this->bookPaymentValidation;
+    }
+
 
     /**
      * Function to make sure that we can handle proxies on multiple levels.
@@ -1067,11 +1127,7 @@ class ResursBank
      */
     public function getFlag($flagKey = null)
     {
-        if (isset($this->internalFlags[$flagKey])) {
-            return $this->internalFlags[$flagKey];
-        }
-
-        return null;
+        return Flag::getFlag($flagKey);
     }
 
     /**
@@ -3887,11 +3943,7 @@ class ResursBank
      */
     public function isFlag($flagKey = '')
     {
-        if ($this->hasFlag($flagKey)) {
-            return ((bool)$this->getFlag($flagKey) ? true : false);
-        }
-
-        return false;
+        return Flag::isFlag($flagKey);
     }
 
     /**
@@ -3906,11 +3958,7 @@ class ResursBank
      */
     public function hasFlag($flagKey = '')
     {
-        if (!is_null($this->getFlag($flagKey))) {
-            return true;
-        }
-
-        return false;
+        return Flag::hasFlag($flagKey);
     }
 
     /**
@@ -4892,7 +4940,7 @@ class ResursBank
                     }
                 }
                 if ($myFlow === CheckoutType::SIMPLIFIED_FLOW) {
-                    $this->SpecLines[$specIndex]['id'] = ($specIndex) + 1;
+                    $this->SpecLines[$specIndex]['id'] = $specIndex + 1;
                 }
                 if ($myFlow === CheckoutType::HOSTED_FLOW || $myFlow === CheckoutType::SIMPLIFIED_FLOW) {
                     if ($this->isFlag('ALWAYS_RENDER_TOTALS') && isset($specRow['totalVatAmount'])) {
@@ -5623,13 +5671,15 @@ class ResursBank
         //   artNo, description, quantity, unitMeasure, unitAmountWithoutVat, vatPct, type
 
         $duplicateArticle = false;
-        foreach ($this->SpecLines as $specIndex => $specRow) {
-            if ($specRow['artNo'] == $articleNumberOrId && $specRow['unitAmountWithoutVat'] == $unitAmountWithoutVat) {
-                $duplicateArticle = true;
-                $this->SpecLines[$specIndex]['quantity'] += $quantity;
+        if ($this->bookPaymentValidation) {
+            foreach ($this->SpecLines as $specIndex => $specRow) {
+                if ($specRow['artNo'] == $articleNumberOrId && $specRow['unitAmountWithoutVat'] == $unitAmountWithoutVat) {
+                    $duplicateArticle = true;
+                    $this->SpecLines[$specIndex]['quantity'] += $quantity;
+                }
             }
         }
-        if (!$duplicateArticle) {
+        if (!$duplicateArticle || !$this->bookPaymentValidation) {
             $specData = [
                 'artNo' => $articleNumberOrId,
                 'description' => $description,
@@ -8189,6 +8239,11 @@ class ResursBank
     {
         $return = [];
         $id = 0;
+
+        // Just use what we have without validation.
+        if (!$this->getPaymentValidation) {
+            return $currentOrderLines;
+        }
 
         foreach ($currentOrderLines as $idx => $orderRow) {
             $found = false;
