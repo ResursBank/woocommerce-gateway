@@ -68,10 +68,11 @@ Want to add a new language to this plugin? You can contribute via [translate.wor
 
 == Installation ==
 
-1. Upload the plugin archive to the "/wp-content/plugins/" directory
-2. Make sure the plugin has write access to itself under the includes folder (see below)
-3. Activate the plugin through the "Plugins" menu in WordPress
-4. Configure the plugin via admin control panel
+1. Upload the plugin archive to the "/wp-content/plugins/" directory.
+2. Make sure the plugin has write access to itself under the includes folder (see below).
+3. Activate the plugin through the "Plugins" menu in WordPress.
+4. Configure the plugin via admin control panel.
+5. On upgrades, make sure you synchronize language if WordPress suggest this.
 
 (Or install and activate the plugin through the WordPress plugin installer)
 
@@ -83,18 +84,18 @@ This path has to be write-accessible for your web server or the plugin won't wor
 
     chmod a+rw <wp-root>/wp-content/plugin/resurs-bank-payment-gateway-for-woocommerce/includes
 
-If you have a FTP-client or similar, make sure to give this path write-access for at least your webserver. If you know what you are doing you should limit this to your web server.
+If you have a FTP-client or similar, make sure to give this path write-access for at least your webserver. If you know what you are doing you should limit this the access for proper user setup on your web server.
 
 = Upgrading =
 
 When upgrading the plugin via WordPress plugin manager, make sure that you payment methods are still there. If you are unsure, just visit the configuration panel for Resurs Bank once after upgrading since, the plugin are rewriting files if they are missing.
 
-As of v2.2.12, we do support SWISH and similar "instant debitable" payment methods, where payments tend to be finalized/debited long before shipping has been made. You can read more about it [here](https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12)
+As of v2.2.12, we do support SWISH and similar "instant debitable" payment methods, where payments tend to be finalized/debited long before shipping has been made. You can read more about it [here](https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12).
 
 
 == Frequently Asked Questions ==
 
-You may want to look further at [https://test.resurs.com/docs/display/ecom/WooCommerce](https://test.resurs.com/docs/display/ecom/WooCommerce) for updates regarding this plugin
+You may want to look further at [https://test.resurs.com/docs/display/ecom/WooCommerce](https://test.resurs.com/docs/display/ecom/WooCommerce) for updates regarding this plugin.
 
 = Plugin is causing 40X errors on my site =
 
@@ -171,3 +172,4 @@ For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/
 == Upgrade Notice ==
 
 Make sure your payment methods are still there after upgrading the plugin.
+Also, make sure you synchronize language if WordPress suggest this.
