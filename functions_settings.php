@@ -1131,11 +1131,12 @@ if (is_admin()) {
         
             public function __construct()
             {
-                global \$woocommerce;
+                global \$woocommerce, \$globalCustomerType;
 
                 \$post_data = isset(\$_REQUEST['post_data']) ? rbSplitPostData(\$_REQUEST['post_data']) : [];
                 if (isset(WC()->session)) {
                     WC()->session->set('ssnCustomerType', isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
+                    \$globalCustomerType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL';
                 }
 
                 // isResursDemo is no longer in use.
@@ -1251,6 +1252,7 @@ if (is_admin()) {
              */
             public function is_available()
             {
+                global \$globalCustomerType;
                 if (isset(WC()->session)) {
                     \$this->currentCustomerType = WC()->session->get('ssnCustomerType');
                 }
@@ -1274,9 +1276,14 @@ if (is_admin()) {
                    \$this
                 );
                 
-                /*if (!empty(\$this->currentCustomerType) && !in_array(\$this->currentCustomerType, {$customerTypeAsString})) {
+                if (empty(\$globalCustomerType) && !empty(\$this->currentCustomerType)) {
+                    // Borrow empty answers from non empty locations.
+                    \$globalCustomerType = \$this->currentCustomerType;
+                }
+                
+                if (!empty(\$this->currentCustomerType) && !in_array(\$globalCustomerType, {$customerTypeAsString})) {
                     return false;
-                }*/
+                }
                 if (!\$isEnabled) {
                     return false;
                 }
