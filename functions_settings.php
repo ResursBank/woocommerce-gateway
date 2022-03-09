@@ -1274,9 +1274,9 @@ if (is_admin()) {
                    \$this
                 );
                 
-                if (!empty(\$this->currentCustomerType) && !in_array(\$this->currentCustomerType, {$customerTypeAsString})) {
+                /*if (!empty(\$this->currentCustomerType) && !in_array(\$this->currentCustomerType, {$customerTypeAsString})) {
                     return false;
-                }
+                }*/
                 if (!\$isEnabled) {
                     return false;
                 }
