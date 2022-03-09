@@ -266,11 +266,11 @@ function resursPreventPostType($allow, $postType)
  * Returns true if demoshop-mode is enabled.
  *
  * @return bool
- * @deprecated Do not use this!
+ * @deprecated Use isResursTest instead!
  */
 function isResursDemo()
 {
-    return false;
+    return isResursTest();
 }
 
 /**

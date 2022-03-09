@@ -5251,7 +5251,7 @@ function woocommerce_gateway_resurs_bank_init()
             RB_WOO_VERSION . (defined('RB_ALWAYS_RELOAD_JS') && RB_ALWAYS_RELOAD_JS === true ? '-' . time() : '')
         );
 
-        if (hasResursOmni()) {
+        if (isResursOmni(true)) {
             // Legacy RCOJS is depending on rcoface, due to auto detection.
             wp_enqueue_script(
                 'rcojs',
@@ -7183,7 +7183,9 @@ function getResursWordpressUser($key = 'userid', $popOnArray = true)
 /********************** OMNICHECKOUT RELATED STARTS HERE ******************/
 
 /**
- * Check if the current payment method is currently enabled and selected
+ * isResursOmni.
+ * Returns true if RCO is the selected flow. Checks are done with hasResursOmni where the disabled flags
+ * are ignored.
  *
  * @param bool $ignoreActiveFlag
  *
@@ -7198,15 +7200,19 @@ function isResursOmni($ignoreActiveFlag = false)
     if (isset($woocommerce->session)) {
         $currentMethod = $woocommerce->session->get('chosen_payment_method');
     }
-    $flowType = resursOption('flowtype');
-    $hasOmni = hasResursOmni($ignoreActiveFlag);
-    if (($hasOmni == 1 || $hasOmni === true) && (!empty($currentMethod) && $flowType === $currentMethod)) {
+    $flowType = getResursOption('flowtype');
+    // hasOmni is used by many.
+    $hasOmni = (bool)hasResursOmni($ignoreActiveFlag);
+    if ($hasOmni && (!empty($currentMethod) && $flowType === $currentMethod)) {
         $returnValue = true;
     }
     /*
      * If Omni is enabled and the current chosen method is empty, pre-select omni
      */
-    if (($hasOmni == 1 || $hasOmni === true) && $flowType === 'resurs_bank_omnicheckout' && empty($currentMethod)) {
+    if ($hasOmni === true &&
+        $flowType === 'resurs_bank_omnicheckout' &&
+        empty($currentMethod)
+    ) {
         $returnValue = true;
     }
     if ($returnValue) {
@@ -7262,26 +7268,27 @@ function hasEcomPHP()
 }
 
 /**
- * Check if the omniFlow is enabled at all (through flowType)
+ * hasResursOmni: Is the chosen flow RCO?
+ * Default: Returns true IF flow is RCO and plugin is NOT disabled.
  *
- * @param bool $ignoreActiveFlag Check this setting even though the plugin is not active
+ * @param bool $ignoreActiveFlag Check this setting even though the plugin is not active.
  *
  * @return bool
  */
 function hasResursOmni($ignoreActiveFlag = false)
 {
-    $resursEnabled = resursOption('enabled');
-    $flowType = resursOption('flowtype');
+    $flowType = getResursOption('flowtype');
     if (is_admin()) {
         $omniOption = get_option('woocommerce_resurs_bank_omnicheckout_settings');
-        if ($flowType == 'resurs_bank_omnicheckout') {
+        if ($flowType === 'resurs_bank_omnicheckout') {
             $omniOption['enabled'] = 'yes';
         } else {
             $omniOption['enabled'] = 'no';
         }
         update_option('woocommerce_resurs_bank_omnicheckout_settings', $omniOption);
     }
-    if ($resursEnabled !== 'yes' && !$ignoreActiveFlag) {
+    $resursEnabled = getResursOption('enabled');
+    if (!(bool)$resursEnabled && !$ignoreActiveFlag) {
         return false;
     }
     if ($flowType === 'resurs_bank_omnicheckout') {

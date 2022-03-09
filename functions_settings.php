@@ -1138,8 +1138,8 @@ if (is_admin()) {
                     WC()->session->set('ssnCustomerType', isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
                 }
 
-                \$this->isDemo = isResursDemo();
-                //\$this->allMethods = array();
+                // isResursDemo is no longer in use.
+                \$this->isDemo = isResursTest();
                 \$this->overRideIsAvailable = true;
                 \$this->overRideDescription = false;
                 \$this->sortOrder = '{$idMerchant}';
@@ -1206,38 +1206,6 @@ if (is_admin()) {
 
                 \$this->customerTypes = isset(\$realTimePaymentMethod->customerType) ? (array)\$realTimePaymentMethod->customerType : [];
 
-                \$this->demoCountry = null;
-                \$this->demoMethods = null;
-                if (\$this->isDemo) {
-                    // Overriders 
-            		if ( class_exists( "CountryHandler" ) ) {
-            		    // Now, let's do some magic here.
-			            \$countryHandler = new CountryHandler();
-            			\$countryList = array('se', 'no', 'dk', 'fi');
- 		    			\$countryConfig = \$countryHandler->getCountryConfig();
- 		    			\$this->demoCountry = \$_SESSION['rb_country'];
- 		    			//\$this->demoMethod = \$this->flow->sanitizePaymentMethods(get_transient('resursMethods' . \$this->demoCountry));
-
- 		    			\$this->demoMethod = get_transient('resursMethods' . \$this->demoCountry);
- 		    			\$matchMethod = false;
- 		    			
- 		    			if (is_array(\$this->demoMethod)) {
- 		    			    foreach (\$this->demoMethod as \$methodIndex => \$methodDataArray) {
-     		    			    if (\$methodDataArray->id == \$this->id_short) {
-     		    			        \$realTimePaymentMethod = \$this->demoMethod;
-     		    			        \$matchMethod = true;
-     		    			        \$this->overRideDescription = true;
-     		    			        \$this->title = \$methodDataArray->description;
-     		    			        break;
-     		    			    }
-     		    			}
-     		    		}
- 		    			if (!\$matchMethod) {
- 		    			    \$this->overRideIsAvailable = false;
- 		    			}
-            		}
-                }
-
                 if (empty(\$this->title) || strtolower(\$this->title) == "resurs bank") {
                     if (!isset(\$realTimePaymentMethod->id)) {
                         \$this->hasErrors = true;
@@ -1257,7 +1225,7 @@ if (is_admin()) {
                     \$cart = \$woocommerce->cart;
 		            \$total = \$cart->total;
 		            if (\$total > 0) {
-			            if (\$total >= \$this->maxLimit || \$total <= \$this->minLimit)
+			            if ((\$total >= \$this->maxLimit || \$total <= \$this->minLimit) && isResursDemo())
 			            {
 			                \$isDemo = ' <span class="resursPaymentDemoRestrictionView" title="'.__('In demo mode, this payment method is shown regardless of the total payment amount and the payment method limits', 'resurs-bank-payment-gateway-for-woocommerce').'">['.__('Restricted', 'resurs-bank-payment-gateway-for-woocommerce').']</span>';
 			                \$this->description .= \$isDemo;
