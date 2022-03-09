@@ -937,6 +937,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setHidden('title', $namespace);
                     echo $this->setDropDown('priceTaxClass', $namespace, $this->getTaxRatesArray());
                     echo $this->setCheckBox('postidreference', $namespace);
+                    echo $this->setCheckBox('instant_migrations', $namespace);
                     echo $this->setSeparator(__('API Settings', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setDropDown('flowtype', $namespace);
                     echo $this->setDropDown(
