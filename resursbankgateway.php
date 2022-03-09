@@ -44,6 +44,13 @@ function getOldRbVersionAppearance()
 
 function activateResursGatewayScripts()
 {
+    // Making sure this default is saved.
+    $defaults = get_option('woocommerce_resurs-bank_settings');
+    $current = getResursOption('instant_migrations');
+    if (!isset($defaults['instant_migrations'])) {
+        setResursOption('instant_migrations', $current);
+    }
+
     //resursExpectVersions();
     add_filter('resurs_bank_v22_woo_appearance', 'getOldRbVersionAppearance');
     if (allowPluginToRun()) {

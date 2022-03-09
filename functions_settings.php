@@ -102,6 +102,17 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                 ],
+                'instant_migrations' => [
+                    'title' => __('Enable instant migrations', 'woocommerce'),
+                    'type' => 'checkbox',
+                    'label' => __('Enabled', 'woocommerce'),
+                    'description' => __(
+                        'With this feature enabled, account migrations will be instant when/if upgrades to a ' .
+                        'new major release are done.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'default' => 'yes'
+                ],
                 'resursbank_start_session_before' => [
                     'title' => __('Disable session handling by plugin', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'checkbox',
