@@ -1134,11 +1134,11 @@ if (is_admin()) {
                 global \$woocommerce, \$globalCustomerType;
 
                 \$post_data = isset(\$_REQUEST['post_data']) ? rbSplitPostData(\$_REQUEST['post_data']) : [];
-                if (isset(WC()->session)) {
-                    \$cType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL';
+                if (isset(WC()->session) && isset(\$post_data['ssnCustomerType'])) {
+                    \$cType = \$post_data['ssnCustomerType'];
                     rbSimpleLogging('CustomerType set from session: ' . \$cType);
-                    WC()->session->set('ssnCustomerType', isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
-                    \$globalCustomerType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL';
+                    WC()->session->set('ssnCustomerType', \$cType);
+                    \$globalCustomerType = \$cType;
                 }
 
                 // isResursDemo is no longer in use.
