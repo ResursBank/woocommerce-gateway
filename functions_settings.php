@@ -1135,7 +1135,7 @@ if (is_admin()) {
 
                 \$post_data = isset(\$_REQUEST['post_data']) ? rbSplitPostData(\$_REQUEST['post_data']) : [];
                 if (isset(WC()->session)) {
-                    \$cType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
+                    \$cType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL';
                     rbSimpleLogging('CustomerType set from session: ' . \$cType);
                     WC()->session->set('ssnCustomerType', isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
                     \$globalCustomerType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL';
