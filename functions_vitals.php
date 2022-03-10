@@ -345,6 +345,7 @@ function getResursProtectedMetaData()
             'resurs-bank-payment-gateway-for-woocommerce'
         ),
         'paymentId' => 'paymentId',
+        'hosted_redirect_time' => 'Hosted Flow Redirect Time',
         'resursBankMetaPaymentMethod' => 'Payment Method',
         'resursBankMetaPaymentMethodSpecificType' => 'SpecificType',
         'resursBankMetaPaymentMethodType' => 'Type',

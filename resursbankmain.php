@@ -2356,6 +2356,13 @@ function woocommerce_gateway_resurs_bank_init()
             if (!$hostedFlowBookingFailure && !empty($hostedFlowUrl)) {
                 $order->update_status('pending');
                 update_post_meta($order_id, 'paymentId', $preferredId);
+                update_post_meta($order_id, 'hosted_redirect_time', date('Y-m-d H:i:s', time()));
+                $order->add_order_note(
+                    __(
+                        '[Resurs Bank] Customer was redirected to finalize the purchase at Resurs Bank.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    )
+                );
 
                 return [
                     'result' => 'success',
