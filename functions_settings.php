@@ -1135,6 +1135,8 @@ if (is_admin()) {
 
                 \$post_data = isset(\$_REQUEST['post_data']) ? rbSplitPostData(\$_REQUEST['post_data']) : [];
                 if (isset(WC()->session)) {
+                    \$cType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
+                    rbSimpleLogging('CustomerType set from session: ' . \$cType);
                     WC()->session->set('ssnCustomerType', isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL');
                     \$globalCustomerType = isset(\$post_data['ssnCustomerType']) ? \$post_data['ssnCustomerType']:'NATURAL';
                 }
@@ -1279,6 +1281,13 @@ if (is_admin()) {
                 if (empty(\$globalCustomerType) && !empty(\$this->currentCustomerType)) {
                     // Borrow empty answers from non empty locations.
                     \$globalCustomerType = \$this->currentCustomerType;
+                    rbSimpleLogging(
+                        sprintf(
+                            'CustomerType from session was empty. Using globalCustomerType from %s: %s', __FUNCTION__, \$globalCustomerType
+                        )
+                    );
+                } else {
+                    rbSimpleLogging(sprintf('CustomerType used from session in %s: %s', __FUNCTION__, \$this->currentCustomerType));
                 }
                 
                 if (!empty(\$this->currentCustomerType) && !in_array(\$globalCustomerType, {$customerTypeAsString})) {
