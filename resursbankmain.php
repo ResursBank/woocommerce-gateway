@@ -2350,6 +2350,10 @@ function woocommerce_gateway_resurs_bank_init()
                 } catch (Exception $hostedException) {
                     $hostedFlowBookingFailure = true;
                     wc_add_notice($hostedException->getMessage(), 'error');
+                    rbSimpleLogging(
+                        $hostedException->getMessage(),
+                        __FUNCTION__
+                    );
                 }
             }
 
@@ -2425,9 +2429,24 @@ function woocommerce_gateway_resurs_bank_init()
                     $this->flow->setMetaData('CustomerId', $customerId);
                 }
 
+                if (isset(WC()->session) && !empty(WC()->session)) {
+                    rbSimpleLogging(
+                        sprintf(
+                            'bookPayment for customerType %s executing.',
+                            WC()->session->get('ssnCustomerType')
+                        )
+                    );
+                }
+
                 // If woocommerce forms do offer phone and email, while our own
                 // don't, use them (moved to the section of setCustomer)
                 $bookPaymentResult = $this->flow->createPayment($shortMethodName, $bookDataArray);
+
+                rbSimpleLogging(
+                    print_r($bookPaymentResult, true),
+                    __FUNCTION__
+                );
+
             }
 
             return $bookPaymentResult;
