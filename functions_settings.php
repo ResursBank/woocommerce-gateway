@@ -111,7 +111,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'new major release are done.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
-                    'default' => 'yes'
+                    'default' => 'yes',
                 ],
                 'resursbank_start_session_before' => [
                     'title' => __('Disable session handling by plugin', 'resurs-bank-payment-gateway-for-woocommerce'),
@@ -1048,6 +1048,15 @@ if (is_admin()) {
         function write_resurs_class_to_file($payment_method, $idMerchant)
         {
             $idMerchantPrio = 10 + $idMerchant;
+            // Rewriting class names should also include cleaning up static transients.
+            if (isset($payment_method->id)) {
+                delete_transient(
+                    sprintf(
+                        'resursTemporaryMethod_%s',
+                        $payment_method->id
+                    )
+                );
+            }
             // No id - no file.
             if (!isset($payment_method->id) || (isset($payment_method->id) && empty($payment_method->id))) {
                 return;
@@ -1084,13 +1093,8 @@ if (is_admin()) {
             ) {
                 $isPsp = 'true';
             }
-            //$allowPsp = (getResursFlag('ALLOW_PSP') ? "true" : "false");
             $allowPsp = 'true';
-
-            //$icon_name = strtolower($method_name);
             $icon_name = "resurs-standard";
-            //$icon_name = str_replace(array('å', 'ä', 'ö', ' '), array('a', 'a', 'o', '_'), $icon_name);
-
             $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
 
             $icon = apply_filters(
@@ -1102,12 +1106,6 @@ if (is_admin()) {
             $has_icon = (string)file_exists($temp_icon);
             $ajaxUrl = admin_url('admin-ajax.php');
             $costOfPurchase = $ajaxUrl . "?action=get_priceinfo_ajax";
-
-            /*
-             * Demoshop note: All classes will be written for each country. However, if they are named the same in the merchant admin portal the classes themselves
-             * will only be written and loaded once. As they are changing, one overrider should interfere with the titles so we, instead of fetching them live
-             * from the plugin's regular place, we'll use the internally stored data from the demoshop template.
-             */
 
             $customerTypeArray = [];
             foreach ((array)$customerType as $item) {
