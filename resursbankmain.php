@@ -4667,7 +4667,7 @@ function woocommerce_gateway_resurs_bank_init()
             $resursFlow->setLoggedInUser($currentRunningUsername);
             $returnValue = null;
 
-            do_action('resurs_bank_order_status_update', $new_status_slug);
+            do_action('resurs_bank_order_status_update', $order->get_id(), $new_status_slug);
 
             switch ($new_status_slug) {
                 case 'pending':
@@ -4708,7 +4708,6 @@ function woocommerce_gateway_resurs_bank_init()
                                 false,
                                 $customFinalize
                             );
-                            $order->payment_complete();
                             rbSimpleLogging(
                                 sprintf('%s: Finalization - Payment Content', $payment_id)
                             );
