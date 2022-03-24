@@ -1081,7 +1081,7 @@ if (is_admin()) {
             $classFileName .= '.php';
 
             $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
-            $method_name = $payment_method->description;
+            $method_name = addslashes($payment_method->description);
             $type = strtolower($payment_method->type);
             $customerType = $payment_method->customerType;
             $minLimit = $payment_method->minLimit;
