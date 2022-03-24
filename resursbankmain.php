@@ -1025,9 +1025,6 @@ function woocommerce_gateway_resurs_bank_init()
                 );
             }
 
-/*            if ($_SERVER['REMOTE_ADDR'] === '192.121.110.100') {
-                throw new Exception('Nope', 500);
-            }*/
             /**
              * Watch out for race conditions! We've queued the callback updates.
              * @see https://resursbankplugins.atlassian.net/browse/WOO-573
