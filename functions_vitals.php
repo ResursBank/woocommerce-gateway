@@ -679,7 +679,6 @@ function updateResursOrderStatusActions($orderId, $status)
             }
         }
     }
-
 }
 
 /**
