@@ -1025,6 +1025,9 @@ function woocommerce_gateway_resurs_bank_init()
                 );
             }
 
+/*            if ($_SERVER['REMOTE_ADDR'] === '192.121.110.100') {
+                throw new Exception('Nope', 500);
+            }*/
             /**
              * Watch out for race conditions! We've queued the callback updates.
              * @see https://resursbankplugins.atlassian.net/browse/WOO-573
@@ -4664,6 +4667,8 @@ function woocommerce_gateway_resurs_bank_init()
             $resursFlow->setLoggedInUser($currentRunningUsername);
             $returnValue = null;
 
+            do_action('resurs_bank_order_status_update', $new_status_slug);
+
             switch ($new_status_slug) {
                 case 'pending':
                     break;
@@ -4703,11 +4708,12 @@ function woocommerce_gateway_resurs_bank_init()
                                 false,
                                 $customFinalize
                             );
-                            resursEventLogger(
+                            $order->payment_complete();
+                            rbSimpleLogging(
                                 sprintf('%s: Finalization - Payment Content', $payment_id)
                             );
-                            resursEventLogger(print_r($payment, true));
-                            resursEventLogger(
+                            rbSimpleLogging(print_r($payment, true));
+                            rbSimpleLogging(
                                 sprintf(
                                     '%s: Finalization %s',
                                     $payment_id,
@@ -4725,7 +4731,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 $e->getMessage()
                             );
 
-                            resursEventLogger(
+                            rbSimpleLogging(
                                 sprintf(
                                     __(
                                         '%s: FinalizationException: %s - %s. Old status (%s) restored.',
@@ -4744,7 +4750,7 @@ function woocommerce_gateway_resurs_bank_init()
                         // so in that case the above finalization event will occur)
                         if ($resursFlow->getIsDebited()) {
                             if ($resursFlow->getInstantFinalizationStatus($payment) & (OrderStatus::AUTO_DEBITED)) {
-                                resursEventLogger($payment_id . ': InstantFinalization/IsDebited detected.');
+                                rbSimpleLogging($payment_id . ': InstantFinalization/IsDebited detected.');
                                 $order->add_order_note(
                                     __(
                                         'This order is now marked completed as a result of the payment method behaviour (automatic finalization).',
@@ -4752,7 +4758,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     )
                                 );
                             } else {
-                                resursEventLogger($payment_id . ': Already finalized.');
+                                rbSimpleLogging($payment_id . ': Already finalized.');
                                 $order->add_order_note(
                                     __(
                                         'This order has already been finalized externally.',

@@ -643,6 +643,13 @@ function updateQueuedOrderStatus(int $orderId, string $status, string $notice)
             $properOrder = new WC_Order($orderId);
             $currentStatus = $properOrder->get_status();
             if ($currentStatus !== $status) {
+                do_action('resurs_bank_order_status_update', $status);
+                switch ($status) {
+                    case 'completed';
+                        $properOrder->payment_complete();
+                        break;
+                    default:
+                }
                 $properOrder->update_status(
                     $status,
                     $notice
