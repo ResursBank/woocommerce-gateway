@@ -647,11 +647,30 @@ function updateQueuedOrderStatus(int $orderId, string $status, string $notice)
                     $status,
                     $notice
                 );
+                do_action('resurs_bank_order_status_update', $orderId, $status);
             }
-            resursEventLogger('Update queued order ' . $orderId . ' with status ' . $status . '.');
-            resursEventLogger('Order note for ' . $orderId . ': ' . $notice);
+            rbSimpleLogging('Update queued order ' . $orderId . ' with status ' . $status . '.');
+            rbSimpleLogging('Order note for ' . $orderId . ': ' . $notice);
         } catch (Exception $e) {
-            resursEventLogger(print_r($e, true));
+            rbSimpleLogging(print_r($e, true));
+        }
+    }
+}
+
+/**
+ * @param $orderId
+ * @param $status
+ * @since 2.2.91
+ */
+function updateResursOrderStatusActions($orderId, $status)
+{
+    if ($orderId) {
+        $currentOrder = new WC_Order($orderId);
+        if (($currentOrder instanceof WC_Order) && $status === 'completed') {
+            $currentOrder->payment_complete();
+            rbSimpleLogging(
+                sprintf('Order %d is completed: payment_complete() triggered!', $orderId)
+            );
         }
     }
 }
@@ -692,3 +711,4 @@ add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationContro
 add_filter('resursbank_start_session_before', 'resurs20StartSession');
 add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');
 add_action('resursbank_update_queued_status', 'updateQueuedOrderStatus', 10, 3);
+add_action('resurs_bank_order_status_update', 'updateResursOrderStatusActions', 10, 2);
