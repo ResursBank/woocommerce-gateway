@@ -1,3 +1,8 @@
+# 2.2.91
+
+* [WOO-614](https://resursbankplugins.atlassian.net/browse/WOO-614) Descriptions containing ' in payment method classes
+* [WOO-615](https://resursbankplugins.atlassian.net/browse/WOO-615) payment\_complete is not implemented for "finalized" orders
+
 # 2.2.89 - 2.2.90
 
 * [WOO-612](https://resursbankplugins.atlassian.net/browse/WOO-612) Static transient data are not cleaned up on class rewrites

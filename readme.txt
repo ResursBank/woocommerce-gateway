@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9.2
 Requires PHP: 7.0
-Stable tag: 2.2.90
+Stable tag: 2.2.91
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -125,6 +125,13 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 == Changelog ==
 
+For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
+
+= 2.2.91 =
+
+* [WOO-614](https://resursbankplugins.atlassian.net/browse/WOO-614) Descriptions containing ' in payment method classes
+* [WOO-615](https://resursbankplugins.atlassian.net/browse/WOO-615) payment\_complete is not implemented for "finalized" orders
+
 = 2.2.89 - 2.2.90 =
 
 * [WOO-612](https://resursbankplugins.atlassian.net/browse/WOO-612) Static transient data are not cleaned up on class rewrites
@@ -136,42 +143,6 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 * [WOO-605](https://resursbankplugins.atlassian.net/browse/WOO-605) Change log destination
 * [WOO-604](https://resursbankplugins.atlassian.net/browse/WOO-604) Handle customer type from respective written method class
 
-= 2.2.89 (Hotfix) =
-
-[WOO-607](https://resursbankplugins.atlassian.net/browse/WOO-607) PHP 8 soaprequest failures
-
-= 2.2.87 - 2.2.88 =
-
-* Hotfix for ecom requirements.
-
-= 2.2.86 =
-
-* [WOO-602](https://resursbankplugins.atlassian.net/browse/WOO-602) Centralize requirements
-* [WOO-601](https://resursbankplugins.atlassian.net/browse/WOO-601) strftime is deprecated in PHP 8.1.0
-
-= 2.2.84 - 2.2.85 =
-
-* Cleanup, corrections.
-
-= 2.2.83 =
-
-* Libraries and readme patch.
-* Simplified the way we fetch version information in plugin which is used by the ecommerce php library, making tags easier to handle.
-
-= 2.2.82 =
-
-* [WOO-600](https://resursbankplugins.atlassian.net/browse/WOO-600) Hotfix: QueryMonitor reports missing dependency
-
-= 2.2.81 =
-
-* Hotfix: Added ip-tracking feature for whitelisting-help in wp-admin.
-
-= 2.2.80 =
-
-* [WOO-599](https://resursbankplugins.atlassian.net/browse/WOO-599) Ip control section for woo
-
-
-For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
 == Upgrade Notice ==
 
