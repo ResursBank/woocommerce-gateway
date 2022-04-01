@@ -35,12 +35,13 @@ class Translation
     }
 
     /**
-     * @param $methodItem
+     * @param string $methodItem
+     * @param int $infoText
      * @return array|mixed|string
      */
-    public function getMethodInfo($methodItem)
+    public function getMethodInfo($methodItem, $infoText = 1)
     {
-        return $this->getPhraseByMethod($methodItem, 'info');
+        return $this->getPhraseByMethod($methodItem, sprintf('infoText%d', (int)$infoText));
     }
 
     /**
