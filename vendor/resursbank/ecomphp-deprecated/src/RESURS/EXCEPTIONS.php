@@ -1,8 +1,10 @@
 <?php
 
 /**
+ * Legacy ResursException Codes. Still in use, and should probably get migrated into any new project that
+ * is depending on soap- and rest errors.
+ *
  * Class RESURS_EXCEPTIONS
- * @deprecated Legacy ResursException Codes Class.
  */
 class RESURS_EXCEPTIONS
 {

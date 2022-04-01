@@ -4,7 +4,7 @@
  * Class ResursException
  * Resurs Bank exception handler.
  */
-class ResursException extends \Exception
+class ResursException extends Exception
 {
     private $traceFunction;
     private $stringifiedCode;
@@ -12,7 +12,7 @@ class ResursException extends \Exception
     public function __construct(
         $message = 'Unknown exception',
         $code = 0,
-        \Exception $previous = null,
+        Exception $previous = null,
         $stringifiedCode = null,
         $fromFunction = ''
     ) {
@@ -30,7 +30,7 @@ class ResursException extends \Exception
                 if (defined($constantName)) {
                     $constant = constant($constantName);
                 }
-            } catch (\Exception $regularConstantException) {
+            } catch (Exception $regularConstantException) {
                 // Ignore this.
             }
             if (!empty($constant)) {
