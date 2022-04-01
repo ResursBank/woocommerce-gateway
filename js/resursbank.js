@@ -478,6 +478,22 @@ function preSetResursMethods(customerType, returnedObjects) {
         keepGetAddressOption = "LEGAL";
     }
 
+    if (!hasNatural || !hasLegal) {
+        // Make sure that the correct customer type is selected before hiding it, as cookies sometimes can
+        // make wrong selections.
+        if (hasNatural && $RB('#ssnCustomerTypeNATURAL').length > 0 && !$RB('#ssnCustomerTypeNATURAL').attr('checked')) {
+            $RB('#ssnCustomerTypeNATURAL').click();
+        }
+        if (hasLegal && $RB('#ssnCustomerTypeLEGALL').length > 0 && $RB('#ssnCustomerTypeLEGAL').attr('checked')) {
+            $RB('#ssnCustomerTypeNATURAL').click();
+        }
+        // If only one customer type is found in the payment method list, we then don't have to show the choices.
+        $RB('#ssnCustomerRadioNATURAL').hide();
+        $RB('#ssnCustomerTypeNATURAL').hide();
+        $RB('#ssnCustomerRadioLEGAL').hide();
+        $RB('#ssnCustomerTypeLEGAL').hide();
+    }
+
     if (disableGetAddressOptions !== '') {
         // Make sure the options are removed if there is just one bulk of payment methods
         $RB('[id="ssnCustomerType' + customerType.toUpperCase() + '"]').each(
