@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9.2
 Requires PHP: 7.0
-Stable tag: 2.2.91
+Stable tag: 2.2.92
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -127,21 +127,14 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
+= 2.2.92 =
+
+[WOO-616](https://resursbankplugins.atlassian.net/browse/WOO-616) Validate that radio buttons are not shown when only one payment method type is available
+
 = 2.2.91 =
 
 * [WOO-614](https://resursbankplugins.atlassian.net/browse/WOO-614) Descriptions containing ' in payment method classes
 * [WOO-615](https://resursbankplugins.atlassian.net/browse/WOO-615) payment\_complete is not implemented for "finalized" orders
-
-= 2.2.89 - 2.2.90 =
-
-* [WOO-612](https://resursbankplugins.atlassian.net/browse/WOO-612) Static transient data are not cleaned up on class rewrites
-* [WOO-611](https://resursbankplugins.atlassian.net/browse/WOO-611) Företagsfaktura ogiltigförklaras "med hjälp av" felaktig session
-* [WOO-609](https://resursbankplugins.atlassian.net/browse/WOO-609) "Restricted" methods in prod?
-* [WOO-607](https://resursbankplugins.atlassian.net/browse/WOO-607) PHP 8 soaprequest failures
-* [WOO-610](https://resursbankplugins.atlassian.net/browse/WOO-610) Allow importing data automatically from v2.
-* [WOO-606](https://resursbankplugins.atlassian.net/browse/WOO-606) Remove invoice peek requests
-* [WOO-605](https://resursbankplugins.atlassian.net/browse/WOO-605) Change log destination
-* [WOO-604](https://resursbankplugins.atlassian.net/browse/WOO-604) Handle customer type from respective written method class
 
 
 == Upgrade Notice ==

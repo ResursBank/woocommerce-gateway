@@ -1,3 +1,7 @@
+# 2.2.92
+
+[WOO-616](https://resursbankplugins.atlassian.net/browse/WOO-616) Validate that radio buttons are not shown when only one payment method type is available
+
 # 2.2.91
 
 * [WOO-614](https://resursbankplugins.atlassian.net/browse/WOO-614) Descriptions containing ' in payment method classes
