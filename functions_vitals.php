@@ -183,6 +183,43 @@ function allowPluginToRun()
 }
 
 /**
+ * This function is mainly used to assure that payment methods only have one customer type available and therefore
+ * potentially should be visible in a checkout, when customerType is lacking the validation.
+ *
+ * @return bool
+ * @since 2.2.91
+ */
+function hasDualCustomerTypes() {
+    $transients = get_transient('resursTemporaryPaymentMethods');
+
+    if (empty($transients)) {
+        // No transients = no data = broken.
+        return false;
+    }
+    $return = false;
+
+    $methodList = unserialize($transients);
+    $customerTypes = [];
+    foreach ($methodList as $method) {
+        if (!isset($method->customerType)) {
+            continue;
+        }
+        $customerType = (array)$method->customerType;
+        foreach ($customerType as $type) {
+            if (!empty($type) && !in_array($type, $customerTypes)) {
+                $customerTypes[] = $type;
+            }
+            if (count($customerTypes) > 1) {
+                $return = true;
+                break;
+            }
+        }
+    }
+
+    return $return;
+}
+
+/**
  * @return array
  */
 function getResursAllowedLocations()
