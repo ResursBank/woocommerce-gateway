@@ -2446,9 +2446,7 @@ function woocommerce_gateway_resurs_bank_init()
                     print_r($bookPaymentResult, true),
                     __FUNCTION__
                 );
-
             }
-
             return $bookPaymentResult;
         }
 
