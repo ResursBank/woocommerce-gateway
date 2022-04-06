@@ -5026,42 +5026,43 @@ function woocommerce_gateway_resurs_bank_init()
                 if ($legalCount) {
                     echo '<span id="ssnCustomerRadioLEGAL" style="' . $viewLegal . '"><input type="radio" id="ssnCustomerTypeLEGAL" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . $company . '</span>';
                 }
-                echo '<input type="hidden" id="resursSelectedCountry" value="' . $selectedCountry . '">';
+            }
+
+            echo '<input type="hidden" id="resursSelectedCountry" value="' . $selectedCountry . '">';
+            $placeHolderField = __(
+                'Enter your government id (social security number)',
+                'resurs-bank-payment-gateway-for-woocommerce'
+            );
+            $govIdLabel = __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce');
+            if (!$naturalCount) {
                 $placeHolderField = __(
-                    'Enter your government id (social security number)',
+                    'Enter your company government ID',
                     'resurs-bank-payment-gateway-for-woocommerce'
                 );
-                $govIdLabel = __('Government ID', 'resurs-bank-payment-gateway-for-woocommerce');
-                if (!$naturalCount) {
-                    $placeHolderField = __(
-                        'Enter your company government ID',
+                $govIdLabel = __('Company government id', 'resurs-bank-payment-gateway-for-woocommerce');
+            }
+            // Only show govid-fields if enabled.
+            if ($optionGetAddress) {
+                woocommerce_form_field('ssn_field', [
+                    'type' => 'text',
+                    'class' => ['ssn form-row-wide resurs_ssn_field'],
+                    'label' => $govIdLabel,
+                    'placeholder' => $placeHolderField,
+                ], $checkout->get_value('ssn_field'));
+                if ('SE' === $selectedCountry) {
+                    $translation = [];
+
+                    $get_address = (!empty($translation)) ? $translation['get_address'] : __(
+                        'Get address',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     );
-                    $govIdLabel = __('Company government id', 'resurs-bank-payment-gateway-for-woocommerce');
-                }
-                // Only show govid-fields if enabled.
-                if ($optionGetAddress) {
-                    woocommerce_form_field('ssn_field', [
-                        'type' => 'text',
-                        'class' => ['ssn form-row-wide resurs_ssn_field'],
-                        'label' => $govIdLabel,
-                        'placeholder' => $placeHolderField,
-                    ], $checkout->get_value('ssn_field'));
-                    if ('SE' === $selectedCountry) {
-                        $translation = [];
-
-                        $get_address = (!empty($translation)) ? $translation['get_address'] : __(
-                            'Get address',
-                            'resurs-bank-payment-gateway-for-woocommerce'
-                        );
-                        printf(
-                            '<a href="#" class="button" id="fetch_address">%s</a>
+                    printf(
+                        '<a href="#" class="button" id="fetch_address">%s</a>
                                 <span id="fetch_address_status" style="display: none;"><img src="%sloader.gif" border="0"></span><br>
                                 ',
-                            $get_address,
-                            plugin_dir_url(__FILE__)
-                        );
-                    }
+                        $get_address,
+                        plugin_dir_url(__FILE__)
+                    );
                 }
             }
         }
