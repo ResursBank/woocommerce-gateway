@@ -25,6 +25,11 @@ Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwooc
 * [Resurs Checkout Web](https://test.resurs.com/docs/display/ecom/Resurs+Checkout+Web). Iframe integration. Currently supporting **RCOv1 and RCOv2**.
 * [Hosted Payment Flow](https://test.resurs.com/docs/display/ecom/Hosted+Payment+Flow). A paypal like checkout where most of the payment events takes place at Resurs Bank.
 
+== Multisite/WordPress Networks ==
+
+The plugin **do** support WordPress networks (aka multisite), however it does not support running one webservice account over many sites at once. The main rule that Resurs Bank works with is that one webservice account only works for one site. Running multiple sites do **require** multiple webservice accounts!
+
+
 = Compatibility and requirements =
 
 * WooCommerce: v3.5.0 or higher!
