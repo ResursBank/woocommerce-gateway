@@ -483,7 +483,7 @@ function preSetResursMethods(customerType, returnedObjects) {
         if (hasNatural && $RB('#ssnCustomerTypeNATURAL').length > 0 && !$RB('#ssnCustomerTypeNATURAL').attr('checked')) {
             $RB('#ssnCustomerTypeNATURAL').click();
         }
-        if (hasLegal && $RB('#ssnCustomerTypeLEGALL').length > 0 && !$RB('#ssnCustomerTypeLEGAL').attr('checked')) {
+        if (hasLegal && $RB('#ssnCustomerTypeLEGAL').length > 0 && !$RB('#ssnCustomerTypeLEGAL').attr('checked')) {
             $RB('#ssnCustomerTypeNATURAL').click();
         }
         // If only one customer type is found in the payment method list, we then don't have to show the choices.
