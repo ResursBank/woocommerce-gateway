@@ -2132,7 +2132,9 @@ function woocommerce_gateway_resurs_bank_init()
                 // Fetch methods through what's saved from wp-admin.
                 // Note: unserialization is not a very smart thing to do.
                 $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
+
                 // If transient fetching failed, re-fetch methods and store them again.
+                // Tested 220405: Lacking the list is not a showstopper for the checkout.
                 // This should in a natural way not fail since we do not have any expiration time
                 // set on the transients.
                 if (!is_array($methodList) || (is_array($methodList) && !count($methodList))) {
@@ -5069,6 +5071,8 @@ function woocommerce_gateway_resurs_bank_init()
      */
     function enqueue_script()
     {
+        global $woocommerce;
+
         if (!getResursOption('enabled')) {
             return;
         }
@@ -5249,6 +5253,7 @@ function woocommerce_gateway_resurs_bank_init()
 
         $customerTypes = WC_Resurs_Bank::get_address_customertype(true);
 
+        // resursCountry and wcCustomerCountry is added here for debugging purposes.
         $resursVars = [
             'ResursBankAB' => true,
             'customerTypes' => $customerTypes,
@@ -5256,6 +5261,10 @@ function woocommerce_gateway_resurs_bank_init()
             'resursCheckoutMultipleMethods' => omniOption('resursCheckoutMultipleMethods'),
             'showCheckoutOverlay' => getResursOption('showCheckoutOverlay'),
             'inProductPage' => is_product(),
+            'resursCountry' => getResursOption('country'),
+            'wcCustomerCountry' => isset($woocommerce->customer) &&
+            method_exists($woocommerce->customer, 'get_billing_country') ?
+                $woocommerce->customer->get_billing_country() : ''
         ];
 
         $oneRandomValue = null;

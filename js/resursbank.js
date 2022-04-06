@@ -102,7 +102,6 @@ $RB(document).ready(function ($) {
         });
     }
 
-
     var rb_simpl_checkout_form = $RB('form.checkout');
     if (typeof rb_simpl_checkout_form !== 'undefined' &&
         typeof resursvars !== 'undefined' &&
