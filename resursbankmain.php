@@ -5016,7 +5016,8 @@ function woocommerce_gateway_resurs_bank_init()
             }
 
             // On both company+natural methods, enforce displaying of fields.
-            if ($optionGetAddress || ($naturalCount > 0 && $legalCount > 0)) {
+            // But we have to check if they ARE in duality before deciding the rest.
+            if (hasDualCustomerTypes() && $optionGetAddress) {
                 if ($naturalCount) {
                     // [DOM] Found 2 elements with non-unique id #ssnCustomerType
                     // onchange="$RB('body').trigger('update_checkout')"
@@ -5053,8 +5054,13 @@ function woocommerce_gateway_resurs_bank_init()
                             'Get address',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         );
-                        echo '<a href="#" class="button" id="fetch_address">' . $get_address . '</a> <span id="fetch_address_status" style="display: none;"><img src="' . plugin_dir_url(__FILE__) . 'loader.gif' . '" border="0"></span>
-                <br>';
+                        printf(
+                            '<a href="#" class="button" id="fetch_address">%s</a>
+                                <span id="fetch_address_status" style="display: none;"><img src="%sloader.gif" border="0"></span><br>
+                                ',
+                            $get_address,
+                            plugin_dir_url(__FILE__)
+                        );
                     }
                 }
             }
@@ -5264,7 +5270,7 @@ function woocommerce_gateway_resurs_bank_init()
             'resursCountry' => getResursOption('country'),
             'wcCustomerCountry' => isset($woocommerce->customer) &&
             method_exists($woocommerce->customer, 'get_billing_country') ?
-                $woocommerce->customer->get_billing_country() : ''
+                $woocommerce->customer->get_billing_country() : '',
         ];
 
         $oneRandomValue = null;
