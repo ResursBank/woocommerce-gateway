@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '89b34164c5c36cab371fa523e89403c6b655507b',
+        'reference' => '4104c9304704118c88745f3a51ce065324c9c601',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '89b34164c5c36cab371fa523e89403c6b655507b',
+            'reference' => '4104c9304704118c88745f3a51ce065324c9c601',
             'dev_requirement' => false,
         ),
         'resursbank/ecomphp' => array(
