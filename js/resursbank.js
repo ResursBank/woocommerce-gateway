@@ -52,6 +52,24 @@ $RB(document).on('updated_checkout', function () {
         document.location.reload();
     }
 });
+$RB(document).on('resursCountryChange', function(e, data) {
+    if (typeof data['newCountry'] !== 'undefined') {
+        var countrySet = data['newCountry'];
+        // Example code of country code changer. This code will remove fetchaddress fields when any other country
+        // than sweden is selected and the gov id field is forced to be shown in the last checkout step. As
+        // some methods may be dependent on the govid field we don't want to remove it without having an option
+        // to fill it in elsewhere.
+        if (resursvars['forceGovIdField'] == "1") {
+            if (countrySet !== 'SE') {
+                $RB('#ssn_field_field').hide();
+                $RB('#fetch_address').hide();
+            } else {
+                $RB('#ssn_field_field').show();
+                $RB('#fetch_address').show();
+            }
+        }
+    }
+});
 
 var rbRefUpdated = false;
 
@@ -188,6 +206,9 @@ $RB(document).ready(function ($) {
                 if ($('#applicant-full-name').length > 0) {
                     $('#applicant-full-name').val($("#billing_first_name").val() + " " + $("#billing_last_name").val());
                 }
+            });
+            $('#billing_country').on('change', function () {
+                $('body').trigger('resursCountryChange', {newCountry: this.value});
             });
         },
 
