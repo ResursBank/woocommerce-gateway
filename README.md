@@ -1,4 +1,4 @@
-# Resurs Bank payment gateway for WooCommerce (Legacy/Maintenance)
+# Resurs Bank payment gateway for WooCommerce (Legacy/Maintenance) #
 
 We are only supporting WooCommerce 3.5.0 and up.
 
@@ -10,18 +10,22 @@ PHP-versions, you should probably not expect anything to work if you still run 2
 coding standards was considered as "less important" amongst developers. That's why the codebase is anything but
 beautiful.
 
-## Plugin needs translation
+## Multisite/WordPress Networks ##
+
+The plugin **do** support WordPress networks (aka multisite), however it does not support running one webservice account over many sites at once. The main rule that Resurs Bank works with is that one webservice account only works for one site. Running multiple sites do **require** multiple webservice accounts!
+
+## Plugin needs translation ##
 
 [![Crowdin](https://badges.crowdin.net/resursbankwoocommerce/localized.svg)](https://crowdin.com/project/resursbankwoocommerce)
 
 Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwoocommerce)!
 
-### Can I upgrade WooCommerce with your plugin installed?
+### Can I upgrade WooCommerce with your plugin installed? ###
 
 If unsure about upgrades, take a look at resursbankgateway.php under "WC Tested up to". That section usually changes (
 after internal tests has been made) to match the base requirements, so you can upgrade without upgrade warnings.
 
-## Getting started / Installing
+## Getting started / Installing ##
 
 For "normal production users" we recommend you to just install this plugin by using WordPress plugin installer. If that
 is not possible and your site requires manual installations, you can either go
@@ -34,13 +38,13 @@ When downloaded manually, unzip/untar the archive into your plugin path (just re
 unpack the files in a substructure, so make sure all files goes right into its own path). It is however *recommended*
 that you use WordPress download site instead of our repo.
 
-## Description
+## Description ##
 
 This is a payment gateway for Resurs Ba2k, that supports three Resurs Bank shopflows. Depending on which flow that's
 being selected, there are also requirements on different communication drivers, but in short - to get full control over
 this plugin - it is good to have them all available.
 
-# Prerequisites
+# Prerequisites ##
 
 * WooCommerce: v3.5.0 or higher (old features are ditched) and the actual support is set much higher.
 * WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
@@ -58,12 +62,12 @@ this plugin - it is good to have them all available.
 SoapClient uses PHP streams to communicate and covers everything but the functions located in the hosted flow/checkout (
 meaning simplified flow, aftershop flow (finalization, annullments, crediting), payment methods listings and much more)
 
-# Documentation
+# Documentation #
 
 * [Project URL](https://test.resurs.com/docs/display/ecom/WooCommerce)
 * [Plugin URL](https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/)
 
-## Frequently Asked Questions
+## Frequently Asked Questions ##
 
 You may want to look further at https://test.resurs.com/docs/display/ecom/WooCommerce for updates regarding this plugin
 
