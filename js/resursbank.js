@@ -61,11 +61,11 @@ $RB(document).on('resursCountryChange', function(e, data) {
         // to fill it in elsewhere.
         if (resursvars['forceGovIdField'] == "1" || resursvars['forceGovIdField'] === true) {
             if (countrySet !== 'SE') {
-                $RB('#ssn_field_field').hide();
-                $RB('#fetch_address').hide();
+                $RB('#ssn_field_field').hide('medium');
+                $RB('#fetch_address').hide('medium');
             } else {
-                $RB('#ssn_field_field').show();
-                $RB('#fetch_address').show();
+                $RB('#ssn_field_field').show('medium');
+                $RB('#fetch_address').show('medium');
             }
         }
     }
