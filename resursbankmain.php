@@ -5019,8 +5019,15 @@ function woocommerce_gateway_resurs_bank_init()
             // But we have to check if they ARE in duality before deciding the rest.
             if (hasDualCustomerTypes() && $optionGetAddress) {
                 if ($naturalCount) {
-                    // [DOM] Found 2 elements with non-unique id #ssnCustomerType
-                    // onchange="$RB('body').trigger('update_checkout')"
+                    echo '<span id="ssnCustomerRadioNATURAL" style="' . $viewNatural . '"><input type="radio" id="ssnCustomerTypeNATURAL" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . $private . '</span> ';
+                }
+                if ($legalCount) {
+                    echo '<span id="ssnCustomerRadioLEGAL" style="' . $viewLegal . '"><input type="radio" id="ssnCustomerTypeLEGAL" onclick="getMethodType(\'legal\')" name="ssnCustomerType" value="LEGAL"> ' . $company . '</span>';
+                }
+            } elseif (hasDualCustomerTypes()) {
+                // If optionGetAddress is disabled but we still have more than one customerType, the buttons
+                // still need to be shown.
+                if ($naturalCount) {
                     echo '<span id="ssnCustomerRadioNATURAL" style="' . $viewNatural . '"><input type="radio" id="ssnCustomerTypeNATURAL" onclick="getMethodType(\'natural\')" checked="checked" name="ssnCustomerType" value="NATURAL"> ' . $private . '</span> ';
                 }
                 if ($legalCount) {
