@@ -1288,10 +1288,10 @@ if (is_admin()) {
                     rbSimpleLogging(sprintf('CustomerType used from session in %s: %s', __FUNCTION__, \$this->currentCustomerType));
                 }
                 
-                if (hasDualCustomerTypes() && !empty(\$this->currentCustomerType) && !in_array(\$globalCustomerType, {$customerTypeAsString})) {
+                if (!\$isEnabled) {
                     return false;
                 }
-                if (!\$isEnabled) {
+                if (hasDualCustomerTypes() && !empty(\$this->currentCustomerType) && !in_array(\$globalCustomerType, {$customerTypeAsString})) {
                     return false;
                 }
                 return true;

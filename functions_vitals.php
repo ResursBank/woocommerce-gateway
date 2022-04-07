@@ -204,7 +204,20 @@ function hasDualCustomerTypes() {
         if (!isset($method->customerType)) {
             continue;
         }
+        $id = $method->id;
+        $curEnableState = getResursOption(
+            'enabled',
+            sprintf(
+                'woocommerce_resurs_bank_nr_%s_settings',
+                $id
+            )
+        );
+        if (!$curEnableState) {
+            continue;
+        }
+
         $customerType = (array)$method->customerType;
+
         foreach ($customerType as $type) {
             if (!empty($type) && !in_array($type, $customerTypes)) {
                 $customerTypes[] = $type;
