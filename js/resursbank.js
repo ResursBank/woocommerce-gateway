@@ -59,7 +59,7 @@ $RB(document).on('resursCountryChange', function(e, data) {
         // than sweden is selected and the gov id field is forced to be shown in the last checkout step. As
         // some methods may be dependent on the govid field we don't want to remove it without having an option
         // to fill it in elsewhere.
-        if (resursvars['forceGovIdField'] == "1" || resursvars['forceGovIdField'] === true) {
+        if (parseInt(resursvars['forceGovIdField']) === 1) {
             if (countrySet !== 'SE') {
                 $RB('#ssn_field_field').hide('medium');
                 $RB('#fetch_address').hide('medium');

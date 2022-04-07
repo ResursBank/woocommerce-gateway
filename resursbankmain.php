@@ -5269,7 +5269,7 @@ function woocommerce_gateway_resurs_bank_init()
             'showCheckoutOverlay' => getResursOption('showCheckoutOverlay'),
             'inProductPage' => is_product(),
             'resursCountry' => getResursOption('country'),
-            'forceGovIdField' => getResursOption('forceGovIdField'),
+            'forceGovIdField' => (bool)getResursOption('forceGovIdField') ? 1 : 0,
             'wcCustomerCountry' => isset($woocommerce->customer) &&
             method_exists($woocommerce->customer, 'get_billing_country') ?
                 $woocommerce->customer->get_billing_country() : '',
