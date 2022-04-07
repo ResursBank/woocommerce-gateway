@@ -5017,7 +5017,7 @@ function woocommerce_gateway_resurs_bank_init()
 
             // On both company+natural methods, enforce displaying of fields.
             // But we have to check if they ARE in duality before deciding the rest.
-            if (!hasDualCustomerTypes() && $optionGetAddress) {
+            if (hasDualCustomerTypes() && $optionGetAddress) {
                 if ($naturalCount) {
                     // [DOM] Found 2 elements with non-unique id #ssnCustomerType
                     // onchange="$RB('body').trigger('update_checkout')"
