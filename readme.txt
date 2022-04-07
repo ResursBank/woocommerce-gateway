@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9.2
 Requires PHP: 7.0
-Stable tag: 2.2.92
+Stable tag: 2.2.93
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -131,6 +131,12 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 == Changelog ==
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
+
+= 2.2.93 =
+
+* [WOO-623](https://resursbankplugins.atlassian.net/browse/WOO-623) No radioknapps when getAddress is disabled with multiple customerTypes
+* [WOO-619](https://resursbankplugins.atlassian.net/browse/WOO-619) Add warning about wordpress networks
+* [WOO-618](https://resursbankplugins.atlassian.net/browse/WOO-618) If payment method list is single-customerType only
 
 = 2.2.92 =
 

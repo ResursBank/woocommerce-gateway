@@ -412,6 +412,9 @@ function getResursPhrase(phraseName, countryId) {
     }
 }
 
+/**
+ * @param customerType
+ */
 function getMethodType(customerType) {
     if (typeof customerType == 'undefined') {
         // If customerType is not defined, something is wrong and we will probably not be
