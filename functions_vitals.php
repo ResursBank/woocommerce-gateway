@@ -757,6 +757,45 @@ function rbSimpleLogging($logMessage, $from = '')
     );
 }
 
+/**
+ * Method to rewrite classes on fly in case they are suddenly missing.
+ * Returns silent successful status boolean afterwards.
+ * @return bool
+ * @since 2.2.94
+ */
+function rewriteMethodsOnFly() {
+    try {
+        $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
+
+        // Only rewrite class files on fly if there are methods currently stored in the database.
+        // By doing this, we do not risk unconfigured systems where payment methods are not yet fetched.
+        if (is_array($methodList) && count($methodList)) {
+            // idMerchant is here due to row 1188 (currently) in resursbank_settings.php for which the admin panel
+            // is writing the data properly.
+            $idMerchant = 0;
+            foreach ($methodList as $method) {
+                write_resurs_class_to_file($method, $idMerchant);
+                $idMerchant++;
+            }
+            $return = true;
+            rbSimpleLogging(
+                'PaymentMethodList Classes was rendered on demand successfully.'
+            );
+        }
+    } catch (Exception $e) {
+        $return = false;
+        rbSimpleLogging(
+            sprintf(
+                'PaymentMethodList Class Renderer Exception (%s): %s.',
+                $e->getCode(),
+                $e->getMessage()
+            )
+        );
+    }
+
+    return $return;
+}
+
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);
 add_filter('resursbank_start_session_before', 'resurs20StartSession');
 add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');
