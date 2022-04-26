@@ -68,6 +68,20 @@ class SimpleStreamWrapper implements WrapperInterface
     private $streamWarningException = ['code' => 0, 'string' => null];
 
     /**
+     * Timeout control for the stream.
+     * @var int $streamWarningExceptionCount
+     * @since 6.1.6
+     */
+    private $streamClientTimeBegin = 0;
+
+    /**
+     * Timeout control for the stream.
+     * @var int $streamClientTimeEnd
+     * @since 6.1.6
+     */
+    private $streamClientTimeEnd = 0;
+
+    /**
      * SimpleStreamWrapper constructor.
      * @throws ExceptionHandler
      */
@@ -412,6 +426,22 @@ class SimpleStreamWrapper implements WrapperInterface
     }
 
     /**
+     * @return float
+     * @throws ExceptionHandler
+     * @since 6.1.6
+     */
+    public function getTotalRequestTime()
+    {
+        if ($this->streamClientTimeBegin === 0 && $this->streamClientTimeEnd === 0) {
+            throw new ExceptionHandler(
+                'You need to make a request before getting the timediff.',
+                Constants::LIB_NETCURL_SOAP_REQUEST_TIMER_NOT_READY
+            );
+        }
+        return (float)$this->streamClientTimeEnd - $this->streamClientTimeBegin;
+    }
+
+    /**
      * @return false|string
      * @throws ExceptionHandler
      * @since 6.1.0
@@ -419,15 +449,43 @@ class SimpleStreamWrapper implements WrapperInterface
     public function getStreamDataContents()
     {
         $this->setStreamErrorHandler();
+        $this->streamClientTimeBegin = microtime(true);
+
         // When requests are failing, this MAY throw warnings.
         // Usually we don't want this method to do this, on for example 404
         // errors, etc as we have our own exception handler below, which does
         // this in a correct way.
-        $this->streamContentResponseRaw = file_get_contents(
-            $this->CONFIG->getRequestUrl(),
-            false,
-            $this->CONFIG->getStreamContext()
-        );
+        try {
+            $this->streamContentResponseRaw = file_get_contents(
+                $this->CONFIG->getRequestUrl(),
+                false,
+                $this->CONFIG->getStreamContext()
+            );
+        } catch (ExceptionHandler $e) {
+            $this->streamClientTimeEnd = microtime(true);
+            $streamClientRequestTimeDiff = $this->streamClientTimeEnd - $this->streamClientTimeBegin;
+
+            if ($e->getCode() === 2) {
+                $currentTimeout = $this->CONFIG->getTimeout();
+                if ($streamClientRequestTimeDiff >= $currentTimeout['CONNECT'] &&
+                    $streamClientRequestTimeDiff >= $currentTimeout['REQUEST']
+                ) {
+                    $message = sprintf(
+                        '%s [streamClientRequestTime: %s]',
+                        $e->getMessage(),
+                        $this->getTotalRequestTime()
+                    );
+                    throw new ExceptionHandler($message, Constants::LIB_NETCURL_TIMEOUT);
+                } elseif (preg_match('/Connection refused/', $e->getMessage())) {
+                    // Try to detect this error by string. May be destroyed by locales.
+                    throw new ExceptionHandler($e->getMessage(), Constants::LIB_NETCURL_CONNECTION_REFUSED);
+                }
+            }
+            throw $e;
+        }
+        // Also calculate success requests.
+        $this->streamClientTimeEnd = microtime(true);
+
         // Restore the errorhandler immediately after request if no exceptions are detected during first request.
         restore_error_handler();
 

@@ -27,14 +27,14 @@ class ComposerStaticInit0167a9eec5eff07edfda5989807aefa0
     public static $prefixDirsPsr4 = array (
         'TorneLIB\\' => 
         array (
-            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-flags/src',
-            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
+            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/src',
+            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-flags/src',
             2 => __DIR__ . '/..' . '/tornevall/tornelib-php-io/src',
-            3 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/src',
-            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
-            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
+            3 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
+            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
+            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
             6 => __DIR__ . '/..' . '/tornevall/tornelib-php-errorhandler/src',
-            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
+            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
         ),
         'Resursbank\\RBEcomPHP\\' => 
         array (

@@ -5,7 +5,7 @@ namespace TorneLIB\Exception;
 /**
  * Class Constants
  * @package TorneLIB\Exception
- * @version 6.1.16
+ * @version 6.1.21
  */
 abstract class Constants
 {
@@ -122,10 +122,23 @@ abstract class Constants
     const LIB_NETCURL_SOAP_TIMEOUT = 1015;
 
     /**
+     * Using the same timeout var as SOAP.
+     * @var int
+     * @since 6.1.21
+     */
+    const LIB_NETCURL_TIMEOUT = 1015;
+
+    /**
      * @var int
      * @since 6.1.13
      */
     const LIB_NETCURL_SOAP_REQUEST_TIMER_NOT_READY = 1016;
+
+    /**
+     * @var int
+     * @since 6.1.21
+     */
+    const LIB_NETCURL_REQUEST_TIMER_NOT_READY = 1016;
 
     /**
      * @since 6.1.16
@@ -136,6 +149,12 @@ abstract class Constants
      * @since 6.1.16
      */
     const LIB_NETWORK_INVALID_IPV4 = 1018;
+
+    /**
+     * Since this is introduced for streams together with soap, we can use the same value at start.
+     * @since 6.1.18
+     */
+    const LIB_NETCURL_CONNECTION_REFUSED = 1019;
 
     /**
      * Cipher does not exist in current openssl driver.

@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.77
+ * @version 1.3.80
  */
 class ResursBank
 {
@@ -1291,7 +1291,8 @@ class ResursBank
         try {
             $this->getRegisteredEventCallback(Callback::BOOKED);
             $result = true;
-        } catch (Exception $ignoreMyException) {
+        } catch (Exception $requestException) {
+            $this->timeoutControl($requestException);
             $result = false;
         }
 
@@ -2986,6 +2987,17 @@ class ResursBank
     }
 
     /**
+     * @param $methodSpecificTypeKey
+     * @param $customerType
+     * @return array
+     * @since 1.3.79
+     * @deprecated Discovered that getSimplifiedRequiredFields is already in place.
+     */
+    public function getSpecificTypeFields($methodSpecificTypeKey, $customerType) {
+        return $this->getSimplifiedRequiredFields($methodSpecificTypeKey, $customerType);
+    }
+
+    /**
      * Speak with webservices
      *
      * @param string $serviceName
@@ -4219,38 +4231,21 @@ class ResursBank
     }
 
     /**
-     * @param $key
+     * @param string $methodSpecificType
      * @param string $customerType
-     * @return mixed
-     */
-    public function getSimplifiedRequiredFields($key, $customerType = 'NATURAL')
-    {
-        $fields = $this->getSimplifiedFieldArray($customerType);
-
-        return !empty($key) && isset($fields[$key]) ? $fields[$key] : $fields['undefined'];
-    }
-
-    /**
-     * @param $customerType
-     * @param null $paymentMethod
      * @return array
+     * @noinspection ParameterDefaultValueIsNotNullInspection
+     * @since Good old times.
      */
-    private function getSimplifiedFieldArray($customerType)
+    public function getSimplifiedRequiredFields($methodSpecificType, $customerType = 'NATURAL')
     {
-        $fields = [
+        $return = [
             'NATURAL' => [
                 'INVOICE' => [
                     'government_id',
                     'phone',
                     'mobile',
                     'email',
-                ],
-                'INVOICE_LEGAL' => [
-                    'government_id',
-                    'phone',
-                    'mobile',
-                    'email',
-                    'government_id_contact',
                 ],
                 'CARD' => [
                     'government_id',
@@ -4280,24 +4275,24 @@ class ResursBank
                 ],
             ],
             'LEGAL' => [
+                'INVOICE' => [
+                    'applicant_government_id',
+                    'applicant_telephone_number',
+                    'applicant_mobile_number',
+                    'applicant_email_address',
+                    'applicant_full_name',
+                    'contact_government_id',
+                ],
                 'undefined' => [
-                    'applicant-government-id',
-                    'applicant-telephone-number',
-                    'applicant-mobile-number',
-                    'applicant-email-address',
-                    'applicant-full-name',
-                    'contact-government-id',
+                    'phone',
+                    'mobile',
+                    'email',
                 ],
             ],
         ];
 
-        switch ($customerType) {
-            case 'LEGAL';
-                $return = $fields['LEGAL'];
-                break;
-            default:
-                $return = $fields['NATURAL'];
-        }
+        // Running lower than PHP 7.0? Then this will fail.
+        $return = $return[$customerType][$methodSpecificType] ?? $return[$customerType]['undefined'];
 
         return $return;
     }

@@ -729,6 +729,9 @@ class SoapClientWrapper implements WrapperInterface
                     ) {
                         $code = Constants::LIB_NETCURL_SOAP_TIMEOUT;
                         $message .= sprintf(' [soapClientRequestTime: %s]', $this->getTotalRequestTime());
+                    } elseif (preg_match('/Connection refused/', $message)) {
+                        // Try to detect this error by string. May be destroyed by locales.
+                        $code = Constants::LIB_NETCURL_CONNECTION_REFUSED;
                     }
                 }
 

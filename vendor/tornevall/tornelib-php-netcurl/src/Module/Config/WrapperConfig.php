@@ -29,7 +29,7 @@ use TorneLIB\Utils\Ini;
  *
  * @package Module\Config
  * @since 6.1.0
- * @version 6.1.5
+ * @version 6.1.6
  */
 class WrapperConfig
 {

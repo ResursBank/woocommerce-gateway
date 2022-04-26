@@ -161,6 +161,7 @@ class SimpleDomParser
      */
     private static function getFromExtendedXpath($xpath, $currentPath, $domDoc)
     {
+        $queryResult = null;
         $finder = new \DOMXPath($domDoc);
         if (is_string($xpath)) {
             $currentPath .= $xpath;

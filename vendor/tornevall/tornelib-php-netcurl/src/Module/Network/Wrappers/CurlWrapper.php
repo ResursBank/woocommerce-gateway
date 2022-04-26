@@ -114,7 +114,7 @@ class CurlWrapper implements WrapperInterface
     private $curlMultiHandleUrls = [];
 
     /**
-     * @var
+     * @var array
      * @since 6.1.0
      */
     private $curlMultiResponse;
