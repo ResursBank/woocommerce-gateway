@@ -3236,7 +3236,7 @@ function woocommerce_gateway_resurs_bank_init()
                         update_post_meta($order->get_id(), 'omniPaymentMethod', $omniPaymentMethod);
                         setResursPaymentMethodMeta($order->get_id());
                         $currentOrderStatus = $order->get_status();
-                        // Going generic response, to make it possible to updateOrderReference on fly
+                        // Going generic response, to make it possible to updateOrderReference on the fly
                         // in this state.
                         $returnResult['success'] = true;
                         $returnResult['errorCode'] = 200;
@@ -5524,9 +5524,43 @@ function woocommerce_gateway_resurs_bank_init()
     {
     }
 
+    $pluginPaymentMethods = plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . '*.php';
     // If glob returns null (error) nothing should run
-    $incGlob = glob(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . '*.php');
-    if (is_array($incGlob)) {
+    $incGlob = glob($pluginPaymentMethods);
+
+    if (is_array($incGlob) && !count($incGlob)) {
+        $transientRecord = get_transient('resursTemporaryPaymentMethods');
+
+        if (!empty($transientRecord)) {
+            $username = getResursOption('login');
+            $password = getResursOption('password');
+
+            /**
+             * On errors in this method, suppress the E_NOTICE an continue.
+             * This should never occur unless someone entered invalid data manually.
+             * @see https://www.php.net/manual/en/function.unserialize.php
+             */
+            $methodList = @unserialize($transientRecord);
+
+            // Make sure there are credentials available before running this.
+            // If site is not yet configured, we want to prevent the site from not loading properly.
+            // We also want to securely check if there are any pre-set payment method list.
+            if (!empty($username) &&
+                !empty($password) &&
+                isset($methodList) &&
+                is_array($methodList) &&
+                count($methodList)
+            ) {
+                // Call writing script before the loader in case there are lost payment methods.
+                $writeMethodResult = rewriteMethodsOnFly();
+                if (!$writeMethodResult) {
+                    add_filter('woocommerce_no_available_payment_methods_message', 'resursHasNoMethods', 999, 1);
+                }
+            }
+        }
+    }
+
+    if (is_array($incGlob) && count($incGlob)) {
         foreach ($incGlob as $filename) {
             if (!in_array($filename, get_included_files())) {
                 include $filename;

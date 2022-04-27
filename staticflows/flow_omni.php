@@ -815,7 +815,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 }
                 // For omni, to handle shipping, we need to remove all fields, including the "create account"-part
                 // to make the shipping area disappear. This is a problem, since this leads to the fact that the customer
-                // won't be able to create an account on fly. This however, is now being handled by the configuration interface
+                // won't be able to create an account on the fly. This however, is now being handled by the configuration interface
                 // since the behaviour from the themes may act different.
                 ///
                 $cleanOmniCustomerFields = ($this->get_option('cleanOmniCustomerFields') == "true" ? 1 : 0);
