@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.81
+ * @version 1.3.82
  */
 class ResursBank
 {
@@ -3135,7 +3135,7 @@ class ResursBank
 
     /**
      * Check whether payment method is of type Resurs Bank or if it belongs to a payment provider.
-     * @param $type If unsure, use the entire method.
+     * @param mixed $type If unsure, use the entire method.
      * @return bool
      * @since 1.3.81
      */
@@ -3151,8 +3151,8 @@ class ResursBank
     }
 
     /**
-     * @param $specificType
-     * @param $type
+     * @param mixed $specificType
+     * @param string $type
      * @return bool
      * @since 1.3.81
      */
