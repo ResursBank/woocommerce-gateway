@@ -1077,7 +1077,7 @@ if (!function_exists('write_resurs_class_to_file')) {
      * Write class files on the fly - normally from wp-admin, when payment methods needs to be rewritten,
      * but also, from the glob-function where the main dependency for checkout function resides.
      *
-     * Note: We usually limit this featre to is_admin() but since the class files is highly dependent for
+     * Note: We usually limit this feature to is_admin() but since the class files is highly dependent for
      * the simplified/hosted checkouts we might want to do this on the fly in case there are deploy processes
      * or anything else that breaks the site by simply removing the files from where they were stored.
      *
