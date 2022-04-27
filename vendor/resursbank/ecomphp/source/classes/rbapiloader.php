@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.80
+ * @version 1.3.81
  */
 class ResursBank
 {
@@ -3134,6 +3134,39 @@ class ResursBank
     }
 
     /**
+     * Check whether payment method is of type Resurs Bank or if it belongs to a payment provider.
+     * @param $type If unsure, use the entire method.
+     * @return bool
+     * @since 1.3.81
+     */
+    public function isInternalMethod($type)
+    {
+        // If the payment method object is set, split up properly.
+        if (is_object($type) && isset($type->type)) {
+            $type = $type->type;
+        }
+
+        // In case of further types, they should be added here.
+        return $type !== 'PAYMENT_PROVIDER';
+    }
+
+    /**
+     * @param $specificType
+     * @param $type
+     * @return bool
+     * @since 1.3.81
+     */
+    public function isPspCard($specificType, $type)
+    {
+        // If the payment method object is set, split up properly.
+        if (is_object($specificType) && isset($specificType->specificType, $specificType->type)) {
+            $type = $specificType->type;
+            $specificType = $specificType->specificType;
+        }
+        return !$this->isInternalMethod($type) && preg_match('/^card|card$/i', $specificType);
+    }
+
+    /**
      * List payment methods
      *
      * Retrieves detailed information on the payment methods available to the representative. Parameters (customerType,
@@ -4100,6 +4133,8 @@ class ResursBank
 
     /**
      * Like getCostOfPurchaseHtml but for priceInfo instead (which is located in legalInfoLinks in getPaymentMethods).
+     * Function is built to both be capable to show information instantly on screen within a page with self built
+     * elements or, show the information based on a link/iframe so CSS won't be required.
      *
      * On multiple methods, the iframe is used by default! If fetch is false and no iframe is requested, this method
      * will instead return the URL directly to the requested.

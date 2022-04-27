@@ -1,3 +1,9 @@
+# - 1.3.81
+
+* [ECOMPHP-459](https://resursbankplugins.atlassian.net/browse/ECOMPHP-459) Make phrase-finder less sensitive against case changes
+* [ECOMPHP-458](https://resursbankplugins.atlassian.net/browse/ECOMPHP-458) isInternalMethod
+* [ECOMPHP-424](https://resursbankplugins.atlassian.net/browse/ECOMPHP-424) Required customer fields are dynamically changing so this should be centralized in ecom again
+
 # - 1.3.68
 
 * Learning how to handle Resurs Bank timeouts in scenarios where it is normally not catched by the internal PHP clients.

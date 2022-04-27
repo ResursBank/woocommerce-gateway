@@ -152,9 +152,9 @@ class Translation
         $useLanguageArray = $this->preloadedLanguage;
 
         if (is_array($subKey)) {
-            foreach ($subKey as $keyName) {
+            foreach (array_change_key_case($subKey, CASE_LOWER) as $keyName) {
                 if (isset($useLanguageArray[$keyName])) {
-                    $useLanguageArray = $useLanguageArray[$keyName];
+                    $useLanguageArray = array_change_key_case($useLanguageArray[$keyName], CASE_LOWER);
                 }
             }
         }
