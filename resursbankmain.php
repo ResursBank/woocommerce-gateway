@@ -5552,7 +5552,10 @@ function woocommerce_gateway_resurs_bank_init()
                 count($methodList)
             ) {
                 // Call writing script before the loader in case there are lost payment methods.
-                rewriteMethodsOnFly();
+                $writeMethodResult = rewriteMethodsOnFly();
+                if (!$writeMethodResult) {
+                    add_filter('woocommerce_no_available_payment_methods_message', 'resursHasNoMethods', 999, 1);
+                }
             }
         }
     }

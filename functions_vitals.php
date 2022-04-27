@@ -764,6 +764,8 @@ function rbSimpleLogging($logMessage, $from = '')
  * @since 2.2.94
  */
 function rewriteMethodsOnFly() {
+    $return = false;
+
     try {
         $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
 
@@ -773,17 +775,25 @@ function rewriteMethodsOnFly() {
             // idMerchant is here due to row 1188 (currently) in resursbank_settings.php for which the admin panel
             // is writing the data properly.
             $idMerchant = 0;
+            $successFiles = 0;
             foreach ($methodList as $method) {
-                write_resurs_class_to_file($method, $idMerchant);
+                if (write_resurs_class_to_file($method, $idMerchant)) {
+                    $successFiles++;
+                }
                 $idMerchant++;
             }
-            $return = true;
-            rbSimpleLogging(
-                'PaymentMethodList Classes was rendered on demand successfully.'
-            );
+            if ($successFiles) {
+                $return = true;
+                rbSimpleLogging(
+                    'PaymentMethodList Classes was rendered on demand successfully.'
+                );
+            } else {
+                rbSimpleLogging(
+                    'Coud not write paymentmethod classes into class path.'
+                );
+            }
         }
     } catch (Exception $e) {
-        $return = false;
         rbSimpleLogging(
             sprintf(
                 'PaymentMethodList Class Renderer Exception (%s): %s.',
@@ -794,6 +804,21 @@ function rewriteMethodsOnFly() {
     }
 
     return $return;
+}
+
+/**
+ * @param $message
+ * @return string
+ * @noinspection PhpUnused
+ * @since 2.2.94
+ */
+function resursHasNoMethods($message) {
+    $message .= '<br>' . __(
+        'The Resurs Bank module was unable to update the methods.',
+        'resurs-bank-payment-gateway-for-woocommerce'
+    );
+
+    return $message;
 }
 
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);

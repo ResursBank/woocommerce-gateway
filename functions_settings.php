@@ -1081,11 +1081,16 @@ if (!function_exists('write_resurs_class_to_file')) {
      * the simplified/hosted checkouts we might want to do this on fly in case there are deploy processes
      * or anything else that breaks the site by simply removing the files from where they were stored.
      *
+     * Returns boolean if file exists after write to indicate when files are missing.
+     *
      * @param $payment_method
      * @param $idMerchant
+     * @return bool
      */
     function write_resurs_class_to_file($payment_method, $idMerchant)
     {
+        $return = false;
+
         $idMerchantPrio = 10 + $idMerchant;
         // Rewriting class names should also include cleaning up static transients.
         if (isset($payment_method->id)) {
@@ -1102,7 +1107,10 @@ if (!function_exists('write_resurs_class_to_file')) {
         }
         $class_name = 'resurs_bank_nr_' . $payment_method->id;
         if (!file_exists(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name)) {
+            // todo: Reverse this section.
+            $classFilePresent = false;
         } else {
+            $classFilePresent = true;
             if (!in_array(
                 plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name,
                 get_included_files()
@@ -1611,6 +1619,10 @@ EOT;
         $path = str_replace('//', '/', $path);
 
         @file_put_contents($path, $class);
+        if (file_exists($path)) {
+            $return = true;
+        }
+        return $return;
     }
 }
 
