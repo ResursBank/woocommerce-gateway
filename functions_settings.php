@@ -793,7 +793,7 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'description' => __(
                         'This feature enforces payment methods to be listed in checkout regardless of rules and ' .
-                        'settings that has been applied to it except for country- and price limitations.',
+                        'settings that have been applied to it except for country- and price limitations.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'default' => 'false',
@@ -807,7 +807,7 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'description' => __(
                         'In some deployment scenarios, the classes for where payment methods are stored, may be ' .
-                        'deleted as they do not belong to the code base itself and is dynamically created in ' .
+                        'deleted as they do not belong to the code base itself and are dynamically created in ' .
                         'the system. This feature will force the plugin to rewrite them if they are considered lost.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
@@ -1074,11 +1074,11 @@ if (!function_exists('getResursWooFormFields')) {
 
 if (!function_exists('write_resurs_class_to_file')) {
     /**
-     * Writing class files on fly - normally from wp-admin, when payment methods needs to be rewritten,
+     * Write class files on the fly - normally from wp-admin, when payment methods needs to be rewritten,
      * but also, from the glob-function where the main dependency for checkout function resides.
      *
      * Note: We usually limit this featre to is_admin() but since the class files is highly dependent for
-     * the simplified/hosted checkouts we might want to do this on fly in case there are deploy processes
+     * the simplified/hosted checkouts we might want to do this on the fly in case there are deploy processes
      * or anything else that breaks the site by simply removing the files from where they were stored.
      *
      * Returns boolean if file exists after write to indicate when files are missing.
