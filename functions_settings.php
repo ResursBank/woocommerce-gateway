@@ -708,13 +708,13 @@ if (!function_exists('getResursWooFormFields')) {
                     'title' => __('Annuity factor config', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __('Annuity factor config', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'text',
-                    'default' => 'https://google.com/?test+landingpage',
+                    'default' => '',
                 ],
                 'resursAnnuityDuration' => [
                     'title' => __('Annuity factor duration', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'description' => __('Annuity factor duration', 'resurs-bank-payment-gateway-for-woocommerce'),
                     'type' => 'text',
-                    'default' => 'https://google.com/?test+landingpage',
+                    'default' => '',
                 ],
                 'resursAnnuityMethod' => [
                     'title' => __(
@@ -726,7 +726,7 @@ if (!function_exists('getResursWooFormFields')) {
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'text',
-                    'default' => 'https://google.com/?test+landingpage',
+                    'default' => '',
                 ],
                 'autoDebitStatus' => [
                     'title' => __(
@@ -785,6 +785,35 @@ if (!function_exists('getResursWooFormFields')) {
                     'default' => 0,
                     'desc_tip' => true,
                     'fieldtype' => 'string',
+                ],
+                'enforceMethodList' => [
+                    'title' => __(
+                        'Force displaying payment method list in checkout',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'This feature enforces payment methods to be listed in checkout regardless of rules and ' .
+                        'settings that have been applied to it except for country- and price limitations.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'default' => 'false',
+                    'type' => 'checkbox',
+                    'label' => __('Enabled', 'woocommerce'),
+                ],
+                'protectMethodList' => [
+                    'title' => __(
+                        'Force rewriting payment methods on the fly, if they are lost',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'description' => __(
+                        'In some deployment scenarios, the classes for where payment methods are stored, may be ' .
+                        'deleted as they do not belong to the code base itself and are dynamically created in ' .
+                        'the system. This feature will force the plugin to rewrite them if they are considered lost.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'default' => 'false',
+                    'type' => 'checkbox',
+                    'label' => __('Enabled', 'woocommerce'),
                 ],
             ];
         } elseif ($formSectionName === 'paymentmethods') {
@@ -944,7 +973,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Remove payment methods list if Resurs Checkout is the only gateway',
+                        'Remove payment method list if Resurs Checkout is the only gateway',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => false,
@@ -1043,79 +1072,97 @@ if (!function_exists('getResursWooFormFields')) {
     }
 }
 
-if (is_admin()) {
-    if (!function_exists('write_resurs_class_to_file')) {
-        function write_resurs_class_to_file($payment_method, $idMerchant)
-        {
-            $idMerchantPrio = 10 + $idMerchant;
-            // Rewriting class names should also include cleaning up static transients.
-            if (isset($payment_method->id)) {
-                delete_transient(
-                    sprintf(
-                        'resursTemporaryMethod_%s',
-                        $payment_method->id
-                    )
-                );
-            }
-            // No id - no file.
-            if (!isset($payment_method->id) || (isset($payment_method->id) && empty($payment_method->id))) {
-                return;
-            }
-            $class_name = 'resurs_bank_nr_' . $payment_method->id;
-            if (!file_exists(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name)) {
-            } else {
-                if (!in_array(
-                    plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name,
-                    get_included_files()
-                )) {
-                    include(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name);
-                }
-            }
+if (!function_exists('write_resurs_class_to_file')) {
+    /**
+     * Write class files on the fly - normally from wp-admin, when payment methods needs to be rewritten,
+     * but also, from the glob-function where the main dependency for checkout function resides.
+     *
+     * Note: We usually limit this feature to is_admin() but since the simplified/hosted flow are highly dependent
+     * on the class files, we might want to do this on the fly, in case there are deployment processes
+     * or anything else that breaks the site by simply removing the files from where they were stored.
+     *
+     * Returns boolean if file exists after write to indicate when files are missing.
+     *
+     * @param $payment_method
+     * @param $idMerchant
+     * @return bool
+     */
+    function write_resurs_class_to_file($payment_method, $idMerchant)
+    {
+        $return = false;
 
-            $initName = 'woocommerce_gateway_resurs_bank_nr_' . $payment_method->id . '_init';
-            $class_name = 'resurs_bank_nr_' . $payment_method->id;
-            $classFileName = 'resurs_bank_nr_' . $idMerchant . '_' . $payment_method->id;
-            if (isset($payment_method->country)) {
-                $classFileName .= '_' . $payment_method->country;
-            }
-            $classFileName .= '.php';
-
-            $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
-            $method_name = addslashes($payment_method->description);
-            $type = strtolower($payment_method->type);
-            $customerType = $payment_method->customerType;
-            $minLimit = $payment_method->minLimit;
-            $maxLimit = $payment_method->maxLimit;
-
-            $isPsp = "false";
-            if ($payment_method->customerType === "PAYMENT_PROVIDER" ||
-                $payment_method->type === "PAYMENT_PROVIDER"
-            ) {
-                $isPsp = 'true';
-            }
-            $allowPsp = 'true';
-            $icon_name = "resurs-standard";
-            $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
-
-            $icon = apply_filters(
-                'woocommerce_resurs_bank_' . $type . '_checkout_icon',
-                $plugin_url . '/img/' . $icon_name . '.png'
+        $idMerchantPrio = 10 + $idMerchant;
+        // Rewriting class names should also include cleaning up static transients.
+        if (isset($payment_method->id)) {
+            delete_transient(
+                sprintf(
+                    'resursTemporaryMethod_%s',
+                    $payment_method->id
+                )
             );
-            $path_to_icon = $icon;
-            $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
-            $has_icon = (string)file_exists($temp_icon);
-            $ajaxUrl = admin_url('admin-ajax.php');
-            $costOfPurchase = $ajaxUrl . "?action=get_priceinfo_ajax";
-
-            $customerTypeArray = [];
-            foreach ((array)$customerType as $item) {
-                $customerTypeArray[] = sprintf("'%s'", $item);
+        }
+        // No id - no file.
+        if (!isset($payment_method->id) || (isset($payment_method->id) && empty($payment_method->id))) {
+            return;
+        }
+        $class_name = 'resurs_bank_nr_' . $payment_method->id;
+        if (!file_exists(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name)) {
+            // todo: Reverse this section.
+            $classFilePresent = false;
+        } else {
+            $classFilePresent = true;
+            if (!in_array(
+                plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name,
+                get_included_files()
+            )) {
+                include(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name);
             }
-            // Convert customer type arrays to strings so it can be injected into the writer.
-            $customerTypeAsString = sprintf('[%s]', implode(',', $customerTypeArray));
+        }
 
-            $writeDate = date('Y-m-d H:i');
-            $class = <<<EOT
+        $initName = 'woocommerce_gateway_resurs_bank_nr_' . $payment_method->id . '_init';
+        $class_name = 'resurs_bank_nr_' . $payment_method->id;
+        $classFileName = 'resurs_bank_nr_' . $idMerchant . '_' . $payment_method->id;
+        if (isset($payment_method->country)) {
+            $classFileName .= '_' . $payment_method->country;
+        }
+        $classFileName .= '.php';
+
+        $methodId = 'resurs-bank-method-nr-' . $payment_method->id;
+        $method_name = addslashes($payment_method->description);
+        $type = strtolower($payment_method->type);
+        $customerType = $payment_method->customerType;
+        $minLimit = $payment_method->minLimit;
+        $maxLimit = $payment_method->maxLimit;
+
+        $isPsp = "false";
+        if ($payment_method->customerType === "PAYMENT_PROVIDER" ||
+            $payment_method->type === "PAYMENT_PROVIDER"
+        ) {
+            $isPsp = 'true';
+        }
+        $allowPsp = 'true';
+        $icon_name = "resurs-standard";
+        $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
+
+        $icon = apply_filters(
+            'woocommerce_resurs_bank_' . $type . '_checkout_icon',
+            $plugin_url . '/img/' . $icon_name . '.png'
+        );
+        $path_to_icon = $icon;
+        $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
+        $has_icon = (string)file_exists($temp_icon);
+        $ajaxUrl = admin_url('admin-ajax.php');
+        $costOfPurchase = $ajaxUrl . "?action=get_priceinfo_ajax";
+
+        $customerTypeArray = [];
+        foreach ((array)$customerType as $item) {
+            $customerTypeArray[] = sprintf("'%s'", $item);
+        }
+        // Convert customer type arrays to strings so it can be injected into the writer.
+        $customerTypeAsString = sprintf('[%s]', implode(',', $customerTypeArray));
+
+        $writeDate = date('Y-m-d H:i');
+        $class = <<<EOT
 <?php
     /*
      * Written {$writeDate}.
@@ -1270,12 +1317,14 @@ if (is_admin()) {
                     return false;
                 }
                 \$curEnableState = getResursOption('enabled', 'woocommerce_{$class_name}_settings');
+                \$enforceMethodList = getResursOption('enforceMethodList');
                 \$isEnabled = apply_filters(
                   'resurs_method_is_enabled',
                    \$curEnableState,
                    \$this
                 );
                 
+                // Log currentCustomerType only when set - or logs will get spammed.
                 if (empty(\$globalCustomerType) && !empty(\$this->currentCustomerType)) {
                     // Borrow empty answers from non empty locations.
                     \$globalCustomerType = \$this->currentCustomerType;
@@ -1284,16 +1333,21 @@ if (is_admin()) {
                             'CustomerType from session was empty. Using globalCustomerType from %s: %s', __FUNCTION__, \$globalCustomerType
                         )
                     );
-                } else {
-                    rbSimpleLogging(sprintf('CustomerType used from session in %s: %s', __FUNCTION__, \$this->currentCustomerType));
                 }
                 
-                if (!\$isEnabled) {
+                // enforceMethodList is used for when merchants discovers that something is really wrong
+                // and nothing else works.
+                if (!\$isEnabled && !\$enforceMethodList) {
                     return false;
                 }
-                if (hasDualCustomerTypes() && !empty(\$this->currentCustomerType) && !in_array(\$globalCustomerType, {$customerTypeAsString})) {
+                if (!\$enforceMethodList &&
+                    hasDualCustomerTypes() &&
+                    !empty(\$this->currentCustomerType) &&
+                    !in_array(\$globalCustomerType, {$customerTypeAsString})
+                ) {
                     return false;
                 }
+
                 return true;
             }
     
@@ -1561,12 +1615,18 @@ if (is_admin()) {
     }
 EOT;
 
-            $path = plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $classFileName;
-            $path = str_replace('//', '/', $path);
+        $path = plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $classFileName;
+        $path = str_replace('//', '/', $path);
 
-            @file_put_contents($path, $class);
+        @file_put_contents($path, $class);
+        if (file_exists($path)) {
+            $return = true;
         }
+        return $return;
     }
+}
+
+if (is_admin()) {
     if (!function_exists('generatePaymentMethodHtml')) {
         function generatePaymentMethodHtml($methodArray = [], $returnAs = "html")
         {
@@ -1600,9 +1660,6 @@ EOT;
                 foreach ($sortByDescription as $methodArray) {
                     $curId = isset($methodArray->id) ? $methodArray->id : "";
                     $optionNamespace = "woocommerce_resurs_bank_nr_" . $curId . "_settings";
-                    /*if (!hasResursOptionValue('enabled', $optionNamespace)) {
-                        $this->resurs_settings_save("woocommerce_resurs_bank_nr_" . $curId);
-                    }*/
                     write_resurs_class_to_file($methodArray);
                     $settingsControl = get_option($optionNamespace);
                     $isEnabled = false;

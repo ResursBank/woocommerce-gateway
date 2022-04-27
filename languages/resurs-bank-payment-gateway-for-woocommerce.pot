@@ -748,7 +748,7 @@ msgid "No methods on Checkout (Experimental)"
 msgstr ""
 
 #: functions_settings.php:947
-msgid "Remove payment methods list if Resurs Checkout is the only gateway"
+msgid "Remove payment method list if Resurs Checkout is the only gateway"
 msgstr ""
 
 #: functions_settings.php:954

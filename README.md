@@ -60,7 +60,7 @@ this plugin - it is good to have them all available.
   of PHP.
 
 SoapClient uses PHP streams to communicate and covers everything but the functions located in the hosted flow/checkout (
-meaning simplified flow, aftershop flow (finalization, annullments, crediting), payment methods listings and much more)
+meaning simplified flow, aftershop flow (finalization, annullments, crediting), payment method listings and much more)
 
 # Documentation #
 
