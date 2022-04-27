@@ -788,7 +788,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'enforceMethodList' => [
                     'title' => __(
-                        'Force displaying payment methods list in checkout',
+                        'Force displaying payment method list in checkout',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'description' => __(
@@ -802,7 +802,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'protectMethodList' => [
                     'title' => __(
-                        'Force rewriting payment methods on fly, if they are lost',
+                        'Force rewriting payment methods on the fly, if they are lost',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'description' => __(
@@ -973,7 +973,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Remove payment methods list if Resurs Checkout is the only gateway',
+                        'Remove payment method list if Resurs Checkout is the only gateway',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => false,
@@ -1077,8 +1077,8 @@ if (!function_exists('write_resurs_class_to_file')) {
      * Write class files on the fly - normally from wp-admin, when payment methods needs to be rewritten,
      * but also, from the glob-function where the main dependency for checkout function resides.
      *
-     * Note: We usually limit this feature to is_admin() but since the class files is highly dependent for
-     * the simplified/hosted checkouts we might want to do this on the fly in case there are deploy processes
+     * Note: We usually limit this feature to is_admin() but since the simplified/hosted flow are highly dependent
+     * on the class files, we might want to do this on the fly, in case there are deployment processes
      * or anything else that breaks the site by simply removing the files from where they were stored.
      *
      * Returns boolean if file exists after write to indicate when files are missing.

@@ -6520,7 +6520,7 @@ class ResursBank
         if (empty($country) && !empty($targetCountry)) {
             $country = $targetCountry;
         } elseif (!empty($country) && empty($targetCountry)) {
-            // Giving internal country data more influence on this method
+            // Giving internal country data more influence in this method
             $this->setCountryByCountryCode($targetCountry);
         }
 

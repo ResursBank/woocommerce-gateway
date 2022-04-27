@@ -3236,7 +3236,7 @@ function woocommerce_gateway_resurs_bank_init()
                         update_post_meta($order->get_id(), 'omniPaymentMethod', $omniPaymentMethod);
                         setResursPaymentMethodMeta($order->get_id());
                         $currentOrderStatus = $order->get_status();
-                        // Going generic response, to make it possible to updateOrderReference on fly
+                        // Going generic response, to make it possible to updateOrderReference on the fly
                         // in this state.
                         $returnResult['success'] = true;
                         $returnResult['errorCode'] = 200;
@@ -5536,15 +5536,15 @@ function woocommerce_gateway_resurs_bank_init()
             $password = getResursOption('password');
 
             /**
-             * On errors on this method, suppress the E_NOTICE an continue.
+             * On errors in this method, suppress the E_NOTICE an continue.
              * This should never occur unless someone entered invalid data manually.
              * @see https://www.php.net/manual/en/function.unserialize.php
              */
             $methodList = @unserialize($transientRecord);
 
             // Make sure there are credentials available before running this.
-            // If site is not yet configured, we want to prevent the site to not load properly.
-            // We also want to securely check if there are any pre-set payment methods list.
+            // If site is not yet configured, we want to prevent the site from not loading properly.
+            // We also want to securely check if there are any pre-set payment method list.
             if (!empty($username) &&
                 !empty($password) &&
                 isset($methodList) &&

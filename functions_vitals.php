@@ -758,7 +758,7 @@ function rbSimpleLogging($logMessage, $from = '')
 }
 
 /**
- * Method to rewrite classes on fly in case they are suddenly missing.
+ * Method to rewrite classes on the fly in case they are suddenly missing.
  * Returns silent successful status boolean afterwards.
  * @return bool
  * @since 2.2.94
@@ -769,7 +769,7 @@ function rewriteMethodsOnFly() {
     try {
         $methodList = unserialize(get_transient('resursTemporaryPaymentMethods'));
 
-        // Only rewrite class files on fly if there are methods currently stored in the database.
+        // Only rewrite class files on the fly if there are methods currently stored in the database.
         // By doing this, we do not risk unconfigured systems where payment methods are not yet fetched.
         if (is_array($methodList) && count($methodList)) {
             // idMerchant is here due to row 1188 (currently) in resursbank_settings.php for which the admin panel
