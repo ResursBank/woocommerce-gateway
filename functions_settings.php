@@ -1072,6 +1072,35 @@ if (!function_exists('getResursWooFormFields')) {
     }
 }
 
+if (!function_exists('getResursIconByType')) {
+    /**
+     * In the future release, this will be entirely automated.
+     *
+     * @param $payment_method
+     * @return string
+     * @throws Exception
+     */
+    function getResursIconByType($payment_method)
+    {
+        $ecom = initializeResursFlow();
+
+        $return = "resurs-standard.png";
+        $imgPath = plugin_dir_path(__FILE__) . 'img/';
+        $specialImageName = sprintf('method_%s.png', strtolower($payment_method->specificType));
+        $specialImagePath = sprintf('%s%s', $imgPath, $specialImageName);
+
+        if ($ecom->isPspCard($payment_method->specificType, $payment_method->type)) {
+            $return = 'method_pspcard.png';
+        } elseif ($payment_method->type === 'PAYMENT_PROVIDER' && $payment_method->specificType === 'INTERNET') {
+            $return = 'trustly.svg';
+        } elseif (file_exists($specialImagePath)) {
+            $return = $specialImageName;
+        }
+
+        return $return;
+    }
+}
+
 if (!function_exists('write_resurs_class_to_file')) {
     /**
      * Write class files on the fly - normally from wp-admin, when payment methods needs to be rewritten,
@@ -1107,7 +1136,6 @@ if (!function_exists('write_resurs_class_to_file')) {
         }
         $class_name = 'resurs_bank_nr_' . $payment_method->id;
         if (!file_exists(plugin_dir_path(__FILE__) . '/' . getResursPaymentMethodModelPath() . $class_name)) {
-            // todo: Reverse this section.
             $classFilePresent = false;
         } else {
             $classFilePresent = true;
@@ -1141,16 +1169,19 @@ if (!function_exists('write_resurs_class_to_file')) {
             $isPsp = 'true';
         }
         $allowPsp = 'true';
-        $icon_name = "resurs-standard";
         $plugin_url = untrailingslashit(plugins_url('/', __FILE__));
+        $icon_name = getResursIconByType($payment_method);
+        $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name;
 
         $icon = apply_filters(
             'woocommerce_resurs_bank_' . $type . '_checkout_icon',
-            $plugin_url . '/img/' . $icon_name . '.png'
+            $plugin_url . '/img/' . $icon_name
         );
+        // Do not remove....
         $path_to_icon = $icon;
-        $temp_icon = plugin_dir_path(__FILE__) . 'img/' . $icon_name . '.png';
+        // Do not remove this either...
         $has_icon = (string)file_exists($temp_icon);
+
         $ajaxUrl = admin_url('admin-ajax.php');
         $costOfPurchase = $ajaxUrl . "?action=get_priceinfo_ajax";
 
