@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20220228');
+    define('ECOMPHP_MODIFY_DATE', '20220428');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.82
+ * @version 1.3.83
  */
 class ResursBank
 {
@@ -3164,6 +3164,21 @@ class ResursBank
             $specificType = $specificType->specificType;
         }
         return !$this->isInternalMethod($type) && preg_match('/^card|card$/i', $specificType);
+    }
+
+    /**
+     * @param mixed $specificType
+     * @param string $type
+     * @return bool
+     * @since 1.3.83
+     */
+    public function isTrustly($specificType, $type) {
+        // If the payment method object is set, split up properly.
+        if (is_object($specificType) && isset($specificType->specificType, $specificType->type)) {
+            $type = $specificType->type;
+            $specificType = $specificType->specificType;
+        }
+        return $type === 'PAYMENT_PROVIDER' && $specificType === 'INTERNET';
     }
 
     /**

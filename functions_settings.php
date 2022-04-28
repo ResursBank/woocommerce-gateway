@@ -1090,7 +1090,7 @@ if (!function_exists('getResursIconByType')) {
         $specialImagePath = sprintf('%s%s', $imgPath, $specialImageName);
 
         if ($ecom->isPspCard($payment_method->specificType, $payment_method->type)) {
-            $return = 'method_pspcard.png';
+            $return = 'method_pspcard.svg';
         } elseif ($payment_method->type === 'PAYMENT_PROVIDER' && $payment_method->specificType === 'INTERNET') {
             $return = 'trustly.svg';
         } elseif (file_exists($specialImagePath)) {

@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 5.9.2
 Requires PHP: 7.0
-Stable tag: 2.2.93
+Stable tag: 2.2.94
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -132,21 +132,12 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
-= 2.2.93 =
+= 2.2.94 =
 
-* [WOO-623](https://resursbankplugins.atlassian.net/browse/WOO-623) No radioknapps when getAddress is disabled with multiple customerTypes
-* [WOO-619](https://resursbankplugins.atlassian.net/browse/WOO-619) Add warning about wordpress networks
-* [WOO-618](https://resursbankplugins.atlassian.net/browse/WOO-618) If payment method list is single-customerType only
-
-= 2.2.92 =
-
-[WOO-616](https://resursbankplugins.atlassian.net/browse/WOO-616) Validate that radio buttons are not shown when only one payment method type is available
-
-= 2.2.91 =
-
-* [WOO-614](https://resursbankplugins.atlassian.net/browse/WOO-614) Descriptions containing ' in payment method classes
-* [WOO-615](https://resursbankplugins.atlassian.net/browse/WOO-615) payment\_complete is not implemented for "finalized" orders
-
+* [WOO-630](https://resursbankplugins.atlassian.net/browse/WOO-630) Trustly visar också Resurs-loggan
+* [WOO-628](https://resursbankplugins.atlassian.net/browse/WOO-628) Annuity factor settings has url reference as default value
+* [WOO-627](https://resursbankplugins.atlassian.net/browse/WOO-627) Unconditionally always show payment methods \(and rebuild them on fly\)
+* [WOO-629](https://resursbankplugins.atlassian.net/browse/WOO-629) Rebranded logotype
 
 == Upgrade Notice ==
 

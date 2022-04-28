@@ -1,3 +1,10 @@
+# 2.2.94 #
+
+* [WOO-630](https://resursbankplugins.atlassian.net/browse/WOO-630) Trustly visar också Resurs-loggan
+* [WOO-628](https://resursbankplugins.atlassian.net/browse/WOO-628) Annuity factor settings has url reference as default value
+* [WOO-627](https://resursbankplugins.atlassian.net/browse/WOO-627) Unconditionally always show payment methods \(and rebuild them on fly\)
+* [WOO-629](https://resursbankplugins.atlassian.net/browse/WOO-629) Rebranded logotype
+
 # 2.2.93 #
 
 * [WOO-623](https://resursbankplugins.atlassian.net/browse/WOO-623) No radioknapps when getAddress is disabled with multiple customerTypes
