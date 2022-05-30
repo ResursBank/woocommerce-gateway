@@ -1,3 +1,8 @@
+# 2.2.95 #
+
+[WOO-636](https://resursbankplugins.atlassian.net/browse/WOO-636) WP \+ Woo tested up to...
+
+
 # 2.2.94 #
 
 * [WOO-630](https://resursbankplugins.atlassian.net/browse/WOO-630) Trustly visar också Resurs-loggan
