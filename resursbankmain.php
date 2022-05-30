@@ -7736,10 +7736,3 @@ function rb_in_maintenance()
 }
 
 add_action('wp_loaded', 'rb_in_maintenance');
-/*
-// For testing only.
-add_filter( 'woocommerce_checkout_fields' , 'alter_woocommerce_checkout_fields' );
-function alter_woocommerce_checkout_fields( $fields ) {
-    unset($fields['order']['order_comments']);
-    return $fields;
-}*/
