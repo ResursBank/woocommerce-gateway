@@ -3005,9 +3005,6 @@ function woocommerce_gateway_resurs_bank_init()
                             if (!getResursUpdatePaymentReferenceResult($_REQUEST['orderId'])) {
                                 $order = new WC_Order($_REQUEST['orderId']);
 
-                                // Debugging purposes.
-                                //$_REQUEST['orderId'] = '3286';
-
                                 // If we experience successful order references here, the first
                                 // backend call may have failed.
                                 $updatePaymentReferenceStatus = $this->updatePaymentReference(
