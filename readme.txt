@@ -2,9 +2,9 @@
 Contributors: RB-Tornevall, Tornevall
 Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
-Tested up to: 5.9.2
+Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 2.2.94
+Stable tag: 2.2.95
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -131,6 +131,10 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 == Changelog ==
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
+
+= 2.2.95 =
+
+[WOO-636](https://resursbankplugins.atlassian.net/browse/WOO-636) WP \+ Woo tested up to...
 
 = 2.2.94 =
 
