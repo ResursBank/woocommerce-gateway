@@ -120,19 +120,21 @@ $RB(document).ready(function ($) {
         });
     }
 
-    var rb_simpl_checkout_form = $RB('form.checkout');
-    if (typeof rb_simpl_checkout_form !== 'undefined' &&
-        typeof resursvars !== 'undefined' &&
-        resursvars['showCheckoutOverlay'] === "1"
-    ) {
-        // Bind overlay on demand.
-        rb_simpl_checkout_form.on('checkout_place_order', function () {
-            $RB('.purchaseActionsWrapper').show();
+    if ($RB('.purchaseActionsWrapper').length > 0) {
+        var rb_simpl_checkout_form = $RB('form.checkout');
+        if (typeof rb_simpl_checkout_form !== 'undefined' &&
+            typeof resursvars !== 'undefined' &&
+            resursvars['showCheckoutOverlay'] === "1"
+        ) {
+            // Bind overlay on demand.
+            rb_simpl_checkout_form.on('checkout_place_order', function () {
+                $RB('.purchaseActionsWrapper').show();
+            });
+        }
+        $(document.body).on('checkout_error', function () {
+            $RB('.purchaseActionsWrapper').hide('medium');
         });
     }
-    $(document.body).on('checkout_error', function () {
-        $RB('.purchaseActionsWrapper').hide('medium');
-    });
 
     preSetResursMethods(currentCustomerType.toUpperCase(), resursvars["customerTypes"]);
 
