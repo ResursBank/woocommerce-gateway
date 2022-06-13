@@ -4,7 +4,7 @@ Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 2.2.95
+Stable tag: 2.2.96
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
@@ -132,16 +132,14 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
+= 2.2.96 =
+
+[WOO-637](https://resursbankplugins.atlassian.net/browse/WOO-637) Purchase-Overlay are shown by mistake in some themes
+
 = 2.2.95 =
 
 [WOO-636](https://resursbankplugins.atlassian.net/browse/WOO-636) WP \+ Woo tested up to...
 
-= 2.2.94 =
-
-* [WOO-630](https://resursbankplugins.atlassian.net/browse/WOO-630) Trustly visar också Resurs-loggan
-* [WOO-628](https://resursbankplugins.atlassian.net/browse/WOO-628) Annuity factor settings has url reference as default value
-* [WOO-627](https://resursbankplugins.atlassian.net/browse/WOO-627) Unconditionally always show payment methods \(and rebuild them on fly\)
-* [WOO-629](https://resursbankplugins.atlassian.net/browse/WOO-629) Rebranded logotype
 
 == Upgrade Notice ==
 

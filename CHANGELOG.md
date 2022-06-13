@@ -1,7 +1,10 @@
+# 2.2.96 #
+
+* [WOO-637](https://resursbankplugins.atlassian.net/browse/WOO-637) Purchase-Overlay are shown by mistake in some themes
+
 # 2.2.95 #
 
-[WOO-636](https://resursbankplugins.atlassian.net/browse/WOO-636) WP \+ Woo tested up to...
-
+* [WOO-636](https://resursbankplugins.atlassian.net/browse/WOO-636) WP \+ Woo tested up to...
 
 # 2.2.94 #
 
