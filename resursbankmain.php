@@ -6708,6 +6708,7 @@ function resurs_remove_order_item($item_id)
     if (!$item_id) {
         return false;
     }
+
     // Make sure we still keep the former security
     if (!current_user_can('edit_shop_orders')) {
         die(-1);
@@ -6726,6 +6727,9 @@ function resurs_remove_order_item($item_id)
         $orderId = r_wc_get_order_id_by_order_item_id($item_id);
 
         $resursPaymentId = get_post_meta($orderId, 'paymentId', true);
+        if (!(bool)preg_match('/resurs_bank/', $payment_method)) {
+            return;
+        }
 
         if (empty($productId)) {
             $testItemType = r_wc_get_order_item_type_by_item_id($item_id);
