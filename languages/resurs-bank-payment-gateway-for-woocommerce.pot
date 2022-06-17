@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resurs Bank Payment Gateway for WooCommerce\n"
-"POT-Creation-Date: 2022-04-27 16:51+0200\n"
+"POT-Creation-Date: 2022-06-17 15:38+0200\n"
 "PO-Revision-Date: 2021-11-06 00:29+0100\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: Tomas Tornevall <thorne@tornevall.net>\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.1\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: resursbankgateway.php\n"
@@ -276,7 +276,7 @@ msgid "Coupons should be handled with vat"
 msgstr ""
 
 #: functions_settings.php:334 resursbank_settings.php:1606
-#: resursbankmain.php:6418 resursbankmain.php:6428
+#: resursbankmain.php:6420 resursbankmain.php:6430
 msgid "Yes"
 msgstr ""
 
@@ -1270,7 +1270,7 @@ msgstr ""
 msgid "During the URL calls, SSL certificate validation has been disabled"
 msgstr ""
 
-#: resursbank_settings.php:1606 resursbankmain.php:6418 resursbankmain.php:6428
+#: resursbank_settings.php:1606 resursbankmain.php:6420 resursbankmain.php:6430
 msgid "No"
 msgstr ""
 
@@ -1459,7 +1459,7 @@ msgstr ""
 msgid "Company government ID"
 msgstr ""
 
-#: resursbankmain.php:1950 resursbankmain.php:4231 resursbankmain.php:6532
+#: resursbankmain.php:1950 resursbankmain.php:4231 resursbankmain.php:6534
 msgid "Read more"
 msgstr ""
 
@@ -1867,128 +1867,128 @@ msgstr ""
 msgid "[Resurs Bank] Refund/cancellation sent to API successfully."
 msgstr ""
 
-#: resursbankmain.php:5991
+#: resursbankmain.php:5992
 msgid "Please wait while we process your order..."
 msgstr ""
 
-#: resursbankmain.php:6013
+#: resursbankmain.php:6015
 msgid "Settings"
 msgstr ""
 
-#: resursbankmain.php:6054
+#: resursbankmain.php:6056
 msgid ""
 "It seems this order has already been finalized from an external system - if "
 "your order is finished you may update it here aswell"
 msgstr ""
 
-#: resursbankmain.php:6059
+#: resursbankmain.php:6061
 msgid ""
 "It seems this order has been instantly finalized due to the payment method "
 "type. This means that you probably must handle it manually."
 msgstr ""
 
-#: resursbankmain.php:6176
+#: resursbankmain.php:6178
 msgid "Referenced data don't exist"
 msgstr ""
 
-#: resursbankmain.php:6181
+#: resursbankmain.php:6183
 msgid ""
 "This error might occur when for example a payment doesn't exist at Resurs "
 "Bank. Normally this happens when payments have failed or aborted before it "
 "can be completed"
 msgstr ""
 
-#: resursbankmain.php:6192
+#: resursbankmain.php:6194
 msgid "The order was denied at Resurs Bank and therefore has not been created"
 msgstr ""
 
-#: resursbankmain.php:6198
+#: resursbankmain.php:6200
 msgid "This order failed or was cancelled by customer during external actions."
 msgstr ""
 
-#: resursbankmain.php:6205
+#: resursbankmain.php:6207
 #, php-format
 msgid ""
 "This order has been cancelled during customer interactions. Returning URL "
 "was set to %s."
 msgstr ""
 
-#: resursbankmain.php:6220
+#: resursbankmain.php:6222
 msgid ""
 "Following error ocurred when we tried to fetch information about the payment"
 msgstr ""
 
-#: resursbankmain.php:6263
+#: resursbankmain.php:6265
 #, php-format
 msgid "Incomplete. The fallback tried to use %d."
 msgstr ""
 
-#: resursbankmain.php:6282
+#: resursbankmain.php:6284
 msgid "Not set"
 msgstr ""
 
-#: resursbankmain.php:6284 resursbankmain.php:6422
+#: resursbankmain.php:6286 resursbankmain.php:6424
 msgid "Frozen"
 msgstr ""
 
-#: resursbankmain.php:6310
+#: resursbankmain.php:6312
 #, php-format
 msgid "Status from Resurs Bank: %s."
 msgstr ""
 
-#: resursbankmain.php:6347
+#: resursbankmain.php:6349
 msgid "Payment ID"
 msgstr ""
 
-#: resursbankmain.php:6354
+#: resursbankmain.php:6356
 msgid "Payment method ID"
 msgstr ""
 
-#: resursbankmain.php:6363
+#: resursbankmain.php:6365
 msgid "Store ID"
 msgstr ""
 
-#: resursbankmain.php:6372
+#: resursbankmain.php:6374
 msgid "Payment method name"
 msgstr ""
 
-#: resursbankmain.php:6381
+#: resursbankmain.php:6383
 msgid "Payment method type"
 msgstr ""
 
-#: resursbankmain.php:6391
+#: resursbankmain.php:6393
 msgid "Payment amount"
 msgstr ""
 
-#: resursbankmain.php:6403
+#: resursbankmain.php:6405
 msgid "Payment limit"
 msgstr ""
 
-#: resursbankmain.php:6412
+#: resursbankmain.php:6414
 msgid "Fraud"
 msgstr ""
 
-#: resursbankmain.php:6433
+#: resursbankmain.php:6435
 msgid "Customer name"
 msgstr ""
 
-#: resursbankmain.php:6444
+#: resursbankmain.php:6446
 msgid "Delivery address"
 msgstr ""
 
-#: resursbankmain.php:6774
+#: resursbankmain.php:6776
 msgid "Orderline Removal: Resurs Bank API was called to remove orderlines"
 msgstr ""
 
-#: resursbankmain.php:7433
+#: resursbankmain.php:7435
 msgid "There are currently no payment methods available"
 msgstr ""
 
-#: resursbankmain.php:7724
+#: resursbankmain.php:7726
 msgid "System maintenance in progress!"
 msgstr ""
 
-#: resursbankmain.php:7726
+#: resursbankmain.php:7728
 msgid ""
 "This store is currently in a temporary maintenance mode. Please wait a "
 "minute and try again."
@@ -2026,7 +2026,7 @@ msgid ""
 msgstr ""
 
 #. Description of the plugin/theme
-msgid "Connects Resurs Bank as a payment gateway for WooCommerce"
+msgid "Connects Resurs as a payment gateway for WooCommerce"
 msgstr ""
 
 #. Author of the plugin/theme
