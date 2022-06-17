@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20220428');
+    define('ECOMPHP_MODIFY_DATE', '20220503');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.83
+ * @version 1.3.85
  */
 class ResursBank
 {
@@ -3182,6 +3182,21 @@ class ResursBank
     }
 
     /**
+     * @param mixed $specificType
+     * @param string $type
+     * @return bool
+     * @since 1.3.85
+     */
+    public function isSwish($specificType, $type) {
+        // If the payment method object is set, split up properly.
+        if (is_object($specificType) && isset($specificType->specificType, $specificType->type)) {
+            $type = $specificType->type;
+            $specificType = $specificType->specificType;
+        }
+        return $type === 'PAYMENT_PROVIDER' && $specificType === 'SWISH';
+    }
+
+    /**
      * List payment methods
      *
      * Retrieves detailed information on the payment methods available to the representative. Parameters (customerType,
@@ -4326,6 +4341,14 @@ class ResursBank
             ],
             'LEGAL' => [
                 'INVOICE' => [
+                    'applicant_government_id',
+                    'applicant_telephone_number',
+                    'applicant_mobile_number',
+                    'applicant_email_address',
+                    'applicant_full_name',
+                    'contact_government_id',
+                ],
+                'COMPINVOICE' => [
                     'applicant_government_id',
                     'applicant_telephone_number',
                     'applicant_mobile_number',

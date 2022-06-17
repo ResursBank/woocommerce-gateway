@@ -159,10 +159,19 @@ class Translation
             }
         }
 
+        $keyStringVariant = strtolower(preg_replace('/_/', '', $keyString));
+
         foreach ($useLanguageArray as $translationType => $translationItem) {
             if (is_array($translationItem)) {
-                if (is_array($useLanguageArray) && isset($useLanguageArray[$keyString])) {
-                    $return = $useLanguageArray[$keyString];
+                if (is_array($useLanguageArray) &&
+                    (isset($useLanguageArray[$keyString]) || isset($useLanguageArray[$keyStringVariant]))
+                ) {
+                    // Either one of these should be returned since it has landed here properly.
+                    if (isset($useLanguageArray[$keyString])) {
+                        $return = $useLanguageArray[$keyString];
+                    } elseif (isset($useLanguageArray[$keyStringVariant])) {
+                        $return = $useLanguageArray[$keyStringVariant];
+                    }
                     break;
                 }
                 foreach ($translationItem as $translationCategory => $translationCategoryItem) {
