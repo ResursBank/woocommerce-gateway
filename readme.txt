@@ -1,6 +1,6 @@
-=== Resurs Bank payment gateway for WooCommerce ===
+=== Resurs Bank Payment Gateway for WooCommerce ===
 Contributors: RB-Tornevall, Tornevall
-Tags: WooCommerce, Resurs Bank, Payment, Payment gateway, ResursBank, payments
+Tags: WooCommerce, Resurs Bank, Resurs, Payment, Payment gateway, ResursBank, payments
 Requires at least: 5.5
 Tested up to: 6.0
 Requires PHP: 7.0
@@ -9,13 +9,13 @@ License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
 
-Resurs Bank Payment Gateway for WooCommerce.
+Resurs Payment Gateway for WooCommerce.
 
 == Description ==
 
 = About =
 
-Official payment gateway for Resurs Bank.
+Official payment gateway for Resurs.
 
 Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwoocommerce)!
 
@@ -23,11 +23,11 @@ Help us translate the plugin by joining [Crowdin](https://crwd.in/resursbankwooc
 
 * [Simplified Shop Flow](https://test.resurs.com/docs/display/ecom/Simplified+Flow+API). Integrated checkout that works with WooCommerce built in features.
 * [Resurs Checkout Web](https://test.resurs.com/docs/display/ecom/Resurs+Checkout+Web). Iframe integration. Currently supporting **RCOv1 and RCOv2**.
-* [Hosted Payment Flow](https://test.resurs.com/docs/display/ecom/Hosted+Payment+Flow). A paypal like checkout where most of the payment events takes place at Resurs Bank.
+* [Hosted Payment Flow](https://test.resurs.com/docs/display/ecom/Hosted+Payment+Flow). A paypal like checkout where most of the payment events takes place at Resurs.
 
 == Multisite/WordPress Networks ==
 
-The plugin **do** support WordPress networks (aka multisite), however it does not support running one webservice account over many sites at once. The main rule that Resurs Bank works with is that one webservice account only works for one site. Running multiple sites do **require** multiple webservice accounts!
+The plugin **do** support WordPress networks (aka multisite), however it does not support running one webservice account over many sites at once. The main rule that Resurs works with is that one webservice account only works for one site. Running multiple sites do **require** multiple webservice accounts!
 
 
 = Compatibility and requirements =
@@ -41,7 +41,7 @@ The plugin **do** support WordPress networks (aka multisite), however it does no
 * **Included** [EComPHP](https://test.resurs.com/docs/x/TYNM) (Bundled vendor) [Bitbucket](https://bitbucket.org/resursbankplugins/resurs-ecomphp.git)
 * WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly
   recommended to go for the latest version as soon as possible if you're not already there.
-* HTTPS **must** be **fully** enabled. This is a callback security measure, which is required from Resurs Bank.
+* HTTPS **must** be **fully** enabled. This is a callback security measure, which is required from Resurs.
 * PHP: [Take a look here](https://docs.woocommerce.com/document/server-requirements/) to keep up with support. As of aug
   2021, both WooCommerce and WordPress is about to jump into 7.4 and higher.
   Also, [read here](https://wordpress.org/news/2019/04/minimum-php-version-update/) for information about lower versions
@@ -93,7 +93,7 @@ If you have a FTP-client or similar, make sure to give this path write-access fo
 
 = Upgrading =
 
-When upgrading the plugin via WordPress plugin manager, make sure that you payment methods are still there. If you are unsure, just visit the configuration panel for Resurs Bank once after upgrading since, the plugin are rewriting files if they are missing.
+When upgrading the plugin via WordPress plugin manager, make sure that you payment methods are still there. If you are unsure, just visit the configuration panel for Resurs once after upgrading since, the plugin are rewriting files if they are missing.
 
 As of v2.2.12, we do support SWISH and similar "instant debitable" payment methods, where payments tend to be finalized/debited long before shipping has been made. You can read more about it [here](https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12).
 
@@ -108,15 +108,15 @@ There are several reasons for the 40X errors, but if they are thrown from an ECo
 
 * 401 = Unauthorized.
 **Cause**: Bad credentials
-**Solution**: Contact Resurs Bank support for support questions regarding API credentials.
+**Solution**: Contact Resurs support for support questions regarding API credentials.
 
 * 403 = Forbidden.
 **Cause**: This may be more common during test.
-**Solution:** Resolution: Contact Resurs Bank for support.
+**Solution:** Resolution: Contact Resurs for support.
 
-= There's an order created but there is no order information connected to Resurs Bank =
+= There's an order created but there is no order information connected to Resurs =
 
-This is a common question about customer actions and how the order has been created/signed. Most of the details is usually placed in the order notes for the order, but if you need more information you could also consider contacting Resurs Bank support.
+This is a common question about customer actions and how the order has been created/signed. Most of the details is usually placed in the order notes for the order, but if you need more information you could also consider contacting Resurs support.
 
 = Handling decimals =
 
