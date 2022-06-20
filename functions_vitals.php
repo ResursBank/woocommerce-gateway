@@ -716,7 +716,7 @@ function updateResursOrderStatusActions($orderId, $status)
 {
     if ($orderId) {
         $currentOrder = new WC_Order($orderId);
-        if (($currentOrder instanceof WC_Order)) {
+        if (($currentOrder instanceof WC_Order) && $status === 'completed') {
             $currentOrder->payment_complete();
             rbSimpleLogging(
                 sprintf('Order %d is completed: payment_complete() triggered!', $orderId)
