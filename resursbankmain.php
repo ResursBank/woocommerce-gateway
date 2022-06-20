@@ -6215,7 +6215,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 <div class="clear">&nbsp;</div>
                 <div class="order_data_column_container resurs_orderinfo_container resurs_orderinfo_text">
                     <div style="padding: 30px;border:none;" id="resursInfo">
-                        <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
+                        <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/logo.png' . '"></span>
                         <fieldset>
                         <b>' .
                     __(
@@ -6315,7 +6315,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $currentOrderStatus
                 );
                 $renderedResursData .= '</div>
-                     <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
+                     <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/logo.png' . '"></span>
                 ';
 
                 $addressInfo = '';
