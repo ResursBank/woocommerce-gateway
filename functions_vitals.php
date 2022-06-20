@@ -742,7 +742,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                     $properOrder->update_status(
                         $paymentStatusList[OrderStatus::PENDING],
                         sprintf(
-                            '[Resurs Bank] Queued order status updated: %s.',
+                            '[Resurs Bank] Queued order status updated to %s.',
                             $suggestedString
                         )
                     );
@@ -751,7 +751,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                     $properOrder->update_status(
                         $paymentStatusList[OrderStatus::PROCESSING],
                         sprintf(
-                            '[Resurs Bank] Queued order status updated: %s.',
+                            '[Resurs Bank] Queued order status updated to %s.',
                             $suggestedString
                         )
                     );
@@ -760,7 +760,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                     $properOrder->update_status(
                         $paymentStatusList[OrderStatus::CREDITED],
                         sprintf(
-                            '[Resurs Bank] Queued order status updated: %s.',
+                            '[Resurs Bank] Queued order status updated to %s.',
                             $suggestedString
                         )
                     );
@@ -780,7 +780,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                             $properOrder->update_status(
                                 $paymentStatusList[OrderStatus::COMPLETED],
                                 sprintf(
-                                    '[Resurs Bank] Queued order status updated: %s.',
+                                    '[Resurs Bank] Queued order status updated to %s.',
                                     $suggestedString
                                 )
                             );
@@ -788,7 +788,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                             $properOrder->update_status(
                                 $autoDebitStatus,
                                 sprintf(
-                                    '[Resurs Bank] Queued order status updated: %s.',
+                                    '[Resurs Bank] Queued order status updated to %s.',
                                     $suggestedString
                                 )
                             );
@@ -797,7 +797,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                         $properOrder->update_status(
                             $paymentStatusList[OrderStatus::COMPLETED],
                             sprintf(
-                                '[Resurs Bank] Queued order status updated: %s.',
+                                '[Resurs Bank] Queued order status updated to %s.',
                                 $suggestedString
                             )
                         );
