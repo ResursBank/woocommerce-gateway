@@ -703,6 +703,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                 $resursId
             );
             $suggestedString = $flow->getOrderStatusStringByReturnCode($suggestedStatus);
+            $currentStatus = $properOrder->get_status();
 
             rbSimpleLogging(
                 'Payment Status List:'
@@ -710,22 +711,21 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
             rbSimpleLogging(print_r($paymentStatusList, true));
             rbSimpleLogging(
                 sprintf(
-                    'updateQueuedOrderStatus for %d (%s), suggested: %s (%s).',
+                    'updateQueuedOrderStatus for %d (%s), suggested: %s (%s), current is %s.',
                     $orderId,
                     $resursId,
                     $suggestedStatus,
-                    $suggestedString
+                    $suggestedString,
+                    $currentStatus
                 )
             );
 
-            $currentStatus = $properOrder->get_status();
-
             if ($currentStatus === $suggestedStatus) {
-                $properOrder->add_order_note(
-                    __(
-                        '[Resurs Bank] Update order request ignored since the suggested status is already set.'
-                    )
+                $alreadySetString = __(
+                    '[Resurs Bank] Update order request ignored since the suggested status is already set.'
                 );
+                rbSimpleLogging($alreadySetString);
+                $properOrder->add_order_note($alreadySetString);
                 return;
             }
             if ($flow->isFrozen($resursId)) {
