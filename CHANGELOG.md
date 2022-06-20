@@ -1,3 +1,7 @@
+# 2.2.97 #
+
+* [WOO-659](https://resursbankplugins.atlassian.net/browse/WOO-659) Removing order lines from orders created by other methods than Resurs
+
 # 2.2.96 #
 
 * [WOO-637](https://resursbankplugins.atlassian.net/browse/WOO-637) Purchase-Overlay are shown by mistake in some themes
