@@ -805,6 +805,7 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
 
                     break;
                 default:
+                    break;
             }
         } catch (Exception $e) {
             rbSimpleLogging(print_r($e, true));
@@ -946,5 +947,5 @@ function resursHasNoMethods($message) {
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);
 add_filter('resursbank_start_session_before', 'resurs20StartSession');
 add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');
-add_action('resursbank_update_queued_status', 'updateQueuedOrderStatus', 10, 3);
+add_action('resursbank_update_queued_status', 'updateQueuedOrderStatus', 10, 2);
 add_action('resurs_bank_order_status_update', 'updateResursOrderStatusActions', 10, 2);

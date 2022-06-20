@@ -1082,7 +1082,7 @@ function woocommerce_gateway_resurs_bank_init()
                                 );
                             }
                         }
-                        $statusValue = $this->updateOrderByResursPaymentStatus(
+                        $this->updateOrderByResursPaymentStatus(
                             $order,
                             $request['paymentId']
                         );
@@ -1196,7 +1196,7 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
-         * @param int|WC_Order $woocommerceOrder
+         * @param mixed $woocommerceOrder
          * @param string $paymentIdOrPaymentObject
          * @return int|OrderStatus
          * @throws Exception
@@ -1212,7 +1212,6 @@ function woocommerce_gateway_resurs_bank_init()
                 )
             );
 
-            /// synchronizeResursOrderStatus
             QueueHandler::setOrderStatusWithNotice($woocommerceOrder->get_id(), $paymentIdOrPaymentObject);
         }
 
