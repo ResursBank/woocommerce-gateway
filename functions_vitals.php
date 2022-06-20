@@ -681,7 +681,7 @@ function resursExpectVersions()
  * Queued status handler. Should not be called directly as it is based on WC_Queue.
  *
  * @param int $orderId
- * @param string|int|null $resursId
+ * @param mixed $resursId
  * @since Imported
  * @see https://github.com/woocommerce/woocommerce/wiki/WC_Queue---WooCommerce-Worker-Queue
  * @see https://github.com/Tornevall/wpwc-resurs/commit/6a7e44f5cdeb24a59c9b0e8fa3f2150b9f598e5c

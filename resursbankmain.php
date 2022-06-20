@@ -3281,7 +3281,6 @@ function woocommerce_gateway_resurs_bank_init()
                             )
                         );
 
-                        $current = $order->get_status();
                         try {
                             $this->updateOrderByResursPaymentStatus($order, $paymentId);
                         } catch (Exception $e) {

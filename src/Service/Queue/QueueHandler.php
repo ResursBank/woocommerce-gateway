@@ -33,7 +33,7 @@ class QueueHandler
     /**
      * Order status helper.
      *
-     * @param int|WC_Order $orderId
+     * @param mixed $orderId
      * @param string $resursId
      * @since Imported.
      */
