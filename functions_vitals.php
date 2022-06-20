@@ -692,7 +692,8 @@ function updateQueuedOrderStatus(int $orderId, string $status, string $notice)
         try {
             $properOrder = new WC_Order($orderId);
             $currentStatus = $properOrder->get_status();
-            if ($currentStatus !== $status) {
+
+            if ($currentStatus !== $status && $currentStatus !== 'completed') {
                 $properOrder->update_status(
                     $status,
                     $notice

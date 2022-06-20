@@ -1389,10 +1389,10 @@ function woocommerce_gateway_resurs_bank_init()
                 // really know what they're doing.
                 $paymentStatus = $this->getResursOrderStatusArray();
 
-                resursEventLogger(print_r($paymentIdOrPaymentObject, true));
-                resursEventLogger('Current Status: ' . $currentWcStatus);
+                rbSimpleLogging(print_r($paymentIdOrPaymentObject, true));
+                rbSimpleLogging('Current Status: ' . $currentWcStatus);
                 if (isset($paymentStatus[$suggestedStatus])) {
-                    resursEventLogger(
+                    rbSimpleLogging(
                         sprintf(
                             'Suggested status: %s (%s)',
                             $suggestedStatus,
