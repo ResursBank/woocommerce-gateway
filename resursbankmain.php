@@ -6215,7 +6215,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 <div class="clear">&nbsp;</div>
                 <div class="order_data_column_container resurs_orderinfo_container resurs_orderinfo_text">
                     <div style="padding: 30px;border:none;" id="resursInfo">
-                        <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
+                        <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/logo.png' . '"></span>
                         <fieldset>
                         <b>' .
                     __(
@@ -6315,7 +6315,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $currentOrderStatus
                 );
                 $renderedResursData .= '</div>
-                     <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/rb_logo.png' . '"></span>
+                     <span class="paymentInfoWrapLogo"><img src="' . plugin_dir_url(__FILE__) . '/img/logo.png' . '"></span>
                 ';
 
                 $addressInfo = '';
@@ -6708,6 +6708,7 @@ function resurs_remove_order_item($item_id)
     if (!$item_id) {
         return false;
     }
+
     // Make sure we still keep the former security
     if (!current_user_can('edit_shop_orders')) {
         die(-1);
@@ -6726,28 +6727,29 @@ function resurs_remove_order_item($item_id)
         $orderId = r_wc_get_order_id_by_order_item_id($item_id);
 
         $resursPaymentId = get_post_meta($orderId, 'paymentId', true);
+        // No need to continue if Resurs payment id is absent.
+        if (!$resursPaymentId) {
+            return;
+        }
+        $order = new WC_Order($orderId);
+        $payment_method = $order->get_payment_method();
+
+        if (!(bool)preg_match('/resurs_bank/', $payment_method)) {
+            return;
+        }
 
         if (empty($productId)) {
             $testItemType = r_wc_get_order_item_type_by_item_id($item_id);
             $testItemName = r_wc_get_order_item_type_by_item_id($item_id);
             if ($testItemType === 'shipping') {
-                $clientPaymentSpec[] = [
-                    'artNo' => '00_frakt',
-                    'quantity' => 1,
-                ];
+                $resursFlow->addOrderLine('00_frakt', null, null, null, null, null, $productQty);
             } elseif ($testItemType === 'coupon') {
-                $clientPaymentSpec[] = [
-                    'artNo' => $testItemName . '_kupong',
-                    'quantity' => 1,
-                ];
+                $resursFlow->addOrderLine($testItemName . '_kupong', null, null, null, null, null, $productQty);
             } elseif ($testItemType === 'fee') {
                 if (function_exists('wc_get_order')) {
                     $current_order = wc_get_order($orderId);
                     $feeName = '00_' . str_replace(' ', '_', $current_order->payment_method_title) . '_fee';
-                    $clientPaymentSpec[] = [
-                        'artNo' => $feeName,
-                        'quantity' => 1,
-                    ];
+                    $resursFlow->addOrderLine($feeName, null, null, null, null, null, $productQty);
                 } else {
                     $order_failover_test = new WC_Order($orderId);
                     $feeName = '00_' . str_replace(
@@ -6755,23 +6757,16 @@ function resurs_remove_order_item($item_id)
                             '_',
                             $order_failover_test->payment_method_title
                         ) . '_fee';
-                    $clientPaymentSpec[] = [
-                        'artNo' => $feeName,
-                        'quantity' => 1,
-                    ];
-                    //die("Can not fetch order information from WooCommerce (Function wc_get_order() not found)");
+                    $resursFlow->addOrderLine($feeName, null, null, null, null, null, $productQty);
                 }
             }
         } else {
-            $clientPaymentSpec[] = [
-                'artNo' => $productId,
-                'quantity' => $productQty,
-            ];
+            $resursFlow->addOrderLine($productId, null, null, null, null, null, $productQty);
         }
 
         try {
             $order = new WC_Order($orderId);
-            $removeResursRow = $resursFlow->paymentCancel($resursPaymentId, $clientPaymentSpec, true);
+            $removeResursRow = $resursFlow->paymentCancel($resursPaymentId);
             $order->add_order_note(__(
                 'Orderline Removal: Resurs Bank API was called to remove orderlines',
                 'resurs-bank-payment-gateway-for-woocommerce'
