@@ -6766,7 +6766,6 @@ function resurs_remove_order_item($item_id)
 
         try {
             $order = new WC_Order($orderId);
-            //$removeResursRow = $resursFlow->paymentCancel($resursPaymentId, $clientPaymentSpec, true);
             $removeResursRow = $resursFlow->paymentCancel($resursPaymentId);
             $order->add_order_note(__(
                 'Orderline Removal: Resurs Bank API was called to remove orderlines',
