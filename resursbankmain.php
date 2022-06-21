@@ -4274,6 +4274,9 @@ function woocommerce_gateway_resurs_bank_init()
             if ($payment_id) {
                 try {
                     $payment = getPaymentInfo($order, $payment_id);
+                    if (!isset($payment->status)) {
+                        $payment->status = [];
+                    }
                     if (isset($payment->id) && $payment_id !== $payment->id) {
                         // If something went wrong during the order processing at customer level
                         // we can still prevent wrong id's to be fixed at this point.
@@ -4282,7 +4285,7 @@ function woocommerce_gateway_resurs_bank_init()
                 } catch (Exception $getPaymentException) {
                     return;
                 }
-                if (isset($payment, $payment->status)) {
+                if (isset($payment, $payment->booked)) {
                     if (false === is_array($payment->status)) {
                         $status = [$payment->status];
                     } else {
@@ -4361,7 +4364,7 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'completed':
                     $flowErrorMessage = '';
-                    if ($resursFlow->canDebit($payment)) {
+                    if ($resursFlow->canDebit($payment) || $resursFlow->isFrozen($payment)) {
                         try {
                             /**
                              * Full-Finalize orders with getPayment()-validation if status is
@@ -4385,15 +4388,21 @@ function woocommerce_gateway_resurs_bank_init()
                                     true
                                 );
                             }
-                            $successFinalize = $resursFlow->paymentFinalize(
-                                $payment_id,
-                                null,
-                                false,
-                                $customFinalize
-                            );
                             rbSimpleLogging(
                                 sprintf('%s: Finalization - Payment Content', $payment_id)
                             );
+                            // Checking frozen status here, instead so that we can use the prior natural flow
+                            // for bad finalizations.
+                            if (!$resursFlow->isFrozen($payment)) {
+                                $successFinalize = $resursFlow->paymentFinalize(
+                                    $payment_id,
+                                    null,
+                                    false,
+                                    $customFinalize
+                                );
+                            } else {
+                                throw new Exception('Payment is in frozen state. Can not finalize!', 403);
+                            }
                             rbSimpleLogging(print_r($payment, true));
                             rbSimpleLogging(
                                 sprintf(
