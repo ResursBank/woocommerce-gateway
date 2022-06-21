@@ -1025,13 +1025,16 @@ function woocommerce_gateway_resurs_bank_init()
                 );
             }
 
+            // Entry logging by metadata.
+            update_post_meta($orderId, 'hasCallback' . $event_type, time());
+
             /**
              * Watch out for race conditions! We've queued the callback updates.
              * @see https://resursbankplugins.atlassian.net/browse/WOO-573
              */
             switch ($event_type) {
+                case 'UPDATE':
                 case 'UNFREEZE':
-                    update_post_meta($orderId, 'hasCallback' . $event_type, time());
                     $this->updateOrderByResursPaymentStatus(
                         $order,
                         $request['paymentId']
@@ -1041,12 +1044,13 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'TEST':
                     break;
                 case 'BOOKED':
-                    update_post_meta($orderId, 'hasCallback' . $event_type, time());
+                    ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
+
                     if ($currentStatus !== 'cancelled') {
                         $optionReduceOrderStock = getResursOption('reduceOrderStock');
                         $hasReduceStock = get_post_meta($orderId, 'hasReduceStock');
 
-                        resursEventLogger(
+                        rbSimpleLogging(
                             sprintf(
                                 'Callback BOOKED received. Stock reduction is %s. ' .
                                 'Current status (hasReduceStock) for reduction is "%s".',
@@ -1082,12 +1086,11 @@ function woocommerce_gateway_resurs_bank_init()
                                 );
                             }
                         }
+
                         $this->updateOrderByResursPaymentStatus(
                             $order,
                             $request['paymentId']
                         );
-
-                        ThirdPartyHooksSetPaymentTrigger('callback', $request['paymentId'], $orderId, $event_type);
                     } else {
                         $order->add_order_note(
                             __(
@@ -1097,13 +1100,6 @@ function woocommerce_gateway_resurs_bank_init()
                             )
                         );
                     }
-                    break;
-                case 'UPDATE':
-                    $this->updateOrderByResursPaymentStatus(
-                        $order,
-                        $request['paymentId']
-                    );
-
                     break;
                 default:
                     break;
@@ -4401,7 +4397,7 @@ function woocommerce_gateway_resurs_bank_init()
                                     $customFinalize
                                 );
                             } else {
-                                throw new Exception('Payment is in frozen state. Can not finalize!', 403);
+                                throw new Exception('Payment is in frozen state. Can not finalize!', 999);
                             }
                             rbSimpleLogging(print_r($payment, true));
                             rbSimpleLogging(
