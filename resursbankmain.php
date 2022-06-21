@@ -4848,6 +4848,14 @@ function woocommerce_gateway_resurs_bank_init()
                             );
                         }
                     } else {
+                        $logstr = sprintf(
+                            'No status update, criterias failed: currentRunningUser (%s), canAnnul: %s, canCredit: %s.',
+                            $currentRunningUser,
+                            $resursFlow->canAnnul($payment) ? 'true': 'false',
+                            $resursFlow->canCredit($payment) ? 'true':'false'
+                        );
+                        rbSimpleLogging($logstr);
+                        $order->add_order_note($logstr);
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
@@ -4865,8 +4873,8 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'refunded':
                     if (!empty($currentRunningUser) &&
                         (
-                            $resursFlow->canCredit($payment_id) ||
-                            $resursFlow->canAnnul($payment_id)
+                            $resursFlow->canCredit($payment) ||
+                            $resursFlow->canAnnul($payment)
                         )
                     ) {
                         try {
@@ -4902,6 +4910,14 @@ function woocommerce_gateway_resurs_bank_init()
                             );
                         }
                     } else {
+                        $logstr = sprintf(
+                            'No status update, criterias failed: currentRunningUser (%s), canAnnul: %s, canCredit: %s.',
+                            $currentRunningUser,
+                            $resursFlow->canAnnul($payment) ? 'true': 'false',
+                            $resursFlow->canCredit($payment) ? 'true':'false'
+                        );
+                        rbSimpleLogging($logstr);
+                        $order->add_order_note($logstr);
                         $flowErrorMessage = setResursNoAutoCancellation($order);
                     }
                     if (null !== $flowErrorMessage) {
