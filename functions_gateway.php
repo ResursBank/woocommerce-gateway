@@ -97,7 +97,7 @@ if (!function_exists('setResursNoAutoCancellation')) {
 
         $order->add_order_note(
             __(
-                'Automated cancellation detected (reserved orderstock timeout may cause this). Someone has to be logged in to cancel orders for Resurs Bank.',
+                '[Resurs Bank] Automated cancellation detected (reserved orderstock timeout may cause this). Someone has to be logged in to cancel orders for Resurs Bank.',
                 'resurs-bank-payment-gateway-for-woocommerce'
             )
         );
