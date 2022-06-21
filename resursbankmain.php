@@ -1003,7 +1003,8 @@ function woocommerce_gateway_resurs_bank_init()
             $order->add_order_note(
                 sprintf(
                     __(
-                        '[Resurs Bank] Notice only: Callback %s received (Method %s). Additional result flag: %s.',
+                        '[Resurs Bank] Notice only: Callback %s received (Method %s). Additional result flag: %s. ' .
+                        'Status change will be queued.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     $event_type,
@@ -5348,17 +5349,17 @@ function woocommerce_gateway_resurs_bank_init()
 
         if (empty($customerCountry)) {
             $customerCountry = getResursOption('country');
-            rbSimpleLogging(
+            /*rbSimpleLogging(
                 sprintf('Customer country not set, using %s.', $customerCountry)
-            );
-        } else {
+            );*/
+        }/* else {
             rbSimpleLogging(
                 sprintf(
                     'Customer country used for current customer: %s.',
                     $customerCountry
                 )
             );
-        }
+        }*/
 
         // Do not distribute payment methods for countries that do not belong to current
         // Resurs setup, with an exception for VISA/Mastercard.
