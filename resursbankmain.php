@@ -1198,7 +1198,7 @@ function woocommerce_gateway_resurs_bank_init()
         /**
          * @param mixed $woocommerceOrder
          * @param string $paymentIdOrPaymentObject
-         * @return int|OrderStatus
+         * @return void
          * @throws Exception
          */
         private function updateOrderByResursPaymentStatus(
