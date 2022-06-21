@@ -4813,7 +4813,7 @@ function woocommerce_gateway_resurs_bank_init()
                 case 'on-hold':
                     break;
                 case 'cancelled':
-                    if ($currentRunningUser &&
+                    if (!empty($currentRunningUser) &&
                         (
                             $resursFlow->canCredit($payment_id) ||
                             $resursFlow->canAnnul($payment_id)
@@ -4863,7 +4863,7 @@ function woocommerce_gateway_resurs_bank_init()
                     wp_safe_redirect($url);
                     break;
                 case 'refunded':
-                    if ($currentRunningUser &&
+                    if (!empty($currentRunningUser) &&
                         (
                             $resursFlow->canCredit($payment_id) ||
                             $resursFlow->canAnnul($payment_id)
