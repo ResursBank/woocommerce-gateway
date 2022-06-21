@@ -1205,13 +1205,6 @@ function woocommerce_gateway_resurs_bank_init()
             $woocommerceOrder,
             $paymentIdOrPaymentObject = ''
         ) {
-            $woocommerceOrder->add_order_note(
-                __(
-                    '[Resurs Bank] Order status update added to status queue.',
-                    'resurs-bank-payment-gateway-for-woocommerce'
-                )
-            );
-
             QueueHandler::setOrderStatusWithNotice($woocommerceOrder->get_id(), $paymentIdOrPaymentObject);
         }
 
