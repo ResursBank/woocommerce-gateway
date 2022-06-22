@@ -728,14 +728,6 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                 $properOrder->add_order_note($alreadySetString);
                 return;
             }
-            if ($flow->isFrozen($resursId)) {
-                $properOrder->add_order_note(
-                    __(
-                        '[Resurs Bank] Update order request ignored due to frozen status.'
-                    )
-                );
-                return;
-            }
 
             switch (true) {
                 case $suggestedStatus & OrderStatus::PENDING:
@@ -748,6 +740,9 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                     );
                     break;
                 case $suggestedStatus & OrderStatus::PROCESSING:
+                    if (isResursFrozenNote($resursId, $properOrder, true)) {
+                        break;
+                    }
                     $properOrder->update_status(
                         $paymentStatusList[OrderStatus::PROCESSING],
                         sprintf(
@@ -774,6 +769,9 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                     );
                     break;
                 case $suggestedStatus & (OrderStatus::COMPLETED | OrderStatus::AUTO_DEBITED):
+                    if (isResursFrozenNote($resursId, $properOrder, true)) {
+                        break;
+                    }
                     if ($suggestedStatus & (OrderStatus::AUTO_DEBITED)) {
                         $autoDebitStatus = getResursOption('autoDebitStatus');
                         if ($autoDebitStatus === 'default' || empty($autoDebitStatus)) {
@@ -811,6 +809,26 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
             rbSimpleLogging(print_r($e, true));
         }
     }
+}
+
+/**
+ * The dumb way to avoid duplicate code for ordernotes when orders are frozem.
+ * @param $resursId
+ * @param $properOrder
+ * @param $ignoreFrozen
+ * @return bool
+ */
+function isResursFrozenNote($resursId, $properOrder, $ignoreFrozen) {
+    $return = false;
+    if ($ignoreFrozen && $flow->isFrozen($resursId)) {
+        $properOrder->add_order_note(
+            __(
+                '[Resurs Bank] Update order request ignored due to frozen status.'
+            )
+        );
+        $return = true;
+    }
+    return $return;
 }
 
 /**
