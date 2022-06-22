@@ -825,9 +825,11 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
  * @param $properOrder
  * @param $ignoreFrozen
  * @return bool
+ * @throws Exception
  */
 function isResursFrozenNote($resursId, $properOrder, $ignoreFrozen) {
     $return = false;
+    $flow = initializeResursFlow();
     if ($ignoreFrozen && $flow->isFrozen($resursId)) {
         $properOrder->add_order_note(
             __(
