@@ -761,7 +761,15 @@ function updateQueuedOrderStatus(int $orderId, $resursId)
                     );
                     break;
                 case $suggestedStatus & OrderStatus::ANNULLED:
-                    $properOrder->cancel_order(
+                    rbSimpleLogging(
+                        sprintf(
+                            'Resurs Bank annulled order %s.',
+                            $properOrder->get_id()
+                        )
+                    );
+
+                    $properOrder->update_status(
+                        $paymentStatusList[OrderStatus::ANNULLED],
                         __(
                             'Resurs Bank annulled the order',
                             'resurs-bank-payment-gateway-for-woocommerce'

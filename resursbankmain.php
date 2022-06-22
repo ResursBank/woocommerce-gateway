@@ -4532,14 +4532,18 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                     } else {
                         $logstr = sprintf(
-                            'No status update, criterias failed: currentRunningUser (%s), canAnnul: %s, canCredit: %s.',
+                            'Annul/Credit Criterias Check: ' .
+                            'currentRunningUser (%s), canAnnul: %s, canCredit: %s, isAnnulled: %s.',
                             $currentRunningUser,
                             $resursFlow->canAnnul($payment) ? 'true': 'false',
-                            $resursFlow->canCredit($payment) ? 'true':'false'
+                            $resursFlow->canCredit($payment) ? 'true':'false',
+                            $resursFlow->getIsAnnulled($payment) ? 'true':'false'
                         );
                         rbSimpleLogging($logstr);
-                        $order->add_order_note($logstr);
-                        $flowErrorMessage = setResursNoAutoCancellation($order);
+                        //$order->add_order_note($logstr);
+                        if (!$resursFlow->getIsAnnulled($payment)) {
+                            $flowErrorMessage = setResursNoAutoCancellation($order);
+                        }
                     }
                     if (null !== $flowErrorMessage) {
                         getResursRequireSession();
@@ -4594,14 +4598,18 @@ function woocommerce_gateway_resurs_bank_init()
                         }
                     } else {
                         $logstr = sprintf(
-                            'No status update, criterias failed: currentRunningUser (%s), canAnnul: %s, canCredit: %s.',
+                            'Annul/Credit Criterias Check: ' .
+                            'currentRunningUser (%s), canAnnul: %s, canCredit: %s, isAnnulled: %s.',
                             $currentRunningUser,
                             $resursFlow->canAnnul($payment) ? 'true': 'false',
-                            $resursFlow->canCredit($payment) ? 'true':'false'
+                            $resursFlow->canCredit($payment) ? 'true':'false',
+                            $resursFlow->getIsAnnulled($payment) ? 'true':'false'
                         );
                         rbSimpleLogging($logstr);
-                        $order->add_order_note($logstr);
-                        $flowErrorMessage = setResursNoAutoCancellation($order);
+                        //$order->add_order_note($logstr);
+                        if (!$resursFlow->getIsAnnulled($payment)) {
+                            $flowErrorMessage = setResursNoAutoCancellation($order);
+                        }
                     }
                     if (null !== $flowErrorMessage) {
                         getResursRequireSession();
