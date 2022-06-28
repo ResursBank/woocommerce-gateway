@@ -1,3 +1,7 @@
+# 2.2.98 #
+
+* [WOO-676](https://resursbankplugins.atlassian.net/browse/WOO-676) Ändra DENIED-meddelande
+
 # 2.2.97 #
 
 * [WOO-659](https://resursbankplugins.atlassian.net/browse/WOO-659) Removing order lines from orders created by other methods than Resurs
