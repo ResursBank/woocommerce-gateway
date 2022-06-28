@@ -1262,7 +1262,7 @@ msgid "Payment can not complete. A problem with the signing url occurred. Contac
 msgstr "Ordren kan ikke gennemføres. Kontakt kundeservice for mere information."
 
 #: resursbankmain.php:2587 resursbankmain.php:3614 resursbankmain.php:3760
-msgid "The payment can not complete. Contact customer services for more information."
+msgid "The payment can not complete. Please choose another payment method."
 msgstr "Ordren kan ikke gennemføres. Kontakt kundeservice for mere information."
 
 #: resursbankmain.php:2600

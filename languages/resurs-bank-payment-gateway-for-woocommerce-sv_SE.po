@@ -1262,8 +1262,8 @@ msgid "Payment can not complete. A problem with the signing url occurred. Contac
 msgstr "Betalningen kan inte färdigställas. Ett problem med signeringen uppstod. Kontakta kundservice för mer information."
 
 #: resursbankmain.php:2587 resursbankmain.php:3614 resursbankmain.php:3760
-msgid "The payment can not complete. Contact customer services for more information."
-msgstr "Ordern kan inte slutföras. Kontakta kundservice för mer information."
+msgid "The payment can not complete. Please choose another payment method."
+msgstr "Ordern kan inte slutföras. Vänligen välj ett annat betalsätt."
 
 #: resursbankmain.php:2600
 msgid "An error occured during the update of the booked payment. The payment ID was never received properly in the payment process"

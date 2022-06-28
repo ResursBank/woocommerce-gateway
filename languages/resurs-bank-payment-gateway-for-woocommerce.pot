@@ -1497,7 +1497,7 @@ msgstr ""
 
 #: resursbankmain.php:2587 resursbankmain.php:3614 resursbankmain.php:3760
 msgid ""
-"The payment can not complete. Contact customer services for more information."
+"The payment can not complete. Please choose another payment method."
 msgstr ""
 
 #: resursbankmain.php:2600
