@@ -132,6 +132,12 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
+= 2.2.99 =
+
+* [WOO-667](https://resursbankplugins.atlassian.net/browse/WOO-667) finalizepayment no longer fires errors due to a fix in ecom
+* [WOO-665](https://resursbankplugins.atlassian.net/browse/WOO-665) kredit blir fel status completed
+* [WOO-662](https://resursbankplugins.atlassian.net/browse/WOO-662) Statusqueue issues
+
 = 2.2.98 =
 
 * [WOO-676](https://resursbankplugins.atlassian.net/browse/WOO-676) Ändra DENIED-meddelande

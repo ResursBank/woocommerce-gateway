@@ -1,3 +1,9 @@
+# 2.2.99 #
+
+* [WOO-667](https://resursbankplugins.atlassian.net/browse/WOO-667) finalizepayment no longer fires errors due to a fix in ecom
+* [WOO-665](https://resursbankplugins.atlassian.net/browse/WOO-665) kredit blir fel status completed
+* [WOO-662](https://resursbankplugins.atlassian.net/browse/WOO-662) Statusqueue issues
+
 # 2.2.98 #
 
 * [WOO-676](https://resursbankplugins.atlassian.net/browse/WOO-676) Ändra DENIED-meddelande
