@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Plugins - Resurs Bank Payment Gateway for WooCommerce - Stable Readme (latest release)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-01 07:57+0200\n"
+"PO-Revision-Date: 2022-08-01 08:08+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -19,8 +19,12 @@ msgid "Resurs Bank Payment Gateway for WooCommerce"
 msgstr "Resurs Bank betalningslösning för WooCommerce"
 
 #. Short description.
-msgid "Resurs Payment Gateway for WooCommerce."
-msgstr "Resurs Payment Gateway for WooCommerce."
+msgid "Resurs Bank Payment Gateway for WooCommerce."
+msgstr "Resurs Bank Payment Gateway for WooCommerce."
+
+#. Found in installation paragraph.
+msgid "If you have a FTP-client or similar, make sure to give this path write-access for at least your webserver."
+msgstr "Om du har en FTP-klient eller liknande, se till att ge den här sökvägen skrivåtkomst för åtminstone din webbserver."
 
 #. Found in description paragraph.
 msgid "The plugin <strong>do</strong> support WordPress networks (aka multisite), however it does not support running one webservice account over many sites at once. The main rule that Resurs works with is that one webservice account only works for one site. Running multiple sites do <strong>require</strong> multiple webservice accounts!"
@@ -53,10 +57,6 @@ msgstr "<a href=\"https://test.resurs.com/docs/display/ecom/Simplified+Flow+API\
 #. Found in description header.
 msgid "Supported shop flows"
 msgstr "Butiksflöden som stöds"
-
-#. Found in installation paragraph.
-msgid "If you have a FTP-client or similar, make sure to give this path write-access for at least your webserver. If you know what you are doing you should limit this the access for proper user setup on your web server."
-msgstr "Om du har ett FTP-program eller liknande, försäkra dig om att ge denna katalogplatsen särskilda skrivbehörigheter för åtminstone din webserver."
 
 #. Found in installation paragraph.
 msgid ""
@@ -213,7 +213,7 @@ msgstr "Kan jag uppgradera WooCommerce med erat plugin installerat?"
 
 #. Found in installation paragraph.
 msgid "As of v2.2.12, we do support SWISH and similar \"instant debitable\" payment methods, where payments tend to be finalized/debited long before shipping has been made. You can read more about it <a href=\"https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12\">here</a>."
-msgstr "Från och med v2.2.12 stöder vi SWISH och liknande \"omedelbara debiterbara\" betalningsmetoder, där betalningar tenderar att slutföras / debiteras långt innan frakt har gjorts. Du kan läsa mer om det <a href=\"https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12\">här</a>"
+msgstr "Från och med v2.2.12 stöder vi SWISH och liknande \"omedelbara debiterbara\" betalningsmetoder, där betalningar tenderar att slutföras / debiteras långt innan frakt har gjorts. Du kan läsa mer om det <a href=\"https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12\">här</a>."
 
 #. Found in description header.
 msgid "About"
@@ -253,7 +253,7 @@ msgstr "(Eller installera och aktivera tillägget via WordPress plugin-installat
 
 #. Found in installation list item.
 msgid "Configure the plugin via admin control panel."
-msgstr "Konfigurera tillägget via kontrollpanelen"
+msgstr "Konfigurera tillägget via kontrollpanelen."
 
 #. Found in installation list item.
 msgid "Activate the plugin through the \"Plugins\" menu in WordPress."
@@ -262,6 +262,14 @@ msgstr "Aktivera tillägget via menyn \"Plugins\" i WordPress."
 #. Found in installation list item.
 msgid "Upload the plugin archive to the \"/wp-content/plugins/\" directory."
 msgstr "Ladda upp tilläggspaketet till katalogen \"/wp-content/plugins/\"."
+
+#. Found in changelog list item.
+msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-665\">WOO-665</a> kredit blir fel status completed"
+msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-665\">WOO-665</a> kredit blir fel status completed"
+
+#. Found in changelog list item.
+msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-667\">WOO-667</a> finalizepayment no longer fires errors due to a fix in ecom"
+msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-667\">WOO-667</a> slutförabetalning avfyrar inte längre fel på grund av en fix i ecom"
 
 #. Found in changelog list item.
 msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-676\">WOO-676</a> Ändra DENIED-meddelande"
@@ -278,6 +286,10 @@ msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-637\">WOO-6
 #. Found in changelog paragraph.
 msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-636\">WOO-636</a> WP &#043; Woo tested up to..."
 msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-636\">WOO-636</a> WP + Woo testade upp till ..."
+
+#. Found in changelog list item.
+msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-662\">WOO-662</a> Statusqueue issues"
+msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-662\">WOO-662</a> Statusqueue-problem"
 
 #. Found in changelog paragraph.
 msgid "For a full list of changes, <a href=\"https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md\">look here</a> - CHANGELOG.md is also included in this package."
