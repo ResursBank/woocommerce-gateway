@@ -9,7 +9,7 @@ License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC Tested up to: 5.8.0
 
-Resurs Payment Gateway for WooCommerce.
+Resurs Bank Payment Gateway for WooCommerce.
 
 == Description ==
 
@@ -89,7 +89,7 @@ This path has to be write-accessible for your web server or the plugin won't wor
 
     chmod a+rw <wp-root>/wp-content/plugin/resurs-bank-payment-gateway-for-woocommerce/includes
 
-If you have a FTP-client or similar, make sure to give this path write-access for at least your webserver. If you know what you are doing you should limit this the access for proper user setup on your web server.
+If you have a FTP-client or similar, make sure to give this path write-access for at least your webserver.
 
 = Upgrading =
 
