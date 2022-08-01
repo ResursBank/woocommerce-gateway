@@ -2269,7 +2269,7 @@ function woocommerce_gateway_resurs_bank_init()
                     update_post_meta($order_id, 'orderDenied', true);
                     wc_add_notice(
                         __(
-                            'The payment can not complete. Contact customer services for more information.',
+                            'The payment can not complete. Please choose another payment method.',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'error'
@@ -3295,7 +3295,7 @@ function woocommerce_gateway_resurs_bank_init()
                 $order->update_status('failed');
                 wc_add_notice(
                     __(
-                        'The payment can not complete. Contact customer services for more information.',
+                        'The payment can not complete. Please choose another payment method.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'error'
@@ -3440,7 +3440,7 @@ function woocommerce_gateway_resurs_bank_init()
                     update_post_meta($order_id, 'orderDenied', true);
                     wc_add_notice(
                         __(
-                            'The payment can not complete. Contact customer services for more information.',
+                            'The payment can not complete. Please choose another payment method.',
                             'resurs-bank-payment-gateway-for-woocommerce'
                         ),
                         'error'
