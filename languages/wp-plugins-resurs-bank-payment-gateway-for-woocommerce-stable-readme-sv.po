@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Plugins - Resurs Bank Payment Gateway for WooCommerce - Stable Readme (latest release)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-01 07:43+0200\n"
+"PO-Revision-Date: 2022-08-01 07:57+0200\n"
 "Last-Translator: Tomas Tornevall <thorne@tornevall.net>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -16,7 +16,7 @@ msgstr ""
 
 #. Plugin name.
 msgid "Resurs Bank Payment Gateway for WooCommerce"
-msgstr "Resurs Bank AB betalningslösning för WooCommerce"
+msgstr "Resurs Bank betalningslösning för WooCommerce"
 
 #. Short description.
 msgid "Resurs Payment Gateway for WooCommerce."
@@ -165,12 +165,18 @@ msgid ""
 "Also, <a href=\"https://wordpress.org/news/2019/04/minimum-php-version-update/\">read here</a> for information about lower versions\n"
 "of PHP. Syntax for this release is written for releases lower than 7.0"
 msgstr ""
+"PHP: <a href=\"https://docs.woocommerce.com/document/server-requirements/\">Ta en titta här</a> för att hänga med i supporten. Från och med augusti\n"
+"2021, är WooCommerce på väg att gå upp i version 7.4 eller högre.\n"
+"Se även <a href=\"https://wordpress.org/news/2019/04/minimum-php-version-update/\">här</a> för att få information om lägre versioner\n"
+"av PHP. Syntaxen för denna releasen, är skriven för lägre releaser än 7.0"
 
 #. Found in description list item.
 msgid ""
 "WordPress: Preferably at least v5.5. It has supported, and probably will, older releases but it is highly\n"
 "recommended to go for the latest version as soon as possible if you're not already there."
 msgstr ""
+"WordPress: Helst minst v5.5. Det stödjer äldre och kommer förmodligen fortsätta göra det, men det är starkt\n"
+"rekommenderat att gå till den senaste versionen så snart som möjligt om du inte redan är där."
 
 #. Found in description header.
 msgid "Compatibility and requirements"
@@ -178,13 +184,15 @@ msgstr "Kompatibilitet och krav"
 
 #. Found in description list item.
 msgid "<strong>Required</strong>: <a href=\"https://php.net/manual/en/class.soapclient.php\">SoapClient</a> with xml drivers."
-msgstr ""
+msgstr "<strong>Krävs</strong>: <a href=\"https://php.net/manual/en/class.soapclient.php\">SoapClient</a> med xml-drivrutiner och tillägg."
 
 #. Found in description paragraph.
 msgid ""
 "When developing the plugin for Woocommerce, we usually follow the versions for WooCommerce and always upgrading when\n"
 "there are new versions out. That said, it is <strong>normally</strong> also safe to upgrade to the latest woocommerce."
 msgstr ""
+"När vi utvecklar plugin för Woocommerce följer vi vanligtvis versionerna för WooCommerce och uppgraderar alltid när\n"
+"det finns nya versioner ute. Med det sagt, så är det <strong>normalt</strong> sett också säkert att uppgradera till den senaste woocommerce-versionen."
 
 #. Found in description header.
 msgid "Upgrade notice"
@@ -196,14 +204,16 @@ msgid ""
 "changes (after internal tests has been made) to match the base requirements, so you can upgrade without upgrade\n"
 "warnings."
 msgstr ""
+"Om du är osäker på uppgraderingar, ta en titt på resursbankgateway.php under \"WC Tested up to\". Det avsnittet brukar\n"
+"ändras (efter att interna tester har gjorts) för att matcha baskraven, så att du kan uppgradera utan uppgraderingsvarningar."
 
 #. Found in description header.
 msgid "Can I upgrade WooCommerce with your plugin installed?"
-msgstr ""
+msgstr "Kan jag uppgradera WooCommerce med erat plugin installerat?"
 
 #. Found in installation paragraph.
 msgid "As of v2.2.12, we do support SWISH and similar \"instant debitable\" payment methods, where payments tend to be finalized/debited long before shipping has been made. You can read more about it <a href=\"https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12\">here</a>."
-msgstr ""
+msgstr "Från och med v2.2.12 stöder vi SWISH och liknande \"omedelbara debiterbara\" betalningsmetoder, där betalningar tenderar att slutföras / debiteras långt innan frakt har gjorts. Du kan läsa mer om det <a href=\"https://test.resurs.com/docs/display/ecom/CHANGELOG+-+WooCommerce#CHANGELOG-WooCommerce-2.2.12\">här</a>"
 
 #. Found in description header.
 msgid "About"
@@ -211,19 +221,19 @@ msgstr "Om"
 
 #. Found in description list item.
 msgid "<strong>Included</strong> <a href=\"https://test.resurs.com/docs/x/TYNM\">EComPHP</a> (Bundled vendor) <a href=\"https://bitbucket.org/resursbankplugins/resurs-ecomphp.git\">Bitbucket</a>"
-msgstr ""
+msgstr "<strong>Inkluderat</strong> <a href=\"https://test.resurs.com/docs/x/TYNM\">EComPHP</a> (Paketerad vendor) <a href=\"https://bitbucket.org/resursbankplugins/resurs-ecomphp.git\">Bitbucket</a>"
 
 #. Found in installation paragraph.
 msgid "When upgrading the plugin via WordPress plugin manager, make sure that you payment methods are still there. If you are unsure, just visit the configuration panel for Resurs once after upgrading since, the plugin are rewriting files if they are missing."
-msgstr ""
+msgstr "När du uppgraderar tillägget via WordPress plugin manager, se till att dina betalningsmetoder fortfarande finns kvar. Om du är osäker är det bara att besöka konfigurationspanelen för Resurs en gång efter uppgraderingen eftersom detta kommer skriva om de filer som saknas."
 
 #. Found in description paragraph.
 msgid "Want to add a new language to this plugin? You can contribute via <a href=\"https://translate.wordpress.org/projects/wp-plugins/resurs-bank-payment-gateway-for-woocommerce\">translate.wordpress.org</a>."
-msgstr ""
+msgstr "Vill du lägga till ett nytt språk i det här tillägget? Du kan bidra via <a href=\"https://translate.wordpress.org/projects/wp-plugins/resurs-bank-payment-gateway-for-woocommerce\">translate.wordpress.org</a>."
 
 #. Found in description paragraph.
 msgid "Do you think there are ways to make our plugin even better? Join our project for woocommerce at <a href=\"https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce\">Bitbucket</a>"
-msgstr ""
+msgstr "Tror du att det finns sätt att göra vårt plugin ännu bättre? Gå med i vårt projekt för woocommerce på <a href=\"https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce\">Bitbucket</a>"
 
 #. Found in description header.
 msgid "Contribute"
@@ -235,39 +245,39 @@ msgstr "Uppgradera"
 
 #. Found in description paragraph.
 msgid "<a href=\"https://test.resurs.com/docs/display/ecom/WooCommerce\">Project URL</a> - <a href=\"https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/\">Plugin URL</a>"
-msgstr ""
+msgstr "<a href=\"https://test.resurs.com/docs/display/ecom/WooCommerce\">Projekt-URL</a> - <a href=\"https://wordpress.org/plugins/resurs-bank-payment-gateway-for-woocommerce/\">URL för plugin</a>"
 
 #. Found in installation paragraph.
 msgid "(Or install and activate the plugin through the WordPress plugin installer)"
-msgstr ""
+msgstr "(Eller installera och aktivera tillägget via WordPress plugin-installation)"
 
 #. Found in installation list item.
 msgid "Configure the plugin via admin control panel."
-msgstr ""
+msgstr "Konfigurera tillägget via kontrollpanelen"
 
 #. Found in installation list item.
 msgid "Activate the plugin through the \"Plugins\" menu in WordPress."
-msgstr ""
+msgstr "Aktivera tillägget via menyn \"Plugins\" i WordPress."
 
 #. Found in installation list item.
 msgid "Upload the plugin archive to the \"/wp-content/plugins/\" directory."
-msgstr ""
+msgstr "Ladda upp tilläggspaketet till katalogen \"/wp-content/plugins/\"."
 
 #. Found in changelog list item.
 msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-676\">WOO-676</a> Ändra DENIED-meddelande"
-msgstr ""
+msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-676\">WOO-676</a> Ändra DENIED-meddelande"
 
 #. Found in changelog paragraph.
 msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-659\">WOO-659</a> Removing order lines from orders created by other methods than Resurs"
-msgstr ""
+msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-659\">WOO-659</a> Ta bort orderrader från order som skapats med andra metoder än Resurs"
 
 #. Found in changelog paragraph.
 msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-637\">WOO-637</a> Purchase-Overlay are shown by mistake in some themes"
-msgstr ""
+msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-637\">WOO-637</a> Purchase-Overlay visas av misstag i vissa teman"
 
 #. Found in changelog paragraph.
 msgid "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-636\">WOO-636</a> WP &#043; Woo tested up to..."
-msgstr ""
+msgstr "<a href=\"https://resursbankplugins.atlassian.net/browse/WOO-636\">WOO-636</a> WP + Woo testade upp till ..."
 
 #. Found in changelog paragraph.
 msgid "For a full list of changes, <a href=\"https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md\">look here</a> - CHANGELOG.md is also included in this package."
