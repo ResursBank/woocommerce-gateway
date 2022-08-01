@@ -1212,7 +1212,7 @@ if (!function_exists('write_resurs_class_to_file')) {
                 \$post_data = isset(\$_REQUEST['post_data']) ? rbSplitPostData(\$_REQUEST['post_data']) : [];
                 if (isset(WC()->session) && isset(\$post_data['ssnCustomerType'])) {
                     \$cType = \$post_data['ssnCustomerType'];
-                    rbSimpleLogging('CustomerType set from session: ' . \$cType);
+                    //rbSimpleLogging('CustomerType set from session: ' . \$cType);
                     WC()->session->set('ssnCustomerType', \$cType);
                     \$globalCustomerType = \$cType;
                 }

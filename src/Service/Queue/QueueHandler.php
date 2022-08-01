@@ -3,6 +3,7 @@
 namespace Resurs\WooCommerce\Service\Queue;
 
 use TorneLIB\IO\Data\Strings;
+use WC_Order;
 use WC_Queue_Interface;
 
 /**
@@ -32,27 +33,28 @@ class QueueHandler
     /**
      * Order status helper.
      *
-     * @param int $orderId
-     * @param string $status
-     * @param string $notice
+     * @param mixed $orderId
+     * @param string $resursId
      * @since Imported.
      */
-    public static function setOrderStatusWithNotice(int $orderId, string $status, string $notice)
+    public static function setOrderStatusWithNotice(int $orderId, string $resursId)
     {
-        resursEventLogger(
+        if ($orderId instanceof WC_Order) {
+            $orderId = $orderId->get_id();
+        }
+
+        rbSimpleLogging(
             sprintf(
-                'Order status update for id %d, queued %s, notice: %s',
+                'Order status update for id %d (Resurs ID %s) queued.',
                 $orderId,
-                $status,
-                $notice
+                $resursId
             )
         );
         self::applyQueue(
             'resursbank_update_queued_status',
             [
                 $orderId,
-                $status,
-                $notice,
+                $resursId
             ]
         );
     }

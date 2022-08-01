@@ -1,5 +1,6 @@
 <?php
 
+use Resursbank\Ecommerce\Types\OrderStatus;
 use Resursbank\RBEcomPHP\ResursBank;
 use TorneLIB\Module\Network\NetWrapper;
 use TorneLIB\Utils\Generic;
@@ -680,31 +681,164 @@ function resursExpectVersions()
  * Queued status handler. Should not be called directly as it is based on WC_Queue.
  *
  * @param int $orderId
- * @param string $status
- * @param string $notice
+ * @param mixed $resursId
  * @since Imported
  * @see https://github.com/woocommerce/woocommerce/wiki/WC_Queue---WooCommerce-Worker-Queue
  * @see https://github.com/Tornevall/wpwc-resurs/commit/6a7e44f5cdeb24a59c9b0e8fa3f2150b9f598e5c
  */
-function updateQueuedOrderStatus(int $orderId, string $status, string $notice)
+function updateQueuedOrderStatus(int $orderId, $resursId)
 {
-    if ($orderId && !empty($status)) {
+    if ($orderId && !empty($resursId)) {
         try {
-            $properOrder = new WC_Order($orderId);
-            $currentStatus = $properOrder->get_status();
-            if ($currentStatus !== $status) {
-                $properOrder->update_status(
-                    $status,
-                    $notice
-                );
-                do_action('resurs_bank_order_status_update', $orderId, $status);
+            if ($orderId instanceof WC_Order) {
+                $orderId = $orderId->get_id();
             }
-            rbSimpleLogging('Update queued order ' . $orderId . ' with status ' . $status . '.');
-            rbSimpleLogging('Order note for ' . $orderId . ': ' . $notice);
+
+            $properOrder = new WC_Order($orderId);
+
+            $flow = initializeResursFlow();
+            $paymentStatusList = rb_order_status_array();
+            /** @var int $suggestedStatus */
+            $suggestedStatus = $flow->getOrderStatusByPayment(
+                $resursId
+            );
+            $suggestedString = $flow->getOrderStatusStringByReturnCode($suggestedStatus);
+            $currentStatus = $properOrder->get_status();
+
+            rbSimpleLogging(
+                'Payment Status List:'
+            );
+            rbSimpleLogging(print_r($paymentStatusList, true));
+            rbSimpleLogging(
+                sprintf(
+                    'updateQueuedOrderStatus for %d (%s), suggested: %s (%s), current is %s.',
+                    $orderId,
+                    $resursId,
+                    $suggestedStatus,
+                    $suggestedString,
+                    $currentStatus
+                )
+            );
+
+            if ($currentStatus === $suggestedStatus) {
+                $alreadySetString = __(
+                    '[Resurs Bank] Update order request ignored since the suggested status is already set.'
+                );
+                rbSimpleLogging($alreadySetString);
+                $properOrder->add_order_note($alreadySetString);
+                return;
+            }
+
+            switch (true) {
+                case $suggestedStatus & OrderStatus::PENDING:
+                    $properOrder->update_status(
+                        $paymentStatusList[OrderStatus::PENDING],
+                        sprintf(
+                            '[Resurs Bank] Queued order status updated to %s.',
+                            $suggestedString
+                        )
+                    );
+                    break;
+                case $suggestedStatus & OrderStatus::PROCESSING:
+                    if (isResursFrozenNote($resursId, $properOrder, true)) {
+                        break;
+                    }
+                    $properOrder->update_status(
+                        $paymentStatusList[OrderStatus::PROCESSING],
+                        sprintf(
+                            '[Resurs Bank] Queued order status updated to %s.',
+                            $suggestedString
+                        )
+                    );
+                    break;
+                case $suggestedStatus & OrderStatus::CREDITED:
+                    $properOrder->update_status(
+                        $paymentStatusList[OrderStatus::CREDITED],
+                        sprintf(
+                            '[Resurs Bank] Queued order status updated to %s.',
+                            $suggestedString
+                        )
+                    );
+                    break;
+                case $suggestedStatus & OrderStatus::ANNULLED:
+                    rbSimpleLogging(
+                        sprintf(
+                            'Resurs Bank annulled order %s.',
+                            $properOrder->get_id()
+                        )
+                    );
+
+                    $properOrder->update_status(
+                        $paymentStatusList[OrderStatus::ANNULLED],
+                        __(
+                            'Resurs Bank annulled the order',
+                            'resurs-bank-payment-gateway-for-woocommerce'
+                        )
+                    );
+                    break;
+                case $suggestedStatus & (OrderStatus::COMPLETED | OrderStatus::AUTO_DEBITED):
+                    if (isResursFrozenNote($resursId, $properOrder, true)) {
+                        break;
+                    }
+                    if ($suggestedStatus & (OrderStatus::AUTO_DEBITED)) {
+                        $autoDebitStatus = getResursOption('autoDebitStatus');
+                        if ($autoDebitStatus === 'default' || empty($autoDebitStatus)) {
+                            $properOrder->update_status(
+                                $paymentStatusList[OrderStatus::COMPLETED],
+                                sprintf(
+                                    '[Resurs Bank] Queued order status updated to %s.',
+                                    $suggestedString
+                                )
+                            );
+                        } else {
+                            $properOrder->update_status(
+                                $autoDebitStatus,
+                                sprintf(
+                                    '[Resurs Bank] Queued order status updated to %s.',
+                                    $suggestedString
+                                )
+                            );
+                        }
+                    } else {
+                        $properOrder->update_status(
+                            $paymentStatusList[OrderStatus::COMPLETED],
+                            sprintf(
+                                '[Resurs Bank] Queued order status updated to %s.',
+                                $suggestedString
+                            )
+                        );
+                    }
+
+                    break;
+                default:
+                    break;
+            }
         } catch (Exception $e) {
             rbSimpleLogging(print_r($e, true));
         }
     }
+}
+
+/**
+ * The dumb way to avoid duplicate code for ordernotes when orders are frozem.
+ * @param $resursId
+ * @param $properOrder
+ * @param $ignoreFrozen
+ * @return bool
+ * @throws Exception
+ */
+function isResursFrozenNote($resursId, $properOrder, $ignoreFrozen) {
+    $return = false;
+    $flow = initializeResursFlow();
+    if ($ignoreFrozen && $flow->isFrozen($resursId)) {
+        $properOrder->add_order_note(
+            __(
+                '[Resurs Bank] Update order request ignored due to frozen status.'
+            )
+        );
+        $return = true;
+    }
+    return $return;
 }
 
 /**
@@ -723,6 +857,23 @@ function updateResursOrderStatusActions($orderId, $status)
             );
         }
     }
+}
+
+/**
+ * @return array
+ */
+function rb_order_status_array()
+{
+    $autoFinalizationString = getResursOption('autoDebitStatus');
+    return [
+        OrderStatus::PROCESSING => 'processing',
+        OrderStatus::CREDITED => 'refunded',
+        OrderStatus::COMPLETED => 'completed',
+        OrderStatus::AUTO_DEBITED => $autoFinalizationString !== 'default' ? $autoFinalizationString : 'completed',
+        OrderStatus::PENDING => 'on-hold',
+        OrderStatus::ANNULLED => 'cancelled',
+        OrderStatus::ERROR => 'on-hold',
+    ];
 }
 
 /**
@@ -824,5 +975,5 @@ function resursHasNoMethods($message) {
 add_filter('woocommerce_cancel_unpaid_order', 'getResursUnpaidCancellationControl', 10, 2);
 add_filter('resursbank_start_session_before', 'resurs20StartSession');
 add_filter('resursbank_start_session_outside_admin_only', 'resurs20StartSessionAdmin');
-add_action('resursbank_update_queued_status', 'updateQueuedOrderStatus', 10, 3);
+add_action('resursbank_update_queued_status', 'updateQueuedOrderStatus', 10, 2);
 add_action('resurs_bank_order_status_update', 'updateResursOrderStatusActions', 10, 2);
