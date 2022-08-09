@@ -4220,6 +4220,35 @@ function woocommerce_gateway_resurs_bank_init()
         }
 
         /**
+         * @param $orderId
+         * @param $wcThis
+         * @return void
+         */
+        public static function order_status_completed($orderId, $wcThis)
+        {
+            $rbOrderId = wc_get_payment_id_by_order_id($orderId);
+            if (!empty($rbOrderId)) {
+                $canIgnoreFrozen = (bool)get_post_meta($orderId, 'ignore_frozen', true);
+
+                try {
+                    $ecomRequest = initializeResursFlow();
+                    $findEcom = $ecomRequest->getPayment($rbOrderId);
+                } catch (Exception $e) {
+                    // If we land in this, something went wrong in the order check and we can probably
+                    // skip the other controls.
+                    return;
+                }
+
+                // Check if order is frozen and put it on hold if true.
+                if (!$canIgnoreFrozen && $ecomRequest->isFrozen($findEcom)) {
+                    $wcThis->set_status('on-hold');
+                    $wcThis->save();
+                    throw new Exception('Payment is in frozen state. Can not finalize!', 999);
+                }
+            }
+        }
+
+        /**
          * Called when the status of an order is changed
          *
          * @param int $order_id The order id
@@ -4361,7 +4390,11 @@ function woocommerce_gateway_resurs_bank_init()
                     break;
                 case 'completed':
                     $flowErrorMessage = '';
-                    if ($resursFlow->canDebit($payment) || $resursFlow->isFrozen($payment)) {
+
+                    $canIgnoreFrozen = (bool)get_post_meta($order_id, 'ignore_frozen', true);
+                    $isFrozen = $resursFlow->isFrozen($payment);
+
+                    if ($resursFlow->canDebit($payment) || $isFrozen) {
                         try {
                             /**
                              * Full-Finalize orders with getPayment()-validation if status is
@@ -4390,7 +4423,7 @@ function woocommerce_gateway_resurs_bank_init()
                             );
                             // Checking frozen status here, instead so that we can use the prior natural flow
                             // for bad finalizations.
-                            if (!$resursFlow->isFrozen($payment)) {
+                            if (!$isFrozen) {
                                 $successFinalize = $resursFlow->paymentFinalize(
                                     $payment_id,
                                     null,
@@ -4398,7 +4431,18 @@ function woocommerce_gateway_resurs_bank_init()
                                     $customFinalize
                                 );
                             } else {
-                                throw new Exception('Payment is in frozen state. Can not finalize!', 999);
+                                if (!$canIgnoreFrozen) {
+                                    QueueHandler::setOrderStatusWithNotice($order->get_id(), $payment_id);
+                                    throw new Exception('Payment is in frozen state. Can not finalize!', 999);
+                                }
+                                $emergencyString = sprintf(
+                                    'Emergency Mode: Order status for %s is set to be allowed to be ' .
+                                    'changed, via ignore_frozen meta data, despite the frozen state.',
+                                    $payment_id
+                                );
+                                rbSimpleLogging($emergencyString);
+                                $order->add_order_note($emergencyString);
+                                break;
                             }
                             rbSimpleLogging(print_r($payment, true));
                             rbSimpleLogging(
@@ -4535,9 +4579,9 @@ function woocommerce_gateway_resurs_bank_init()
                             'Annul/Credit Criterias Check: ' .
                             'currentRunningUser (%s), canAnnul: %s, canCredit: %s, isAnnulled: %s.',
                             $currentRunningUser,
-                            $resursFlow->canAnnul($payment) ? 'true': 'false',
-                            $resursFlow->canCredit($payment) ? 'true':'false',
-                            $resursFlow->getIsAnnulled($payment) ? 'true':'false'
+                            $resursFlow->canAnnul($payment) ? 'true' : 'false',
+                            $resursFlow->canCredit($payment) ? 'true' : 'false',
+                            $resursFlow->getIsAnnulled($payment) ? 'true' : 'false'
                         );
                         rbSimpleLogging($logstr);
                         //$order->add_order_note($logstr);
@@ -4601,9 +4645,9 @@ function woocommerce_gateway_resurs_bank_init()
                             'Annul/Credit Criterias Check: ' .
                             'currentRunningUser (%s), canAnnul: %s, canCredit: %s, isAnnulled: %s.',
                             $currentRunningUser,
-                            $resursFlow->canAnnul($payment) ? 'true': 'false',
-                            $resursFlow->canCredit($payment) ? 'true':'false',
-                            $resursFlow->getIsAnnulled($payment) ? 'true':'false'
+                            $resursFlow->canAnnul($payment) ? 'true' : 'false',
+                            $resursFlow->canCredit($payment) ? 'true' : 'false',
+                            $resursFlow->getIsAnnulled($payment) ? 'true' : 'false'
                         );
                         rbSimpleLogging($logstr);
                         //$order->add_order_note($logstr);
@@ -5665,6 +5709,7 @@ function woocommerce_gateway_resurs_bank_init()
     add_filter('woocommerce_available_payment_gateways', 'woocommerce_resurs_bank_available_payment_gateways');
     add_filter('woocommerce_before_checkout_billing_form', 'add_ssn_checkout_field');
     add_action('woocommerce_order_status_changed', 'WC_Resurs_Bank::order_status_changed', 10, 3);
+    add_action('woocommerce_order_status_completed', 'WC_Resurs_Bank::order_status_completed', 10, 3);
     add_action('wp_enqueue_scripts', 'enqueue_script', 0);
     add_action('admin_enqueue_scripts', 'admin_enqueue_script');
     add_action('wp_ajax_get_address_ajax', 'WC_Resurs_Bank::get_address_ajax');
