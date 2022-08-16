@@ -6080,11 +6080,21 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 ';
 
                 $addressInfo = '';
+                $deliveryInfo = '';
                 if (!empty($resursPaymentInfo) && is_object($resursPaymentInfo->customer->address)) {
                     $addressInfo .= isset($resursPaymentInfo->customer->address->addressRow1) && !empty($resursPaymentInfo->customer->address->addressRow1) ? $resursPaymentInfo->customer->address->addressRow1 . "\n" : '';
                     $addressInfo .= isset($resursPaymentInfo->customer->address->addressRow2) && !empty($resursPaymentInfo->customer->address->addressRow2) ? $resursPaymentInfo->customer->address->addressRow2 . "\n" : '';
                     $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : '';
                     $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : '') . ' ' . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : '') . "\n";
+                }
+                if (!empty($resursPaymentInfo) && is_object($resursPaymentInfo->deliveryAddress)) {
+                    $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->addressRow1) && !empty($resursPaymentInfo->deliveryAddress->addressRow1) ? $resursPaymentInfo->deliveryAddress->addressRow1 . "\n" : '';
+                    $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->addressRow2) && !empty($resursPaymentInfo->deliveryAddress->addressRow2) ? $resursPaymentInfo->deliveryAddress->addressRow2 . "\n" : '';
+                    $deliveryInfo .= isset($resursPayme§ntInfo->deliveryAddress->postalArea) && !empty($resursPaymentInfo->deliveryAddress->postalArea) ? $resursPaymentInfo->deliveryAddress->postalArea . "\n" : '';
+                    $deliveryInfo .= (isset($resursPaymentInfo->deliveryAddress->country) && !empty($resursPaymentInfo->deliveryAddress->country) ? $resursPaymentInfo->deliveryAddress->country : '') . ' ' . (isset($resursPaymentInfo->deliveryAddress->postalCode) && !empty($resursPaymentInfo->deliveryAddress->postalCode) ? $resursPaymentInfo->deliveryAddress->postalCode : '') . "\n";
+                } else {
+                    // No delivery set? Use billing.
+                    $deliveryInfo = $addressInfo;
                 }
 
                 ThirdPartyHooksSetPaymentTrigger('orderinfo', $resursPaymentId, $order->get_id());
@@ -6100,6 +6110,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     'fraud',
                     'frozen',
                     'customer',
+                    'deliveryAddress',
                     'paymentDiffs',
                 ];
 
@@ -6190,25 +6201,28 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     !empty($resursPaymentInfo->frozen) ?
                         $resursPaymentInfo->frozen ? __('Yes') : __('No') : __('No')
                     ) . '</span>
-
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
                     __(
                         'Customer name',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ) . ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                    (
-                    is_object($resursPaymentInfo->customer->address) &&
+                    (is_object($resursPaymentInfo->customer->address) &&
                     !empty($resursPaymentInfo->customer->address->fullName) ?
                         $resursPaymentInfo->customer->address->fullName : ''
                     ) . '</span>
-
+                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
+                    __('Billing address', 'resurs-bank-payment-gateway-for-woocommerce') .
+                    ':</span>
+                    <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
+                    (!empty($addressInfo) ? nl2br($addressInfo) : '') . '</span>
+                    </span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_label">' .
                     __('Delivery address', 'resurs-bank-payment-gateway-for-woocommerce') .
                     ':</span>
                     <span class="wc-order-status label resurs_orderinfo_text resurs_orderinfo_text_value">' .
-                    (!empty($addressInfo) ? nl2br($addressInfo) : '') . '</span>
-            ';
+                    (!empty($deliveryInfo) ? nl2br($deliveryInfo) : '') . '</span>
+                    ';
             }
 
             $continueView = $resursPaymentInfo;
