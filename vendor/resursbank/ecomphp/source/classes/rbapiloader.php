@@ -74,7 +74,7 @@ if (!defined('ECOMPHP_VERSION')) {
     define('ECOMPHP_VERSION', (new Generic())->getVersionByAny(__FILE__, 3, ResursBank::class));
 }
 if (!defined('ECOMPHP_MODIFY_DATE')) {
-    define('ECOMPHP_MODIFY_DATE', '20220503');
+    define('ECOMPHP_MODIFY_DATE', '20220926');
 }
 
 /**
@@ -85,7 +85,7 @@ if (!defined('ECOMPHP_MODIFY_DATE')) {
 /**
  * Class ResursBank
  * @package Resursbank\RBEcomPHP
- * @version 1.3.85
+ * @version 1.3.86
  */
 class ResursBank
 {
@@ -4037,6 +4037,8 @@ class ResursBank
     }
 
     /**
+     * Rest based request for getPayment. Stopped use it from 1.3.45, but is not set to deprecated.
+     *
      * @param string $paymentId
      * @return stdClass
      * @throws ResursException
@@ -4044,7 +4046,6 @@ class ResursBank
      * @since 1.3.13
      * @since 1.1.40
      * @since 1.0.40
-     * @deprecated Since 1.3.45, use the auto selective method (getPayment) instead.
      */
     public function getPaymentByRest($paymentId = '')
     {
@@ -5258,8 +5259,8 @@ class ResursBank
             $cardInfo = isset($this->Payload['card']) ? $this->Payload['card'] : [];
             if ((isset($cardInfo['cardNumber']) && empty($cardInfo['cardNumber'])) || !isset($cardInfo['cardNumber'])) {
                 if ((isset($cardInfo['amount']) && empty($cardInfo['amount'])) || !isset($cardInfo['amount'])) {
-                    // Adding the exact total amount as we do not rule of exchange rates. For example, adding 500
-                    // extra to the total amount in sweden will work, but will on the other hand be devastating for
+                    // Adding the exact total amount, as we do not rule of exchange rates. For example, adding 500
+                    // extra to the total amount in Sweden will work, but will on the other hand be devastating for
                     // countries using euro.
                     $this->Payload['card']['amount'] = $this->Payload['orderData']['totalAmount'];
                 }
@@ -6181,12 +6182,43 @@ class ResursBank
      */
     public function bookSignedPayment($paymentId = '')
     {
-        return $this->postService('bookSignedPayment', ['paymentId' => $paymentId]);
+        try {
+            $return = $this->postService('bookSignedPayment', ['paymentId' => $paymentId]);
+        } catch (Exception $e) {
+            // ECOMPHP-453
+            // Protective layer for false sign-failures from Resurs. This kind of exceptions may occur on some
+            // payments where there is a delay between the booking customer and the final booked signing.
+            // This is more common on SWISH payments where the signing occurs several hours after the
+            // planned order placement, where sessions times, the payment is still valid but Resurs - during
+            // bookSign - can no longer find the valid order.
+            try {
+                $this->timeoutControl($e);
+
+                // Note: We can not handle timeout checks in this section as it may break the rest of the flow.
+
+                $errorValidatePayment = $this->getPayment($paymentId);
+                $useStatus = $errorValidatePayment->frozen || $errorValidatePayment->fraud ? 'FROZEN' : 'BOOKED';
+                if ($this->canCredit($errorValidatePayment) && $this->getIsDebited()) {
+                    $useStatus = 'FINALIZED';
+                }
+                $return = new stdClass();
+                $return->paymentId = $paymentId;
+                $return->bookPaymentStatus = $useStatus;
+                $return->signingUrl = null;
+                $return->approvedAmount = $errorValidatePayment->limit;
+                $return->customer= isset($errorValidatePayment->customer) ? $errorValidatePayment->customer : null;
+            } catch (Exception $getPaymentException) {
+                throw $e;
+            }
+        }
+
+        return $return;
     }
 
     /**
      * @return string
      * @throws Exception
+     * @noinspection PhpDeprecationInspection
      */
     public function getOrderLineHash()
     {

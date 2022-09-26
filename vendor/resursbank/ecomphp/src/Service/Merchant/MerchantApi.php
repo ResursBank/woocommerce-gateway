@@ -10,6 +10,7 @@ namespace Resursbank\Ecommerce\Service\Merchant;
 use Exception;
 use Resursbank\Ecommerce\Service\Merchant\Api\getPaymentMethodsResponse;
 use Resursbank\Ecommerce\Service\Merchant\Model\PaymentMethods;
+use RuntimeException;
 use TorneLIB\Exception\ExceptionHandler;
 
 class MerchantApi extends MerchantApiConnector
@@ -28,6 +29,9 @@ class MerchantApi extends MerchantApiConnector
      */
     public function getPaymentMethods($storeId = null): PaymentMethods
     {
+        if (empty($storeId)) {
+            throw new RuntimeException('Undefined store id');
+        }
         return new PaymentMethods(
             $this->getMerchantRequest(
                 sprintf(
@@ -87,10 +91,12 @@ class MerchantApi extends MerchantApiConnector
         $return = '';
         $storeList = $this->getStores();
 
-        foreach ($storeList as $store) {
-            if ((int)$store->nationalStoreId === (int)$idNum || $store->id === $idNum) {
-                $return = $store->id;
-                break;
+        if (is_array($storeList)) {
+            foreach ($storeList as $store) {
+                if ((int)$store->nationalStoreId === (int)$idNum || $store->id === $idNum) {
+                    $return = $store->id;
+                    break;
+                }
             }
         }
 
