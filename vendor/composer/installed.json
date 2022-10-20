@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "resursbank/ecomphp",
-            "version": "1.3.86",
-            "version_normalized": "1.3.86.0",
+            "version": "1.3.89",
+            "version_normalized": "1.3.89.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ResursBank/ecomphp.git",
-                "reference": "3b20ee8b0addc138ae68888fa3249f3c608e2855"
+                "reference": "4c980a8d96eb64c699938572c68caa7f82f71154"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/3b20ee8b0addc138ae68888fa3249f3c608e2855",
-                "reference": "3b20ee8b0addc138ae68888fa3249f3c608e2855",
+                "url": "https://api.github.com/repos/ResursBank/ecomphp/zipball/4c980a8d96eb64c699938572c68caa7f82f71154",
+                "reference": "4c980a8d96eb64c699938572c68caa7f82f71154",
                 "shasum": ""
             },
             "require": {
@@ -22,7 +22,7 @@
                 "tornevall/tornelib-php-netcurl": "^6.1",
                 "tornevall/tornelib-php-network": "^6.1"
             },
-            "time": "2022-09-26T11:58:27+00:00",
+            "time": "2022-10-18T11:29:19+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -46,26 +46,26 @@
             "description": "Resurs Bank AB ecommerce library for PHP.",
             "support": {
                 "issues": "https://github.com/ResursBank/ecomphp/issues",
-                "source": "https://github.com/ResursBank/ecomphp/tree/1.3.86"
+                "source": "https://github.com/ResursBank/ecomphp/tree/1.3.89"
             },
             "install-path": "../resursbank/ecomphp"
         },
         {
             "name": "resursbank/ecomphp-deprecated",
-            "version": "0.0.12",
-            "version_normalized": "0.0.12.0",
+            "version": "0.0.13",
+            "version_normalized": "0.0.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ResursBank/ecomphp-deprecated.git",
-                "reference": "fb08fd5fcb4f4b12e32d01906f374ab628b55186"
+                "reference": "3700057eac71ad7f26a663121fd8007596758311"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ResursBank/ecomphp-deprecated/zipball/fb08fd5fcb4f4b12e32d01906f374ab628b55186",
-                "reference": "fb08fd5fcb4f4b12e32d01906f374ab628b55186",
+                "url": "https://api.github.com/repos/ResursBank/ecomphp-deprecated/zipball/3700057eac71ad7f26a663121fd8007596758311",
+                "reference": "3700057eac71ad7f26a663121fd8007596758311",
                 "shasum": ""
             },
-            "time": "2022-03-24T05:59:31+00:00",
+            "time": "2022-10-20T15:14:32+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -89,7 +89,7 @@
             "description": "Support for deprecated code within the EComPHP Library.",
             "support": {
                 "issues": "https://github.com/ResursBank/ecomphp-deprecated/issues",
-                "source": "https://github.com/ResursBank/ecomphp-deprecated/tree/0.0.12"
+                "source": "https://github.com/ResursBank/ecomphp-deprecated/tree/0.0.13"
             },
             "install-path": "../resursbank/ecomphp-deprecated"
         },

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit90342faa00dd975b979a138883b1f0b4
+class ComposerStaticInit6c6b66ee1056950606135de6f34364e1
 {
     public static $files = array (
         'bc521b269795605ef2585a7369f0017e' => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src/Network.php',
@@ -27,14 +27,14 @@ class ComposerStaticInit90342faa00dd975b979a138883b1f0b4
     public static $prefixDirsPsr4 = array (
         'TorneLIB\\' => 
         array (
-            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/src',
-            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-errorhandler/src',
+            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-errorhandler/src',
+            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
             2 => __DIR__ . '/..' . '/tornevall/tornelib-php-flags/src',
-            3 => __DIR__ . '/..' . '/tornevall/tornelib-php-io/src',
-            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
-            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
-            6 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
-            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
+            3 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
+            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-io/src',
+            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/src',
+            6 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
+            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
         ),
         'Resursbank\\RBEcomPHP\\' => 
         array (
@@ -61,10 +61,10 @@ class ComposerStaticInit90342faa00dd975b979a138883b1f0b4
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit90342faa00dd975b979a138883b1f0b4::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit90342faa00dd975b979a138883b1f0b4::$prefixDirsPsr4;
-            $loader->fallbackDirsPsr0 = ComposerStaticInit90342faa00dd975b979a138883b1f0b4::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInit90342faa00dd975b979a138883b1f0b4::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit6c6b66ee1056950606135de6f34364e1::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit6c6b66ee1056950606135de6f34364e1::$prefixDirsPsr4;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit6c6b66ee1056950606135de6f34364e1::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit6c6b66ee1056950606135de6f34364e1::$classMap;
 
         }, null, ClassLoader::class);
     }
