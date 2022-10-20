@@ -2,6 +2,7 @@
 
 namespace Resursbank\RBEcomPHP;
 
+use Exception;
 use RESURS_EXCEPTIONS;
 
 /**
@@ -59,25 +60,33 @@ class RESURS_DEPRECATED_FLOW
      * @param $countryCode
      * @param $customerType
      * @return array
-     * @throws \Exception
+     * @throws Exception
      * @deprecated Build your own integration
      */
     public function getRegEx($formFieldName = '', $countryCode = '', $customerType = '')
     {
-        //$returnRegEx = array();
+        if (is_null($formFieldName)) {
+            $formFieldName = '';
+        }
+        if (is_null($countryCode)) {
+            $countryCode = '';
+        }
+        if (is_null($customerType)) {
+            $customerType = '';
+        }
 
         /** @noinspection PhpDeprecationInspection */
         $templateRule = $this->getFormTemplateRules();
         $returnRegEx = $templateRule['regexp'];
 
         if (empty($countryCode)) {
-            throw new \Exception(
+            throw new Exception(
                 __FUNCTION__ . ": Country code is missing in getRegEx-request for form fields",
                 RESURS_EXCEPTIONS::REGEX_COUNTRYCODE_MISSING
             );
         }
         if (empty($customerType)) {
-            throw new \Exception(
+            throw new Exception(
                 __FUNCTION__ . ": Customer type is missing in getRegEx-request for form fields",
                 RESURS_EXCEPTIONS::REGEX_CUSTOMERTYPE_MISSING
             );
@@ -261,7 +270,7 @@ class RESURS_DEPRECATED_FLOW
      * @param bool $canThrow Make the function throw an exception instead of silently return false if getTemplateFieldsByMethodType has not been run yet
      *
      * @return bool Returns false if you should NOT hide the field
-     * @throws \Exception
+     * @throws Exception
      * @deprecated Build your own integration
      */
     public function canHideFormField($formField = "", $canThrow = false)
@@ -279,7 +288,7 @@ class RESURS_DEPRECATED_FLOW
         }
 
         if ($canThrow && !$canHideSet) {
-            throw new \Exception(
+            throw new Exception(
                 __FUNCTION__ . ": templateFieldsByMethodResponse is empty. You have to run getTemplateFieldsByMethodType first",
                 RESURS_EXCEPTIONS::FORMFIELD_CANHIDE_EXCEPTION
             );
@@ -306,7 +315,7 @@ class RESURS_DEPRECATED_FLOW
      * @param string $paymentMethodName
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      * @deprecated Build your own integration
      */
     public function getFormFieldsByMethod(
@@ -322,7 +331,7 @@ class RESURS_DEPRECATED_FLOW
      * @param string $paymentMethodName
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      * @deprecated Build your own integration
      */
     public function getTemplateFieldsByMethod(
