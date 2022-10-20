@@ -1711,7 +1711,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                     $translation = [];
                     $costOfPurchase = $ajaxUrl . '?action=get_priceinfo_ajax';
-                    if ($specificType !== 'CARD' && $type != 'PAYMENT_PROVIDER') {
+                    if ($type !== 'PAYMENT_PROVIDER') {
                         $fieldGenHtml .= '<button type="button" class="' . $buttonCssClasses . '" onClick="window.open(\'' . $costOfPurchase . '&method=' . $method->id . '&amount=' . $cart->total . '\', \'costOfPurchasePopup\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,copyhistory=no,resizable=yes,width=650px,height=740px\')">' . __(
                                 $read_more,
                                 'resurs-bank-payment-gateway-for-woocommerce'
