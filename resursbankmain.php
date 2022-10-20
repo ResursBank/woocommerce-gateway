@@ -3595,12 +3595,22 @@ function woocommerce_gateway_resurs_bank_init()
                     if (preg_match('/email/', $fieldNameOriginal)) {
                         if (!filter_var($_REQUEST[$fieldNameOriginal], FILTER_VALIDATE_EMAIL)) {
                             wc_add_notice($invalidFieldError, 'error');
+                            $validationFail = true;
                         }
-                    } else {
-                        if (!preg_match('/' . $regExString . '/', $_REQUEST[$fieldNameOriginal])) {
+                        if (empty($_REQUEST[$fieldNameOriginal])) {
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
                         }
+                    } else {
+                        $fieldContent = trim($_REQUEST[$fieldNameOriginal]);
+                        if (!preg_match('/' . $regExString . '/', trim($fieldContent))) {
+                            wc_add_notice($invalidFieldError, 'error');
+                            $validationFail = true;
+                        }
+                        if (!empty($regExString) && empty($fieldContent)) {
+                            wc_add_notice($invalidFieldError, 'error');
+                            $validationFail = true;
+                        };
                     }
                 }
             }
