@@ -3607,6 +3607,7 @@ function woocommerce_gateway_resurs_bank_init()
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
                         }
+                        // Empty data should only validate empty if we have a regex to validate with.
                         if (!empty($regExString) && empty($fieldContent)) {
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
