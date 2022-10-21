@@ -3592,15 +3592,26 @@ function woocommerce_gateway_resurs_bank_init()
                     if ($fieldNameOriginal === 'card-number' && empty($fieldData)) {
                         continue;
                     }
+                    $fieldContent = trim($_REQUEST[$fieldNameOriginal]);
                     if (preg_match('/email/', $fieldNameOriginal)) {
-                        if (!filter_var($_REQUEST[$fieldNameOriginal], FILTER_VALIDATE_EMAIL)) {
-                            wc_add_notice($invalidFieldError, 'error');
-                        }
-                    } else {
-                        if (!preg_match('/' . $regExString . '/', $_REQUEST[$fieldNameOriginal])) {
+                        if (!filter_var($fieldContent, FILTER_VALIDATE_EMAIL)) {
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
                         }
+                        if (empty($fieldContent)) {
+                            wc_add_notice($invalidFieldError, 'error');
+                            $validationFail = true;
+                        }
+                    } else {
+                        if (!preg_match('/' . $regExString . '/', trim($fieldContent))) {
+                            wc_add_notice($invalidFieldError, 'error');
+                            $validationFail = true;
+                        }
+                        // Empty data should only validate empty if we have a regex to validate with.
+                        if (!empty($regExString) && empty($fieldContent)) {
+                            wc_add_notice($invalidFieldError, 'error');
+                            $validationFail = true;
+                        };
                     }
                 }
             }
