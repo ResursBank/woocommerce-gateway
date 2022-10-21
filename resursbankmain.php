@@ -3564,6 +3564,8 @@ function woocommerce_gateway_resurs_bank_init()
                 $_REQUEST['applicant-government-id'] = $_REQUEST['ssn_field'];
             }
 
+            $errors = [];
+
             $validationFail = false;
             foreach ($methodFields as $fieldName) {
                 if (isset($_REQUEST[$fieldName]) && isset($regEx[$fieldName])) {
@@ -3594,23 +3596,31 @@ function woocommerce_gateway_resurs_bank_init()
                     }
                     $fieldContent = trim($_REQUEST[$fieldNameOriginal]);
                     if (preg_match('/email/', $fieldNameOriginal)) {
-                        if (!filter_var($fieldContent, FILTER_VALIDATE_EMAIL)) {
+                        if (!isset($errors[$invalidFieldError]) && !filter_var($fieldContent, FILTER_VALIDATE_EMAIL)) {
+                            $errors[$invalidFieldError] = true;
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
+                            break;
                         }
-                        if (empty($fieldContent)) {
+                        if (!isset($errors[$invalidFieldError]) && empty($fieldContent)) {
+                            $errors[$invalidFieldError] = true;
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
+                            break;
                         }
                     } else {
-                        if (!preg_match('/' . $regExString . '/', trim($fieldContent))) {
+                        if (!isset($errors[$invalidFieldError]) && !preg_match('/' . $regExString . '/', trim($fieldContent))) {
+                            $errors[$invalidFieldError] = true;
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
+                            break;
                         }
                         // Empty data should only validate empty if we have a regex to validate with.
-                        if (!empty($regExString) && empty($fieldContent)) {
+                        if (!isset($errors[$invalidFieldError]) && !empty($regExString) && empty($fieldContent)) {
+                            $errors[$invalidFieldError] = true;
                             wc_add_notice($invalidFieldError, 'error');
                             $validationFail = true;
+                            break;
                         };
                     }
                 }
