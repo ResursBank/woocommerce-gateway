@@ -1682,6 +1682,7 @@ function woocommerce_gateway_resurs_bank_init()
                     $fieldGenHtml .= '<div>' . $method_class->description . '</div>';
                     foreach ($requiredFormFields['fields'] as $fieldName) {
                         $doDisplay = 'block';
+                        $fieldType = 'text';
                         $streamLineBehaviour = getResursOption('streamlineBehaviour');
                         if ($streamLineBehaviour) {
                             if ($this->flow->canHideFormField($fieldName)) {
@@ -1690,6 +1691,7 @@ function woocommerce_gateway_resurs_bank_init()
                             // When applicant government id and getAddress is enabled so that data can be collected
                             // from that point, the request field is not necessary to be shown all the time.
                             if ($fieldName === 'applicant-government-id') {
+                              $fieldType = 'password';
                                 $optionGetAddress = getResursOption('getAddress');
                                 // $mustShowGov is unconditional: This setting forces the gov id to ALWAYS show
                                 // regardless of payment method.
@@ -1705,7 +1707,7 @@ function woocommerce_gateway_resurs_bank_init()
                         $setLabel = $this->get_payment_method_form_label($fieldName, $customerType);
                         $fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
                         $fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $setLabel . '</label>';
-                        $fieldGenHtml .= '<input onkeyup="rbFormChange(\'' . $fieldName . '\', this)" id="' . $fieldName . '" type="text" name="' . $fieldName . '">';
+                        $fieldGenHtml .= '<input onkeyup="rbFormChange(\'' . $fieldName . '\', this)" id="' . $fieldName . '" type="'.$fieldType.'" name="' . $fieldName . '">';
                         $fieldGenHtml .= '</div>';
                     }
 
