@@ -1707,7 +1707,7 @@ function woocommerce_gateway_resurs_bank_init()
 
                         $setLabel = $this->get_payment_method_form_label($fieldName, $customerType);
                         $fieldGenHtml .= '<div style="display:' . $doDisplay . ';width:100%;" class="resurs_bank_payment_field_container">';
-                        $mandatoryString = !empty($mandatory) ? '<span style="font-size:10px !important;" title="Mandatory">'.$mandatory.' </span> ' : '';
+                        $mandatoryString = !empty($mandatory) ? '<span style="font-size:10px !important;" title="'.__('Mandatory', 'resurs-bank-payment-gateway-for-woocommerce').'">'.$mandatory.' </span> ' : '';
                         $fieldGenHtml .= '<label for="' . $fieldName . '" style="width:100%;display:block;">' . $mandatoryString . $setLabel . '</label>';
                         $fieldGenHtml .= '<input onkeyup="rbFormChange(\'' . $fieldName . '\', this)" id="' . $fieldName . '" type="'.$fieldType.'" name="' . $fieldName . '">';
                         $fieldGenHtml .= '</div>';

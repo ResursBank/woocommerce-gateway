@@ -1,3 +1,13 @@
+# 2.2.101 #
+
+[WOO-809](https://resursbankplugins.atlassian.net/browse/WOO-809) Empty customer data validation issues
+[WOO-690](https://resursbankplugins.atlassian.net/browse/WOO-690) \(Gamla\) Stoppa frusna ordrar från att sättas i "completed".
+[WOO-698](https://resursbankplugins.atlassian.net/browse/WOO-698) \(Gamla\) Fixa adress på orderinfo
+
+# 2.2.100 #
+
+* Updated strings for tested-up-to.
+
 # 2.2.99 #
 
 * [WOO-667](https://resursbankplugins.atlassian.net/browse/WOO-667) finalizepayment no longer fires errors due to a fix in ecom
