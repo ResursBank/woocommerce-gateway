@@ -6115,7 +6115,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                 if (!empty($resursPaymentInfo) && is_object($resursPaymentInfo->deliveryAddress)) {
                     $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->addressRow1) && !empty($resursPaymentInfo->deliveryAddress->addressRow1) ? $resursPaymentInfo->deliveryAddress->addressRow1 . "\n" : '';
                     $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->addressRow2) && !empty($resursPaymentInfo->deliveryAddress->addressRow2) ? $resursPaymentInfo->deliveryAddress->addressRow2 . "\n" : '';
-                    $deliveryInfo .= isset($resursPayme§ntInfo->deliveryAddress->postalArea) && !empty($resursPaymentInfo->deliveryAddress->postalArea) ? $resursPaymentInfo->deliveryAddress->postalArea . "\n" : '';
+                    $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->postalArea) && !empty($resursPaymentInfo->deliveryAddress->postalArea) ? $resursPaymentInfo->deliveryAddress->postalArea . "\n" : '';
                     $deliveryInfo .= (isset($resursPaymentInfo->deliveryAddress->country) && !empty($resursPaymentInfo->deliveryAddress->country) ? $resursPaymentInfo->deliveryAddress->country : '') . ' ' . (isset($resursPaymentInfo->deliveryAddress->postalCode) && !empty($resursPaymentInfo->deliveryAddress->postalCode) ? $resursPaymentInfo->deliveryAddress->postalCode : '') . "\n";
                 } else {
                     // No delivery set? Use billing.
