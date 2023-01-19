@@ -2417,6 +2417,10 @@ function woocommerce_gateway_resurs_bank_init()
                     __($bookPaymentException->getMessage(), 'resurs-bank-payment-gateway-for-woocommerce'),
                     'error'
                 );
+                rbSimpleLogging(
+                    'Order ' . $order_id . ' error: ' . $bookPaymentException->getLongException(),
+                    __FUNCTION__
+                );
 
                 return;
             }

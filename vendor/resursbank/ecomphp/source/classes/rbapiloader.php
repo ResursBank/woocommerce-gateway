@@ -3032,6 +3032,8 @@ class ResursBank
                 // Try to fetch previous exception (This is what we actually want)
                 $previousException = $serviceRequestException->getPrevious();
                 $previousExceptionCode = null;
+                $shortException = null;
+                $longException = null;
                 if (!empty($previousException)) {
                     $previousExceptionMessage = $previousException->getMessage();
                     $previousExceptionCode = $previousException->getCode();
@@ -3048,18 +3050,26 @@ class ResursBank
                     isset($previousException->detail->ECommerceError) &&
                     is_object($previousException->detail->ECommerceError)
                 ) {
+                    $hideLongWarnings = defined('HIDE_LONG_WARNINGS') ?
+                        constant('HIDE_LONG_WARNINGS') : true;
                     $objectDetails = $previousException->detail->ECommerceError;
                     if (isset($objectDetails->errorTypeId) && (int)$objectDetails->errorTypeId > 0) {
                         $exceptionCode = $objectDetails->errorTypeId;
                     }
                     if (isset($objectDetails->userErrorMessage)) {
                         $errorTypeDescription = (
-                        isset($objectDetails->errorTypeDescription) ? sprintf('[%s] ',
-                            $objectDetails->errorTypeDescription) : ''
+                        isset($objectDetails->errorTypeDescription) ? sprintf(
+                            '[%s] ',
+                            $objectDetails->errorTypeDescription
+                        ) : ''
                         );
                         $exceptionMessage = $errorTypeDescription . $objectDetails->userErrorMessage;
+                        $shortException = $exceptionMessage;
                         if (isset($previousException->faultstring)) {
-                            $exceptionMessage .= sprintf(' (%s) ', $previousException->getMessage());
+                            $longException = sprintf(' (%s) ', $previousException->getMessage());
+                            if (!$hideLongWarnings) {
+                                $exceptionMessage .= $longException;
+                            }
                         }
                         $fixableByYou = isset($objectDetails->fixableByYou) ? $objectDetails->fixableByYou : null;
                         if ($fixableByYou == 'false') {
@@ -3078,7 +3088,11 @@ class ResursBank
                 throw new ResursException(
                     sprintf('SOAP Service %s: %s', $serviceName, $exceptionMessage),
                     $exceptionCode,
-                    $serviceRequestException
+                    $serviceRequestException,
+                    null,
+                    '',
+                    $shortException,
+                    $longException
                 );
             }
             $ParsedResponse = $Service->getParsed();
