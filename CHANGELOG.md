@@ -1,3 +1,11 @@
+# 2.2.103 #
+
+[WOO-1004](https://resursbankplugins.atlassian.net/browse/WOO-1004) Verifiera att usererrormessage är det som exponeras vid bookPayment på kassasidan \(gamla\)
+
+# 2.2.102 #
+
+[WOO-1013](https://resursbankplugins.atlassian.net/browse/WOO-1013) Character destroys deliveryInfo
+
 # 2.2.101 #
 
 [WOO-809](https://resursbankplugins.atlassian.net/browse/WOO-809) Empty customer data validation issues
