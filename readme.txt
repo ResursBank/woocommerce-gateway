@@ -132,6 +132,10 @@ Docs are continuously updated at [https://test.resurs.com/docs/display/ecom/WooC
 
 For a full list of changes, [look here](https://bitbucket.org/resursbankplugins/resurs-bank-payment-gateway-for-woocommerce/src/master/CHANGELOG.md) - CHANGELOG.md is also included in this package.
 
+= 2.2.104 =
+
+* Making sure deliveryAddress exists before checking it.
+
 = 2.2.103 =
 
 [WOO-1004](https://resursbankplugins.atlassian.net/browse/WOO-1004) Verifiera att usererrormessage är det som exponeras vid bookPayment på kassasidan \(gamla\)
