@@ -6116,7 +6116,7 @@ function resurs_order_data_info($order = null, $orderDataInfoAfter = null)
                     $addressInfo .= isset($resursPaymentInfo->customer->address->postalArea) && !empty($resursPaymentInfo->customer->address->postalArea) ? $resursPaymentInfo->customer->address->postalArea . "\n" : '';
                     $addressInfo .= (isset($resursPaymentInfo->customer->address->country) && !empty($resursPaymentInfo->customer->address->country) ? $resursPaymentInfo->customer->address->country : '') . ' ' . (isset($resursPaymentInfo->customer->address->postalCode) && !empty($resursPaymentInfo->customer->address->postalCode) ? $resursPaymentInfo->customer->address->postalCode : '') . "\n";
                 }
-                if (!empty($resursPaymentInfo) && is_object($resursPaymentInfo->deliveryAddress)) {
+                if (!empty($resursPaymentInfo) && isset($resursPaymentInfo->deliveryAddress) && is_object($resursPaymentInfo->deliveryAddress)) {
                     $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->addressRow1) && !empty($resursPaymentInfo->deliveryAddress->addressRow1) ? $resursPaymentInfo->deliveryAddress->addressRow1 . "\n" : '';
                     $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->addressRow2) && !empty($resursPaymentInfo->deliveryAddress->addressRow2) ? $resursPaymentInfo->deliveryAddress->addressRow2 . "\n" : '';
                     $deliveryInfo .= isset($resursPaymentInfo->deliveryAddress->postalArea) && !empty($resursPaymentInfo->deliveryAddress->postalArea) ? $resursPaymentInfo->deliveryAddress->postalArea . "\n" : '';
