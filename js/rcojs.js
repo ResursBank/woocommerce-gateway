@@ -104,7 +104,8 @@ $RB(document).ready(function ($) {
 
         // Set up handler for handling customer.
         resursCheckout.setCustomerChangedEventCallback(function (customerData) {
-            // @todo This is a non-rco section.
+            // @todo This is a non-facelift section and should normally not be required unless Resurs has
+            // @todo an older version for the used site. This segments could probably be removed (but not now).
             if (omnivars["disableStandardFieldsForShipping"] === "0") {
                 return;
             }
