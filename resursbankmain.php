@@ -5053,6 +5053,14 @@ function woocommerce_gateway_resurs_bank_init()
 
         $customerTypes = WC_Resurs_Bank::get_address_customertype(true);
 
+        $wcCustomerCountry = isset($woocommerce->customer) &&
+        method_exists($woocommerce->customer, 'get_billing_country') ?
+            $woocommerce->customer->get_billing_country() : '';
+
+        if ($wcCustomerCountry === 'undefined' || $wcCustomerCountry === '') {
+            $wcCustomerCountry = getResursOption('country');
+        }
+
         // resursCountry and wcCustomerCountry is added here for debugging purposes.
         $resursVars = [
             'ResursBankAB' => true,
@@ -5063,9 +5071,7 @@ function woocommerce_gateway_resurs_bank_init()
             'inProductPage' => is_product(),
             'resursCountry' => getResursOption('country'),
             'forceGovIdField' => (bool)getResursOption('forceGovIdField') ? 1 : 0,
-            'wcCustomerCountry' => isset($woocommerce->customer) &&
-            method_exists($woocommerce->customer, 'get_billing_country') ?
-                $woocommerce->customer->get_billing_country() : '',
+            'wcCustomerCountry' => $wcCustomerCountry,
         ];
 
         $oneRandomValue = null;

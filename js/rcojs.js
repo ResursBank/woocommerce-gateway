@@ -176,6 +176,7 @@ $RB(document).ready(function ($) {
                     });
                 }
                 if (triggerUpdateCheckout) {
+                    console.log('triggerUpdateCheckout');
                     $RB('body').trigger('update_checkout');
                 }
             }

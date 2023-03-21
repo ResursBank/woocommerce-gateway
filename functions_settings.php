@@ -325,6 +325,19 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'desc_tip' => true,
                 ],
+                /*'enforce_local_tax' => [
+                    'title' => __(
+                        'Enforce local tax on 0 vat',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                    'type' => 'checkbox',
+                    'desc' => __('Yes', 'resurs-bank-payment-gateway-for-woocommerce'),
+                    'default' => 'false',
+                    'description' => __(
+                        'Workaround fix for WC7.5.0, will enforce this local tax rate if no rates can be found.',
+                        'resurs-bank-payment-gateway-for-woocommerce'
+                    ),
+                ],*/
                 'coupons_include_vat' => [
                     'title' => __(
                         'Coupons should be handled with vat',
@@ -1006,7 +1019,7 @@ if (!function_exists('getResursWooFormFields')) {
                 ],
                 'useStandardFieldsForShipping' => [
                     'title' => __(
-                        'Use standard customer fields to update shipping methods when postal code changes (Experimental)',
+                        'Use standard customer fields to update shipping methods when postal code changes',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',

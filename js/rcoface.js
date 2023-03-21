@@ -1,5 +1,5 @@
 var $RB = jQuery.noConflict();
-var rcoDebug = false;
+var rcoDebug = true;
 
 /**
  * Customer data container for the RCO.

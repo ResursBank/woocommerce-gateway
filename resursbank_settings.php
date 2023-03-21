@@ -1393,6 +1393,7 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     echo $this->setSeparator(__('Advanced', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setCheckBox('omniFrameNotReloading', $namespace);
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
+                    echo $this->setCheckBox('useStandardFieldsForShipping', $namespace);
                     echo $this->setCheckBox('resursCheckoutMultipleMethods', $namespace);
                 } elseif ($section == "shortcodes") {
                     echo $this->setSeparator(

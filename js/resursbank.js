@@ -55,6 +55,7 @@ $RB(document).on('updated_checkout', function () {
 $RB(document).on('resursCountryChange', function(e, data) {
     if (typeof data['newCountry'] !== 'undefined') {
         var countrySet = data['newCountry'];
+        console.log(countrySet);
         // Example code of country code changer. This code will remove fetchaddress fields when any other country
         // than sweden is selected and the gov id field is forced to be shown in the last checkout step. As
         // some methods may be dependent on the govid field we don't want to remove it without having an option
@@ -210,6 +211,7 @@ $RB(document).ready(function ($) {
                 }
             });
             $('#billing_country').on('change', function () {
+                console.log('billing_country update: resursCountryChange');
                 $('body').trigger('resursCountryChange', {newCountry: this.value});
             });
         },
@@ -230,6 +232,7 @@ $RB(document).ready(function ($) {
                     var methodId = parent.find('.resurs-bank-payment-method').val();
                 }
 
+                console.log('register_payment_update => update_checkout');
                 $('body').trigger('update_checkout');
             });
         },
@@ -426,6 +429,7 @@ function getMethodType(customerType) {
     var checkedPaymentMethod = null;
     var hasResursMethods = false;
 
+    console.log('getMethodType trigger: update_checkout');
     $RB('body').trigger('update_checkout');
 
     var currentResursCountry = "";
