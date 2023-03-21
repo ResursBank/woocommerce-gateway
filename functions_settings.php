@@ -325,19 +325,6 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'desc_tip' => true,
                 ],
-                /*'enforce_local_tax' => [
-                    'title' => __(
-                        'Enforce local tax on 0 vat',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                    'type' => 'checkbox',
-                    'desc' => __('Yes', 'resurs-bank-payment-gateway-for-woocommerce'),
-                    'default' => 'false',
-                    'description' => __(
-                        'Workaround fix for WC7.5.0, will enforce this local tax rate if no rates can be found.',
-                        'resurs-bank-payment-gateway-for-woocommerce'
-                    ),
-                ],*/
                 'coupons_include_vat' => [
                     'title' => __(
                         'Coupons should be handled with vat',
@@ -1017,15 +1004,15 @@ if (!function_exists('getResursWooFormFields')) {
                     ),
                     'desc_tip' => true,
                 ],
-                'useStandardFieldsForShipping' => [
+                'disableStandardFieldsForShipping' => [
                     'title' => __(
-                        'Use standard customer fields to update shipping methods when postal code changes',
+                        'Disable standard customer fields',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Normally, this plugin removes all customer data fields from the checkout as it gets the information from the iframe. In this case, however, we will try to use those fields (in hidden mode) to update available shipping methods when the postal code changes. This is a beta function.',
+                        'As of WC 7.5.0, this plugin keeps all customer data fields in the checkout, but invisible to make sure shipping etc is handled properly. If you have a theme where this is breaking customer fields, this feature can be enabled to make the fields removed entirely.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,

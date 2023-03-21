@@ -1388,12 +1388,10 @@ class WC_Settings_Tab_ResursBank extends WC_Settings_Page
                     if (isset($_SERVER['HTTP_HOST']) && preg_match('/\.cte\.loc|\.pte\.loc/i', $_SERVER['HTTP_HOST'])) {
                         echo $this->setCheckBox('alwaysPte', $namespace);
                     }
-                    // This is reserved for future use, so we won't touch this for now
-                    //echo $this->setCheckBox( 'useStandardFieldsForShipping', $namespace );
                     echo $this->setSeparator(__('Advanced', 'resurs-bank-payment-gateway-for-woocommerce'));
                     echo $this->setCheckBox('omniFrameNotReloading', $namespace);
                     echo $this->setCheckBox('cleanOmniCustomerFields', $namespace);
-                    echo $this->setCheckBox('useStandardFieldsForShipping', $namespace);
+                    echo $this->setCheckBox('disableStandardFieldsForShipping', $namespace);
                     echo $this->setCheckBox('resursCheckoutMultipleMethods', $namespace);
                 } elseif ($section == "shortcodes") {
                     echo $this->setSeparator(

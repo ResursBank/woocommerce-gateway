@@ -4928,8 +4928,8 @@ function woocommerce_gateway_resurs_bank_init()
                     'iframeShape',
                     'woocommerce_resurs_bank_omnicheckout_settings'
                 ),
-                'useStandardFieldsForShipping' => getResursOption(
-                    'useStandardFieldsForShipping',
+                'disableStandardFieldsForShipping' => getResursOption(
+                    'disableStandardFieldsForShipping',
                     'woocommerce_resurs_bank_omnicheckout_settings'
                 ),
                 'showResursCheckoutStandardFieldsTest' => getResursOption(
