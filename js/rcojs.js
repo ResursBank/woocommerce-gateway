@@ -4,21 +4,19 @@ var $RB = jQuery.noConflict();
  * Preconfigure how to handle billing- and shipping address fields depending on configuration.
  */
 function getRcoFieldSetup() {
-    if (omnivars["useStandardFieldsForShipping"] === "1") {
-        console.log("ResursCheckout: useStandardFieldsForShipping (Experimental) is active, so customer fields are hidden rather than removed");
+    if (omnivars["disableStandardFieldsForShipping"] !== "0") {
+        jQuery('div').remove('.woocommerce-billing-fields');
+        jQuery('div').remove('.woocommerce-shipping-fields');
+    } else {
         if (omnivars["showResursCheckoutStandardFieldsTest"] !== "1") {
             jQuery('.woocommerce-billing-fields').hide();
             jQuery('.woocommerce-shipping-fields').hide();
         } else {
             if (omnivars["isResursTest"] !== "1") {
-                // useStandardFieldsForShipping is active, but we are running production - so the display fields are overruled.
                 jQuery('.woocommerce-billing-fields').hide();
                 jQuery('.woocommerce-shipping-fields').hide();
             }
         }
-    } else {
-        jQuery('div').remove('.woocommerce-billing-fields');
-        jQuery('div').remove('.woocommerce-shipping-fields');
     }
 }
 
@@ -106,79 +104,75 @@ $RB(document).ready(function ($) {
 
         // Set up handler for handling customer.
         resursCheckout.setCustomerChangedEventCallback(function (customerData) {
-            if (omnivars["useStandardFieldsForShipping"] == "1") {
-                console.log("ResursCheckoutJS: [ClientSide] Received customer data update from iframe");
-                var rendered = customerData["customerData"];
-                var billing = rendered["address"];
-                var delivery = rendered["delivery"];
-                var useShipping = false;
-                var triggerUpdateCheckout = false;
-                var fillFields = {
-                    "first_name": "firstname",
-                    "last_name": "surname",
-                    "address_1": "address",
-                    "address_2": "addressExtra",
-                    "city": "city",
-                    "country": "countryCode",
-                    "email": "email",
-                    "postcode": "postal",
-                    "phone": "telephone"
-                };
-
-                // Check if there is a shipping set up on screen
-                if ($RB('#ship-to-different-address-checkbox').length > 0) {
-                    if (typeof delivery["firstname"] !== "undefined") {
-                        useShipping = true;
-                        if (!$RB('#ship-to-different-address-checkbox').is(':checked')) {
-                            console.log("ResursCheckoutJS: [ClientSide] Shipping checkbox is not checked and there is a delivery address set in the iframe. Shipping fields should enable.");
-                            $RB('#ship-to-different-address-checkbox').attr("checked", false);
-                            $RB('#ship-to-different-address-checkbox').click();
-                        }
-                    } else {
-                        if ($RB('#ship-to-different-address-checkbox').is(':checked')) {
-                            console.log("ResursCheckoutJS: [ClientSide] Shipping checkbox is checked but there is no delivery address set in the iframe. Shipping fields should disable.");
-                            $RB('#ship-to-different-address-checkbox').click();
+            // @todo This is a non-rco section.
+            if (omnivars["disableStandardFieldsForShipping"] === "0") {
+                return;
+            }
+            console.log("ResursCheckoutJS: [ClientSide] Received customer data update from iframe");
+            var rendered = customerData["customerData"];
+            var billing = rendered["address"];
+            var delivery = rendered["delivery"];
+            var useShipping = false;
+            var triggerUpdateCheckout = false;
+            var fillFields = {
+                "first_name": "firstname",
+                "last_name": "surname",
+                "address_1": "address",
+                "address_2": "addressExtra",
+                "city": "city",
+                "country": "countryCode",
+                "email": "email",
+                "postcode": "postal",
+                "phone": "telephone"
+            };
+            if ($RB('#ship-to-different-address-checkbox').length > 0) {
+                if (typeof delivery["firstname"] !== "undefined") {
+                    useShipping = true;
+                    if (!$RB('#ship-to-different-address-checkbox').is(':checked')) {
+                        console.log("ResursCheckoutJS: [ClientSide] Shipping checkbox is not checked and there is a delivery address set in the iframe. Shipping fields should enable.");
+                        $RB('#ship-to-different-address-checkbox').attr("checked", false);
+                        $RB('#ship-to-different-address-checkbox').click();
+                    }
+                } else {
+                    if ($RB('#ship-to-different-address-checkbox').is(':checked')) {
+                        console.log("ResursCheckoutJS: [ClientSide] Shipping checkbox is checked but there is no delivery address set in the iframe. Shipping fields should disable.");
+                        $RB('#ship-to-different-address-checkbox').click();
+                    }
+                }
+            }
+            $RB("[id^=billing_]").each(function (i, f) {
+                if (typeof f.type === "string" && (f.type == "text" || f.type == "email" || f.type == "tel")) {
+                    var b_name = f.id.substr(f.id.indexOf("_") + 1);
+                    if (typeof fillFields[b_name] !== "undefined") {
+                        var useField = fillFields[b_name];
+                        if (typeof billing[useField] !== "undefined") {
+                            triggerUpdateCheckout = true;
+                            f.value = billing[useField];
                         }
                     }
                 }
-
-                // Billing address filler (if fields are present).
-                $RB("[id^=billing_]").each(function (i, f) {
+            });
+            if (useShipping) {
+                console.log("ResursCheckout: [ClientSide] Shipping is now included!");
+                triggerUpdateCheckout = false;
+                $RB("[id^=shipping_]").each(function (i, f) {
                     if (typeof f.type === "string" && (f.type == "text" || f.type == "email" || f.type == "tel")) {
                         var b_name = f.id.substr(f.id.indexOf("_") + 1);
                         if (typeof fillFields[b_name] !== "undefined") {
                             var useField = fillFields[b_name];
-                            if (typeof billing[useField] !== "undefined") {
-                                triggerUpdateCheckout = true;
-                                f.value = billing[useField];
+                            if (typeof delivery[useField] !== "undefined") {
+                                if (useField == "postal" && delivery[useField] != "") {
+                                    triggerUpdateCheckout = true;
+                                }
+                                f.value = delivery[useField];
                             }
                         }
                     }
                 });
-
-                // Shipping address filler (if fields are present).
-                if (useShipping) {
-                    console.log("ResursCheckout: [ClientSide] Shipping is now included!");
-                    triggerUpdateCheckout = false;
-                    $RB("[id^=shipping_]").each(function (i, f) {
-                        if (typeof f.type === "string" && (f.type == "text" || f.type == "email" || f.type == "tel")) {
-                            var b_name = f.id.substr(f.id.indexOf("_") + 1);
-                            if (typeof fillFields[b_name] !== "undefined") {
-                                var useField = fillFields[b_name];
-                                if (typeof delivery[useField] !== "undefined") {
-                                    if (useField == "postal" && delivery[useField] != "") {
-                                        triggerUpdateCheckout = true;
-                                    }
-                                    f.value = delivery[useField];
-                                }
-                            }
-                        }
-                    });
-                }
-                if (triggerUpdateCheckout) {
-                    console.log('triggerUpdateCheckout');
-                    $RB('body').trigger('update_checkout');
-                }
+            }
+            if (triggerUpdateCheckout) {
+                console.log('triggerUpdateCheckout');
+                $RB('body').trigger('update_checkout');
             }
         });
 

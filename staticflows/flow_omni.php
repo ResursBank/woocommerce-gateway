@@ -799,13 +799,13 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
         // from a layout, we can not rebuild the array either. In such cases, when arrays are broken, wooCommerce can in this moment
         // render foreach-warnings. The patch here, will try to fix this, by at least create some default array-fields without any data.
 
-        $keepFieldsHidden = getResursOption(
-            "useStandardFieldsForShipping",
+        $disableCustomerFields = getResursOption(
+            "disableStandardFieldsForShipping",
             "woocommerce_resurs_bank_omnicheckout_settings"
         );
         if (isResursOmni() && hasResursOmni()) {
             if (!defined('OMNICHECKOUT_PROCESSPAYMENT')) {
-                if (!$keepFieldsHidden) {
+                if ($disableCustomerFields) {
                     if (isset($fields['billing'])) {
                         $fields['billing'] = [];
                     }
@@ -819,7 +819,7 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
                 // since the behaviour from the themes may act different.
                 ///
                 $cleanOmniCustomerFields = ($this->get_option('cleanOmniCustomerFields') == "true" ? 1 : 0);
-                if ($cleanOmniCustomerFields && !$keepFieldsHidden) {
+                if ($cleanOmniCustomerFields && $disableCustomerFields) {
                     $fields = [];
                 }
             } else {
