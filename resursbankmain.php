@@ -1308,12 +1308,9 @@ function woocommerce_gateway_resurs_bank_init()
             foreach ($cart as $item) {
                 /** @var WC_Product $data */
                 $data = $item['data'];
-                /** @var WC_Tax $_tax */
-                $_tax = new WC_Tax();  //looking for appropriate vat for specific product
-                $rates = [];
-                $taxClass = $data->get_tax_class();
-                $ratesArray = $_tax->get_rates($taxClass);
-                $rates = @array_shift($ratesArray);
+                $wcRates = WC_Tax::get_rates($data->get_tax_class());
+                $rates = is_array($wcRates) ? @array_shift($wcRates) : [];
+
                 if (isset($rates['rate'])) {
                     $vatPct = (double)$rates['rate'];
                 } else {

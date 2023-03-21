@@ -492,11 +492,11 @@ class WC_Gateway_ResursBank_Omni extends WC_Resurs_Bank
     {
         $spec_lines = [];
         foreach ($cart as $item) {
+            /** @var WC_Product $data */
             $data = $item['data'];
-            $_tax = new WC_Tax();//looking for appropriate vat for specific product
-            $rates = [];
-            $taxClass = $data->get_tax_class();
-            $rates = @array_shift($_tax->get_rates($taxClass));
+            $wcRates = WC_Tax::get_rates($data->get_tax_class());
+            $rates = is_array($wcRates) ? @array_shift($wcRates) : [];
+
             if (isset($rates['rate'])) {
                 $vatPct = (double)$rates['rate'];
             } else {
