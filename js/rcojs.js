@@ -4,7 +4,7 @@ var $RB = jQuery.noConflict();
  * Preconfigure how to handle billing- and shipping address fields depending on configuration.
  */
 function getRcoFieldSetup() {
-    if (omnivars["disableStandardFieldsForShipping"] !== "0") {
+    if (omnivars["disableStandardFieldsForShipping"] === "1") {
         jQuery('div').remove('.woocommerce-billing-fields');
         jQuery('div').remove('.woocommerce-shipping-fields');
     } else {
