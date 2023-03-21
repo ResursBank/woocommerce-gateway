@@ -1012,7 +1012,7 @@ if (!function_exists('getResursWooFormFields')) {
                     'type' => 'checkbox',
                     'default' => 'false',
                     'description' => __(
-                        'Normally, this plugin keeps all customer data fields in the checkout, but invisible to make sure shipping etc is handled properly. This has been changed since WC 7.5.0. If you have a theme where this doesnt work at all, this feature can be enabled to make the fields removed entirely.',
+                        'As of WC 7.5.0, this plugin keeps all customer data fields in the checkout, but invisible to make sure shipping etc is handled properly. If you have a theme where this is breaking customer fields, this feature can be enabled to make the fields removed entirely.',
                         'resurs-bank-payment-gateway-for-woocommerce'
                     ),
                     'desc_tip' => true,
