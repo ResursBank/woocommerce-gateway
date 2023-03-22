@@ -1,3 +1,7 @@
+# 2.2.105 #
+
+* [WOO-1163](https://resursbankplugins.atlassian.net/browse/WOO-1163) Tax classes/Shipping no longer returns data from WooCommerce 7.5.0
+
 # 2.2.104 #
 
 * Making sure deliveryAddress exists before checking it.
